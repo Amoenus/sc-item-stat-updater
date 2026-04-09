@@ -1,4 +1,4 @@
-const path = require('path');
+const { parseArgs } = require('node:util');
 const { runUpdate } = require('./src/lib/updater');
 
 const ITEMS = {
@@ -16,14 +16,41 @@ const ITEMS = {
   'tractor-beams':  './src/items/tractor-beams',
 };
 
-const category = process.argv[2];
+const { values, positionals } = parseArgs({
+  options: {
+    'ini-path': { type: 'string', short: 'i' },
+    'csv-dir':  { type: 'string', short: 'c' },
+    'dry-run':  { type: 'boolean', default: false },
+    'help':     { type: 'boolean', short: 'h', default: false },
+  },
+  allowPositionals: true,
+  strict: true,
+});
 
-if (!category || !ITEMS[category]) {
-  console.log('Usage: node update-item.js <category>');
+const category = positionals[0];
+
+if (values.help || !category || !ITEMS[category]) {
+  console.log('Usage: node update-item.js [options] <category>');
+  console.log('\nOptions:');
+  console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
+  console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: .)');
+  console.log('      --dry-run          Preview changes without writing');
+  console.log('  -h, --help             Show this help message');
   console.log(`\nAvailable categories:\n  ${Object.keys(ITEMS).join('\n  ')}`);
-  process.exit(1);
+  process.exit(values.help ? 0 : 1);
 }
 
-const config = require(ITEMS[category]);
-const result = runUpdate(config);
-console.log(result.summary);
+const options = {
+  iniPath: values['ini-path'],
+  csvDir: values['csv-dir'],
+  dryRun: values['dry-run'],
+};
+
+try {
+  const config = require(ITEMS[category]);
+  const result = runUpdate(config, options);
+  console.log(result.summary);
+} catch (err) {
+  console.error(`ERROR in ${category}: ${err.message}`);
+  process.exit(1);
+}

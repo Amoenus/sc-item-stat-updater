@@ -1,5 +1,32 @@
+const { parseArgs } = require('node:util');
 const { runUpdate } = require('./src/lib/updater');
 const cliProgress = require('cli-progress');
+
+const { values } = parseArgs({
+  options: {
+    'ini-path': { type: 'string', short: 'i' },
+    'csv-dir':  { type: 'string', short: 'c' },
+    'dry-run':  { type: 'boolean', default: false },
+    'help':     { type: 'boolean', short: 'h', default: false },
+  },
+  strict: true,
+});
+
+if (values.help) {
+  console.log('Usage: node update-all.js [options]');
+  console.log('\nOptions:');
+  console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
+  console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: .)');
+  console.log('      --dry-run          Preview changes without writing');
+  console.log('  -h, --help             Show this help message');
+  process.exit(0);
+}
+
+const options = {
+  iniPath: values['ini-path'],
+  csvDir: values['csv-dir'],
+  dryRun: values['dry-run'],
+};
 
 const categories = [
   './src/items/quantum-drives',
@@ -34,7 +61,7 @@ for (let i = 0; i < categories.length; i++) {
   const config = require(categories[i]);
   bar.update(i, { category: config.label });
   try {
-    results.push(runUpdate(config));
+    results.push(runUpdate(config, options));
   } catch (err) {
     errors.push({ label: config.label, message: err.message });
   }
@@ -47,3 +74,5 @@ console.log();
 for (const r of results) console.log(r.summary);
 for (const e of errors) console.error(`ERROR in ${e.label}: ${e.message}`);
 console.log('\n=== All updates complete ===');
+
+if (errors.length > 0) process.exit(1);

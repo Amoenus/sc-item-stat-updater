@@ -7,6 +7,9 @@ function readIniFile(filePath) {
 }
 
 function writeIniFile(filePath, lines) {
+  if (fs.existsSync(filePath)) {
+    fs.copyFileSync(filePath, filePath + '.backup');
+  }
   fs.writeFileSync(filePath, '\ufeff' + lines.join('\n'), 'utf-8');
 }
 
