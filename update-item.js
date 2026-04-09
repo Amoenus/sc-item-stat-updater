@@ -25,4 +25,5 @@ if (!category || !ITEMS[category]) {
 }
 
 const config = require(ITEMS[category]);
-runUpdate(config);
+const result = runUpdate(config);
+console.log(result.summary);

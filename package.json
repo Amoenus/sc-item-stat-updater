@@ -1,0 +1,28 @@
+{
+  "name": "sc-item-stat-updater",
+  "version": "1.0.0",
+  "description": "Updates item descriptions in global.ini with detailed component stats from CSV data files.",
+  "main": "update-all.js",
+  "scripts": {
+    "update": "node update-all.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amoenus/sc-item-stat-updater.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Amoenus/sc-item-stat-updater/issues"
+  },
+  "homepage": "https://github.com/Amoenus/sc-item-stat-updater#readme",
+  "volta": {
+    "node": "24.14.1"
+  },
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "csv-parse": "^6.2.1"
+  }
+}

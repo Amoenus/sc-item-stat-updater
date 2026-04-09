@@ -75,8 +75,8 @@ function runUpdate(config) {
   }
 
   writeIniFile(INI_PATH, lines);
-  console.log(`${config.label}: Updated ${updatedCount}, Added ${newCount}, Skipped ${skippedCount}`);
-  console.log('Done!');
+  const summary = `${config.label}: Updated ${updatedCount}, Added ${newCount}, Skipped ${skippedCount}`;
+  return { label: config.label, updatedCount, newCount, skippedCount, summary };
 }
 
 function findKey(targetKey, existingKeys) {

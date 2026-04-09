@@ -4,7 +4,14 @@ Updates item descriptions in `global.ini` with detailed component stats from CSV
 
 ## Requirements
 
-- Node.js
+- [Volta](https://volta.sh/) (recommended) — automatically uses the correct Node.js version
+- Or Node.js 24+
+
+## Setup
+
+```sh
+npm install
+```
 
 ## Usage
 

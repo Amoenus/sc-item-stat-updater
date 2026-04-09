@@ -1,4 +1,5 @@
 const { runUpdate } = require('./src/lib/updater');
+const cliProgress = require('cli-progress');
 
 const categories = [
   './src/items/quantum-drives',
@@ -17,13 +18,32 @@ const categories = [
 
 console.log('=== Updating all item descriptions ===\n');
 
-for (const cat of categories) {
-  const config = require(cat);
+const bar = new cliProgress.SingleBar({
+  format: '{bar} {percentage}% | {value}/{total} | {category}',
+  barCompleteChar: '\u2588',
+  barIncompleteChar: '\u2591',
+  hideCursor: true,
+});
+
+const results = [];
+const errors = [];
+
+bar.start(categories.length, 0, { category: '' });
+
+for (let i = 0; i < categories.length; i++) {
+  const config = require(categories[i]);
+  bar.update(i, { category: config.label });
   try {
-    runUpdate(config);
+    results.push(runUpdate(config));
   } catch (err) {
-    console.error(`ERROR in ${config.label}: ${err.message}`);
+    errors.push({ label: config.label, message: err.message });
   }
 }
 
+bar.update(categories.length, { category: 'Done' });
+bar.stop();
+
+console.log();
+for (const r of results) console.log(r.summary);
+for (const e of errors) console.error(`ERROR in ${e.label}: ${e.message}`);
 console.log('\n=== All updates complete ===');
