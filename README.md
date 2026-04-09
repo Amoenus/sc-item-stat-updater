@@ -56,7 +56,19 @@ Available categories: `coolers`, `weapons`, `shields`, `quantum-drives`, `powerp
 │       ├── qeds.js
 │       ├── radars.js
 │       └── tractor-beams.js
-├── *.csv                    # Item stat data from erkul.games
+├── csv/                     # Item stat data from erkul.games
+│   ├── bombs.csv
+│   ├── coolers.csv
+│   ├── emps.csv
+│   ├── mining_lasers.csv
+│   ├── missiles.csv
+│   ├── powerplants.csv
+│   ├── qeds.csv
+│   ├── quantum_drives.csv
+│   ├── radars.csv
+│   ├── shields.csv
+│   ├── tractor_beams.csv
+│   └── weapons.csv
 └── global.ini               # Star Citizen localization file
 ```
 

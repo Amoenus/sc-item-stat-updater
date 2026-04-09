@@ -33,7 +33,7 @@ function validateRow(row, label) {
  * @param {function} [config.getAlternateDescKeys] - (descKey) => string[] — extra keys to check (e.g. powerplants)
  * @param {object} [options]
  * @param {string} [options.iniPath] - Path to global.ini (default: ./global.ini relative to project root)
- * @param {string} [options.csvDir] - Directory containing CSV files (default: project root)
+ * @param {string} [options.csvDir] - Directory containing CSV files (default: ./csv)
  * @param {boolean} [options.dryRun] - Preview changes without writing (default: false)
  */
 export async function runUpdate(config, options = {}) {
@@ -41,7 +41,7 @@ export async function runUpdate(config, options = {}) {
 
   const baseDir = path.resolve(import.meta.dirname, '..', '..');
   const iniPath = options.iniPath || path.join(baseDir, 'global.ini');
-  const csvDir = options.csvDir || baseDir;
+  const csvDir = options.csvDir || path.join(baseDir, 'csv');
   const dryRun = options.dryRun || false;
 
   const csvPath = path.resolve(csvDir, config.csvFile);

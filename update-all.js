@@ -39,7 +39,7 @@ if (values.help) {
   console.log('Usage: node update-all.js [options]');
   console.log('\nOptions:');
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
-  console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: .)');
+  console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: ./csv)');
   console.log('      --dry-run          Preview changes without writing');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
