@@ -1,6 +1,6 @@
-const { parse } = require('csv-parse/sync');
+import { parse } from 'csv-parse/sync';
 
-function parseCSV(text) {
+export function parseCSV(text) {
   return parse(text, {
     columns: true,
     skip_empty_lines: true,
@@ -9,5 +9,3 @@ function parseCSV(text) {
     relax_quotes: true,
   });
 }
-
-module.exports = { parseCSV };

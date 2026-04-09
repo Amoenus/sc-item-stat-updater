@@ -1,6 +1,6 @@
-const { fmtNum } = require('../lib/formatter');
+import { fmtNum } from '../lib/formatter.js';
 
-module.exports = {
+export default {
   csvFile: 'quantum_drives.csv',
   label: 'Quantum Drives',
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),

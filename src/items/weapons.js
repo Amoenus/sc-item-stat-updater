@@ -1,6 +1,6 @@
-const { fmtNum } = require('../lib/formatter');
+import { fmtNum } from '../lib/formatter.js';
 
-module.exports = {
+export default {
   csvFile: 'weapons.csv',
   label: 'Weapons',
   descKeyMatch(kl) {

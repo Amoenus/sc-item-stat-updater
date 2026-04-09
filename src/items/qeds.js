@@ -1,6 +1,6 @@
-const { fmtNum } = require('../lib/formatter');
+import { fmtNum } from '../lib/formatter.js';
 
-module.exports = {
+export default {
   csvFile: 'qeds.csv',
   label: 'QEDs',
   descKeyMatch: (kl) => kl.includes('descqdmp_') || kl.includes('descqed_'),

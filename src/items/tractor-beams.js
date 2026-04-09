@@ -1,6 +1,6 @@
-const { fmtNum } = require('../lib/formatter');
+import { fmtNum } from '../lib/formatter.js';
 
-module.exports = {
+export default {
   csvFile: 'tractor_beams.csv',
   label: 'Tractor Beams',
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('tractorbeam'),

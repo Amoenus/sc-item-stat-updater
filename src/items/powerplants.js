@@ -1,4 +1,4 @@
-const { fmtNum } = require('../lib/formatter');
+import { fmtNum } from '../lib/formatter.js';
 
 function getAlternateDescKeys(descKey) {
   const alts = new Set();
@@ -20,7 +20,7 @@ function getAlternateDescKeys(descKey) {
   return [...alts];
 }
 
-module.exports = {
+export default {
   csvFile: 'powerplants.csv',
   label: 'Power Plants',
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
