@@ -1,0 +1,76 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Class,Grade,Size,Power Generation,EM Max,Health,Distortion Shutdown Dmg,Distortion Decay Delay,Distortion Decay Rate,Distortion Warning Ratio,Price
+Bolide,item_Name_POWR_AEGS_S02_Bolide,"Mil/2/B Bolide",Aegis Dynamics (AEGS),Military,B,2,20,9900,860,7500,3,500,0.75,
+Breton,item_Name_POWR_JUST_S01_Breton,"Ind/1/A Breton",Juno Starwerk (JUST),Industrial,A,1,16,7920,300,4550,1.5,303.33,0.75,50160
+Celestial,item_Name_POWR_SASU_S03_Celestial,"Civ/3/B Celestial",Sakura Sun (SASU),Civilian,B,3,22,9080,1500,7000,4.5,466.67,0.75,151800
+Centurion,item_Name_POWR_AEGS_S03_Centurion,"Mil/3/C Centurion",Aegis Dynamics (AEGS),Military,C,3,24,11900,2100,10000,4.5,666.67,0.75,
+Charger,item_NamePOWR_AEGS_S01_Charger,"Mil/1/D Charger",Aegis Dynamics (AEGS),Military,D,1,16,7920,240,3550,1.5,236.67,0.75,
+Cirrus,item_Name_POWR_TYDT_S02_Cirrus,"Sth/2/C Cirrus",Tyler Design & Tech (TYDT),Stealth,C,2,17,4250,460,3850,3,256.67,0.75,104545
+DayBreak,item_NamePOWR_SASU_S02_DayBreak_SCItem,"Civ/2/C DayBreak",Sakura Sun (SASU),Civilian,C,2,18,7430,470,3950,3,263.33,0.75,60720
+Defiant,item_Name_POWR_JUST_S00_Defiant,"Ind/0/B Defiant",Juno Starwerk (JUST),Industrial,B,0,11,5450,98,2600,1.5,173.33,0.75,18810
+DeltaMax,item_NamePOWR_TYDT_S01_DeltaMax_SCItem,"Sth/1/B DeltaMax",Tyler Design & Tech (TYDT),Stealth,B,1,13,3250,190,2850,1.5,190,0.75,65340
+Diligence,item_Name_POWR_JUST_S02_Diligence,"Ind/2/C Diligence",Juno Starwerk (JUST),Industrial,C,2,19,9410,640,5500,3,366.67,0.75,60190
+Drassik,item_NamePOWR_AEGS_S03_Drassik_SCItem,"Mil/3/D Drassik",Aegis Dynamics (AEGS),Military,D,3,24,11900,1800,8500,4.5,566.67,0.75,
+DuraJet,item_NamePOWR_LPLT_S00_DuraJet_SCItem,"Civ/0/D DuraJet",Lightning Power Ltd. (LPLT),Civilian,D,0,10,3750,62,1650,1.5,110,0.75,9900
+Durango,item_Name_POWR_JUST_S03_Durango,"Ind/3/A Durango",Juno Starwerk (JUST),Industrial,A,3,24,11900,2300,11000,4.5,733.33,0.75,200640
+DynaFlux,item_Name_POWR_AMRS_S01_DynaFlux,"Mil/1/B DynaFlux",Amon & Reese Co. (AMRS),Military,B,1,16,7920,310,4700,1.5,313.33,0.75,
+Eclipse,item_NamePOWR_TYDT_S02_Eclipse_SCItem,"Sth/2/A Eclipse",Tyler Design & Tech (TYDT),Stealth,A,2,18,4500,590,5000,3,333.33,0.75,
+Endurance,item_NamePOWR_JUST_S01_Endurance,"Ind/1/B Endurance",Juno Starwerk (JUST),Industrial,B,1,15,7430,270,4050,1.5,270,0.75,37620
+ExoGen,item_NamePOWR_AMRS_S02_ExoGen,"Mil/2/D ExoGen",Amon & Reese Co. (AMRS),Military,D,2,20,9900,650,5500,3,366.67,0.75,
+Fierell Cascade,item_NamePOWR_AEGS_S01_FierellCascade_SCItem,"Mil/1/B Fierell Cascade",Aegis Dynamics (AEGS),Military,B,1,16,7920,310,4700,1.5,313.33,0.75,
+Fortitude,item_NamePOWR_JUST_S01_Fortitude_SCItem,"Ind/1/C Fortitude",Juno Starwerk (JUST),Industrial,C,1,15,7430,230,3500,1.5,233.33,0.75,25581
+Fulgur,item_Name_POWR_AEGS_S03_Fulgur,"Mil/3/B Fulgur",Aegis Dynamics (AEGS),Military,B,3,24,11900,2400,11500,4.5,766.67,0.75,
+FullForce,item_NamePOWR_LPLT_S02_FullForce_SCItem,"Civ/2/C FullForce",Lightning Power Ltd. (LPLT),Civilian,C,2,18,6750,540,4550,3,303.33,0.75,47520
+FullForce Pro,item_NamePOWR_LPLT_S03_FullForcePro_SCItem,"Civ/3/C FullForce Pro",Lightning Power Ltd. (LPLT),Civilian,C,3,22,8250,1500,7000,4.5,466.67,0.75,95257
+GammaMax,item_NamePOWR_TYDT_S02_GammaMax_SCItem,"Sth/2/B GammaMax",Tyler Design & Tech (TYDT),Stealth,B,2,17,4250,520,4450,3,296.67,0.75,
+Genoa,item_NamePOWR_JUST_S02_Genoa_SCItem,"Ind/2/A Genoa",Juno Starwerk (JUST),Industrial,A,2,20,9900,840,7000,3,466.67,0.75,100320
+Ginzel,item_NamePOWR_JUST_S03_Ginzel_SCItem,"Ind/3/C Ginzel",Juno Starwerk (JUST),Industrial,C,3,23,11400,1800,8500,4.5,566.67,0.75,102328
+HyperGen,item_NamePOWR_AMRS_S01_HyperGen,"Mil/1/D HyperGen",Amon & Reese Co. (AMRS),Military,D,1,16,7920,240,3550,1.5,236.67,0.75,
+Idris Power Plant,N/A,,Aegis Dynamics (AEGS),,A,4,29,14400,56000,47500,6,3166.67,0.75,
+IonBurst,item_NamePOWR_LPLT_S01_IonBurst,"Civ/1/B IonBurst",Lightning Power Ltd. (LPLT),Civilian,B,1,14,5250,220,3350,1.5,223.33,0.75,29700
+IonSurge,item_NamePOWR_LPLT_S02_IonSurge_SCItem,"Civ/2/B IonSurge",Lightning Power Ltd. (LPLT),Civilian,B,2,18,6750,620,5000,3,333.33,0.75,59400
+IonSurge Pro,item_Name_POWR_LPLT_S03_IonSurgePro,"Civ/3/B IonSurge Pro",Lightning Power Ltd. (LPLT),Civilian,B,3,22,8250,1700,8000,4.5,533.33,0.75,118800
+IonWave,item_Name_POWR_LPLT_S00_IonWave,"Civ/0/B IonWave",Lightning Power Ltd. (LPLT),Civilian,B,0,10,3750,82,2150,1.5,143.33,0.75,14850
+Jennet,item_NamePOWR_JUST_S00_Jennet_SCItem,"Ind/0/D Jennet",Juno Starwerk (JUST),Industrial,D,0,11,5450,74,1950,1.5,130,0.75,12540
+JS-300,item_NamePOWR_AMRS_S01_JS300_SCItem,"Mil/1/A JS-300",Amon & Reese Co. (AMRS),Military,A,1,17,8420,350,5500,1.5,366.67,0.75,
+JS-400,item_NamePOWR_AMRS_S02_JS400_SCItem,"Mil/2/A JS-400",Amon & Reese Co. (AMRS),Military,A,2,21,10400,980,8500,3,566.67,0.75,
+JS-500,item_NamePOWR_AMRS_S03_JS500_SCItem,"Mil/3/A JS-500",Amon & Reese Co. (AMRS),Military,A,3,25,12400,2700,13000,4.5,866.67,0.75,
+LightBlossom,item_NamePOWR_SASU_S01_LightBlossom,"Civ/1/C LightBlossom",Sakura Sun (SASU),Civilian,C,1,14,5780,170,2550,1.5,170,0.75,30360
+Lotus,item_NamePOWR_SASU_S02_Lotus_SCItem,"Civ/2/A Lotus",Sakura Sun (SASU),Civilian,A,2,19,7840,620,5000,3,333.33,0.75,101200
+LumaCore,item_Name_POWR_ACOM_S01_LumaCore,"Cmp/1/A LumaCore",ACOM (ACOM),Competition,A,1,16,6550,140,2050,1.5,136.67,0.75,69300
+LuxCore,item_NamePOWR_ACOM_S02_LuxCore_SCItem,"Cmp/2/A LuxCore",ACOM (ACOM),Competition,A,2,20,8180,380,3150,3,210,0.75,
+Maelstrom,item_NamePOWR_AEGS_S02_Maelstrom_SCItem,"Mil/2/C Maelstrom",Aegis Dynamics (AEGS),Military,C,2,20,9900,750,6500,3,433.33,0.75,
+MagnaBloom,item_Name_POWR_SASU_S01_MagnaBloom,"Civ/1/B MagnaBloom",Sakura Sun (SASU),Civilian,B,1,14,5780,200,2950,1.5,196.67,0.75,37950
+MegaFlux,item_Name_POWR_AMRS_S03_MegaFlux,"Mil/3/B MegaFlux",Amon & Reese Co. (AMRS),Military,B,3,24,11900,2400,11500,4.5,766.67,0.75,
+NewDawn,item_Name_POWR_SASU_S03_NewDawn,"Civ/3/C NewDawn",Sakura Sun (SASU),Civilian,C,3,22,9080,1300,6000,4.5,400,0.75,121440
+OverDrive,item_NamePOWR_AMRS_S01_OverDrive,"Mil/1/C OverDrive",Amon & Reese Co. (AMRS),Military,C,1,16,7920,270,4100,1.5,273.33,0.75,
+PowerBolt,item_NamePOWR_LPLT_S01_PowerBolt_SCItem,"Civ/1/C PowerBolt",Lightning Power Ltd. (LPLT),Civilian,C,1,14,5250,200,2950,1.5,196.67,0.75,20197
+QuadraCell,item_Name_POWR_AEGS_S01_QuadraCell,"Mil/1/A QuadraCell",Aegis Dynamics (AEGS),Military,A,1,17,8420,350,5500,1.5,366.67,0.75,
+QuadraCell MT,item_NamePOWR_AEGS_S02_QuadracellMT_SCItem,"Mil/2/A QuadraCell MT",Aegis Dynamics (AEGS),Military,A,2,21,10400,980,8500,3,566.67,0.75,
+QuadraCell MX,item_NamePOWR_AEGS_S03_QuadracellMX_SCItem,"Mil/3/A QuadraCell MX",Aegis Dynamics (AEGS),Military,A,3,25,12400,2700,13000,4.5,866.67,0.75,
+Radiance,item_Name_POWR_SASU_S02_Radiance,"Civ/2/B Radiance",Sakura Sun (SASU),Civilian,B,2,18,7430,540,4550,3,303.33,0.75,
+Radix,item_NamePOWR_LPLT_S00_Radix,"Civ/0/C Radix",Lightning Power Ltd. (LPLT),Civilian,C,0,10,3750,71,1900,1.5,126.67,0.75,10099
+Reclaimer Power Plant,N/A,,Aegis Dynamics (AEGS),,A,4,28,13900,6300,17000,6,1133.33,0.75,
+Regulus,item_NamePOWR_AEGS_S01_Regulus,"Mil/1/C Regulus",Aegis Dynamics (AEGS),Military,C,1,16,7920,270,4100,1.5,273.33,0.75,
+Reliance,item_Name_POWR_JUST_S03_Reliance,"Ind/3/B Reliance",Juno Starwerk (JUST),Industrial,B,3,23,11400,2000,9500,4.5,633.33,0.75,
+Roughneck,item_NamePOWR_JUST_S01_Roughneck_SCItem,"Ind/1/D Roughneck",Juno Starwerk (JUST),Industrial,D,1,15,7430,200,3050,1.5,203.33,0.75,21319
+Sedulity,item_Name_POWR_JUST_S02_Sedulity,"Ind/2/B Sedulity",Juno Starwerk (JUST),Industrial,B,2,19,9410,740,6500,3,433.33,0.75,75240
+Slipstream,item_Name_POWR_TYDT_S01_Slipstream,"Sth/1/A Slipstream",Tyler Design & Tech (TYDT),Stealth,A,1,14,3500,220,3250,1.5,216.67,0.75,
+SmartGen,item_Name_POWR_AMRS_S03_SmartGen,"Mil/3/D SmartGen",Amon & Reese Co. (AMRS),Military,D,3,24,11900,1800,8500,4.5,566.67,0.75,
+SolarFlare,item_Name_POWR_ACOM_S02_SolarFlare,"Cmp/2/C SolarFlare",ACOM (ACOM),Competition,C,2,20,8180,290,2450,3,163.33,0.75,83160
+SonicLite,item_NamePOWR_TYDT_S01_SonicLite,"Sth/1/C SonicLite",Tyler Design & Tech (TYDT),Stealth,C,1,13,3250,170,2500,1.5,166.67,0.75,55893
+SparkJet,item_Name_POWR_LPLT_S02_SparkJet,"Civ/2/D SparkJet",Lightning Power Ltd. (LPLT),Civilian,D,2,18,6750,470,3950,3,263.33,0.75,39600
+SparkJet Pro,item_NamePOWR_LPLT_S03_SparkJetPro_SCItem,"Civ/3/D SparkJet Pro",Lightning Power Ltd. (LPLT),Civilian,D,3,22,8250,1300,6000,4.5,400,0.75,79200
+StarBurn,item_NamePOWR_ACOM_S02_StarBurn_SCItem,"Cmp/2/B StarBurn",ACOM (ACOM),Competition,B,2,20,8180,330,2750,3,183.33,0.75,103950
+StarHeart,item_NamePOWR_ACOM_S01_StarHeart,"Cmp/1/B StarHeart",ACOM (ACOM),Competition,B,1,16,6550,120,1800,1.5,120,0.75,51975
+Steadfast,item_NamePOWR_JUST_S00_SteadFast,"Ind/0/C Steadfast",Juno Starwerk (JUST),Industrial,C,0,11,5450,85,2250,1.5,150,0.75,15050
+Stellate (SASU),N/A,,Sakura Sun (SASU),Civilian,A,4,27,11100,13000,19500,6,1300,0.75,
+Stellate (RSI),item_NamePOWR_ORIG_S04_890J_SCItem,Stellate,Roberts Space Industries (RSI),Civilian,A,4,27,12200,14000,22000,6,1466.67,0.75,
+SunFlare,item_NamePOWR_ACOM_S01_Sunflare,"Cmp/1/C SunFlare",ACOM (ACOM),Competition,C,1,16,6550,110,1600,1.5,106.67,0.75,41580
+SuperDrive,item_NamePOWR_AMRS_S03_SuperDrive_SCItem,"Mil/3/C SuperDrive",Amon & Reese Co. (AMRS),Military,C,3,24,11900,2100,10000,4.5,666.67,0.75,
+TigerLilly,item_NamePOWR_SASU_S03_TigerLilly_SCItem,"Civ/3/A TigerLilly",Sakura Sun (SASU),Civilian,A,3,23,9490,1700,8000,4.5,533.33,0.75,202400
+Trommel,item_NamePOWR_JUST_S02_Trommel_SCItem,"Ind/2/D Trommel",Juno Starwerk (JUST),Industrial,D,2,19,9410,560,4750,3,316.67,0.75,42637
+TurboDrive,item_Name_POWR_AMRS_S02_TurboDrive,"Mil/2/C TurboDrive",Amon & Reese Co. (AMRS),Military,C,2,20,9900,750,6500,3,433.33,0.75,
+UltraFlux,item_NamePOWR_AMRS_S02_UltraFlux_SCItem,"Mil/2/B UltraFlux",Amon & Reese Co. (AMRS),Military,B,2,20,9900,860,7500,3,500,0.75,
+Vortex,item_NamePOWR_AEGS_S02_Vortex,"Mil/2/D Vortex",Aegis Dynamics (AEGS),Military,D,2,20,9900,650,5500,3,366.67,0.75,
+WhiteRose,item_NamePOWR_SASU_S01_WhiteRose_SCItem,"Civ/1/A WhiteRose",Sakura Sun (SASU),Civilian,A,1,15,6190,220,3350,1.5,223.33,0.75,50600
+ZapJet,item_NamePOWR_LPLT_S01_ZapJet_SCItem,"Civ/1/D ZapJet",Lightning Power Ltd. (LPLT),Civilian,D,1,14,5250,170,2550,1.5,170,0.75,19800

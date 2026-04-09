@@ -1,0 +1,4 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Size,Dmg Total,Dmg Biochemical,Dmg Distortion,Dmg Energy,Dmg Physical,Dmg Stun,Dmg Thermal,Arm Time,Ignite Time,Explosion Radius Min,Explosion Radius Max,Health,Price
+Colossus,item_NameBOMB_S10_FSKI_Colossus,B10 Colossus Bomb,FireStorm Kinetics (FSKI),10,568297,0,0,522620,45677,0,0,5,0.2,250,250,1000,642685
+Stormburst,item_NameBOMB_S05_FSKI_Stormburst,B5 Stormburst Bomb,FireStorm Kinetics (FSKI),5,46702,0,0,24356,22346,0,0,3,0.2,100,100,1000,34010
+Thunderball,item_NameBOMB_S03_FSKI_Thunderball,B3 Thunderball Bomb,FireStorm Kinetics (FSKI),3,27000,0,0,14500,12500,0,0,0.5,0.1,40,40,1000,10500

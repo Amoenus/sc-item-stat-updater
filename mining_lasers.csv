@@ -1,0 +1,19 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Size,Output Pwr/s,Gadget Slots,Power Consumption,Full Dmg Range,Zero Dmg Range,Throttle Lerp Speed,Resistance,Laser Instability,Optimal Charge Size,Optimal Charge Rate,Inert Materials,Health,Price
+Arbor MH1 (base),item_Mining_MiningLaser_Greycat_Default_S1,Arbor MH1 Mining Laser,Musashi Industrial & Starflight Concern (MISC),1,1850,1,1,30,150,6.5,+0%,+0%,+0%,+0%,+0%,8000,
+Arbor MH1,item_Mining_MiningLaser_Greycat_Default_S1,Arbor MH1 Mining Laser,Musashi Industrial & Starflight Concern (MISC),1,1890,1,1,60,180,6.5,+25%,-35%,+40%,+0%,+30%,8000,363
+Arbor MH2,item_Mining_MiningLaser_Greycat_Default_S2,Arbor MH2 Mining Laser,Musashi Industrial & Starflight Concern (MISC),2,2400,2,2,90,270,6.5,+25%,-35%,+40%,+0%,+40%,8000,1450
+Arbor MHV,item_Mining_MiningLaser_Greycat_Default_SV,Arbor MHV Mining Laser,Greycat Industrial (GRIN),0,1,2,1,5,15,6.5,+0%,-40%,+0%,+0%,+0%,8000,5150
+Helix I,item_Mining_MiningLaser_Thermyte_2_S1,Helix I Mining Laser,Thermyte Concern (THCN),1,3150,2,1,15,45,6.5,-30%,+0%,-40%,+0%,+30%,8000,108000
+Helix II,item_Mining_MiningLaser_Thermyte_2_S2,Helix II Mining Laser,Thermyte Concern (THCN),2,4080,3,2,30,90,6.5,-30%,+0%,-40%,+0%,+40%,8000,108000
+Hofstede-S1,item_Mining_MiningLaser_Shubin_1_S1,Hofstede-S1 Mining Laser,Shubin Interstellar (SHIN),1,2100,1,1,45,135,6.5,-30%,+10%,+60%,+20%,+30%,8000,12750
+Hofstede-S2,item_Mining_MiningLaser_Shubin_1_S2,Hofstede-S2 Mining Laser,Shubin Interstellar (SHIN),2,3360,2,2,60,180,6.5,-30%,+10%,+60%,+20%,+40%,8000,22750
+Impact I,item_Mining_MiningLaser_Thermyte_1_S1,Impact I Mining Laser,Thermyte Concern (THCN),1,2100,2,1,45,135,6.5,+10%,-10%,+20%,-40%,+30%,8000,57750
+Impact II,item_Mining_MiningLaser_Thermyte_1_S2,Impact II Mining Laser,Thermyte Concern (THCN),2,3360,3,2,60,180,6.5,+10%,-10%,+20%,-40%,+40%,8000,57750
+Klein-S1,item_Mining_MiningLaser_Shubin_2_S1,Klein-S1 Mining Laser,Shubin Interstellar (SHIN),1,2520,0,1,45,135,6.5,-45%,+35%,+20%,+0%,+30%,8000,10150
+Klein-S2,item_Mining_MiningLaser_Shubin_2_S2,Klein-S2 Mining Laser,Shubin Interstellar (SHIN),2,3600,1,2,60,180,6.5,-45%,+35%,+20%,+0%,+40%,8000,10150
+Lancet MH1,item_Mining_MiningLaser_Greycat_1_S1,Lancet MH1 Mining Laser,Greycat Industrial (GRIN),1,2520,1,1,30,90,6.5,+0%,-10%,-60%,+40%,+30%,8000,23500
+Lancet MH2,item_Mining_MiningLaser_Greycat_1_S2,Lancet MH2 Mining Laser,Greycat Industrial (GRIN),2,3600,2,2,45,135,6.5,+0%,-10%,-60%,+40%,+40%,8000,94000
+Lawson,item_NameMining_Head_S00_Klein_SCItem,Lawson Mining Laser,Shubin Interstellar (SHIN),0,1,2,1,5,15,6.5,-40%,+30%,+40%,+0%,+0%,8000,4950
+Pitman,item_Mining_MiningLaser_Drake_Default_S0,Pitman Mining Laser,Drake Interplanetary (DRAK),1,3150,2,1,40,45,7,+25%,+35%,+40%,-40%,+40%,8000,
+S0 Helix,item_NameMining_Head_S00_Helix_SCItem,S0 Helix,Thermyte Concern (THCN),0,1,2,1,8,18,6.5,+0%,+0%,-40%,+20%,+0%,8000,8500
+S00 Hofstede,item_NameMining_Head_S00_Hofstede_SCItem,S00 Hofstede,Shubin Interstellar (SHIN),0,1,2,1,8,18,6.5,-40%,+30%,+40%,+20%,+0%,8000,5750

@@ -1,0 +1,12 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Size,Max Force,Min Force,Power Consumption,Min Distance,Max Distance,Full Strength Distance,Max Angle,Safe Range Value Factor,Tether Break Time,Volume Force Coef,Health,Price
+SureGrip HV-S1,item_NameGRIN_TractorBeam_002_S1_UT1,SureGrip HV-S1 Tractor Beam,Greycat Industrial (GRIN),1,600,1.5,1,0.5,130,65,60,0.85,1.5,0.3,1050,4600
+SureGrip HV-S2,item_NameGRIN_TractorBeam_002_S2_UT1,SureGrip HV-S2 Tractor Beam,Greycat Industrial (GRIN),2,1500,1.5,2,0.5,130,65,60,0.85,1.5,0.3,1050,12200
+SureGrip PR-S1,item_NameGRIN_TractorBeam_002_S1_UT2,SureGrip PR-S1 Tractor Beam,Greycat Industrial (GRIN),1,400,1.5,1,0.5,130,65,80,0.85,2.5,0.3,1050,4600
+SureGrip PR-S2,item_NameGRIN_TractorBeam_002_S2_UT2,SureGrip PR-S2 Tractor Beam,Greycat Industrial (GRIN),2,1200,1.5,2,0.5,130,65,80,0.85,2.5,0.3,1050,12200
+SureGrip S1,item_NameGRIN_TractorBeam_002_S1,SureGrip S1 Tractor Beam,Greycat Industrial (GRIN),1,500,1.5,1,0,150,75,60,0.85,1.5,0.3,1050,4600
+SureGrip S2,item_NameGRIN_TractorBeam_002_S2,SureGrip S2 Tractor Beam,Greycat Industrial (GRIN),2,1350,1.5,2,0.5,150,75,60,0.85,1.5,0.3,1050,12200
+SureGrip TH1,item_NameGRIN_TractorBeam_S1,SureGrip TH1 Tractor Beam,Greycat Industrial (GRIN),1,500,1.5,1,0.5,150,75,60,0.85,1.5,0.3,1050,
+SureGrip TH2,item_NameGRIN_TractorBeam_S2,SureGrip TH2 Tractor Beam,Greycat Industrial (GRIN),2,1350,1.5,2,0.5,150,75,60,0.85,1.5,0.3,1050,
+SureGrip TH4,item_NameGRIN_TractorBeam_S4,SureGrip TH4 Tractor Beam,Greycat Industrial (GRIN),4,10000,1.5,4,0.5,300,250,60,0.85,1.5,0.3,1050,
+ViseLock S1,item_NameGRIN_TractorBeam_003_S1,ViseLock S1 Tractor Beam,Greycat Industrial (GRIN),1,500,1.5,1,0.5,135,68,80,0.85,2.25,0.3,1050,4600
+ViseLock S2,item_NameGRIN_TractorBeam_003_S2,ViseLock S2 Tractor Beam,Greycat Industrial (GRIN),2,1350,1.5,2,0.5,135,68,80,0.85,2.25,0.3,1050,12200
