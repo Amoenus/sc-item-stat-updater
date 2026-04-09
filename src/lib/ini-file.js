@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
+import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 
 /**
@@ -22,7 +22,7 @@ export async function readIniFile(filePath) {
   for await (const rawLine of rl) {
     let line = rawLine;
     if (isFirst) {
-      if (line.charCodeAt(0) === 0xFEFF) line = line.slice(1);
+      if (line.charCodeAt(0) === 0xfeff) line = line.slice(1);
       isFirst = false;
     }
 
@@ -64,7 +64,7 @@ async function rotateBackups(filePath) {
  */
 export async function writeIniFile(filePath, lines) {
   await rotateBackups(filePath);
-  const tmpPath = filePath + '.tmp';
-  await fs.writeFile(tmpPath, '\ufeff' + lines.join('\n'), 'utf-8');
+  const tmpPath = `${filePath}.tmp`;
+  await fs.writeFile(tmpPath, `\ufeff${lines.join('\n')}`, 'utf-8');
   await fs.rename(tmpPath, filePath);
 }

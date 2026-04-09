@@ -1,20 +1,19 @@
 import { parseArgs } from 'node:util';
-import { runUpdate } from './src/lib/updater.js';
-import { getLogger, setLogLevel, setJsonOutput, shutdownLogger } from './src/lib/logger.js';
 import cliProgress from 'cli-progress';
-
-import quantumDrivesConfig from './src/items/quantum-drives.js';
-import coolersConfig from './src/items/coolers.js';
-import powerplantsConfig from './src/items/powerplants.js';
-import shieldsConfig from './src/items/shields.js';
-import weaponsConfig from './src/items/weapons.js';
 import bombsConfig from './src/items/bombs.js';
+import coolersConfig from './src/items/coolers.js';
 import empsConfig from './src/items/emps.js';
 import miningLasersConfig from './src/items/mining-lasers.js';
 import missilesConfig from './src/items/missiles.js';
+import powerplantsConfig from './src/items/powerplants.js';
 import qedsConfig from './src/items/qeds.js';
+import quantumDrivesConfig from './src/items/quantum-drives.js';
 import radarsConfig from './src/items/radars.js';
+import shieldsConfig from './src/items/shields.js';
 import tractorBeamsConfig from './src/items/tractor-beams.js';
+import weaponsConfig from './src/items/weapons.js';
+import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from './src/lib/logger.js';
+import { runUpdate } from './src/lib/updater.js';
 
 const logger = getLogger('update-all');
 
@@ -26,11 +25,11 @@ process.on('unhandledRejection', (reason) => {
 const { values } = parseArgs({
   options: {
     'ini-path': { type: 'string', short: 'i' },
-    'csv-dir':  { type: 'string', short: 'c' },
-    'dry-run':   { type: 'boolean', default: false },
-    'verbose':   { type: 'boolean', short: 'v', default: false },
+    'csv-dir': { type: 'string', short: 'c' },
+    'dry-run': { type: 'boolean', default: false },
+    verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
-    'help':      { type: 'boolean', short: 'h', default: false },
+    help: { type: 'boolean', short: 'h', default: false },
   },
   strict: true,
 });
@@ -95,7 +94,9 @@ for (let i = 0; i < categories.length; i++) {
   } catch (err) {
     errors.push({ label: config.label, message: err.message });
     logger.error('Failed to update category', {
-      label: config.label, error: err.message, cause: err.cause?.message,
+      label: config.label,
+      error: err.message,
+      cause: err.cause?.message,
     });
   }
 }
@@ -108,7 +109,7 @@ const totalDuration = Math.round(performance.now() - totalStart);
 console.log();
 for (const r of results) console.log(r.summary);
 
-const allIssues = results.flatMap(r => r.issues.map(i => ({ label: r.label, ...i })));
+const allIssues = results.flatMap((r) => r.issues.map((i) => ({ label: r.label, ...i })));
 if (allIssues.length > 0) {
   console.log('\n⚠ Problem rows:');
   for (const issue of allIssues) {
@@ -120,7 +121,9 @@ for (const e of errors) console.error(`ERROR in ${e.label}: ${e.message}`);
 console.log(`\n=== All updates complete [${totalDuration}ms] ===`);
 
 logger.debug('Batch update complete', {
-  totalDuration, successCount: results.length, errorCount: errors.length,
+  totalDuration,
+  successCount: results.length,
+  errorCount: errors.length,
 });
 
 await shutdownLogger();

@@ -5,7 +5,8 @@ export default {
   label: 'EMPs',
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('emp'),
   buildValue(r, flavorText) {
-    let val = `Item Type: EMP Generator` +
+    let val =
+      `Item Type: EMP Generator` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\n\\n-- EMP Stats --` +

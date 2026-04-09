@@ -1,17 +1,14 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
-import {
-  LoggerProvider,
-  SimpleLogRecordProcessor,
-} from '@opentelemetry/sdk-logs';
+import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 
 let minSeverity = SeverityNumber.INFO;
 let useJson = false;
 
 const LEVEL_COLORS = {
-  DEBUG: '\x1b[90m',  // gray
-  INFO:  '\x1b[36m',  // cyan
-  WARN:  '\x1b[33m',  // yellow
-  ERROR: '\x1b[31m',  // red
+  DEBUG: '\x1b[90m', // gray
+  INFO: '\x1b[36m', // cyan
+  WARN: '\x1b[33m', // yellow
+  ERROR: '\x1b[31m', // red
 };
 const RESET = '\x1b[0m';
 
@@ -26,7 +23,7 @@ class ConsoleStderrExporter {
           attributes: record.attributes,
           logger: record.instrumentationScope?.name,
         };
-        process.stderr.write(JSON.stringify(entry) + '\n');
+        process.stderr.write(`${JSON.stringify(entry)}\n`);
       } else {
         const color = LEVEL_COLORS[record.severityText] || '';
         const time = new Date().toLocaleTimeString();
@@ -44,13 +41,13 @@ class ConsoleStderrExporter {
     }
     resultCallback({ code: 0 });
   }
-  shutdown() { return Promise.resolve(); }
+  shutdown() {
+    return Promise.resolve();
+  }
 }
 
 const provider = new LoggerProvider();
-provider.addLogRecordProcessor(
-  new SimpleLogRecordProcessor(new ConsoleStderrExporter())
-);
+provider.addLogRecordProcessor(new SimpleLogRecordProcessor(new ConsoleStderrExporter()));
 
 export function setLogLevel(level) {
   const levels = {
@@ -77,8 +74,8 @@ export function getLogger(name) {
 
   return {
     debug: (msg, attrs) => emit(SeverityNumber.DEBUG, 'DEBUG', msg, attrs),
-    info:  (msg, attrs) => emit(SeverityNumber.INFO, 'INFO', msg, attrs),
-    warn:  (msg, attrs) => emit(SeverityNumber.WARN, 'WARN', msg, attrs),
+    info: (msg, attrs) => emit(SeverityNumber.INFO, 'INFO', msg, attrs),
+    warn: (msg, attrs) => emit(SeverityNumber.WARN, 'WARN', msg, attrs),
     error: (msg, attrs) => emit(SeverityNumber.ERROR, 'ERROR', msg, attrs),
   };
 }

@@ -1,8 +1,8 @@
 export function nameKeyToDescKey(nameKey) {
-  return nameKey.replace(/(item_)(Name|name|NAME)/, (m, prefix, word) => {
-    if (word === 'name') return prefix + 'desc';
-    if (word === 'NAME') return prefix + 'DESC';
-    return prefix + 'Desc';
+  return nameKey.replace(/(item_)(Name|name|NAME)/, (_m, prefix, word) => {
+    if (word === 'name') return `${prefix}desc`;
+    if (word === 'NAME') return `${prefix}DESC`;
+    return `${prefix}Desc`;
   });
 }
 

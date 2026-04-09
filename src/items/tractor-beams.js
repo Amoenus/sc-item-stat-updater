@@ -5,7 +5,8 @@ export default {
   label: 'Tractor Beams',
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('tractorbeam'),
   buildValue(r, flavorText) {
-    let val = `Item Type: Tractor Beam` +
+    let val =
+      `Item Type: Tractor Beam` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\n\\n-- Tractor Beam Stats --` +

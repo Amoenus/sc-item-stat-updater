@@ -5,8 +5,9 @@ export default {
   label: 'Quantum Drives',
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),
   buildValue(r, flavorText) {
-    let clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
-    let val = `Item Type: Quantum Drive` +
+    const clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
+    let val =
+      `Item Type: Quantum Drive` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\nGrade: ${r['Grade']}` +

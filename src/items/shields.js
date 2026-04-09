@@ -5,8 +5,9 @@ export default {
   label: 'Shields',
   descKeyMatch: (kl) => kl.includes('descshld_') || kl.includes('desc_shld_'),
   buildValue(r, flavorText) {
-    let clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
-    let val = `Item Type: Shield Generator` +
+    const clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
+    let val =
+      `Item Type: Shield Generator` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\nGrade: ${r['Grade']}` +

@@ -5,10 +5,11 @@ export default {
   label: 'Missiles',
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
   buildValue(r, flavorText) {
-    const isTorpedo = parseInt(r['Size']) >= 7;
+    const isTorpedo = parseInt(r['Size'], 10) >= 7;
     const itemType = isTorpedo ? 'Torpedo' : 'Missile';
 
-    let val = `Item Type: ${itemType}` +
+    let val =
+      `Item Type: ${itemType}` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nTracking Signal: ${r['Tracking Signal Type']}` +
       `\\nSize: ${r['Size']}` +
@@ -23,7 +24,8 @@ export default {
       val += `\\nCluster Count: ${r['Cluster Count']}`;
     }
 
-    val += `\\n\\n-- Flight Stats --` +
+    val +=
+      `\\n\\n-- Flight Stats --` +
       `\\nSpeed: ${fmtNum(r['Speed'])} m/s` +
       `\\nArm Time: ${r['Arm Time']}s` +
       `\\nLock Time: ${r['Lock Time']}s` +

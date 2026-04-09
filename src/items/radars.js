@@ -5,8 +5,9 @@ export default {
   label: 'Radars',
   descKeyMatch: (kl) => kl.includes('desc_radr_') || kl.includes('descradr_'),
   buildValue(r, flavorText) {
-    let clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
-    let val = `Item Type: Radar` +
+    const clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
+    let val =
+      `Item Type: Radar` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\nGrade: ${r['Grade']}` +

@@ -5,8 +5,9 @@ export default {
   label: 'Coolers',
   descKeyMatch: (kl) => kl.includes('desccool_') || kl.includes('desc_cool_'),
   buildValue(r, flavorText) {
-    let clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
-    let val = `Item Type: Cooler` +
+    const clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
+    let val =
+      `Item Type: Cooler` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\nGrade: ${r['Grade']}` +

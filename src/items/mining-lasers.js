@@ -6,16 +6,17 @@ export default {
   descKeyMatch: (kl) => kl.includes('mininglaser') && kl.includes('_desc'),
   nameKeyToDescKey(nameKey) {
     if (nameKey.startsWith('item_Mining_')) {
-      return nameKey + '_Desc';
+      return `${nameKey}_Desc`;
     }
-    return nameKey.replace(/(item_)(Name|name|NAME)/, (m, prefix, word) => {
-      if (word === 'name') return prefix + 'desc';
-      if (word === 'NAME') return prefix + 'DESC';
-      return prefix + 'Desc';
+    return nameKey.replace(/(item_)(Name|name|NAME)/, (_m, prefix, word) => {
+      if (word === 'name') return `${prefix}desc`;
+      if (word === 'NAME') return `${prefix}DESC`;
+      return `${prefix}Desc`;
     });
   },
   buildValue(r, flavorText) {
-    let val = `Item Type: Mining Laser` +
+    let val =
+      `Item Type: Mining Laser` +
       `\\nManufacturer: ${r['Manufacturer']}` +
       `\\nSize: ${r['Size']}` +
       `\\n\\n-- Mining Stats --` +

@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseCSV } from './csv-parser.js';
-import { readIniFile, writeIniFile } from './ini-file.js';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './text-utils.js';
 import { sanitizeIniValue } from './formatter.js';
+import { readIniFile, writeIniFile } from './ini-file.js';
 import { getLogger } from './logger.js';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './text-utils.js';
 
 const logger = getLogger('updater');
 
@@ -71,7 +71,10 @@ export async function runUpdate(config, options = {}) {
     const { lines, index: existingKeys } = await readIniFile(iniPath);
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
 
-    let updatedCount = 0, newCount = 0, skippedCount = 0, errorCount = 0;
+    let updatedCount = 0,
+      newCount = 0,
+      skippedCount = 0,
+      errorCount = 0;
     const newLines = [];
     const issues = [];
     let lastDescIdx = -1;
@@ -84,7 +87,10 @@ export async function runUpdate(config, options = {}) {
 
     for (const r of rows) {
       const validation = validateRow(r, config.label);
-      if (validation === 'skip') { skippedCount++; continue; }
+      if (validation === 'skip') {
+        skippedCount++;
+        continue;
+      }
       if (validation === 'invalid') {
         issues.push({ key: r['Localization Key'], reason: 'Invalid localization key' });
         errorCount++;
@@ -111,7 +117,9 @@ export async function runUpdate(config, options = {}) {
             anyUpdated = true;
           } catch (err) {
             logger.debug('Failed to build value for row, skipping', {
-              label: config.label, key: nameKey, error: err.message,
+              label: config.label,
+              key: nameKey,
+              error: err.message,
             });
             issues.push({ key: nameKey, reason: `Build failed: ${err.message}` });
             hadError = true;
@@ -130,7 +138,9 @@ export async function runUpdate(config, options = {}) {
           newCount++;
         } catch (err) {
           logger.debug('Failed to build value for new row, skipping', {
-            label: config.label, key: nameKey, error: err.message,
+            label: config.label,
+            key: nameKey,
+            error: err.message,
           });
           issues.push({ key: nameKey, reason: `Build failed: ${err.message}` });
           errorCount++;
@@ -155,7 +165,13 @@ export async function runUpdate(config, options = {}) {
     const summary = `${config.label}: Updated ${updatedCount}, Added ${newCount}, Skipped ${skippedCount}${errorSuffix}${suffix} [${durationMs}ms]`;
 
     logger.debug(summary, {
-      label: config.label, updatedCount, newCount, skippedCount, errorCount, durationMs, dryRun,
+      label: config.label,
+      updatedCount,
+      newCount,
+      skippedCount,
+      errorCount,
+      durationMs,
+      dryRun,
     });
 
     return { label: config.label, updatedCount, newCount, skippedCount, errorCount, issues, summary };

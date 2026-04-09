@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
+import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from './src/lib/logger.js';
 import { runUpdate } from './src/lib/updater.js';
-import { getLogger, setLogLevel, setJsonOutput, shutdownLogger } from './src/lib/logger.js';
 
 const logger = getLogger('update-item');
 
@@ -10,28 +10,28 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const ITEMS = {
-  'coolers':        './src/items/coolers.js',
-  'weapons':        './src/items/weapons.js',
-  'shields':        './src/items/shields.js',
+  coolers: './src/items/coolers.js',
+  weapons: './src/items/weapons.js',
+  shields: './src/items/shields.js',
   'quantum-drives': './src/items/quantum-drives.js',
-  'powerplants':    './src/items/powerplants.js',
-  'missiles':       './src/items/missiles.js',
-  'bombs':          './src/items/bombs.js',
-  'emps':           './src/items/emps.js',
-  'mining-lasers':  './src/items/mining-lasers.js',
-  'qeds':           './src/items/qeds.js',
-  'radars':         './src/items/radars.js',
-  'tractor-beams':  './src/items/tractor-beams.js',
+  powerplants: './src/items/powerplants.js',
+  missiles: './src/items/missiles.js',
+  bombs: './src/items/bombs.js',
+  emps: './src/items/emps.js',
+  'mining-lasers': './src/items/mining-lasers.js',
+  qeds: './src/items/qeds.js',
+  radars: './src/items/radars.js',
+  'tractor-beams': './src/items/tractor-beams.js',
 };
 
 const { values, positionals } = parseArgs({
   options: {
     'ini-path': { type: 'string', short: 'i' },
-    'csv-dir':  { type: 'string', short: 'c' },
-    'dry-run':   { type: 'boolean', default: false },
-    'verbose':   { type: 'boolean', short: 'v', default: false },
+    'csv-dir': { type: 'string', short: 'c' },
+    'dry-run': { type: 'boolean', default: false },
+    verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
-    'help':      { type: 'boolean', short: 'h', default: false },
+    help: { type: 'boolean', short: 'h', default: false },
   },
   allowPositionals: true,
   strict: true,

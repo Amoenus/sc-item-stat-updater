@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "Updates item descriptions in global.ini with detailed component stats from CSV data files.",
   "scripts": {
-    "update": "node update-all.js"
+    "update": "node update-all.js",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "check:ci": "biome ci ."
   },
   "repository": {
     "type": "git",
@@ -25,5 +29,8 @@
     "@opentelemetry/sdk-logs": "^0.214.0",
     "cli-progress": "^3.12.0",
     "csv-parse": "^6.2.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.11"
   }
 }

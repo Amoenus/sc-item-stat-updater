@@ -1,0 +1,30 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "files": {
+    "includes": ["**", "!**/*.ini", "!**/*.csv"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "useLiteralKeys": "off"
+      },
+      "suspicious": {
+        "noControlCharactersInRegex": "off"
+      }
+    }
+  }
+}
