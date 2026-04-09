@@ -11,37 +11,63 @@ Updates item descriptions in `global.ini` with detailed component stats from CSV
 ### Update all categories
 
 ```sh
-node update_all.js
+node update-all.js
 ```
 
-Runs all 12 category scripts sequentially.
+Runs all 12 category updaters sequentially.
 
 ### Update a single category
 
 ```sh
-node update_quantum_drives.js
-node update_coolers.js
-node update_powerplants.js
-node update_shields_csv.js
-node update_weapons.js
-node update_bombs.js
-node update_emps.js
-node update_mining_lasers.js
-node update_missiles.js
-node update_qeds.js
-node update_radars.js
-node update_tractor_beams.js
+node update-item.js <category>
+```
+
+Available categories: `coolers`, `weapons`, `shields`, `quantum-drives`, `powerplants`, `missiles`, `bombs`, `emps`, `mining-lasers`, `qeds`, `radars`, `tractor-beams`
+
+## Project structure
+
+```
+├── update-all.js            # Runs all category updaters
+├── update-item.js           # CLI to run a single category
+├── src/
+│   ├── lib/
+│   │   ├── csv-parser.js    # CSV parsing
+│   │   ├── ini-file.js      # global.ini read/write/indexing
+│   │   ├── formatter.js     # Number formatting
+│   │   ├── text-utils.js    # Key derivation & flavor text extraction
+│   │   └── updater.js       # Generic update engine
+│   └── items/
+│       ├── coolers.js       # Item-specific config & buildValue
+│       ├── weapons.js
+│       ├── shields.js
+│       ├── quantum-drives.js
+│       ├── powerplants.js
+│       ├── missiles.js
+│       ├── bombs.js
+│       ├── emps.js
+│       ├── mining-lasers.js
+│       ├── qeds.js
+│       ├── radars.js
+│       └── tractor-beams.js
+├── *.csv                    # Item stat data from erkul.games
+└── global.ini               # Star Citizen localization file
 ```
 
 ## How it works
 
-Each script:
+The update engine (`src/lib/updater.js`):
 
-1. Reads its corresponding CSV file (e.g. `powerplants.csv`)
+1. Reads the item's CSV file
 2. Reads `global.ini`
 3. For each CSV row, finds the matching description key(s) in `global.ini`
 4. Replaces the value with a formatted stat block while preserving any existing flavor text
 5. Writes the updated `global.ini` back (UTF-8 with BOM)
+
+Each item module (`src/items/*.js`) provides:
+- `csvFile` — which CSV to read
+- `buildValue(row, flavorText)` — formats the stat block
+- `descKeyMatch(key)` — identifies existing keys for insertion point
+- Optional overrides for key derivation or alternate key lookup
 
 Scripts are idempotent — running them multiple times produces no duplicates.
 
