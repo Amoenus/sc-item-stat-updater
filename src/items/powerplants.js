@@ -1,5 +1,7 @@
-import { fmtNum } from '../lib/formatter.js';
+// @ts-check
+import { stat } from '../lib/stat-builder.js';
 
+/** @param {string} descKey */
 function getAlternateDescKeys(descKey) {
   const alts = new Set();
   if (descKey.endsWith('_SCItem')) {
@@ -20,31 +22,43 @@ function getAlternateDescKeys(descKey) {
   return [...alts];
 }
 
+/** @type {import('../lib/types.js').ItemConfig} */
 export default {
   csvFile: 'powerplants.csv',
   label: 'Power Plants',
+  requiredColumns: [
+    'Localization Key',
+    'Manufacturer',
+    'Size',
+    'Grade',
+    'Class',
+    'Power Generation',
+    'EM Max',
+    'Health',
+    'Distortion Shutdown Dmg',
+    'Distortion Decay Delay',
+    'Distortion Decay Rate',
+    'Distortion Warning Ratio',
+  ],
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
   getAlternateDescKeys,
   buildValue(r, flavorText) {
-    const clsLine = r['Class'] ? `\\nClass: ${r['Class']}` : '';
-    let val =
-      `Item Type: Power Plant` +
-      `\\nManufacturer: ${r['Manufacturer']}` +
-      `\\nSize: ${r['Size']}` +
-      `\\nGrade: ${r['Grade']}` +
-      clsLine +
-      `\\n\\n-- Power Stats --` +
-      `\\nPower Generation: ${fmtNum(r['Power Generation'])}` +
-      `\\n\\n-- Emission --` +
-      `\\nEM Max: ${fmtNum(r['EM Max'])}` +
-      `\\n\\n-- Durability & Distortion --` +
-      `\\nHealth: ${fmtNum(r['Health'])}` +
-      `\\nDistortion Shutdown Dmg: ${fmtNum(r['Distortion Shutdown Dmg'])}` +
-      `\\nDistortion Decay Delay: ${r['Distortion Decay Delay']}s` +
-      `\\nDistortion Decay Rate: ${r['Distortion Decay Rate']}` +
-      `\\nDistortion Warning Ratio: ${r['Distortion Warning Ratio']}`;
-
-    if (flavorText) val += `\\n\\n${flavorText}`;
-    return val;
+    return stat(r)
+      .line('Item Type', 'Power Plant')
+      .raw('Manufacturer', 'Manufacturer')
+      .raw('Size', 'Size')
+      .raw('Grade', 'Grade')
+      .lineIf('Class', r['Class'])
+      .section('-- Power Stats --')
+      .num('Power Generation', 'Power Generation')
+      .section('-- Emission --')
+      .num('EM Max', 'EM Max')
+      .section('-- Durability & Distortion --')
+      .num('Health', 'Health')
+      .num('Distortion Shutdown Dmg', 'Distortion Shutdown Dmg')
+      .raw('Distortion Decay Delay', 'Distortion Decay Delay', 's')
+      .raw('Distortion Decay Rate', 'Distortion Decay Rate')
+      .raw('Distortion Warning Ratio', 'Distortion Warning Ratio')
+      .build(flavorText);
   },
 };

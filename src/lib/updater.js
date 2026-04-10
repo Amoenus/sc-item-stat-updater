@@ -24,13 +24,7 @@ function validateRow(row, label) {
 /**
  * Runs a CSV-based update against global.ini.
  *
- * @param {object} config
- * @param {string} config.csvFile - CSV filename (relative to csvDir)
- * @param {string} config.label - Display label for logging (e.g. "Coolers")
- * @param {function} config.buildValue - (row, flavorText) => string
- * @param {function} config.descKeyMatch - (keyLowerCase) => boolean — identifies existing desc keys for insertion point
- * @param {function} [config.nameKeyToDescKey] - override key derivation
- * @param {function} [config.getAlternateDescKeys] - (descKey) => string[] — extra keys to check (e.g. powerplants)
+ * @param {import('./types.js').ItemConfig} config
  * @param {object} [options]
  * @param {string} [options.iniPath] - Path to global.ini (default: ./global.ini relative to project root)
  * @param {string} [options.csvDir] - Directory containing CSV files (default: ./csv)
@@ -67,6 +61,14 @@ export async function runUpdate(config, options = {}) {
     const csvContent = await fs.readFile(csvPath, 'utf-8');
     const rows = parseCSV(csvContent);
     logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
+
+    if (config.requiredColumns && rows.length > 0) {
+      const csvColumns = Object.keys(rows[0]);
+      const missing = config.requiredColumns.filter((col) => !csvColumns.includes(col));
+      if (missing.length > 0) {
+        throw new Error(`CSV schema mismatch: missing columns: ${missing.join(', ')}`);
+      }
+    }
 
     const { lines, index: existingKeys } = await readIniFile(iniPath);
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;

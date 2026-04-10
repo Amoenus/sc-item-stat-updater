@@ -1,32 +1,43 @@
-import { fmtNum } from '../lib/formatter.js';
+// @ts-check
+import { stat } from '../lib/stat-builder.js';
 
+/** @type {import('../lib/types.js').ItemConfig} */
 export default {
   csvFile: 'qeds.csv',
   label: 'QEDs',
+  requiredColumns: [
+    'Localization Key',
+    'Manufacturer',
+    'Size',
+    'Jammer Range',
+    'Snare Radius',
+    'Power Consumption',
+    'Snare Charge Time',
+    'Snare Activation Time',
+    'Snare Cooldown Time',
+    'Snare Discharge Time',
+  ],
   descKeyMatch: (kl) => kl.includes('descqdmp_') || kl.includes('descqed_'),
   buildValue(r, flavorText) {
     const hasSnare = r['Snare Radius'] && r['Snare Radius'] !== '0';
-    const itemType = hasSnare ? 'Quantum Enforcement Device' : 'Quantum Dampener';
 
-    let val =
-      `Item Type: ${itemType}` +
-      `\\nManufacturer: ${r['Manufacturer']}` +
-      `\\nSize: ${r['Size']}` +
-      `\\n\\n-- QED Stats --` +
-      `\\nJammer Range: ${fmtNum(r['Jammer Range'])}m`;
+    const s = stat(r)
+      .line('Item Type', hasSnare ? 'Quantum Enforcement Device' : 'Quantum Dampener')
+      .raw('Manufacturer', 'Manufacturer')
+      .raw('Size', 'Size')
+      .section('-- QED Stats --')
+      .num('Jammer Range', 'Jammer Range', 'm');
 
     if (hasSnare) {
-      val += `\\nSnare Radius: ${fmtNum(r['Snare Radius'])}m`;
+      s.num('Snare Radius', 'Snare Radius', 'm');
     }
 
-    val +=
-      `\\nPower Consumption: ${r['Power Consumption']}` +
-      `\\nSnare Charge Time: ${r['Snare Charge Time']}s` +
-      `\\nSnare Activation Time: ${r['Snare Activation Time']}s` +
-      `\\nSnare Cooldown Time: ${r['Snare Cooldown Time']}s` +
-      `\\nSnare Discharge Time: ${r['Snare Discharge Time']}s`;
-
-    if (flavorText) val += `\\n\\n${flavorText}`;
-    return val;
+    return s
+      .raw('Power Consumption', 'Power Consumption')
+      .raw('Snare Charge Time', 'Snare Charge Time', 's')
+      .raw('Snare Activation Time', 'Snare Activation Time', 's')
+      .raw('Snare Cooldown Time', 'Snare Cooldown Time', 's')
+      .raw('Snare Discharge Time', 'Snare Discharge Time', 's')
+      .build(flavorText);
   },
 };

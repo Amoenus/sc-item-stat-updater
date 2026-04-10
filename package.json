@@ -17,6 +17,9 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "bugs": {
     "url": "https://github.com/Amoenus/sc-item-stat-updater/issues"
   },

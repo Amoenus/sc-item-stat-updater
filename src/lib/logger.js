@@ -46,8 +46,9 @@ class ConsoleStderrExporter {
   }
 }
 
-const provider = new LoggerProvider();
-provider.addLogRecordProcessor(new SimpleLogRecordProcessor(new ConsoleStderrExporter()));
+const provider = new LoggerProvider({
+  logRecordProcessors: [new SimpleLogRecordProcessor(new ConsoleStderrExporter())],
+});
 
 export function setLogLevel(level) {
   const levels = {

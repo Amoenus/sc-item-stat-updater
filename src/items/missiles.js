@@ -1,42 +1,56 @@
-import { fmtNum } from '../lib/formatter.js';
+// @ts-check
+import { fmtNum, stat } from '../lib/stat-builder.js';
 
+/** @type {import('../lib/types.js').ItemConfig} */
 export default {
   csvFile: 'missiles.csv',
   label: 'Missiles',
+  requiredColumns: [
+    'Localization Key',
+    'Manufacturer',
+    'Tracking Signal Type',
+    'Size',
+    'Dmg Total',
+    'Dmg Physical',
+    'Dmg Energy',
+    'Dmg Distortion',
+    'Cluster Count',
+    'Speed',
+    'Arm Time',
+    'Lock Time',
+    'Locking Angle',
+    'Lock Range Min',
+    'Lock Range Max',
+    'Ignite Time',
+    'Explosion Radius Min',
+    'Explosion Radius Max',
+    'Health',
+  ],
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
   buildValue(r, flavorText) {
     const isTorpedo = parseInt(r['Size'], 10) >= 7;
-    const itemType = isTorpedo ? 'Torpedo' : 'Missile';
 
-    let val =
-      `Item Type: ${itemType}` +
-      `\\nManufacturer: ${r['Manufacturer']}` +
-      `\\nTracking Signal: ${r['Tracking Signal Type']}` +
-      `\\nSize: ${r['Size']}` +
-      `\\n\\n-- Damage --` +
-      `\\nTotal Damage: ${fmtNum(r['Dmg Total'])}`;
-
-    if (r['Dmg Physical'] && r['Dmg Physical'] !== '0') val += `\\nPhysical: ${fmtNum(r['Dmg Physical'])}`;
-    if (r['Dmg Energy'] && r['Dmg Energy'] !== '0') val += `\\nEnergy: ${fmtNum(r['Dmg Energy'])}`;
-    if (r['Dmg Distortion'] && r['Dmg Distortion'] !== '0') val += `\\nDistortion: ${fmtNum(r['Dmg Distortion'])}`;
-
-    if (r['Cluster Count'] && r['Cluster Count'] !== '0') {
-      val += `\\nCluster Count: ${r['Cluster Count']}`;
-    }
-
-    val +=
-      `\\n\\n-- Flight Stats --` +
-      `\\nSpeed: ${fmtNum(r['Speed'])} m/s` +
-      `\\nArm Time: ${r['Arm Time']}s` +
-      `\\nLock Time: ${r['Lock Time']}s` +
-      `\\nLocking Angle: ${r['Locking Angle']}°` +
-      `\\nLock Range: ${fmtNum(r['Lock Range Min'])} - ${fmtNum(r['Lock Range Max'])}m` +
-      `\\nIgnite Time: ${r['Ignite Time']}s` +
-      `\\n\\n-- Explosion --` +
-      `\\nRadius: ${r['Explosion Radius Min']} - ${r['Explosion Radius Max']}m` +
-      `\\nHealth: ${fmtNum(r['Health'])}`;
-
-    if (flavorText) val += `\\n\\n${flavorText}`;
-    return val;
+    return stat(r)
+      .line('Item Type', isTorpedo ? 'Torpedo' : 'Missile')
+      .raw('Manufacturer', 'Manufacturer')
+      .raw('Tracking Signal', 'Tracking Signal Type')
+      .raw('Size', 'Size')
+      .section('-- Damage --')
+      .num('Total Damage', 'Dmg Total')
+      .numIf('Physical', 'Dmg Physical')
+      .numIf('Energy', 'Dmg Energy')
+      .numIf('Distortion', 'Dmg Distortion')
+      .rawIf('Cluster Count', 'Cluster Count')
+      .section('-- Flight Stats --')
+      .num('Speed', 'Speed', ' m/s')
+      .raw('Arm Time', 'Arm Time', 's')
+      .raw('Lock Time', 'Lock Time', 's')
+      .raw('Locking Angle', 'Locking Angle', '°')
+      .line('Lock Range', `${fmtNum(r['Lock Range Min'])} - ${fmtNum(r['Lock Range Max'])}m`)
+      .raw('Ignite Time', 'Ignite Time', 's')
+      .section('-- Explosion --')
+      .line('Radius', `${r['Explosion Radius Min']} - ${r['Explosion Radius Max']}m`)
+      .num('Health', 'Health')
+      .build(flavorText);
   },
 };

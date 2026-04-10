@@ -1,8 +1,30 @@
-import { fmtNum } from '../lib/formatter.js';
+// @ts-check
+import { stat } from '../lib/stat-builder.js';
 
+/** @type {import('../lib/types.js').ItemConfig} */
 export default {
   csvFile: 'weapons.csv',
   label: 'Weapons',
+  requiredColumns: [
+    'Localization Key',
+    'Type',
+    'Manufacturer',
+    'Size',
+    'Alpha Damage',
+    'DPS Single',
+    'DPS Burst',
+    'RPM',
+    'Speed',
+    'Range',
+    'Ammo Count',
+    'Max Ammo',
+    'Ammo Per Shot',
+    'Power Base',
+    'EM',
+    'Health',
+    'Distortion Shutdown Dmg',
+    'Distortion Warning Ratio',
+  ],
   descKeyMatch(kl) {
     const prefixes = [
       'desckbar_',
@@ -28,35 +50,33 @@ export default {
   buildValue(r, flavorText) {
     const hasAmmo = r['Ammo Count'] && r['Ammo Count'] !== '0' && r['Ammo Count'] !== '' && r['Max Ammo'] !== '∞';
 
-    let val =
-      `Item Type: ${r['Type']}` +
-      `\\nManufacturer: ${r['Manufacturer']}` +
-      `\\nSize: ${r['Size']}` +
-      `\\n\\n-- Combat Stats --` +
-      `\\nAlpha Damage: ${fmtNum(r['Alpha Damage'])}` +
-      `\\nDPS (Single): ${fmtNum(r['DPS Single'])}` +
-      `\\nDPS (Burst): ${fmtNum(r['DPS Burst'])}` +
-      `\\nRate of Fire: ${fmtNum(r['RPM'])} RPM` +
-      `\\nProjectile Speed: ${fmtNum(r['Speed'])} m/s` +
-      `\\nRange: ${fmtNum(r['Range'])}m`;
+    const s = stat(r)
+      .line('Item Type', r['Type'])
+      .raw('Manufacturer', 'Manufacturer')
+      .raw('Size', 'Size')
+      .section('-- Combat Stats --')
+      .num('Alpha Damage', 'Alpha Damage')
+      .num('DPS (Single)', 'DPS Single')
+      .num('DPS (Burst)', 'DPS Burst')
+      .num('Rate of Fire', 'RPM', ' RPM')
+      .num('Projectile Speed', 'Speed', ' m/s')
+      .num('Range', 'Range', 'm');
 
     if (hasAmmo) {
-      val += `\\n\\n-- Ammo --\\nAmmo Count: ${fmtNum(r['Ammo Count'])}\\nMax Ammo: ${fmtNum(r['Max Ammo'])}`;
+      s.section('-- Ammo --').num('Ammo Count', 'Ammo Count').num('Max Ammo', 'Max Ammo');
       if (r['Ammo Per Shot'] && r['Ammo Per Shot'] !== '∞') {
-        val += `\\nAmmo Per Shot: ${fmtNum(r['Ammo Per Shot'])}`;
+        s.num('Ammo Per Shot', 'Ammo Per Shot');
       }
     }
 
-    val +=
-      `\\n\\n-- Power & Emission --` +
-      `\\nPower Base: ${r['Power Base']}` +
-      `\\nEM: ${fmtNum(r['EM'])}` +
-      `\\n\\n-- Durability --` +
-      `\\nHealth: ${fmtNum(r['Health'])}` +
-      `\\nDistortion Shutdown Dmg: ${fmtNum(r['Distortion Shutdown Dmg'])}` +
-      `\\nDistortion Warning Ratio: ${r['Distortion Warning Ratio']}`;
-
-    if (flavorText) val += `\\n\\n${flavorText}`;
-    return val;
+    return s
+      .section('-- Power & Emission --')
+      .raw('Power Base', 'Power Base')
+      .num('EM', 'EM')
+      .section('-- Durability --')
+      .num('Health', 'Health')
+      .num('Distortion Shutdown Dmg', 'Distortion Shutdown Dmg')
+      .raw('Distortion Warning Ratio', 'Distortion Warning Ratio')
+      .build(flavorText);
   },
 };
