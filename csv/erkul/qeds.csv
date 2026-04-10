@@ -1,0 +1,5 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Size,Jammer Range,Snare Radius,Jammer Green Zone Check Range,Snare Green Zone Check Radius,Power Consumption,Snare Charge Time,Snare Activation Time,Snare Disperse Charge Time,Snare Discharge Time,Snare Cooldown Time
+Burke QD,item_NameQDMP_WETK_S01_Burke,Burke QD,Wei-Tek (WETK),1,4000,0,4000,30000,3,90,3,5,30,1
+Captor QD,item_NameQDMP_RSI_S03_Captor,Captor QD,Roberts Space Industries (RSI),3,4500,0,4000,30000,3,90,3,5,30,1
+Reynie QED,item_NameQED_WETK_S03_Reynie,Reynie QED,Wei-Tek (WETK),1,12000,20000,4000,30000,3,90,3,5,30,1
+Tidelock QD,item_NameQED_RSI_S04_Tidelock,Tidelock QD,Roberts Space Industries (RSI),3,5000,0,4000,30000,3,90,3,5,30,1

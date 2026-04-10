@@ -1,0 +1,7 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Size,Dmg,Power Consumption,EMP Radius Min,EMP Radius Max,Charge Time,Unleash Time,Cooldown,Health,Distortion Shutdown Dmg,Distortion Decay Delay,Distortion Decay Rate,Distortion Warning Ratio
+Magstrand EMP Generator,item_NameRSI_EMP_Magstrand_S4,Magstrand EMP Generator,"CC's Conversions (CCC)",4,3300,1,250,1100,22,1.5,16,150,500000,0,500000,0.75
+"REP-8 EMP Generator",item_NameAEGS_EMP_Device,REP-8 EMP Generator,Behring (BEHR),4,2750,1,250,750,20,1.5,22,150,500000,0,500000,0.75
+REP-VS EMP Generator,item_NameAEGS_EMP_Sentinel_S4,REP-VS EMP Generator,Behring (BEHR),4,3300,1,250,900,26,1.5,40,150,500000,0,500000,0.75
+TroMag Burst Generator (TMBL),"item_NameTMBL_EMP_Device,P",Tumbril Cyclone EMP Device,Tumbril Land Systems (TMBL),1,1000,1,150,400,12,0.75,6,150,500000,0,500000,0.75
+TroMag Burst Generator (MXOX S2 v1),item_NameMXOX_EMP_Device,TroMag Burst Generator,maxOx (MXOX),2,1800,1,250,750,12,0.75,12,150,500000,0,500000,0.75
+TroMag Burst Generator (MXOX S2 v2),item_NameMXOX_EMP_Device,TroMag Burst Generator,maxOx (MXOX),2,2750,1,150,600,15,0.75,12,150,500000,0,500000,0.75

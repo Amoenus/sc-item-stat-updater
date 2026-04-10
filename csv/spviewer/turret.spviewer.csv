@@ -1,0 +1,328 @@
+Size,Name,ClassName,Manufacturer,Yaw Axis Speed,Yaw Axis Time To Full Speed,Yaw Axis Accel. Decay,Pitch Axis Speed,Pitch Axis Time To Full Speed,Pitch Axis Accel. Decay,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Lifetime,Mass,K µSCU
+4,AEGS Idris Lower Camera Mount,AEGS Idris Lower Camera Mount,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,720,400,84
+4,AEGS Idris Upper Camera Mount,AEGS Idris Upper Camera Mount,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,720,400,84
+3,Anvil Arrow Turret,ANVL Arrow Turret,Anvil Aerospace,50,0.3,5,50,0.3,5,1 000,1,1,1,1,1,1,2 160,200,84
+3,Anvil F7A Hornet Mk I Nose Turret,ANVL Hornet F7A Mk1 Nose Turret,Anvil Aerospace,50,0.3,5,50,0.3,5,650,1,1,1,1,1,1,720,2 000,84
+5,Anvil F7C-M Mk II Ball Turret,ANVL Hornet F7CM Mk2 Ball Turret,Anvil Aerospace,110,0.1,5,110,0.1,5,1 500,1,1,1,1,1,1,720,3 000,84
+3,Anvil Hornet F7C Nose Turret,ANVL Hornet F7C Nose Turret,Anvil Aerospace,50,0.3,5,50,0.3,5,600,1,1,1,1,1,1,720,2 000,84
+3,Anvil Hornet Mk II S2 Nose Turret,ANVL Hornet F7C Mk2 Nose Turret,Anvil Aerospace,20,0.3,5,20,0.3,5,650,1,1,1,1,1,1,720,2 000,84
+3,Anvil Hornet Mk II S3 Nose Turret,ANVL Hornet F7A Nose Turret,Anvil Aerospace,20,0.3,5,20,0.3,5,700,1,1,1,1,1,1,720,2 000,84
+3,Anvil Lightning F8C Turret,ANVL Lightning F8C Turret S3,Anvil Aerospace,50,0.3,5,50,0.3,5,3 500,1,1,1,1,1,1,2 160,200,84
+5,Anvil Lightning F8 Turret,ANVL Lightning F8 Turret S5,Anvil Aerospace,50,0.3,5,50,0.3,5,400,1,1,1,1,1,1,2 160,200,84
+3,Anvil Terrapin Nose Mount,ANVL Terrapin Nose Turret S3,Anvil Aerospace,35,0.3,5,35,0.3,5,3 000,1,1,1,1,1,1,720,300,84
+5,C4-160f S5 Hornet Ball Turret,ANVL Hornet F7C Ball Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,1 250,1,1,1,1,1,1,720,400,0.001
+5,C4-163f S5 Hornet Mk I Ball Turret,ANVL Hornet F7A Mk1 Ball Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,1 300,1,1,1,1,1,1,720,400,0.001
+5,C5-173f S5 Hornet Mk II Ball Turret,ANVL Hornet F7A Ball Turret,Anvil Aerospace,17.5,0.3,5,17.5,0.3,5,1 350,1,1,1,1,1,1,720,3 000,84
+3,Consolidated Outland Mustang Nose Turret,CNOU Mustang Nose Turret S3,Consolidated Outland,35,0.3,5,35,0.3,5,1 000,1,1,1,1,1,1,720,3 000,84
+5,Crusader Mercury Star Runner Nose Turret,CRUS Star Runner Nose Turret S5,Crusader Industries,35,0.3,5,35,0.3,5,5 000,1,1,1,1,1,1,2 160,3 000,84
+5,Crusader Mercury Star Runner Nose Turret,MISC Hull A Nose Turret S5,Musashi Industrial & Starflight Concern,35,0.3,5,35,0.3,5,2 500,1,1,1,1,1,1,2 160,300,84
+6,Cutlass Flashfire Specialty Mount,DRAK Fixed Mount S4,Drake Interplanetary,,,,,,,400,1,1,1,1,1,1,,200,84
+4,Drake Buccaneer Spinal Mount,DRAK Buccaneer Dual S2,Drake Interplanetary,35,0.3,5,35,0.3,5,1 200,1,1,1,1,1,1,720,60,84
+3,Drake Caterpillar Weapon Mount,DRAK Dual S1,-,50,0.3,5,50,0.3,5,100,1,1,1,1,1,1,720,50,84
+5,Drake Caterpillar Weapon Mount,DRAK Dual S3,-,50,0.3,5,50,0.3,5,100,1,1,1,1,1,1,720,50,84
+4,Drake Cutlass Steel Remote Turret,DRAK Cutlass Steel Rear Remote Dual Turret S4,Drake Interplanetary,95,0.3,5,95,0.3,5,3 500,1,1,1,1,1,1,720,400,84
+5,Esperia Prowler Turret,ESPR Prowler Remote Turret S5,Esperia,95,0.3,5,95,0.3,5,8 000,1,1,1,1,1,1,720,400,84
+7,IFR-A77 Turret,AEGS Idris SCItem Turret Large,Aegis Dynamics,38,0.85,5,42,0.8,5,15 000,1,1,1,1,1,1,25,,0.001
+7,IFR-A77 Turret,AEGS Idris SCItem Turret Large Stanton,Aegis Dynamics,38,0.85,5,42,0.8,5,15 000,1,1,1,1,1,1,25,,0.001
+7,IFR-BC7 Turret,AEGS Idris SCItem Turret Large T,Aegis Dynamics,38,0.85,5,42,0.8,5,15 000,1,1,1,1,1,1,25,,0.001
+7,IFR-MS7 Turret,AEGS Idris K Turret Large,Aegis Dynamics,38,0.85,5,42,0.8,5,15 000,1,1,1,1,1,1,25,,0.001
+7,IFR-W57 Turret,AEGS Idris SCItem Turret Large P,Aegis Dynamics,38,0.85,5,42,0.8,5,15 000,1,1,1,1,1,1,25,,0.001
+2,"M2C ""Swarm""",Turret PDC BEHR A,Behring,270,0.3,5,180,0.3,5,1 500,1,1,1,1,1,1,,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Rear,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Side BackLeft,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Side BackRight,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Side FrontLeft,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Side FrontRight,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Hammerhead SCItem Turret Top,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower Short,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower Short Left,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower Short Left Stanton,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower Short Right,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Lower Short Right Stanton,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Front,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Front Left,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Front Right,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Rear Left,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Rear Left Stanton,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Rear Right,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Rear Right Stanton,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Stanton,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Stanton Left,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Idris SCItem Turret Upper Stanton Right,Aegis Dynamics,60,0.5,5,60,0.5,5,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Lower Manned,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Lower Manned Invulnerable,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,,,,,,,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Manned,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Manned Invulnerable,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,,,,,,,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Manned Left,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Javelin SCItem Turret Manned Left Invulnerable,Aegis Dynamics,35,0.3,5,35,0.3,5,20 000,,,,,,,25,,0.001
+5,Manned Turret,AEGS Javelin Side Turret,Aegis Dynamics,25,0.3,5,25,0.3,5,5 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Javelin Side Turret Invulnerable,Aegis Dynamics,25,0.3,5,25,0.3,5,5 000,,,,,,,25,,0.001
+5,Manned Turret,AEGS Javelin Side Turret Player C01,Aegis Dynamics,25,0.3,5,25,0.3,5,80 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,AEGS Reclaimer SCItem Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Redeemer Front SCItem Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Redeemer Rear SCItem Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Retaliator SCItem Turret Lower,-,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Retaliator SCItem Turret Lower Rear,-,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Retaliator SCItem Turret Upper,-,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Retaliator SCItem Turret Upper Rear Left,-,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,AEGS Retaliator SCItem Turret Upper Rear Right,-,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,AEGS Vanguard Harbinger SCItem Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,AEGS Vanguard SCItem Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,ANVL Asgard Turret Bubble,Anvil Aerospace,80,0.3,18,80,0.3,18,8 200,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,ANVL Carrack SCItem Turret Bubble,Anvil Aerospace,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,ANVL Carrack SCItem Turret Side,Anvil Aerospace,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Manned Turret,ANVL Carrack SCItem Turret Side Left,Anvil Aerospace,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Manned Turret,ANVL Carrack SCItem Turret Side Right,Anvil Aerospace,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+6,Manned Turret,ANVL Gladiator SCItem Turret,Anvil Aerospace,95,0.3,18,95,0.3,5,5 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,ANVL Hurricane SCItem Turret,Anvil Aerospace,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,25,,0.001
+1,Manned Turret,ANVL Terrapin Support Turret,Anvil Aerospace,120,0.3,18,95,0.3,5,2 500,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,ANVL Valkyrie Turret Bubble,Anvil Aerospace,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,ANVL Valkyrie Turret Top,-,95,0.3,18,95,0.3,18,4 500,1,1,1,1,1,1,25,,0.001
+4,Manned Turret,ANVL Valkyrie Turret Top CitizenCon,-,95,0.3,18,95,0.3,18,4 500,1,1,1,1,1,1,25,,0.001
+1,Manned Turret,CRUS Star Runner Turret Bottom,Crusader Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+1,Manned Turret,CRUS Star Runner Turret Top,Crusader Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,DRAK Caterpillar SCItem Turret Bottom,Drake Interplanetary,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,DRAK Caterpillar SCItem Turret Top,Drake Interplanetary,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+1,Manned Turret,DRAK Corsair Turret Manned,Drake Interplanetary,120,0.3,5,120,0.3,5,6 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,DRAK Cutlass SCItem Turret Black,Drake Interplanetary,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,DRAK Cutlass SCItem Turret Blue,Drake Interplanetary,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,MISC Freelancer Base SCItem Turret,Musashi Industrial & Starflight Concern,95,0.3,18,95,0.3,18,6 500,1,1,1,1,1,1,25,,0.001
+12,Manned Turret,MISC Starfarer Gemini SCItem Turret Large,-,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,25,,0.001
+12,Manned Turret,MISC Starfarer Gemini SCItem Turret Large Derelict,-,95,0.3,18,95,0.3,18,8 500,,,,,,,25,,0.001
+8,Manned Turret,MISC Starfarer Gemini SCItem Turret Small,-,95,0.3,18,95,0.3,18,4 000,1,1,1,1,1,1,,,0.001
+8,Manned Turret,MISC Starfarer Gemini SCItem Turret Small Right,-,95,0.3,18,95,0.3,18,4 000,1,1,1,1,1,1,,,0.001
+10,Manned Turret,MISC Starfarer SCItem Turret Large,-,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,MISC Starfarer SCItem Turret Small,Musashi Industrial & Starflight Concern,95,0.3,18,95,0.3,18,4 000,1,1,1,1,1,1,,,0.001
+6,Manned Turret,MISC Starfarer SCItem Turret Small Right,Musashi Industrial & Starflight Concern,95,0.3,18,95,0.3,18,4 000,1,1,1,1,1,1,,,0.001
+5,Manned Turret,MISC Starlancer TAC Side Turret,Musashi Industrial & Starflight Concern,55,0.55,12,55,0.55,12,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,MISC Starlancer TAC Side Turret Left,Musashi Industrial & Starflight Concern,55,0.55,12,55,0.55,12,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,ORIG 890J SCItem Turret Lower,Origin Jumpworks,95,0.3,18,120,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,ORIG 890J SCItem Turret Upper,Origin Jumpworks,95,0.3,18,120,0.3,18,15 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation Aquila SCItem Turret Radar,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation Phoenix Turret Lower,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation Phoenix Turret Upper,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation SCItem Turret Lower,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation SCItem Turret Upper,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+6,Manned Turret,RSI Constellation Taurus Turret Lower,Roberts Space Industries,95,0.3,18,95,0.3,18,8 000,1,1,1,1,1,1,25,,0.001
+8,Manned Turret,RSI Perseus MannedTurret Bottom,Roberts Space Industries,40,1.35,10,40,1.35,10,35 000,1,1,1,1,1,1,25,,0.001
+8,Manned Turret,RSI Perseus MannedTurret Top,Roberts Space Industries,40,1.35,10,40,1.35,10,35 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,RSI Polaris Turret Front,Roberts Space Industries,50,0.85,10,50,0.85,10,15 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,RSI Polaris Turret Side Left,Roberts Space Industries,95,0.3,18,95,0.3,18,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,RSI Polaris Turret Side Right,Roberts Space Industries,95,0.3,18,95,0.3,18,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,RSI Polaris Turret Top Left,Roberts Space Industries,95,0.3,18,95,0.3,18,10 000,1,1,1,1,1,1,25,,0.001
+5,Manned Turret,RSI Polaris Turret Top Right,Roberts Space Industries,95,0.3,18,95,0.3,18,10 000,1,1,1,1,1,1,25,,0.001
+1,Mount Gimbal Salvage,Mount Gimbal Salvage,-,50,0.3,5,50,0.3,5,5 000,1,1,1,1,1,1,720,50,84
+2,"MRX ""Torrent""",Turret PDC BEHR G,Behring,270,0.3,5,180,0.3,5,1 500,1,1,1,1,1,1,,,0.001
+3,Mustang Nose Scoop,CNOU Mustang Gamma Scoop Front,Consolidated Outland,,,,,,,1,1,1,1,1,1,1,,1,0.001
+4,Nav-E7 Echo Scanner,DRAK Cutlass Red Sensor Turret S4,Drake Interplanetary,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,720,400,84
+3,Origin Jumpworks 85X Remote Turret,ORIG 85X Turret,Origin Jumpworks,50,0.3,5,50,0.3,5,,,,,,,,720,3 000,84
+3,PC2 Dual S1 Mount,BEHR PC2 Dual S1,-,50,0.3,5,50,0.3,5,150,1,1,1,1,1,1,720,75,84
+3,PC2 Dual S3 Mount,ANVL Asgard Nose Turret S4,Anvil Aerospace,35,0.3,5,35,0.3,5,8 000,1,1,1,1,1,1,2 160,3 000,84
+3,PC2 Dual S3 Mount,ANVL Valkyrie Nose Turret S3,Anvil Aerospace,35,0.3,5,35,0.3,5,8 000,1,1,1,1,1,1,2 160,3 000,84
+5,PC2 Dual S3 Mount,BEHR PC2 Dual S3,-,50,0.3,5,50,0.3,5,2 500,1,1,1,1,1,1,720,200,84
+6,PC2 Dual S4 Mount,BEHR PC2 Dual S4,-,50,0.3,5,50,0.3,5,600,1,1,1,1,1,1,720,300,84
+5,PC2 Dual S4 Mount,BEHR PC2 Dual S4 Fixed,-,,,,,,,400,1,1,1,1,1,1,,200,84
+6,PC2 Dual S4 Mount,MISC Starlancer Dual Gimbal,-,50,0.3,5,50,0.3,5,600,1,1,1,1,1,1,720,300,84
+4,PC2 Dual S4 Mount,MISC Starlancer TAC Missile Gimbal,-,50,0.3,5,50,0.3,5,600,1,1,1,1,1,1,720,300,84
+4,PC2 Dual S4 Mount,MISC Starlancer TAC Missile Gimbal R,-,50,0.3,5,50,0.3,5,600,1,1,1,1,1,1,720,300,84
+2,"PPB-116 ""Pepperbox""",Turret PDC BEHR M,Aegis Dynamics,270,0.3,5,180,0.3,5,1 500,1,1,1,1,1,1,,,0.001
+4,Reliant Cernan Camera Package,MISC Reliant Mako Camera Mount,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,720,400,84
+4,Reliant Gilroy Gimbal,GMNT MISC S03 PL01,Musashi Industrial & Starflight Concern,35,0.3,5,35,0.3,5,150,1,1,1,1,1,1,720,75,84
+4,Reliant Samos Sensor Suite,MISC Reliant Sen Sensor Mount,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,720,400,84
+4,Reliant Toshima Turret,MISC Reliant Remote Tractor Turret,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,720,400,84
+4,Reliant Toshima Turret,MISC Reliant Wing Dual Turret S4,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,720,400,84
+4,Reliant Utility Mount Cap,UMNT MISC S03 PL01,Musashi Industrial & Starflight Concern,,,,,,,100,1,1,1,1,1,1,,50,84
+4,Remote Turret,AEGS Idris Remote Camera Turret Lower,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,AEGS Idris Remote Camera Turret Upper,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Idris SCItem AI Turret,Aegis Dynamics,77,0.35,5,75,0.35,5,7 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Idris SCItem AI Turret Bottom Left,Aegis Dynamics,77,0.35,5,75,0.35,5,7 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Idris SCItem AI Turret Bottom Right,Aegis Dynamics,77,0.35,5,75,0.35,5,7 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Idris SCItem AI Turret Top Left,Aegis Dynamics,77,0.35,5,75,0.35,5,7 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Idris SCItem AI Turret Top Right,Aegis Dynamics,77,0.35,5,75,0.35,5,7 000,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 01,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 02,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 03,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 04,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 05,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 06,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 07,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 08,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 09,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 10,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+9,Remote Turret,AEGS Idris Turret PDC SCItem 11,Aegis Dynamics,290,0.3,15,225,0.3,15,1 500,1,1,1,1,1,1,,,0.001
+8,Remote Turret,AEGS Javelin SCItem Turret Large,Aegis Dynamics,10,0.3,5,10,0.3,5,25 000,1,1,1,1,1,1,,,0.001
+8,Remote Turret,AEGS Javelin SCItem Turret Large Invulnerable,Aegis Dynamics,10,0.3,5,10,0.3,5,25 000,,,,,,,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Salvage Turret,Aegis Dynamics,15,0.3,5,15,0.3,5,4 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Salvage Turret Left,Aegis Dynamics,15,0.3,5,15,0.3,5,4 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Salvage Turret Right,Aegis Dynamics,15,0.3,5,15,0.3,5,4 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret 02,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Bottom,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Front Left,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Front Right,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Rear Left,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Rear Right,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer SCItem Remote Turret Top,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,AEGS Reclaimer Tractor Beam,Aegis Dynamics,120,0.3,18,120,0.3,18,3 000,1,1,1,1,1,1,25,,0.001
+3,Remote Turret,AEGS Redeemer SCItem Remote Turret Front,Aegis Dynamics,95,0.3,18,95,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+3,Remote Turret,AEGS Redeemer SCItem Remote Turret Rear,Aegis Dynamics,95,0.3,18,120,0.3,18,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Asgard SCItem Remote Turret Left,Anvil Aerospace,95,0.3,18,95,0.3,18,12 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Asgard SCItem Remote Turret Right,Anvil Aerospace,95,0.3,18,95,0.3,18,12 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Carrack SCItem Remote Turret,Anvil Aerospace,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Paladin SCItem Remote Turret,Crusader Industries,120,0.3,18,120,0.3,18,5 500,1,1,1,1,1,1,,,0.001
+6,Remote Turret,ANVL Paladin SCItem Remote Turret Large,Roberts Space Industries,95,0.3,18,95,0.3,18,13 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Paladin SCItem Remote Turret Left,Crusader Industries,120,0.3,18,120,0.3,18,5 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Paladin SCItem Remote Turret Left Right,Crusader Industries,120,0.3,18,120,0.3,18,5 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Paladin SCItem Remote Turret Middle,Crusader Industries,120,0.3,18,120,0.3,18,5 500,1,1,1,1,1,1,,,0.001
+3,Remote Turret,ANVL Terrapin Remote Turret Scanner,Anvil Aerospace,120,0.3,18,95,0.3,5,1 500,1,1,1,1,1,1,25,,0.001
+5,Remote Turret,ANVL Valkyrie SCItem Remote Turret,Anvil Aerospace,95,0.3,18,95,0.3,18,12 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Valkyrie SCItem Remote Turret Left,Anvil Aerospace,95,0.3,18,95,0.3,18,12 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ANVL Valkyrie SCItem Remote Turret Right,Anvil Aerospace,95,0.3,18,95,0.3,18,12 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ARGO MOTH Remote Turret,Argo Astronautics,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,25,,0.001
+4,Remote Turret,ARGO MPUV Remote Turret,Argo Astronautics,120,0.3,5,120,0.3,5,2 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ARGO RAFT SCItem Remote Turret,Argo Astronautics,120,0.3,18,120,0.3,18,6 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ARGO RAFT SCItem Remote Turret Tractor,Roberts Space Industries,120,0.3,18,120,0.3,18,,,,,,,,,,0.001
+1,Remote Turret,ARGO SRV Remote Turret,Argo Astronautics,25,0.3,5,25,0.3,5,6 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,CNOU Nomad Remote Turret,Argo Astronautics,120,0.3,5,120,0.3,5,2 500,1,1,1,1,1,1,,,0.001
+1,Remote Turret,CRUS Spirit SCItem Remote Turret,Crusader Industries,95,0.3,18,95,0.3,18,6 000,1,1,1,1,1,1,,,0.001
+1,Remote Turret,CRUS Spirit SCItem Remote Turret Tractor,Crusader Industries,95,0.3,18,95,0.3,18,3 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter Bomb Turret,Crusader Industries,75,0.3,18,75,0.3,18,1 500,1,1,1,1,1,1,,,0.001
+6,Remote Turret,CRUS Starlifter SCItem Remote Turret Dual,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Front Left,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Front Right,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Main,Crusader Industries,120,0.3,18,120,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Main A2,Crusader Industries,120,0.3,18,120,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Nose,Crusader Industries,120,0.3,18,120,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Rear,Crusader Industries,120,0.3,18,120,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+6,Remote Turret,CRUS Starlifter SCItem Remote Turret Rear Left,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+6,Remote Turret,CRUS Starlifter SCItem Remote Turret Rear Right,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,CRUS Starlifter SCItem Remote Turret Single,Crusader Industries,95,0.3,18,95,0.3,18,12 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,DRAK Caterpillar Remote Turret,Argo Astronautics,120,0.3,5,120,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+2,Remote Turret,DRAK Caterpillar Remote Turret Left,-,120,0.3,5,120,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,DRAK Caterpillar Remote Turret Right,Argo Astronautics,120,0.3,5,120,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,DRAK Corsair Remote Turret S4,Drake Interplanetary,95,0.3,5,95,0.3,5,4 000,1,1,1,1,1,1,720,,84
+4,Remote Turret,DRAK Corsair Remote Turret Tail,Drake Interplanetary,120,0.3,5,120,0.3,5,6 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,DRAK Cutlass Remote Turret,Drake Interplanetary,120,0.3,5,120,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,DRAK Golem OX Remote Turret,Drake Interplanetary,120,0.3,5,120,0.3,5,2 500,1,1,1,1,1,1,,,0.001
+2,Remote Turret,ESPR Prowler Utility Tractor Beam Remote Turret,Esperia,120,0.3,5,120,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+3,Remote Turret,GLSN Shiv Remote Turret,Grey's Market,95,0.3,18,95,0.3,18,4 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull B SCItem Remote Turret,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+2,Remote Turret,MISC Hull B SCItem Remote Turret Tractor Left,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+2,Remote Turret,MISC Hull B SCItem Remote Turret Tractor Right,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+5,Remote Turret,MISC Hull C Nose Turret S5,Musashi Industrial & Starflight Concern,35,0.3,5,35,0.3,5,8 500,1,1,1,1,1,1,2 160,3 000,0.001
+4,Remote Turret,MISC Hull C SCItem Remote Turret,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull C SCItem Remote Turret Rear,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull C SCItem Tractor Beam Turret,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull C SCItem Tractor Beam Turret Bottom,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull C SCItem Tractor Beam Turret Bottom Rear,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Hull C SCItem Tractor Beam Turret Rear,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,8 500,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Starlancer Remote Turret,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Starlancer Remote Turret Missile Camera,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,MISC Starlancer Remote Turret Rear,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,Orbital Sentry SCItem AI Turret,Aegis Dynamics,120,0.3,5,120,0.3,5,30 000,1,1,1,1,1,1,,,0.001
+2,Remote Turret,ORIG 315p Remote Turret,Origin Jumpworks,120,0.3,5,120,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ORIG 400i SCItem Remote Turret,Origin Jumpworks,120,0.3,18,120,0.3,18,8 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ORIG 400i SCItem Remote Turret Bottom,Origin Jumpworks,120,0.3,18,120,0.3,18,8 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,ORIG 400i SCItem Remote Turret Top,Origin Jumpworks,120,0.3,18,120,0.3,18,8 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,ORIG 600i SCItem Remote Turret Bottom Exec S5,-,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,720,400,84
+5,Remote Turret,ORIG 600i SCItem Remote Turret Bottom S5,-,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,720,400,84
+5,Remote Turret,ORIG 600i SCItem Remote Turret Exec S5,-,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,720,400,84
+5,Remote Turret,ORIG 600i SCItem Remote Turret S5,-,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,720,400,84
+5,Remote Turret,ORIG 890j SCItem Remote Turret 2 S5,Origin Jumpworks,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,2 160,400,84
+5,Remote Turret,ORIG 890j SCItem Remote Turret S5,Origin Jumpworks,95,0.3,5,95,0.3,5,10 000,1,1,1,1,1,1,2 160,400,84
+3,Remote Turret,RSI Apollo Remote Turret,Roberts Space Industries,270,0.3,5,270,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+9,Remote Turret,RSI Bengal SCItem AI STS Turret,Aegis Dynamics,270,0.3,5,180,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+5,Remote Turret,RSI Bengal SCItem Remote Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,2 000,,,,,,,,,0.001
+8,Remote Turret,RSI Bengal SCItem Remote Turret AA,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,,,,,,,,,0.001
+12,Remote Turret,RSI Bengal SCItem Remote Turret Main Gun,Aegis Dynamics,10,0.3,5,10,0.3,5,2 000,,,,,,,,,0.001
+8,Remote Turret,RSI Bengal SCItem Remote Turret Medium,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,,,,,,,,,0.001
+6,Remote Turret,RSI Bengal SCItem Remote Turret MissileLauncher,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,,,,,,,,,0.001
+6,Remote Turret,RSI Bengal SCItem Remote Turret Phalanx,Aegis Dynamics,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,,,,0.001
+12,Remote Turret,RSI Bengal SCItem STS Large Turret,Aegis Dynamics,120,0.3,5,120,0.3,5,1 000 000,1,1,1,1,1,1,,,0.001
+9,Remote Turret,RSI Bengal SCItem STS Turret,Aegis Dynamics,270,0.3,5,180,0.3,5,5 000,1,1,1,1,1,1,,,0.001
+3,Remote Turret,RSI Hermes Remote Turret,Roberts Space Industries,270,0.3,5,270,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+3,Remote Turret,RSI Perseus Remote Turret Bottom S3,Roberts Space Industries,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,,,84
+3,Remote Turret,RSI Perseus Remote Turret Top S3,Roberts Space Industries,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,,,84
+4,Remote Turret,RSI Perseus Remote Turret Torpedo,Roberts Space Industries,120,0.3,18,120,0.3,18,,,,,,,,,,0.001
+4,Remote Turret,RSI Polaris SCItem Remote Turret HangarCam,Roberts Space Industries,120,0.3,18,120,0.3,18,,,,,,,,,,0.001
+4,Remote Turret,RSI Polaris SCItem Remote Turret RearBottom,Roberts Space Industries,80,0.3,5,120,0.3,18,10 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,RSI Polaris SCItem Remote Turret RearTop,Roberts Space Industries,80,0.3,5,120,0.3,18,10 000,1,1,1,1,1,1,,,0.001
+4,Remote Turret,RSI Polaris SCItem Remote Turret Torpedo,Roberts Space Industries,120,0.3,18,120,0.3,18,,,,,,,,,,0.001
+4,Remote Turret,RSI Polaris SCItem Remote Turret Tractor,Roberts Space Industries,120,0.3,18,120,0.3,18,,,,,,,,,,0.001
+4,Remote Turret,RSI Scorpius Antares SCItem Remote Turret Missile,Roberts Space Industries,120,0.3,18,120,0.3,18,5 000,1,1,1,1,1,1,,,0.001
+3,Remote Turret,RSI Scorpius SCItem Remote Turret,Roberts Space Industries,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,,,0.001
+1,Remote Turret,RSI Zeus Remote Tractor Beam Turret,Argo Astronautics,95,0.3,18,95,0.3,18,500,1,1,1,1,1,1,,,0.001
+3,Remote Turret,RSI Zeus Remote Turret Bottom S3,Roberts Space Industries,95,0.3,5,95,0.3,5,8 000,1,1,1,1,1,1,,,84
+3,Remote Turret,RSI Zeus Remote Turret Top S3,Roberts Space Industries,95,0.3,5,95,0.3,5,8 000,1,1,1,1,1,1,,,84
+3,RSI Lesath Missile Turret,RSI Scorpius SCItem Remote Missile Turret,Roberts Space Industries,95,0.3,18,95,0.3,18,5 000,1,1,1,1,1,1,,,0.001
+2,San'tok.yāi Gimbal Mount,MRAI Pulse Mount Gimbal S2,Mirai,35,0.3,5,35,0.3,13,850,1,1,1,1,1,1,720,75,756
+3,San'tok.yāi Gimbal Mount,XNAA SanTokYai Mount Gimbal S3,Aopoa,35,0.3,5,35,0.3,5,150,1,1,1,1,1,1,,75,756
+3,Size 3 Fixed Mount,Default Fixed Mount S3,Anvil Aerospace,,,,,,,250,1,1,1,1,1,1,,125,84
+4,Size 4 Fixed Mount,Default Fixed Mount S4,Anvil Aerospace,,,,,,,400,1,1,1,1,1,1,,200,84
+5,Specialty Hornet S5 VariPuck Mount,ANVL Fixed Mount Hornet Ball S4,Flashfire Systems,,,,,,,1 400,1,1,1,1,1,1,,200,84
+5,Tail Cap,Door Ship Exterior Idris Turret Cover,-,,,,,,,400,1,1,1,1,1,1,,,0.001
+5,TMSB-5 Ball Turret,ANVL Hornet F7CM Mk2 Ball Turret Bespoke,Anvil Aerospace,110,0.1,5,110,0.1,5,1 500,1,1,1,1,1,1,720,3 000,84
+4,TMSB-5 Gimbal Mount,Mount Gimbal BEHR BallisticGatling Hornet Bespoke,Behring,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,Tumbril Storm Turret,TMBL Storm AA Module,Tumbril Land Systems,0,0,0,50,0.3,5,1 000,1,1,1,1,1,1,,,0.001
+3,Tumbril Storm Turret,TMBL Storm Main Turret,Tumbril Land Systems,100,0.3,5,100,0.3,5,14 500,1,1,1,1,1,1,,,0.001
+9,Turret,ANVL Ballista Remote Rear Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Turret,ANVL Ballista Remote Top Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,8 000,1,1,1,1,1,1,,,0.001
+4,Turret,ANVL Centurion Remote Top Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,200,1,1,1,1,1,1,,,0.001
+9,Turret,ANVL Centurion S4 Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,2 000,1,1,1,1,1,1,,,0.001
+4,Turret,ANVL Spartan Remote Top Turret,Anvil Aerospace,95,0.3,5,95,0.3,5,,,,,,,,,,0.001
+3,Turret,ANVL Valkyrie Turret Door,Anvil Aerospace,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,25,,0.001
+3,Turret,ANVL Valkyrie Turret Door Left,Anvil Aerospace,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,25,,0.001
+3,Turret,ANVL Valkyrie Turret Door Right,Anvil Aerospace,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,25,,0.001
+3,Turret,CRUS Spirit Nose Turret S3,Crusader Industries,35,0.3,5,35,0.3,5,5 000,1,1,1,1,1,1,2 160,300,84
+1,Turret,Grin MXC Turret,Roberts Space Industries,150,0.3,5,150,0.3,5,500,1,1,1,1,1,1,,,0.001
+1,Turret,MISC Starlancer TAC Turret Door Left,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,25,,0.001
+1,Turret,MISC Starlancer TAC Turret Door Right,Musashi Industrial & Starflight Concern,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,25,,0.001
+5,Turret,ORIG 890j SCItem Remote Turret Missile Lower Left,Origin Jumpworks,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,2 160,400,84
+5,Turret,ORIG 890j SCItem Remote Turret Missile Lower Right,Origin Jumpworks,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,2 160,400,84
+5,Turret,ORIG 890j SCItem Remote Turret Missile Top Left,Origin Jumpworks,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,2 160,400,84
+5,Turret,ORIG 890j SCItem Remote Turret Missile Top Right,Origin Jumpworks,95,0.3,5,95,0.3,5,15 000,1,1,1,1,1,1,2 160,400,84
+1,Turret,RSI Lynx Ball Turret,Roberts Space Industries,150,0.3,5,150,0.3,5,,,,,,,,,,0.001
+2,Turret,RSI Ursa Rover SCItem BallTurret,Roberts Space Industries,150,0.3,5,150,0.3,5,,,,,,,,,,0.001
+3,Turret,TMBL Cyclone Module MT,Tumbril Land Systems,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,,,0.001
+3,Turret,TMBL Cyclone Module Turret,Tumbril Land Systems,95,0.3,5,95,0.3,5,,,,,,,,,,0.001
+5,Turret,TMBL Nova Main Turret,Tumbril Land Systems,25,0.3,5,25,0.3,5,20 000,1,1,1,1,1,1,,,0.001
+4,Turret,TMBL Nova Remote Gun Turret,Tumbril Land Systems,95,0.3,5,95,0.3,5,1 000,1,1,1,1,1,1,,,0.001
+1,VariPuck S1 Gimbal Mount,Mount Gimbal S1,Flashfire Systems,80,0.3,5,80,0.3,5,525,1,1,1,1,1,1,720,50,0.001
+1,VariPuck S1 Gimbal Mount,Mount Gimbal S1 NoSafety,Flashfire Systems,80,0.3,5,80,0.3,5,525,1,1,1,1,1,1,720,50,0.001
+1,VariPuck S1 Gimbal Mount,Mount Gimbal S1 Tractor,Flashfire Systems,80,0.3,5,80,0.3,5,525,1,1,1,1,1,1,720,50,0.001
+2,VariPuck S2 Gimbal Mount,Mount Gimbal S2,Flashfire Systems,80,0.3,5,80,0.3,5,850,1,1,1,1,1,1,720,50,252
+2,VariPuck S2 Gimbal Mount,Mount Gimbal S2 Tractor,Flashfire Systems,80,0.3,5,80,0.3,5,850,1,1,1,1,1,1,720,50,252
+2,VariPuck S2 Gimbal Mount,Mount Gimbal S2 VNCL Blade,Flashfire Systems,80,0.3,5,80,0.3,5,850,1,1,1,1,1,1,720,50,252
+2,VariPuck S2 Gimbal Mount,Mount Gimbal S2 VNG S2,Flashfire Systems,80,0.3,5,80,0.3,5,850,1,1,1,1,1,1,720,50,252
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 315p,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 AllSizes,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus Bottom,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus Bottom Left,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus Remote L,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus Remote R,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Perseus Right,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 Polaris,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+3,VariPuck S3 Gimbal Mount,Mount Gimbal S3 VNCL Blade,Flashfire Systems,80,0.3,5,80,0.3,5,1 024,1,1,1,1,1,1,720,75,756
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4,Flashfire Systems,80,0.3,5,80,0.3,5,1 650,1,1,1,1,1,1,720,125,2 100
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4 Crus Intrepid,Flashfire Systems,80,0.3,5,80,0.3,5,1 650,1,1,1,1,1,1,720,125,2 100
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4 Paladin Turret,Flashfire Systems,80,0.3,5,80,0.3,5,1 650,1,1,1,1,1,1,720,125,2 100
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4 Polaris,Flashfire Systems,80,0.3,5,80,0.3,5,1 650,1,1,1,1,1,1,720,125,2 100
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4 VNCL Stinger,Vanduul,80,0.3,5,80,0.3,5,1 650,1,1,1,1,1,1,720,125,2 100
+4,VariPuck S4 Gimbal Mount,Mount Gimbal S4 Wolf,Flashfire Systems,80,0.3,5,80,0.3,5,800,1,1,1,1,1,1,720,125,2 100
+5,VariPuck S5 Gimbal Mount,AEGS Javelin Manned Turret Gimbal S5,Flashfire Systems,10,0.3,5,10,0.3,5,400,1,1,1,1,1,1,720,200,84
+5,VariPuck S5 Gimbal Mount,Mount Gimbal S5,Flashfire Systems,80,0.3,5,80,0.3,5,2 640,1,1,1,1,1,1,720,200,4 200
+5,VariPuck S5 Gimbal Mount,Mount Gimbal S5 Invsi,Flashfire Systems,80,0.3,5,80,0.3,5,2 640,1,1,1,1,1,1,720,200,4 200
+5,VariPuck S5 Gimbal Mount,Mount Gimbal S5 RSI Meteor,Flashfire Systems,80,0.3,5,80,0.3,5,2 640,1,1,1,1,1,1,720,200,4 200
+6,VariPuck S6 Gimbal Mount,Mount Gimbal S6,Flashfire Systems,80,0.3,5,80,0.3,5,4 224,1,1,1,1,1,1,720,300,7 560
+6,VariPuck S6 Gimbal Mount,Mount Gimbal S6 Polaris,Flashfire Systems,35,0.6,5,35,0.6,5,4 224,1,1,1,1,1,1,720,300,7 560
+6,VariPuck S6 Gimbal Mount,Mount Gimbal S6 Polaris Right,Flashfire Systems,35,0.6,5,35,0.6,5,4 224,1,1,1,1,1,1,720,300,7 560
+6,VariPuck S6 Gimbal Mount,Mount Gimbal S7,Flashfire Systems,80,0.3,100,80,0.3,100,6 750,1,1,1,1,1,1,720,300,7 560
+8,VariPuck S6 Gimbal Mount,Mount Gimbal S8,Flashfire Systems,80,0.3,5,80,0.3,5,10 240,1,1,1,1,1,1,720,300,7 560
+8,VariPuck S6 Gimbal Mount,Mount Gimbal S8 Perseus,Flashfire Systems,25,0.6,5,25,0.6,5,10 240,1,1,1,1,1,1,720,300,7 560
+8,VariPuck S6 Gimbal Mount,Mount Gimbal S8 Perseus Bottom,Flashfire Systems,25,0.6,5,25,0.6,5,10 240,1,1,1,1,1,1,720,300,7 560
+7,VariPuck S7 Gimbal Mount,Mount Gimbal S7 Idris,Flashfire Systems,80,0.3,100,80,0.3,100,6 750,1,1,1,1,1,1,720,300,7 560

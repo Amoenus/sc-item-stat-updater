@@ -1,0 +1,126 @@
+Controller,Face Type,Controller Characteristics Max Reallocation,Controller Characteristics Reconfiguration Cooldown,Controller Characteristics Max Electrical Dmg Charge Rate
+AEGS Avenger,Bubble,1,2.5,100
+AEGS Eclipse,Bubble,1,2.5,100
+AEGS Gladius,Bubble,1,2.5,100
+AEGS Gladius MM (Master Mode),Bubble,1,2.5,100
+AEGS Hammerhead,Quadrant,1,2.5,100
+AEGS Hammerhead MM (Master Mode),Quadrant,1,2.5,100
+AEGS Idris,Quadrant,1,2.5,100
+AEGS Javelin,Quadrant,1,2.5,100
+AEGS Reclaimer,Quadrant,1,2.5,100
+AEGS Redeemer,Bubble,1,2.5,100
+AEGS Retaliator,Bubble,1,2.5,100
+AEGS Sabre,Bubble,1,2.5,100
+AEGS Sabre Firebird,Bubble,1,2.5,100
+AEGS Sabre Peregrine,Bubble,1,2.5,100
+AEGS Vanguard,Bubble,1,2.5,100
+AEGS Vanguard MM (Master Mode),Bubble,1,2.5,100
+ANVL Arrow,Bubble,1,2.5,100
+ANVL Asgard,Bubble,1,2.5,100
+ANVL Ballista,Bubble,1,2.5,100
+ANVL Carrack,Quadrant,1,2.5,100
+ANVL Gladiator,Bubble,1,2.5,100
+ANVL Hawk,Bubble,1,2.5,100
+ANVL Hornet,Bubble,1,2.5,100
+ANVL Hornet MM (Master Mode),Bubble,1,2.5,100
+ANVL Hurricane,Bubble,1,2.5,100
+ANVL Lightning,Bubble,1,2.5,100
+ANVL Lightning F8,Bubble,1,2.5,100
+ANVL Paladin,Quadrant,1,2.5,100
+ANVL Pisces,Bubble,1,2.5,100
+ANVL Terrapin,Bubble,1,2.5,100
+ANVL Terrapin Medic,Bubble,1,2.5,100
+ANVL Valkyrie,Bubble,1,2.5,100
+ARGO CSV,Bubble,1,2.5,100
+ARGO MOLE,Quadrant,1,2.5,100
+ARGO MOTH,Quadrant,1,2.5,100
+ARGO MPUV,Bubble,1,2.5,100
+ARGO MPUV 1T,Bubble,1,2.5,100
+ARGO MPUV Transport,Bubble,1,2.5,100
+ARGO RAFT,Bubble,1,2.5,100
+ARGO SRV,Bubble,1,2.5,100
+BANU Defender,Bubble,1,2.5,100
+CNOU HoverQuad,Bubble,1,2.5,100
+CNOU Mustang,Bubble,1,2.5,100
+CNOU Nomad,Bubble,1,2.5,100
+CRUS Intrepid,Bubble,1,2.5,100
+CRUS Spirit,Bubble,1,2.5,100
+CRUS Star Runner,Quadrant,1,2.5,100
+CRUS Starfighter,Bubble,1,2.5,100
+CRUS Starlifter,Quadrant,1,2.5,100
+Destructible Probe,Quadrant,1,2.5,100
+DRAK Buccaneer,Bubble,1,2.5,100
+DRAK Buccaneer MM (Master Mode),Bubble,1,2.5,100
+DRAK Caterpillar,Quadrant,1,2.5,100
+DRAK Clipper,Bubble,1,2.5,100
+DRAK Corsair,Quadrant,1,2.5,100
+DRAK Cutlass,Bubble,1,2.5,100
+DRAK Cutter,Bubble,1,2.5,100
+DRAK Cutter Scout,Bubble,1,2.5,100
+DRAK Dragonfly,Bubble,1,2.5,100
+DRAK Golem,Bubble,1,2.5,100
+DRAK Herald,Bubble,1,2.5,100
+DRAK Mule,Bubble,1,2.5,100
+DRAK Vulture,Bubble,1,2.5,100
+ESPR Prowler,Bubble,1,2.5,100
+ESPR Talon,Bubble,1,2.5,100
+GAMA Syulen,Bubble,1,2.5,100
+GLSN Shiv,Bubble,1,2.5,100
+GRIN ROC,Bubble,1,2.5,100
+Krig l21 wolf,Bubble,1,2.5,100
+Krig l22 alphawolf,Bubble,1,2.5,100
+KRIG Merlin,Bubble,1,2.5,100
+KRIG Merlin MM (Master Mode),Bubble,1,2.5,100
+MISC Fortune,Bubble,1,2.5,100
+MISC Freelancer,Bubble,1,2.5,100
+MISC Freelancer MAX,Bubble,1,2.5,100
+MISC Freelancer MIS,Bubble,1,2.5,100
+MISC Fury,Bubble,1,2.5,100
+MISC Hull A,Bubble,1,2.5,100
+MISC Hull B,Quadrant,1,2.5,100
+MISC Hull C,Quadrant,1,2.5,100
+MISC Prospector,Bubble,1,2.5,100
+MISC Razor,Bubble,1,2.5,100
+MISC Reliant,Bubble,1,2.5,100
+MISC Starfarer,Quadrant,1,2.5,100
+MISC Starlancer,Quadrant,1,2.5,100
+MRAI Guardian,Bubble,1,2.5,100
+MRAI Guardian MX,Bubble,1,2.5,100
+MRAI Pulse,Bubble,1,2.5,100
+MXC,Bubble,1,2.5,100
+ORIG 100,Bubble,1,2.5,100
+ORIG 300,Bubble,1,2.5,100
+ORIG 400i,Quadrant,1,2.5,100
+ORIG 600i,Quadrant,1,2.5,100
+ORIG 85x,Bubble,1,2.5,100
+ORIG 890Jump,Quadrant,1,2.5,100
+ORIG m50,Bubble,1,2.5,100
+ORIG X1,Bubble,1,2.5,100
+Probe,Quadrant,1,2.5,100
+Quadrant,Quadrant,1,2.5,100
+RSI Apollo,Bubble,1,2.5,100
+RSI Aurora,Bubble,1,2.5,100
+RSI Aurora Mk2,Bubble,1,2.5,100
+RSI Bengal,Quadrant,1,2.5,100
+RSI Constellation,Quadrant,1,2.5,100
+RSI Constellation MM (Master Mode),Quadrant,1,2.5,100
+RSI Hermes,Bubble,1,2.5,100
+RSI Lynx,Bubble,1,2.5,100
+RSI Mantis,Bubble,1,2.5,100
+RSI Meteor,Bubble,1,2.5,100
+RSI Perseus,Quadrant,1,2.5,100
+RSI Polaris,Quadrant,1,2.5,100
+RSI Salvation,Bubble,1,2.5,100
+RSI Scorpius,Bubble,1,2.5,100
+RSI Ursa,Bubble,1,2.5,100
+RSI Zeus,Bubble,1,2.5,100
+TMBL Cyclone,Bubble,1,2.5,100
+TMBL Nova,Bubble,1,2.5,100
+TMBL Storm,Bubble,1,2.5,100
+VNCL Blade,Bubble,1,2.5,100
+VNCL Glaive,Bubble,1,2.5,100
+VNCL Scythe,Bubble,1,2.5,100
+VNCL Stinger,Bubble,1,2.5,100
+XIAN Nox,Bubble,1,2.5,100
+XIAN Scout,Bubble,1,2.5,100
+XNAA SanTokYai,Bubble,1,2.5,100

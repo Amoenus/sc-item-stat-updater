@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseCSV } from './csv-parser.js';
-import { sanitizeIniValue } from './formatter.js';
-import { readIniFile, writeIniFile } from './ini-file.js';
+import { sanitizeIniValue } from './format/formatter.js';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
+import { parseCSV } from './io/csv-parser.js';
+import { readIniFile, writeIniFile } from './io/ini-file.js';
+import { buildLookupMap, loadMappingFile, saveMappingFile } from './io/mapping-store.js';
+import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
 import { getLogger } from './logger.js';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './text-utils.js';
 
 const logger = getLogger('updater');
 
@@ -21,6 +23,154 @@ function validateRow(row, label) {
   return 'valid';
 }
 
+/** Resolves base paths and option defaults. */
+function resolveOptions(options) {
+  const baseDir = path.resolve(import.meta.dirname, '..', '..');
+  return {
+    baseDir,
+    iniPath: options.iniPath || path.join(baseDir, 'global.ini'),
+    csvDir: options.csvDir || path.join(baseDir, 'csv'),
+    dryRun: options.dryRun || false,
+    skipBackup: options.skipBackup || false,
+  };
+}
+
+/** Validates a file path stays within a base directory (path traversal protection). */
+function validateContainedPath(filePath, baseDir, label) {
+  const resolved = path.resolve(filePath);
+  const resolvedBase = path.resolve(baseDir);
+  if (!resolved.startsWith(resolvedBase + path.sep) && resolved !== resolvedBase) {
+    throw new Error(`Path traversal detected in ${label}: ${filePath}`);
+  }
+  return resolved;
+}
+
+/** Reads and validates CSV data against the config's required columns. */
+async function loadCsvData(csvPath, config) {
+  logger.debug('Reading CSV file', { file: csvPath, label: config.label });
+  const csvContent = await fs.readFile(csvPath, 'utf-8');
+  const rows = parseCSV(csvContent);
+  logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
+
+  if (config.requiredColumns && rows.length > 0) {
+    const csvColumns = Object.keys(rows[0]);
+    const missing = config.requiredColumns.filter((col) => !csvColumns.includes(col));
+    if (missing.length > 0) {
+      throw new Error(`CSV schema mismatch: missing columns: ${missing.join(', ')}`);
+    }
+  }
+  return rows;
+}
+
+/** Resolves localization keys for SPViewer configs (no Localization Key column in CSV). */
+async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun) {
+  const reverseIndex = buildReverseNameIndex(lines);
+  let lookupMap = null;
+  if (config.lookupCsvFile) {
+    const lookupPath = validateContainedPath(path.resolve(csvDir, config.lookupCsvFile), csvDir, 'lookup CSV filename');
+    lookupMap = await buildLookupMap(lookupPath);
+  }
+  const mappingsDir = path.resolve(baseDir, 'mappings');
+  const mappingBasename = path.basename(config.csvFile).replace(/\.csv$/i, '.json');
+  const mappingFile = path.join(mappingsDir, mappingBasename);
+  const savedMapping = await loadMappingFile(mappingFile);
+  const { unresolved, mapping } = resolveLocalizationKeys(
+    rows,
+    config.nameColumn,
+    reverseIndex,
+    lookupMap,
+    savedMapping,
+  );
+  if (!dryRun) {
+    await saveMappingFile(mappingFile, mapping);
+  }
+  if (unresolved.length > 0) {
+    logger.debug('Key resolution summary', {
+      label: config.label,
+      resolved: rows.length,
+      unresolved: unresolved.length,
+    });
+  }
+  return unresolved;
+}
+
+/** Finds the last existing description key index for insertion ordering. */
+function findLastDescIndex(existingKeys, descKeyMatch) {
+  let lastDescIdx = -1;
+  for (const [key, idx] of Object.entries(existingKeys)) {
+    if (descKeyMatch(key.toLowerCase()) && idx > lastDescIdx) {
+      lastDescIdx = idx;
+    }
+  }
+  return lastDescIdx;
+}
+
+/** Processes a single row: updates existing key or queues a new entry. */
+function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys) {
+  const nameKey = row['Localization Key'];
+  const descKey = deriveDescKey(nameKey);
+  const altKeys = config.getAlternateDescKeys ? config.getAlternateDescKeys(descKey) : [];
+  const allKeys = [descKey, ...altKeys];
+
+  if (allKeys.some((k) => updatedKeys.has(k.toLowerCase()))) {
+    return { status: 'skipped' };
+  }
+
+  let anyUpdated = false;
+  let anyFound = false;
+
+  for (const targetKey of allKeys) {
+    const found = findKey(targetKey, existingKeys);
+    if (found) {
+      anyFound = true;
+      const oldLine = lines[found.idx];
+      const eqIdx = oldLine.indexOf('=');
+      const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
+      const flavor = extractFlavorText(oldValue);
+      const newValue = sanitizeIniValue(config.buildValue(row, flavor));
+      if (newValue !== oldValue) {
+        lines[found.idx] = `${found.key}=${newValue}`;
+        anyUpdated = true;
+      }
+    }
+  }
+
+  if (anyUpdated) {
+    for (const k of allKeys) updatedKeys.add(k.toLowerCase());
+    return { status: 'updated' };
+  }
+  if (anyFound) {
+    for (const k of allKeys) updatedKeys.add(k.toLowerCase());
+    return { status: 'skipped' };
+  }
+
+  const newValue = sanitizeIniValue(config.buildValue(row, ''));
+  return { status: 'new', line: `${descKey}=${newValue}` };
+}
+
+/** Inserts new lines at the correct position (after last matching desc key). */
+function insertNewEntries(lines, newLines, lastDescIdx) {
+  if (newLines.length === 0) return;
+  newLines.sort();
+  if (lastDescIdx > -1) {
+    for (let i = 0; i < newLines.length; i++) lines.splice(lastDescIdx + 1 + i, 0, newLines[i]);
+  } else {
+    lines.push(...newLines);
+  }
+}
+
+/** Builds the summary result object. */
+function buildResult(config, stats, durationMs, dryRun) {
+  const suffix = dryRun ? ' (dry run)' : '';
+  const errorSuffix = stats.errorCount > 0 ? `, Errors ${stats.errorCount}` : '';
+  const unresolvedSuffix = stats.unresolvedCount > 0 ? `, Unresolved ${stats.unresolvedCount}` : '';
+  const summary = `${config.label}: Updated ${stats.updatedCount}, Added ${stats.newCount}, Skipped ${stats.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
+
+  logger.debug(summary, { label: config.label, ...stats, durationMs, dryRun });
+
+  return { label: config.label, ...stats, issues: stats.issues, summary };
+}
+
 /**
  * Runs a CSV-based update against global.ini.
  *
@@ -29,21 +179,13 @@ function validateRow(row, label) {
  * @param {string} [options.iniPath] - Path to global.ini (default: ./global.ini relative to project root)
  * @param {string} [options.csvDir] - Directory containing CSV files (default: ./csv)
  * @param {boolean} [options.dryRun] - Preview changes without writing (default: false)
+ * @param {boolean} [options.skipBackup] - Skip backup rotation (default: false)
  */
 export async function runUpdate(config, options = {}) {
   const start = performance.now();
+  const opts = resolveOptions(options);
 
-  const baseDir = path.resolve(import.meta.dirname, '..', '..');
-  const iniPath = options.iniPath || path.join(baseDir, 'global.ini');
-  const csvDir = options.csvDir || path.join(baseDir, 'csv');
-  const dryRun = options.dryRun || false;
-
-  const csvPath = path.resolve(csvDir, config.csvFile);
-
-  // Path traversal protection: ensure CSV file stays within its directory
-  if (!csvPath.startsWith(path.resolve(csvDir) + path.sep) && csvPath !== path.resolve(csvDir)) {
-    throw new Error(`Path traversal detected in CSV filename: ${config.csvFile}`);
-  }
+  const csvPath = validateContainedPath(path.resolve(opts.csvDir, config.csvFile), opts.csvDir, 'CSV filename');
 
   try {
     await fs.access(csvPath);
@@ -51,132 +193,69 @@ export async function runUpdate(config, options = {}) {
     throw new Error(`CSV file not found: ${csvPath}`);
   }
   try {
-    await fs.access(iniPath);
+    await fs.access(opts.iniPath);
   } catch {
-    throw new Error(`INI file not found: ${iniPath}`);
+    throw new Error(`INI file not found: ${opts.iniPath}`);
   }
 
   try {
-    logger.debug('Reading CSV file', { file: csvPath, label: config.label });
-    const csvContent = await fs.readFile(csvPath, 'utf-8');
-    const rows = parseCSV(csvContent);
-    logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
+    const rows = await loadCsvData(csvPath, config);
+    const { lines, index: existingKeys } = await readIniFile(opts.iniPath);
 
-    if (config.requiredColumns && rows.length > 0) {
-      const csvColumns = Object.keys(rows[0]);
-      const missing = config.requiredColumns.filter((col) => !csvColumns.includes(col));
-      if (missing.length > 0) {
-        throw new Error(`CSV schema mismatch: missing columns: ${missing.join(', ')}`);
-      }
-    }
+    const unresolvedNames = config.nameColumn
+      ? await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun)
+      : [];
 
-    const { lines, index: existingKeys } = await readIniFile(iniPath);
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
-
+    const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
+    const updatedKeys = new Set();
+    const newLines = [];
+    const issues = unresolvedNames.map((name) => ({ key: name, reason: 'No localization key found', type: 'unresolved' }));
     let updatedCount = 0,
       newCount = 0,
       skippedCount = 0,
       errorCount = 0;
-    const newLines = [];
-    const issues = [];
-    let lastDescIdx = -1;
 
-    for (const [key, idx] of Object.entries(existingKeys)) {
-      if (config.descKeyMatch(key.toLowerCase())) {
-        if (idx > lastDescIdx) lastDescIdx = idx;
-      }
-    }
-
-    for (const r of rows) {
-      const validation = validateRow(r, config.label);
+    for (const row of rows) {
+      const validation = validateRow(row, config.label);
       if (validation === 'skip') {
         skippedCount++;
         continue;
       }
       if (validation === 'invalid') {
-        issues.push({ key: r['Localization Key'], reason: 'Invalid localization key' });
+        issues.push({ key: row['Localization Key'], reason: 'Invalid localization key', type: 'error' });
         errorCount++;
         continue;
       }
 
-      const nameKey = r['Localization Key'];
-      const descKey = deriveDescKey(nameKey);
-      const altKeys = config.getAlternateDescKeys ? config.getAlternateDescKeys(descKey) : [];
-      const allKeys = [descKey, ...altKeys];
-      let anyUpdated = false;
-      let hadError = false;
-
-      for (const targetKey of allKeys) {
-        const found = findKey(targetKey, existingKeys);
-        if (found) {
-          try {
-            const oldLine = lines[found.idx];
-            const eqIdx = oldLine.indexOf('=');
-            const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-            const flavor = extractFlavorText(oldValue);
-            const newValue = sanitizeIniValue(config.buildValue(r, flavor));
-            lines[found.idx] = `${found.key}=${newValue}`;
-            anyUpdated = true;
-          } catch (err) {
-            logger.debug('Failed to build value for row, skipping', {
-              label: config.label,
-              key: nameKey,
-              error: err.message,
-            });
-            issues.push({ key: nameKey, reason: `Build failed: ${err.message}` });
-            hadError = true;
-          }
-        }
-      }
-
-      if (hadError) {
-        errorCount++;
-      } else if (anyUpdated) {
-        updatedCount++;
-      } else {
-        try {
-          const newValue = sanitizeIniValue(config.buildValue(r, ''));
-          newLines.push(`${descKey}=${newValue}`);
+      try {
+        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys);
+        if (result.status === 'updated') updatedCount++;
+        else if (result.status === 'new') {
+          newLines.push(result.line);
           newCount++;
-        } catch (err) {
-          logger.debug('Failed to build value for new row, skipping', {
-            label: config.label,
-            key: nameKey,
-            error: err.message,
-          });
-          issues.push({ key: nameKey, reason: `Build failed: ${err.message}` });
-          errorCount++;
-        }
+        } else skippedCount++;
+      } catch (err) {
+        const nameKey = row['Localization Key'];
+        logger.debug('Failed to process row, skipping', { label: config.label, key: nameKey, error: err.message });
+        issues.push({ key: nameKey, reason: `Build failed: ${err.message}`, type: 'error' });
+        errorCount++;
       }
     }
 
-    if (newLines.length > 0 && lastDescIdx > -1) {
-      newLines.sort();
-      for (let i = 0; i < newLines.length; i++) lines.splice(lastDescIdx + 1 + i, 0, newLines[i]);
-    } else if (newLines.length > 0) {
-      lines.push(...newLines.sort());
-    }
+    insertNewEntries(lines, newLines, lastDescIdx);
 
-    if (!dryRun) {
-      await writeIniFile(iniPath, lines);
+    if (!opts.dryRun && (updatedCount > 0 || newCount > 0)) {
+      await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
     }
 
     const durationMs = Math.round(performance.now() - start);
-    const suffix = dryRun ? ' (dry run)' : '';
-    const errorSuffix = errorCount > 0 ? `, Errors ${errorCount}` : '';
-    const summary = `${config.label}: Updated ${updatedCount}, Added ${newCount}, Skipped ${skippedCount}${errorSuffix}${suffix} [${durationMs}ms]`;
-
-    logger.debug(summary, {
-      label: config.label,
-      updatedCount,
-      newCount,
-      skippedCount,
-      errorCount,
+    return buildResult(
+      config,
+      { updatedCount, newCount, skippedCount, errorCount, unresolvedCount: unresolvedNames.length, issues },
       durationMs,
-      dryRun,
-    });
-
-    return { label: config.label, updatedCount, newCount, skippedCount, errorCount, issues, summary };
+      opts.dryRun,
+    );
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${err.message}`, { cause: err });
   }

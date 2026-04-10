@@ -1,0 +1,19 @@
+Size,Name,Manufacturer,Module  Slots,Throttle  Lerp Speed,Laser Power Max,Laser Power Min,Range Power Max,Range Power Min,Rock Modifier Resistance,Rock Modifier Instability,Rock Modifier Optimal Charge Zone,Rock Modifier Optimal Rate,Rock Modifier Inert Materials,EM Emit Active,EM Emit Decay,IR Emit,Power Segment Usage Active,Power Segment Usage Min,Cooling Usage Max,Cooling Usage Min,Temperature (°C) Max,Temperature (°C) Cooling Threshold,Temperature (°C) IR Threshold,Temperature (°C) Overheat,Temperature (°C) Max,Health,Damage Multipliers Recovery,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Lifetime,Self Repair Stun,Self Repair Use,Self Repair Time to Repair,Mass,K µSCU
+1,Arbor MH1 Mining Laser,Musashi Industrial & Starflight Concern,1,6.5,1 890,94.5,60,180,+25%,-35%,+40%,,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+1,Arbor MH1 Mining Laser,Musashi Industrial & Starflight Concern,1,6.5,1 850,1.9,30,150,,,,,,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,0.001
+2,Arbor MH2 Mining Laser,Musashi Industrial & Starflight Concern,2,6.5,2 400,120,90,270,+25%,-35%,+40%,,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+0,Arbor MHV Mining Laser,Greycat Industrial,0,6.5,0.8,0.2,5,15,,-40%,,,,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+1,Helix I Mining Laser,Thermyte Concern,2,6.5,3 150,630,15,45,-30%,,-40%,,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+2,Helix II Mining Laser,Thermyte Concern,3,6.5,4 080,1 224,30,90,-30%,,-40%,,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+1,Hofstede-S1 Mining Laser,Shubin Interstellar,1,6.5,2 100,105,45,135,-30%,+10%,+60%,+20%,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+2,Hofstede-S2 Mining Laser,Shubin Interstellar,2,6.5,3 360,336,60,180,-30%,+10%,+60%,+20%,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+1,Impact I Mining Laser,Thermyte Concern,2,6.5,2 100,420,45,135,+10%,-10%,+20%,-40%,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+2,Impact II Mining Laser,Thermyte Concern,3,6.5,3 360,1 008,60,180,+10%,-10%,+20%,-40%,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+1,Klein-S1 Mining Laser,Shubin Interstellar,0,6.5,2 520,378,45,135,-45%,+35%,+20%,,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+2,Klein-S2 Mining Laser,Shubin Interstellar,1,6.5,3 600,720,60,180,-45%,+35%,+20%,,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+1,Lancet MH1 Mining Laser,Greycat Industrial,1,6.5,2 520,504,30,90,,-10%,-60%,+40%,-30%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+2,Lancet MH2 Mining Laser,Greycat Industrial,2,6.5,3 600,1 080,45,135,,-10%,-60%,+40%,-40%,0,0.15,0,2,2,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,252
+0,Lawson Mining Laser,Shubin Interstellar,0,6.5,0.8,0.2,5,15,-40%,+30%,+40%,,,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+1,Pitman Mining Laser,Drake Interplanetary,2,7,3 150,630,40,45,+25%,+35%,+40%,-40%,-40%,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+0,S0 Helix,Thermyte Concern,0,6.5,1,0.2,8,18,,,-40%,+20%,,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84
+0,S00 Hofstede,Shubin Interstellar,0,6.5,0.8,0.2,8,18,-40%,+30%,+40%,+20%,,0,0.15,0,1,1,,,,,,,,8000,1,1,1,1,1,1,100,1,120,20%,1,84

@@ -1,0 +1,74 @@
+Name,Localization Key,Localization Display Name,Manufacturer,Class,Grade,Size,Cooling Generation,Power Consumption,EM Max,IR Max,Health,Distortion Shutdown Dmg,Distortion Decay Delay,Distortion Decay Rate,Distortion Warning Ratio,Price
+AbsoluteZero,item_NameCOOL_ACOM_S02_AbsoluteZero_SCItem,"Cmp/2/B AbsoluteZero",ACOM (ACOM),Competition,B,2,46,3,1230,7850,210,1800,3,120,0.75,
+Algid,item_NameCOOL_AEGS_S04_Reclaimer,Algid,Aegis Dynamics (AEGS),Industrial,A,4,69,6,2970,14300,4100,11000,6,733.33,0.75,
+Arctic,item_NameCOOL_AEGS_S02_Arctic,"Mil/2/C Arctic",Aegis Dynamics (AEGS),Military,C,2,46,4,1980,9440,490,4150,3,276.67,0.75,
+ArcticStorm,item_NameCOOL_LPLT_S01_ArcticStorm,"Civ/1/C ArcticStorm",Lightning Power Ltd. (LPLT),Civilian,C,1,26,2,750,4000,130,1900,1.5,126.67,0.75,8640
+Aufeis,item_nameCOOL_WCPR_S02_Aufeis_SCItem,"Civ/2/A Aufeis",Wen/Cassel Propulsion (WCPR),Civilian,A,2,39,3,1130,6050,460,3850,3,256.67,0.75,28800
+Avalanche,item_Name_COOL_AEGS_S02_Avalanche,"Mil/2/A Avalanche",Aegis Dynamics (AEGS),Military,A,2,50,4,1980,10300,640,5500,3,366.67,0.75,
+Berian,item_NameCOOL_WCPR_S01_Berian,"Civ/1/C Berian",Wen/Cassel Propulsion (WCPR),Civilian,C,1,26,2,750,4000,130,1900,1.5,126.67,0.75,8640
+BlastChill,item_NameCOOL_LPLT_S01_BlastChill,"Civ/1/D BlastChill",Lightning Power Ltd. (LPLT),Civilian,D,1,23,2,750,3630,110,1650,1.5,110,0.75,6121
+Blizzard,item_NameCOOL_AEGS_S03_Blizzard_SCItem,"Mil/3/A Blizzard",Aegis Dynamics (AEGS),Military,A,3,60,5,2480,12700,1800,8500,4.5,566.67,0.75,
+Boreal,item_NameCOOL_AEGS_S02_Boreal,"Mil/2/D Boreal",Aegis Dynamics (AEGS),Military,D,2,41,4,1980,8580,430,3600,3,240,0.75,
+Bracer,item_NameCOOL_AEGS_S01_Bracer,"Mil/1/C Bracer",Aegis Dynamics (AEGS),Military,C,1,34,3,1490,7260,180,2700,1.5,180,0.75,
+Chill-Max,item_NameCOOL_JUST_S03_ChillMax_SCItem,"Ind/3/A Chill-Max",Juno Starwerk (JUST),Industrial,A,3,58,5,2480,11900,1500,7000,4.5,466.67,0.75,72960
+ColdSnap,item_NameCOOL_LPLT_S02_ColdSnap,"Civ/2/C ColdSnap",Lightning Power Ltd. (LPLT),Civilian,C,2,34,3,1130,5500,350,2950,3,196.67,0.75,17280
+ColdSurge,item_NameCOOL_LPLT_S03_ColdSurge_SCItem,"Civ/3/D ColdSurge",Lightning Power Ltd. (LPLT),Civilian,D,3,41,4,1500,6380,840,4000,4.5,266.67,0.75,28800
+CoolCore,item_NameCOOL_JUST_S02_CoolCore,"Ind/2/C CoolCore",Juno Starwerk (JUST),Industrial,C,2,41,4,1980,8710,420,3550,3,236.67,0.75,21890
+Cryo-Star,item_NameCOOL_JSPN_S01_CryoStar,"Civ/1/B Cryo-Star",J-Span (JSPN),Civilian,B,1,26,2,750,4000,150,2200,1.5,146.67,0.75,10800
+Cryo-Star EX,item_NameCOOL_JSPN_S02_CryoStarEX,"Civ/2/B Cryo-Star EX",J-Span (JSPN),Civilian,B,2,34,3,1130,5500,400,3400,3,226.67,0.75,21600
+Cryo-Star SL,item_Name_COOL_JSPN_S00_CryoStarSL,"Civ/0/B Cryo-Star SL",J-Span (JSPN),Civilian,B,0,16,1,375,2500,53,1400,1.5,93.33,0.75,5400
+Cryo-Star XL,item_Name_COOL_JSPN_S03_CryoStarXL,"Civ/3/B Cryo-Star XL",J-Span (JSPN),Civilian,B,3,45,4,1500,7000,1100,5500,4.5,366.67,0.75,43200
+Draug,item_NameCOOL_WCPR_S03_Draug_SCItem,"Civ/3/A Draug",Wen/Cassel Propulsion (WCPR),Civilian,A,3,49,4,1500,7700,1300,6000,4.5,400,0.75,
+Eco-Flow,item_NameCOOL_JUST_S01_EcoFlow,"Ind/1/B Eco-Flow",Juno Starwerk (JUST),Industrial,B,1,32,3,1490,6530,180,2650,1.5,176.67,0.75,13680
+Elsen,item_NameCOOL_WCPR_S03_Elsen_SCItem,"Civ/3/A Elsen",Aegis Dynamics (AEGS),Civilian,A,3,49,4,1500,7700,1300,6000,4.5,400,0.75,
+Endo,item_NameCOOL_WCPR_S01_Endo,"Civ/1/B Endo",Wen/Cassel Propulsion (WCPR),Civilian,B,1,26,2,750,4000,150,2200,1.5,146.67,0.75,10800
+Exotherm,item_NameCOOL_AEGS_S04_Idirs,Exotherm,Aegis Dynamics (AEGS),,A,4,102,6,2970,15000,36000,31000,6,2066.67,0.75,
+FlashFreeze,item_NameCOOL_LPLT_S01_FlashFreeze,"Civ/1/B FlashFreeze",Lightning Power Ltd. (LPLT),Civilian,B,1,26,2,750,4000,150,2200,1.5,146.67,0.75,10800
+Fridan,item_NameCOOL_WCPR_S00_Fridan,"Civ/0/C Fridan",Wen/Cassel Propulsion (WCPR),Civilian,C,0,16,1,375,2500,46,1250,1.5,83.33,0.75,4932
+Frost-Star,item_NameCOOL_JSPN_S01_FrostStar,"Civ/1/C Frost-Star",J-Span (JSPN),Civilian,C,1,26,2,750,4000,130,1900,1.5,126.67,0.75,11511
+Frost-Star EX,item_NameCOOL_JSPN_S02_FrostStarEX,"Civ/2/C Frost-Star EX",J-Span (JSPN),Civilian,C,2,34,3,1130,5500,350,2950,3,196.67,0.75,23021
+Frost-Star SL,item_NameCOOL_JSPN_S00_FrostStarSL,"Civ/0/C Frost-Star SL",J-Span (JSPN),Civilian,C,0,16,1,375,2500,46,1250,1.5,83.33,0.75,5241
+Frost-Star XL,item_NameCOOL_JSPN_S03_FrostStarXL_SCItem,"Civ/3/C Frost-Star XL",J-Span (JSPN),Civilian,C,3,45,4,1500,7000,960,4600,4.5,306.67,0.75,34560
+FrostBite,item_Name_COOL_LPLT_S03_FrostBite,"Civ/3/B FrostBite",Lightning Power Ltd. (LPLT),Civilian,B,3,45,4,1500,7000,1100,5500,4.5,366.67,0.75,43200
+FrostBurn,item_NameCOOL_LPLT_S03_FrostBurn,"Civ/3/C FrostBurn",Lightning Power Ltd. (LPLT),Civilian,C,3,45,4,1500,7000,960,4600,4.5,306.67,0.75,29377
+FullFrost,item_Name_COOL_LPLT_S02_FullFrost,"Civ/2/B FullFrost",Lightning Power Ltd. (LPLT),Civilian,B,2,34,3,1130,5500,400,3400,3,226.67,0.75,21600
+Galinstan,item_NameCOOL_AEGS_S03_Galinstan_SCItem,"Mil/3/D Galinstan",Aegis Dynamics (AEGS),Military,D,3,50,5,2480,10600,1200,5500,4.5,366.67,0.75,
+Gelid,item_Name_COOL_WCPR_S01_Gelid,"Civ/1/A Gelid",Wen/Cassel Propulsion (WCPR),Civilian,A,1,29,2,750,4400,170,2500,1.5,166.67,0.75,14400
+Glacier,item_NameCOOL_AEGS_S01_Glacier_SCItem,"Mil/1/A Glacier",Aegis Dynamics (AEGS),Military,A,1,38,3,1490,7920,230,3500,1.5,233.33,0.75,
+Graupel,item_NameCOOL_WCPR_S02_Graupel,"Civ/2/C Graupel",Wen/Cassel Propulsion (WCPR),Civilian,C,2,34,3,1130,5500,350,2950,3,196.67,0.75,17280
+HeatSafe,item_NameCOOL_TYDT_S01_HeatSafe,"Sth/1/C HeatSafe",Tyler Design & Tech (TYDT),Stealth,C,1,22,1,250,2330,110,1650,1.5,110,0.75,22241
+HeatSink,item_NameCOOL_TYDT_S02_HeatSink_SCItem,"Sth/2/C HeatSink",Tyler Design & Tech (TYDT),Stealth,C,2,32,2,500,3330,300,2500,3,166.67,0.75,38015
+Hydrocel,item_NameCOOL_JUST_S01_Hydrocel,"Ind/1/D Hydrocel",Juno Starwerk (JUST),Industrial,D,1,29,3,1490,5940,130,2000,1.5,133.33,0.75,9120
+HydroJet,item_NameCOOL_JUST_S02_Hydrojet,"Ind/2/D HydroJet",Juno Starwerk (JUST),Industrial,D,2,38,4,1980,7920,370,3100,3,206.67,0.75,18282
+Hydropulse,item_NameCOOL_JUST_S03_Hydropulse_SCItem,"Ind/3/D Hydropulse",Juno Starwerk (JUST),Industrial,D,3,48,5,2480,9900,1000,4800,4.5,320,0.75,36480
+Ice-Flush,item_Name_COOL_JUST_S03_IceFlush,"Ind/3/B Ice-Flush",Juno Starwerk (JUST),Industrial,B,3,52,5,2480,10900,1300,6500,4.5,433.33,0.75,54720
+IceBox,item_NameCOOL_TYDT_S02_IceBox_SCItem,"Sth/2/B IceBox",Tyler Design & Tech (TYDT),Stealth,B,2,32,2,500,3330,340,2900,3,193.33,0.75,47520
+IceDive,item_NameCOOL_ACOM_S02_IceDive_SCItem,"Cmp/2/C IceDive",ACOM (ACOM),Competition,C,2,46,3,1230,7850,190,1600,3,106.67,0.75,30240
+IcePlunge,item_NameCOOL_ACOM_S01_IcePlunge,"Cmp/1/C IcePlunge",ACOM (ACOM),Competition,C,1,34,2,818,5890,69,1050,1.5,70,0.75,15120
+Kelvid,item_Name_COOL_WCPR_S00_Kelvid,"Civ/0/B Kelvid",Wen/Cassel Propulsion (WCPR),Civilian,B,0,16,1,375,2500,53,1400,1.5,93.33,0.75,5400
+Kragen,item_NameCOOL_WCPR_S03_Kragen_SCItem,"Civ/3/A Kragen",Wen/Cassel Propulsion (WCPR),Civilian,A,3,49,4,1500,7700,1300,6000,4.5,400,0.75,
+Mercury,item_NameCOOL_AEGS_S03_Mercury,"Mil/3/C Mercury",Aegis Dynamics (AEGS),Military,C,3,56,5,2480,11600,1300,6500,4.5,433.33,0.75,
+NightFall,item_NameCOOL_TYDT_S02_NightFall_SCItem,"Sth/2/A NightFall",Tyler Design & Tech (TYDT),Stealth,A,2,34,2,500,3670,390,3300,3,220,0.75,
+Permafrost,item_Name_COOL_AEGS_S02_Permafrost,"Mil/2/B Permafrost",Aegis Dynamics (AEGS),Military,B,2,46,4,1980,9440,560,4750,3,316.67,0.75,
+Polar,item_NameCOOL_AEGS_S01_Polar,"Mil/1/B Polar",Aegis Dynamics (AEGS),Military,B,1,34,3,1490,7260,210,3100,1.5,206.67,0.75,
+QuikCool,item_NameCOOL_ACOM_S01_QuickCool,"Cmp/1/D QuikCool",ACOM (ACOM),Competition,D,1,32,2,818,5400,62,900,1.5,60,0.75,12600
+RapidCool,item_NameCOOL_ACOM_S02_RapidCool_SCItem,"Cmp/2/D RapidCool",ACOM (ACOM),Competition,D,2,43,3,1230,7200,170,1450,3,96.67,0.75,25200
+Serac (WCPR),item_NameCOOL_ORIG_S04_890J_SCItem,Serac,Wen/Cassel Propulsion (WCPR),Civilian,A,4,65,5,2060,11200,8400,12500,6,833.33,0.75,
+Serac (RSI),,Serac,Roberts Space Industries (RSI),Civilian,A,4,65,5,2250,12200,9500,14500,6,966.67,0.75,
+SnowBlind,item_Name_COOL_TYDT_S01_SnowBlind,"Sth/1/A SnowBlind",Tyler Design & Tech (TYDT),Stealth,A,1,24,1,250,2570,140,2100,1.5,140,0.75,
+Snowfall,item_NameCOOL_JUST_S02_Snowfall,"Ind/2/B Snowfall",Juno Starwerk (JUST),Industrial,B,2,41,4,1980,8710,480,4100,3,273.33,0.75,
+Snowpack,item_NameCOOL_JUST_S02_Snowpack_SCItem,"Ind/2/A Snowpack",Juno Starwerk (JUST),Industrial,A,2,46,4,1980,9500,550,4600,3,306.67,0.75,36480
+Taiga,item_NameCOOL_WCPR_S02_Taiga_SCItem,"Civ/2/B Taiga",Wen/Cassel Propulsion (WCPR),Civilian,B,2,34,3,1130,5500,400,3400,3,226.67,0.75,21600
+Tempest,item_Name_COOL_AEGS_S03_Tempest,"Mil/3/B Tempest",Aegis Dynamics (AEGS),Military,B,3,56,5,2480,11600,1600,7500,4.5,500,0.75,
+Tepilo,item_NameCOOL_WCPR_S00_Tepilo_SCItem,"Civ/0/A Tepilo",Wen/Cassel Propulsion (WCPR),Civilian,A,0,17,1,375,2750,60,1600,1.5,106.67,0.75,7200
+ThermalCore,item_NameCOOL_JUST_S03_ThermalCore,"Ind/3/C ThermalCore",Juno Starwerk (JUST),Industrial,C,3,52,5,2480,10900,1200,5500,4.5,366.67,0.75,43875
+Thermax,item_NameCOOL_JUST_S01_Thermax,"Ind/1/C Thermax",Juno Starwerk (JUST),Industrial,C,1,32,3,1490,6530,150,2300,1.5,153.33,0.75,10970
+Tundra,item_NameCOOL_AEGS_S01_Tundra,"Mil/1/D Tundra",Aegis Dynamics (AEGS),Military,D,1,32,3,1490,6600,160,2350,1.5,156.67,0.75,
+Ultra-Flow,item_Name_COOL_JUST_S01_UltraFlow,"Ind/1/A Ultra-Flow",Juno Starwerk (JUST),Industrial,A,1,34,3,1490,7130,200,3000,1.5,200,0.75,18240
+VaporBlock,item_NameCOOL_TYDT_S01_VaporBlock,"Sth/1/B VaporBlock",Tyler Design & Tech (TYDT),Stealth,B,1,22,1,250,2330,120,1850,1.5,123.33,0.75,23760
+WhiteOut,item_Name_COOL_LPLT_S02_WhiteOut,"Civ/2/D WhiteOut",Lightning Power Ltd. (LPLT),Civilian,D,2,32,3,1130,5000,300,2600,3,173.33,0.75,14400
+Winter-Star,item_NameCOOL_JSPN_S01_WinterStar,"Civ/1/D Winter-Star",J-Span (JSPN),Civilian,D,1,23,2,750,3630,110,1650,1.5,110,0.75,7200
+Winter-Star EX,item_NameCOOL_JSPN_S02_WinterStarEX_SCItem,"Civ/2/D Winter-Star EX",J-Span (JSPN),Civilian,D,2,32,3,1130,5000,300,2600,3,173.33,0.75,14400
+Winter-Star SL,item_NameCOOL_JSPN_S00_WinterStarSL_SCItem,"Civ/0/D Winter-Star SL",J-Span (JSPN),Civilian,D,0,14,1,375,2270,40,1050,1.5,70,0.75,3600
+Winter-Star XL,item_NameCOOL_JSPN_S03_WinterStarXL_SCItem,"Civ/3/D Winter-Star XL",J-Span (JSPN),Civilian,D,3,41,4,1500,6380,840,4000,4.5,266.67,0.75,28800
+ZeroRush,item_Name_COOL_ACOM_S01_ZeroRush,"Cmp/1/B ZeroRush",ACOM (ACOM),Competition,B,1,34,2,818,5890,78,1150,1.5,76.67,0.75,18900

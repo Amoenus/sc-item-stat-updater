@@ -1,0 +1,131 @@
+Size,Name,Manufacturer,Item,Missile carriage Quantity,Missile carriage Size,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Self Repair Use,Self Repair Time to Repair,Self Repair Health Ratio,Mass,K µSCU
+9,Aegis Eclipse Torpedo Rack,Aegis Dynamics,S09 AEGS Eclipse,3,9,200,1,1,1,1,1,1,1,120,20%,20,120 000
+6,Aegis Gemini Missile Launcher,Aegis Dynamics,S06 MISC Gemini,9,3,200,1,1,1,1,1,1,1,120,20%,20,7 560
+6,Aegis Gemini Missile Launcher,Aegis Dynamics,S06 MISC Gemini Derelict,9,3,200,,,,,,,1,120,20%,20,7 560
+9,Aegis Retaliator Torpedo Rack,Aegis Dynamics,S09 AEGS Retaliator Fore,4,9,200,1,1,1,1,1,1,1,120,20%,20,120 000
+9,Aegis Retaliator Torpedo Rack,Aegis Dynamics,S09 AEGS Retaliator Rear,2,9,200,1,1,1,1,1,1,1,120,20%,20,120 000
+9,Aegis Retaliator Torpedo Rack,Aegis Dynamics,S12 AEGS Javelin,1,12,10 000,1,1,1,1,1,1,1,120,20%,20,120 000
+6,Aegis Sabre Firebird 12xS3 Missile Rack,Aegis Dynamics,S03 AEGS Sabre Firebird,24,3,200,1,1,1,1,1,1,1,120,20%,20,120 000
+5,Aegis Vanguard Torpedo Rack,Aegis Dynamics,S05 AEGS Vanguard,3,5,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,Anvil Ballista S05 Missile Rack,Anvil Aerospace,G  ANVL Ballista Quad S05,4,5,,,,,,,,,,,,4 200
+5,Anvil Ballista S05 Missile Rack,Anvil Aerospace,ANVL Ballista Quad S05,4,5,,,,,,,,,,,20,4 200
+7,Anvil Ballista S07 Missile Rack,Anvil Aerospace,G  S07 ANVL Ballista Duel,1,7,,,,,,,,,,,,14 200
+7,Anvil Ballista S07 Missile Rack,Anvil Aerospace,S07 ANVL Ballista Duel,1,7,,,,,,,,,,,20,14 200
+4,Anvil F7C-M Mk II Missile Rack,Anvil Aerospace,S04 ANVL Hornet F7CM Mk2 Turret,8,1,200,1,1,1,1,1,1,1,120,20%,20,2 100
+6,Anvil Gladiator Torpedo Rack,Aegis Dynamics,S06 ANVL Gladiator,2,5,200,1,1,1,1,1,1,1,120,20%,20,7 560
+7,Ares Star Fighter Missile Launcher,Crusader Industries,S07 CRUS Starfighter,12,3,200,1,1,1,1,1,1,1,120,20%,20,14 200
+4,Argo MOTH Missile Launcher,Argo Astronautics,S04 ARGO MOTH 16 S02,16,2,200,1,1,1,1,1,1,1,120,20%,20,7 560
+5,Esperia Stinger Missile Rack,Vanduul,S05 VNCL Stinger S02,8,2,200,1,1,1,1,1,1,1,120,20%,20,0.001
+5,Esperia Stinger Missile Rack,Vanduul,S05 VNCL Stinger S02 Right,8,2,200,1,1,1,1,1,1,1,120,20%,20,0.001
+2,GMRCK S01 TMBL Storm AA Custom,Tumbril Land Systems,G  S01 TMBL Storm AA Custom,32,1,200,1,1,1,1,1,1,1,120,20%,20,252
+2,GMRCK S02 TMBL Storm AA Custom,Tumbril Land Systems,G  S02 TMBL Storm AA Custom,8,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,Guardian MX Missile Rack,Tumbril Land Systems,S02 MRAI Guardian MX Custom,12,2,200,1,1,1,1,1,1,1,120,20%,100,252
+2,Hermes Missile Rack,Roberts Space Industries,S02 RSI Hermes,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,"HMF-T12 ""Hammerfall"" Torpedo Launcher",Aegis Dynamics,S10 AEGS Idris Nose S12 Torpedo,20,12,35 000,1,1,1,1,1,1,1,120,20%,20,120 000
+6,Hull B Missile Rack,Behring,S06 MISC Hull B,8,3,200,1,1,1,1,1,1,1,120,20%,20,7 560
+5,IFR-532 Missile Rack,Aegis Dynamics,S05 AEGS Idris Left,16,3,200,1,1,1,1,1,1,1,120,20%,20,120 000
+5,IFR-532 Missile Rack,Aegis Dynamics,S05 AEGS Idris Right,16,3,200,1,1,1,1,1,1,1,120,20%,20,120 000
+8,IFR-810 Missile Rack,Aegis Dynamics,S08 AEGS Idris,10,5,5 000,1,1,1,1,1,1,1,120,20%,20,54 600
+2,Mirai Fury 1xS2 Missile Rack,Mirai,S02 MISC Fury,1,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,Mirai Fury MX 2xS1 Missile Rack,Mirai,S02 MISC Fury Dual,2,1,200,1,1,1,1,1,1,1,120,20%,20,252
+3,Mirai Fury MX 2xS2 Missile Rack,Mirai,S03 MISC Fury Dual,2,2,200,1,1,1,1,1,1,1,120,20%,20,252
+5,MISC Freelancer MIS Missile Launcher,Aegis Dynamics,S05 CRUS Starfighter Left,1,5,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MISC Freelancer MIS Missile Launcher,Aegis Dynamics,S05 CRUS Starfighter Right,1,5,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MISC Freelancer MIS Missile Launcher,Musashi Industrial & Starflight Concern,S05 MISC Freelancer MIS Left,10,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MISC Freelancer MIS Missile Launcher,Musashi Industrial & Starflight Concern,S05 MISC Freelancer MIS Right,10,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+1,Missile Rack,Behring,S01 Krig quad,4,1,200,1,1,1,1,1,1,1,120,20%,20,252
+1,Missile Rack,Behring,S01 Krig quad right,4,1,200,1,1,1,1,1,1,1,120,20%,20,252
+2,Missile Rack,Roberts Space Industries,S01 RSI Aurora Mk2 Combat Module Rack,1,2,200,1,1,1,1,1,1,1,120,20%,,252
+2,Missile Rack,Mirai,S02 Krig Triple,3,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,Missile Rack,Mirai,S02 Krig Triple Right,3,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MRCK S01 TMBL Storm AA Custom,Tumbril Land Systems,S01 TMBL Storm AA Custom,32,1,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MRCK S02 ORIG 100i Dual S02,Origin Jumpworks,S02 ORIG 100i Dual S02,2,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MRCK S02 ORIG 125a Quad S02,Origin Jumpworks,S02 ORIG 125a Quad S02,4,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MRCK S02 TMBL Storm AA Custom,Tumbril Land Systems,S02 TMBL Storm AA Custom,8,2,200,1,1,1,1,1,1,1,120,20%,20,252
+1,MSD-111 Missile Rack,Behring,S01 BEHR Single S01,1,1,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MSD-212 Missile Rack,Behring,G  S02 BEHR Single S02,1,2,200,1,1,1,1,1,1,1,120,20%,,252
+2,MSD-212 Missile Rack,Behring,G  S02 BEHR Single S02 Cyclone AA,1,2,200,1,1,1,1,1,1,1,120,20%,,252
+2,MSD-212 Missile Rack,Behring,S02 BEHR Single S02,1,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MSD-212 Missile Rack,Behring,S02 BEHR Single S02 Cyclone AA,1,2,200,1,1,1,1,1,1,1,120,20%,20,252
+2,MSD-221 Missile Rack,Behring,S02 BEHR Dual S01,2,1,200,1,1,1,1,1,1,1,120,20%,20,252
+3,MSD-313 Missile Rack,Behring,S03 BEHR Single S03,1,3,200,1,1,1,1,1,1,1,120,20%,20,756
+3,MSD-322 Missile Rack,Behring,G  S03 TMBL Dual S02 Cyclone MT Left,2,2,200,1,1,1,1,1,1,1,120,20%,,756
+3,MSD-322 Missile Rack,Behring,G  S03 TMBL Dual S02 Cyclone MT Right,2,2,200,1,1,1,1,1,1,1,120,20%,,756
+3,MSD-322 Missile Rack,Behring,S03 BEHR Dual S02,2,2,200,1,1,1,1,1,1,1,120,20%,20,756
+3,MSD-322 Missile Rack,Behring,S03 BEHR Dual S02 RSI Meteor,2,2,200,1,1,1,1,1,1,1,120,20%,20,756
+3,MSD-322 Missile Rack,Behring,S03 TMBL Dual S02 Cyclone MT Left,2,2,200,1,1,1,1,1,1,1,120,20%,20,756
+3,MSD-322 Missile Rack,Behring,S03 TMBL Dual S02 Cyclone MT Right,2,2,200,1,1,1,1,1,1,1,120,20%,20,756
+3,MSD-341 Missile Rack,Behring,S03 BEHR Quad S01,4,1,200,1,1,1,1,1,1,1,120,20%,20,756
+4,MSD-414 Missile Rack,Behring,S04 BEHR Single S04,1,4,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-423 Missile Rack,Behring,S04 BEHR Dual S03,2,3,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Behring,S04 AEGS Redeemer,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Behring,S04 AEGS Vanguard,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Behring,S04 ANVL Lightning F8 Quad,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Behring,S04 BEHR Quad S02,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Consolidated Outland,S04 CNOU Quad S02 Left,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Consolidated Outland,S04 CNOU Quad S02 Right,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-442 Missile Rack,Gatac Manufacture,S04 GAMA Quad S02,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-481 Missile Rack,Behring,S04 BEHR Octo S01,8,1,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-481 Missile Rack,Behring,S04 ORIG Octo S01,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,MSD-481 Missile Rack,Behring,TALN Colonial S3x8,8,1,200,,,,,,,1,120,20%,20,0.001
+4,MSD-481 Missile Rack,Behring,TALN Colonial S3x8 Orison,8,3,200,,,,,,,1,120,20%,20,756
+5,MSD-515 Missile Rack,Behring,S05 BEHR Single S05,1,5,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-524 Missile Rack,Behring,S05 BEHR Dual S04,2,4,200,1,1,1,1,1,1,1,120,20%,20,4 200
+4,MSD-543 Missile Rack,Musashi Industrial & Starflight Concern,S04 MISC Starlancer,4,3,200,1,1,1,1,1,1,1,120,20%,20,252
+5,MSD-543 Missile Rack,Behring,S05 BEHR Quad S03,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 BEHR Quad S03 a,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+1,MSD-543 Missile Rack,Origin Jumpworks,S05 ORIG 325a Quad S03,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 600i Quad S03,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 600i Quad S03 Lower Left,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 600i Quad S03 Lower Right,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 600i Quad S03 Upper Right,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 890J Quad S03,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-543 Missile Rack,Behring,S05 ORIG 890J Quad S03 R,4,3,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-582 Missile Rack,Behring,S05 BEHR Octo S02,8,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-582 Missile Rack,Behring,S05 BEHR PDC Missile 16 S1,16,1,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-582 Missile Rack,Drake Interplanetary,S05 DRAK Herald Nine S02,9,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-582 Missile Rack,Behring,S05 RSI Scorpius Turret Octo S2 Left,8,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,MSD-582 Missile Rack,Behring,S05 RSI Scorpius Turret Octo S2 Right,8,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+4,MSD-616 Missile Rack,Behring,S04 MISC Starlancer TAC Turret,6,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+6,MSD-616 Missile Rack,Behring,S06 BEHR Beehive S02,18,2,200,1,1,1,1,1,1,1,120,20%,20,7 560
+6,MSD-616 Missile Rack,Behring,S06 BEHR Single S06,1,6,200,1,1,1,1,1,1,1,120,20%,20,7 560
+6,MSD-625 Missile Rack,Behring,S06 BEHR Dual S05,2,5,200,1,1,1,1,1,1,1,120,20%,20,7 560
+6,MSD-644 Missile Rack,Behring,S06 BEHR Quad S04,4,4,200,1,1,1,1,1,1,1,120,20%,20,7 560
+4,MSD-683 Missile Rack,Esperia,S04 ESPR Talon,12,3,200,1,1,1,1,1,1,1,120,20%,20,2 100
+6,MSD-683 Missile Rack,Behring,S06 BEHR Octo S03,8,3,200,1,1,1,1,1,1,1,120,20%,20,7 560
+7,MSD-683 Missile Rack,Anvil Aerospace,S07 ANVL Asgard 16 S03,16,3,8 000,1,1,1,1,1,1,1,120,20%,20,7 560
+6,Reliant Tana Missile Launcher,Tumbril Land Systems,G  S06 TMBL Nova Custom,12,2,500,1,1,1,1,1,1,1,120,20%,,7 560
+5,Reliant Tana Missile Launcher,Musashi Industrial & Starflight Concern,S05 MISC Reliant Left,8,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+5,Reliant Tana Missile Launcher,Musashi Industrial & Starflight Concern,S05 MISC Reliant Right,8,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+6,Reliant Tana Missile Launcher,Tumbril Land Systems,S06 TMBL Nova Custom,12,2,500,1,1,1,1,1,1,1,120,20%,20,7 560
+2,RSI Apollo Medivac S02 Missile Rack,Roberts Space Industries,S02 RSI Apollo Medivac,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+2,RSI Apollo S02 Missile Rack,Roberts Space Industries,S02 RSI Apollo Triage,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Constellation Side Missile Rack,Roberts Space Industries,S04 RSI Constellation,7,1,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Constellation Side Missile Rack,Roberts Space Industries,S04 RSI Scorpius,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Constellation Side Missile Rack,Roberts Space Industries,S04 RSI Scorpius bottom right,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Constellation Side Missile Rack,Roberts Space Industries,S04 RSI Scorpius top left,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Constellation Side Missile Rack,Roberts Space Industries,S04 RSI Scorpius top right,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+5,RSI Constellation Top Missile Rack,Roberts Space Industries,S05 RSI Constellation,6,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+10,RSI Polaris Missile Rack,Roberts Space Industries,S10 RSI Polaris Left,8,3,200,1,1,1,1,1,1,1,120,20%,20,0.001
+10,RSI Polaris Missile Rack,Roberts Space Industries,S10 RSI Polaris Right,8,3,200,1,1,1,1,1,1,1,120,20%,20,0.001
+4,RSI Polaris Remote Turret Missile Rack,Roberts Space Industries,S4 RSI Polaris Turret,12,2,200,1,1,1,1,1,1,1,120,20%,20,0.001
+5,RSI Polaris Torpedo Rack,Roberts Space Industries,S05 RSI Perseus Torpedo Holder,1,5,,,,,,,,,,,,2 100
+5,RSI Polaris Torpedo Rack,Roberts Space Industries,S05 RSI Perseus Torpedo L,10,5,2 000,1,1,1,1,1,1,1,120,20%,20,2 100
+5,RSI Polaris Torpedo Rack,Roberts Space Industries,S05 RSI Perseus Torpedo R,10,5,2 000,1,1,1,1,1,1,1,120,20%,20,2 100
+10,RSI Polaris Torpedo Rack,Roberts Space Industries,S10 RSI Polaris Torpedo lb,8,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,RSI Polaris Torpedo Rack,Roberts Space Industries,S10 RSI Polaris Torpedo lt,8,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,RSI Polaris Torpedo Rack,Roberts Space Industries,S10 RSI Polaris Torpedo rb,8,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,RSI Polaris Torpedo Rack,Roberts Space Industries,S10 RSI Polaris Torpedo rt,8,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,RSI Zeus Missile Launcher,Roberts Space Industries,S04 RSI Zeus Left,4,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+4,RSI Zeus Missile Launcher,Roberts Space Industries,S04 RSI Zeus Right,4,2,200,1,1,1,1,1,1,1,120,20%,20,4 200
+3,San'tok.yāi Missile Rack,Aopoa,S03 XNAA SanTokYai,2,2,200,1,1,1,1,1,1,1,120,20%,20,756
+2,ST-171 Missile Rack,Origin Jumpworks,S02 ORIG 400i Octo S01,8,1,200,1,1,1,1,1,1,1,120,20%,20,252
+2,ST-171 Missile Rack,Origin Jumpworks,S02 ORIG 400i Octo S01 L,8,1,200,1,1,1,1,1,1,1,120,20%,20,252
+4,ST-205 Missile Rack,Origin Jumpworks,S04 ORIG 400i Octo S02,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+4,ST-205 Missile Rack,Origin Jumpworks,S04 ORIG 400i Octo S02 L,8,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,ST-205 Missile Rack,Roberts Space Industries,S10 RSI Polaris Torpedo,7,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,ST-205 Missile Rack,Roberts Space Industries,S10 RSI Polaris Torpedo Cylinder Right Inner,7,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+10,ST-205 Missile Rack,Roberts Space Industries,S10 RSI Polaris Torpedo Left,7,10,200,1,1,1,1,1,1,1,120,20%,20,2 100
+3,Vanduul S3 Quad Missile Rack,Vanduul,S03 VNCL Quad S01,4,1,200,1,1,1,1,1,1,1,120,20%,20,756
+3,Vanduul S3 Quad Missile Rack,Vanduul,S03 VNCL Quad S01 Blade,4,1,200,1,1,1,1,1,1,1,120,20%,20,756
+4,Vanduul S4 Quad Missile Rack,Vanduul,S04 VNCL Quad S02,4,2,200,1,1,1,1,1,1,1,120,20%,20,2 100
