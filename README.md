@@ -1,6 +1,6 @@
 # Star Citizen Item Stat Updater
 
-Updates item descriptions in `global.ini` with detailed component stats from CSV data files.
+Updates item descriptions in `global.ini` with detailed component stats from CSV data files. The tool supports both Erkul CSV data and SPViewer-derived stats, with SPViewer preferred by default.
 
 ## Requirements
 
@@ -18,57 +18,55 @@ npm install
 ### Update all categories
 
 ```sh
-node update-all.js
+node bin/update-all.js
 ```
 
-Runs all 12 category updaters sequentially.
+Runs all categories using the default source. By default, the tool prefers SPViewer data when available, with Erkul data used as the fallback source.
 
 ### Update a single category
 
 ```sh
-node update-item.js <category>
+node bin/update-item.js <category>
 ```
 
-Available categories: `coolers`, `weapons`, `shields`, `quantum-drives`, `powerplants`, `missiles`, `bombs`, `emps`, `mining-lasers`, `qeds`, `radars`, `tractor-beams`
+Available categories include both Erkul and SPViewer sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`.
+
+### Data source options
+
+```sh
+node bin/update-all.js --source spviewer
+node bin/update-all.js --source erkul
+node bin/update-all.js --source all
+```
+
+- `spviewer` (default) uses SPViewer-derived stats where available
+- `erkul` uses raw Erkul CSV data
+- `all` processes both sources
 
 ## Project structure
 
 ```
-├── update-all.js            # Runs all category updaters
-├── update-item.js           # CLI to run a single category
+├── bin/
+│   ├── update-all.js        # Runs all category updaters
+│   ├── update-item.js       # CLI to run a single category
+│   └── scrape-spviewer.js   # SPViewer scraping helper
 ├── src/
 │   ├── lib/
-│   │   ├── csv-parser.js    # CSV parsing
-│   │   ├── ini-file.js      # global.ini read/write/indexing
-│   │   ├── formatter.js     # Number formatting
-│   │   ├── text-utils.js    # Key derivation & flavor text extraction
-│   │   └── updater.js       # Generic update engine
+│   │   ├── io/
+│   │   │   ├── csv-parser.js    # CSV parsing
+│   │   │   ├── ini-file.js      # global.ini read/write/indexing
+│   │   │   └── mapping-store.js # SPViewer mapping persistence
+│   │   ├── format/
+│   │   │   ├── formatter.js     # Number formatting
+│   │   │   ├── stat-builder.js  # Stat block construction
+│   │   │   └── text-utils.js    # Key derivation & flavor text extraction
+│   │   └── updater.js           # Generic update engine
 │   └── items/
-│       ├── coolers.js       # Item-specific config & buildValue
-│       ├── weapons.js
-│       ├── shields.js
-│       ├── quantum-drives.js
-│       ├── powerplants.js
-│       ├── missiles.js
-│       ├── bombs.js
-│       ├── emps.js
-│       ├── mining-lasers.js
-│       ├── qeds.js
-│       ├── radars.js
-│       └── tractor-beams.js
-├── csv/                     # Item stat data from erkul.games
-│   ├── bombs.csv
-│   ├── coolers.csv
-│   ├── emps.csv
-│   ├── mining_lasers.csv
-│   ├── missiles.csv
-│   ├── powerplants.csv
-│   ├── qeds.csv
-│   ├── quantum_drives.csv
-│   ├── radars.csv
-│   ├── shields.csv
-│   ├── tractor_beams.csv
-│   └── weapons.csv
+│       ├── erkul/              # Erkul item configs
+│       └── spviewer/           # SPViewer item configs
+├── csv/
+│   ├── erkul/                 # Erkul source CSVs
+│   └── spviewer/              # SPViewer source CSVs
 └── global.ini               # Star Citizen localization file
 ```
 
@@ -92,20 +90,46 @@ Scripts are idempotent — running them multiple times produces no duplicates.
 
 ## CSV files
 
-| CSV | Category |
-|-----|----------|
-| `quantum_drives.csv` | Quantum Drives |
-| `coolers.csv` | Coolers |
-| `powerplants.csv` | Power Plants |
-| `shields.csv` | Shields |
-| `weapons.csv` | Weapons |
-| `bombs.csv` | Bombs |
-| `emps.csv` | EMPs |
-| `mining_lasers.csv` | Mining Lasers |
-| `missiles.csv` | Missiles |
-| `qeds.csv` | Quantum Enforcement Devices |
-| `radars.csv` | Radars |
-| `tractor_beams.csv` | Tractor Beams |
+The project now separates source data into `csv/erkul/` and `csv/spviewer/`.
+
+| CSV | Category | Source |
+|-----|----------|--------|
+| `erkul/quantum_drives.csv` | Quantum Drives | Erkul |
+| `erkul/coolers.csv` | Coolers | Erkul |
+| `erkul/powerplants.csv` | Power Plants | Erkul |
+| `erkul/shields.csv` | Shields | Erkul |
+| `erkul/weapons.csv` | Weapons | Erkul |
+| `erkul/bombs.csv` | Bombs | Erkul |
+| `erkul/emps.csv` | EMPs | Erkul |
+| `erkul/mining_lasers.csv` | Mining Lasers | Erkul |
+| `erkul/missiles.csv` | Missiles | Erkul |
+| `erkul/qeds.csv` | Quantum Enforcement Devices | Erkul |
+| `erkul/radars.csv` | Radars | Erkul |
+| `erkul/tractor_beams.csv` | Tractor Beams | Erkul |
+| `spviewer/bomb.spviewer.csv` | Bombs | SPViewer |
+| `spviewer/cooler.spviewer.csv` | Coolers | SPViewer |
+| `spviewer/emp.spviewer.csv` | EMPs | SPViewer |
+| `spviewer/jumpdrive.spviewer.csv` | Jump Drives | SPViewer |
+| `spviewer/miningmodifier.spviewer.csv` | Mining Modifiers | SPViewer |
+| `spviewer/missile.spviewer.csv` | Missiles | SPViewer |
+| `spviewer/missilelauncher.spviewer.csv` | Missile Launchers | SPViewer |
+| `spviewer/powerplant.spviewer.csv` | Power Plants | SPViewer |
+| `spviewer/qed.spviewer.csv` | QEDs | SPViewer |
+| `spviewer/quantumdrive.spviewer.csv` | Quantum Drives | SPViewer |
+| `spviewer/quantuminterdictiongenerator.spviewer.csv` | Quantum Interdiction Generator | SPViewer |
+| `spviewer/radar.spviewer.csv` | Radars | SPViewer |
+| `spviewer/salvagemodifier.spviewer.csv` | Salvage Modifiers | SPViewer |
+| `spviewer/selfdestruct.spviewer.csv` | Self Destruct | SPViewer |
+| `spviewer/shield.spviewer.csv` | Shields | SPViewer |
+| `spviewer/shieldcontroller.spviewer.csv` | Shield Controller | SPViewer |
+| `spviewer/throwable.spviewer.csv` | Throwables | SPViewer |
+| `spviewer/tractorbeam.spviewer.csv` | Tractor Beams | SPViewer |
+| `spviewer/turret.spviewer.csv` | Turrets | SPViewer |
+| `spviewer/weaponattachment.spviewer.csv` | Weapon Attachments | SPViewer |
+| `spviewer/weapondefensive.spviewer.csv` | Weapon Defensive | SPViewer |
+| `spviewer/weapongun.spviewer.csv` | Weapon Guns | SPViewer |
+| `spviewer/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
+| `spviewer/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
 
 ## Acknowledgments
 
@@ -114,4 +138,7 @@ The included `global.ini` is based on localization work from:
 - [StarMeld](https://github.com/BeltaKoda/StarMeld)
 - [StarStrings](https://github.com/MrKraken/StarStrings)
 
-CSV component data is sourced from [erkul.games](https://www.erkul.games/).
+CSV component data is sourced from:
+
+- Erkul: [erkul.games](https://www.erkul.games/)
+- SPViewer: [spviewer.eu](https://www.spviewer.eu/)
