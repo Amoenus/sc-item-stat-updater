@@ -9,6 +9,19 @@ export default {
   lookupCsvFile: 'erkul/coolers.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'CoolingGeneration', 'Health'],
   descKeyMatch: (kl) => kl.includes('desccool_') || kl.includes('desc_cool_'),
+  nameKeyToDescKey(nameKey) {
+    return nameKey.replace(/(item_)(Name|name|NAME)_?(?=COOL_)/i, '$1Desc_');
+  },
+  getAlternateDescKeys(descKey) {
+    const altKeys = [];
+    if (descKey.includes('item_Desc_COOL_')) {
+      altKeys.push(descKey.replace('item_Desc_COOL_', 'item_DescCOOL_'));
+    }
+    if (descKey.includes('item_DescCOOL_')) {
+      altKeys.push(descKey.replace('item_DescCOOL_', 'item_Desc_COOL_'));
+    }
+    return altKeys;
+  },
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Cooler')
