@@ -31,6 +31,22 @@ node bin/update-item.js <category>
 
 Available categories include both Erkul and SPViewer sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`.
 
+### Scrape SCMDB blueprint mission data
+
+```sh
+node bin/scrape-scmdb.js
+```
+
+This fetches the current SCMDB merged payload, caches it locally, and exports CSV tables for contracts, blueprint pools, factions, locations, resources, and ship pools.
+
+Additional options:
+
+```sh
+node bin/scrape-scmdb.js --delay-ms 2000
+```
+
+- `--delay-ms <ms>` slows SCMDB requests by the specified number of milliseconds.
+
 ### Data source options
 
 ```sh
@@ -49,7 +65,8 @@ node bin/update-all.js --source all
 ├── bin/
 │   ├── update-all.js        # Runs all category updaters
 │   ├── update-item.js       # CLI to run a single category
-│   └── scrape-spviewer.js   # SPViewer scraping helper
+│   ├── scrape-spviewer.js   # SPViewer scraping helper
+│   └── scrape-scmdb.js      # SCMDB blueprint mission scraper
 ├── src/
 │   ├── lib/
 │   │   ├── io/
@@ -130,6 +147,8 @@ The project now separates source data into `csv/erkul/` and `csv/spviewer/`.
 | `spviewer/weapongun.spviewer.csv` | Weapon Guns | SPViewer |
 | `spviewer/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
 | `spviewer/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
+| `scmdb/contracts-<version>.csv` | Blueprint missions | SCMDB |
+| `scmdb/blueprint-pools-<version>.csv` | Blueprint pool contents | SCMDB |
 
 ## Acknowledgments
 

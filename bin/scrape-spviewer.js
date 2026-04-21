@@ -41,6 +41,7 @@ const ITEM_TYPES = [
 ];
 
 const BASE_URL = 'https://www.spviewer.eu/items';
+const DEFAULT_DELAY_MS = 1000;
 
 async function scrapeItems(itemType) {
   console.log(`Scraping ${itemType} from SPViewer...`);
@@ -150,6 +151,51 @@ async function scrapeItems(itemType) {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseArgs(args) {
+  const parsed = {
+    help: false,
+    list: false,
+    json: false,
+    all: false,
+    delayMs: DEFAULT_DELAY_MS,
+    types: [],
+  };
+
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === '--help' || arg === '-h') {
+      parsed.help = true;
+      continue;
+    }
+    if (arg === '--list') {
+      parsed.list = true;
+      continue;
+    }
+    if (arg === '--json') {
+      parsed.json = true;
+      continue;
+    }
+    if (arg === '--all') {
+      parsed.all = true;
+      continue;
+    }
+    if (arg === '--delay-ms') {
+      parsed.delayMs = Number(args[++i]);
+      if (Number.isNaN(parsed.delayMs) || parsed.delayMs < 0) {
+        throw new Error('Invalid value for --delay-ms; expected a non-negative number');
+      }
+      continue;
+    }
+    parsed.types.push(arg);
+  }
+
+  return parsed;
+}
+
 function toCsv({ headers, rows }) {
   const escape = (v) => {
     if (v.includes(',') || v.includes('"') || v.includes('\n')) {
@@ -163,41 +209,44 @@ function toCsv({ headers, rows }) {
 }
 
 // --- CLI ---
-const args = process.argv.slice(2);
+const argv = parseArgs(process.argv.slice(2));
 
-if (args.includes('--help') || args.includes('-h')) {
-  console.log(`Usage: node scrape-spviewer.js [itemType ...] [--list] [--json]
+if (argv.help) {
+  console.log(`Usage: node scrape-spviewer.js [itemType ...] [--list] [--json] [--delay-ms <ms>]
 
 Item types: ${ITEM_TYPES.join(', ')}
 
 Options:
-  --list   List available item types
-  --json   Output JSON instead of CSV
-  --all    Scrape all item types
+  --list      List available item types
+  --json      Output JSON instead of CSV
+  --all       Scrape all item types
+  --delay-ms  Milliseconds to wait between item scrapes (default: ${DEFAULT_DELAY_MS})
 
 Examples:
   node scrape-spviewer.js Throwable
   node scrape-spviewer.js Radar Shield --json
-  node scrape-spviewer.js --all`);
+  node scrape-spviewer.js --all --delay-ms 2000`);
   process.exit(0);
 }
 
-if (args.includes('--list')) {
+if (argv.list) {
   console.log('Available item types:');
   for (const t of ITEM_TYPES) console.log(`  ${t}`);
   process.exit(0);
 }
 
-const useJson = args.includes('--json');
-const useAll = args.includes('--all');
-const types = useAll ? ITEM_TYPES : args.filter((a) => !a.startsWith('--'));
+const useJson = argv.json;
+const useAll = argv.all;
+const delayMs = argv.delayMs;
+const types = useAll ? ITEM_TYPES : argv.types;
 
 if (types.length === 0) {
   console.error('Error: specify at least one item type, or use --all');
   process.exit(1);
 }
 
-for (const itemType of types) {
+for (let index = 0; index < types.length; index += 1) {
+  const itemType = types[index];
   try {
     const data = await scrapeItems(itemType);
     console.log(`  Got ${data.rows.length} rows, ${data.headers.length} columns`);
@@ -213,5 +262,10 @@ for (const itemType of types) {
     console.log(`  Saved to csv/${filename}`);
   } catch (err) {
     console.error(`  Failed to scrape ${itemType}: ${err.message}`);
+  }
+
+  if (delayMs > 0 && index < types.length - 1) {
+    console.log(`Waiting ${delayMs}ms before next scrape...`);
+    await sleep(delayMs);
   }
 }
