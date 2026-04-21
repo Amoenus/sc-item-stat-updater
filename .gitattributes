@@ -1,0 +1,28 @@
+# Ensure consistent line endings for all text files in this repo.
+# Git will normalize text files to LF on checkout and commit.
+* text=auto eol=lf
+
+# Explicit text file types
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.csv text eol=lf
+*.txt text eol=lf
+*.ini text eol=lf
+*.editorconfig text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.gz binary
+*.pdf binary
