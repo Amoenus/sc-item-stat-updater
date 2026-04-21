@@ -1,0 +1,80 @@
+guid,name,nameKey,isNPC,logo
+f088575d-92ea-40e4-8d52-ce83884a11dd,Aciedo Communications,@Aciedo_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/Aciedo_256.tif
+e0961a32-0833-4857-939d-abd18190b04f,ArcCorp,@ArcCorp_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_arccorp.tif
+c618bb17-61cb-462c-8b51-8d4dfcb527de,Civilian Defense Force,@CDF_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/CivilianDefenseForce_256.tif
+310b42d1-df0b-40fc-ae09-b7d7298a8480,Clovus Darneely,@ClovusDarneely_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_NPC_clovusdarneely.tif
+e2de0b2b-a385-4734-9c41-fc429aec01f1,Crusader Industries,@Crusader_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/mfr_crusader_icon_white-blue.tif
+66bfae03-86c1-4982-977b-09bfcfc05e1a,Hurston Dynamics,@Hurston_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_hurstondynamics.tif
+cfe06ba5-968d-4e27-b738-7cc7abfb511f,Klescher Rehabilitation Facilities,@Klescher_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_klesherrehabfacility.tif
+5f6a61ef-e9a4-427d-9358-2b38efe43d11,Adagio Holdings,@Adagio_RepUI_DisplayName,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_adagioholdings.tif
+6fe6526a-4ae0-44ec-a5b7-4a1a7f8bdc97,Bounty Hunters Guild,@BountyHuntersGuild_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_bountyhunterguild.tif
+5a6914c9-3d56-47e0-9fe2-b264ee17b992,Citizens For Prosperity,@CitizensForPyro_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/Branding_CitizensForPyro_Icon_1x1.tif
+3b2f7882-73cc-41a4-9dce-f188d927e905,Covalex,@Covalex_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_covalex.tif
+2dc1b38c-cd5f-4d37-aea7-5453b609f61d,Eckhart Security,@EckhartSecurity_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_eckhart_a_diff.tif
+016c2950-0292-468c-a408-a5283b52f158,Foxwell Enforcement,@Foxwell_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_foxwellenforcement.tif
+66179ed2-c685-4df1-a3a4-e2a7a2da2df0,FTL Courier,@FTLCourier_RepUI_Name,0,
+4cd28d63-24ba-4180-a881-86036c29cd64,<= PLACEHOLDER =>,@LOC_PLACEHOLDER,0,
+88bac9c7-0986-4945-8b72-c83657a1c8b9,Hockrow Agency,@HockrowAgency_RepUI_Name,0,
+a9ab3e4f-30a3-4816-a1dd-4df51fd6678c,InterSec Defense Solutions,@InterSecDefenseSolutions_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_intersec.tif
+3afb087d-5e66-4f3f-996d-521bf48f6e1b,<= PLACEHOLDER =>,@LOC_PLACEHOLDER,0,
+8ca58dc2-ecec-49ea-bb62-39a56bb28420,Ling Family Hauling,@Ling_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_lingfamily.tif
+d84f1767-e406-448a-a413-9a526350c83f,Northrock Service Group,@NorthRock_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_northrock.tif
+afc25254-554d-4409-8893-383a58eb7e8a,Rayari Incorporated,@Rayari_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_rayari_diff.tif
+aa5f0bf8-f36f-423a-b9dd-73084139db23,Red Wind Linehaul,@RedWind_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_redwind.tif
+e4527dd7-f0eb-4342-afe8-5ded1fe428df,Shubin Interstellar,@ShubinInterstellar_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_shubininterstellar.tif
+73d4112a-156c-44d5-81c0-1788ec543768,Wildstar Racing,@RacingRep_Guild_DisplayName,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_wildstarracing.tif
+306a1313-8638-431c-a9a9-d29302dc6a81,microTech,@microTech_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_microtech.tif
+1ff5f2d5-e169-444f-a87e-3eea50c44933,Ruto,@Ruto_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_NPC_ruto.tif
+7b2fbef9-bf19-4308-ab07-3cbf4fbc4d97,Unified Distribution Management,@UDM_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_udm.tif
+0ccbc88a-a578-460c-8a7f-9054fa84ee20,Bit Zeros,@BitZeros_RepUI_DisplayName,0,UI/SharedAssets/ManufacturerLogos/Branding_BitZeros_logo.tif
+2da0657d-62dc-4f6c-8b25-fd88480d0834,Dead Saints,@DeadSaints_RepUI_Name,0,
+09efeef4-c646-408d-a979-3ae56a3b1beb,Headhunters,@HeadHunters_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/Branding_Headhunters_Icon_1x1.tif
+5ebbd81d-82cb-4534-81fc-db7a2c386f70,Tar Pits,@TARPits_RepUI_DisplayName,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_tarpits.tif
+7e716658-9c65-4ebe-819e-8fffd8390e6a,"Tecia ""Twitch"" Pacheco",@Tecia_Twitch_Pacheco_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_NPC_teciapacheco.tif
+a161c267-0253-48e5-be7a-dfa16c6cbebe,Vaughn,@Vaughn_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_vaughn.tif
+1d52a0fd-705b-483d-9e9b-2f5c6f16959f,Wallace Klim,@WallaceKlim_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_NPC_wallaceklim.tif
+5f442fdd-15cc-4f62-bd10-fce2023f4d0c,Wikelo Emporium,@Wikelo_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/rep_ui_icon_logo_wikelo_diff.tif
+919a672b-eb70-40a7-94ea-8c75f3ff67fc,XenoThreat,@Xenothreat_RepUI_Name,0,UI/SharedAssets/ManufacturerLogos/Branding_XenoThreat_Icon_1x1.tif
+32a8a1f3-665b-428a-a931-28192b1fe341,AegisDynamics,,0,
+655551f7-46fb-48ce-baa5-d74a1fa6516d,AnvilAerospace,,0,
+ce902096-52d4-4d29-93b2-32b0b4365b21,BansheeCourierServices,,0,
+250b10b0-bc7c-4748-8145-cd033cc04913,BensonMining,,0,
+3700bcff-e8fe-44de-9eed-5297daaad22a,BountifulHarvest,,0,
+b9f8e5ed-c80e-40b7-b431-bf5d628d3d6e,CureLife,,0,
+fa704e22-04fd-4d61-a3aa-def4930748e5,DunderShippingLogistics,,0,
+a8cb1117-22b6-4246-8607-6884be641d30,Dusters,,0,
+ee15146c-b0a3-4002-b26e-72fc8e8941bc,ECN,,0,
+cbb23f47-f8b9-4785-aae0-1d507748fa98,ESI,,0,
+0a961c3d-229c-43a4-80b1-d8b0db31f92f,FrontierFighters,,0,
+4bd04fc4-cecb-4870-a180-9850abecdeec,GalleteFarm,,0,
+98676620-5be5-4c52-9495-b108b49eda9f,GenericCriminalOrg,,0,
+f65c4ab1-8279-4a5a-822f-3ac06ba6514f,HolidayOrg,,0,
+edff15d2-330d-4231-a204-8c8e15c09b36,IntersecDefenseSolutions,,0,
+2e3ec3fe-6609-4473-9dbe-9952a8974341,KudreOre,,0,
+f903a9ba-5c73-4e1f-abfa-01acea366a70,PolarisIronworks,,0,
+ce69165c-ee80-4ce1-a257-c540f64f7d1b,PontrelliExpressShipping,,0,
+199d7544-50a7-4879-964b-6dc5731b9cdb,ProtLife,,0,
+e3427030-b1e2-4b71-a64d-d1ebb4af587e,RapidTransportSolutions,,0,
+bf5015fb-09ff-4dea-859e-74855d9adec9,RSI,,0,
+2ca9ed49-7510-42b9-9f60-731b9625ec8a,SakuraSun,,0,
+0dacd45c-2a5b-42f1-86c6-c54c8c56c89c,ShubinInterstellar,,0,
+218b1c93-692b-4575-a373-4d05197e806c,StantonProcurements,,0,
+063691ad-e7c4-4365-90dd-1d2be460204c,SVFCargoServices,,0,
+d3d6138b-ec6b-42b6-9b7e-51d4326b6d8d,ThePeoplesAlliance,,0,
+d9787972-b9ad-4a7e-a23b-2e348e5c442a,TimelyDeliveryService,,0,
+eb9c4c75-8689-4ffa-96dd-42b92f40fff0,TopsideTransfers,,0,
+281e1cce-a0f5-412b-9dc4-48651e9ddf80,Tram_MyersMining,,0,
+8036c546-54dd-46eb-a383-6773166c2703,Unaffiliated,,0,
+331925ef-b320-434c-99fe-b04127048aa8,UnifiedDistributionManagement,,0,
+b5db7644-3718-4ec6-84ff-4e258a2e8165,UnitedFarmCollective,,0,
+78ad04ec-151c-4057-907f-343d715f74f5,ReccoBattaglia,,0,
+15b0c49b-cf1b-4be4-937e-101bb0afa102,ConstantineHurston,,0,
+09991122-4477-45e9-8706-33af5f62508d,MilesEckhart,,0,
+5efa8ee3-534c-4d66-be05-b4e30351b266,Ruto,,0,
+bb702729-f3d8-4f74-8fa8-a7f15af3306f,TeciaPacheco,,0,
+8fefed54-5cf8-451a-a9a7-e78493eafde5,NineTails,,0,
+79dcd739-33fb-40e8-9f40-bc6d2b00a8e9,HDActivists,,0,
+ae81e5fa-72fb-4c22-a809-f7b155cf64e9,CrusaderEmergencyResponse,,0,
+05da521e-68bf-495d-a1d1-ae0341bb2b7a,CrusaderRestaurantSupply,,0,
+fdde3b83-7dc6-4ffa-ae39-43010912e4ee,LingFamilyHauling,,0,
+8e91e906-db1a-4545-b4c5-756a8f734f50,WallaceKlim,,0,

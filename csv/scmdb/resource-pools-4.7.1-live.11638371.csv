@@ -1,0 +1,237 @@
+id,name,nameKey
+36aebe8347d1,Carinite (Pure),items_commodities_carinite_pure
+a9205306fd8b,Antium Core,
+b8e94f2be8b0,Antium Helmet,
+ebc1ade5d7e1,Antium Legs,
+3153245a476e,Antium Arms,
+4e737a3ec80e,Carinite,items_commodities_carinite
+59f3d8a83cde,Saldynium (Ore),items_commodities_saldynium_ore
+95fdad3d0c38,Parallax Energy Assault Rifle,
+1850be294c13,Tundra Kopion Horn,items_commodities_kopionhorn_tundra
+f652c933df7d,Jaclium (Ore),items_commodities_jaclium_ore
+15e5b09b517a,Irradiated Valakkar Fang (Juvenile),items_commodities_valakkarfang_juvenile_irradiated
+b99822ee57a7,Irradiated Valakkar Pearl (Grade AAA),
+87c5f0a6c440,Irradiated Valakkar Fang (Adult),items_commodities_valakkarfang_adult_irradiated
+b55e7e1e731b,Prism Laser Shotgun,
+5cd79b169dc9,ASD Secure Drive,
+f6713e2202b2,Zenith Laser Sniper Rifle,
+9b6a8d760670,Geist Armor Arms ASD Edition,
+8416f1dbce12,Geist Armor Core ASD Edition,
+8a864543286e,Geist Armor Helmet ASD Edition,
+43a78c972094,Geist Armor Legs ASD Edition,
+7ebce41c5fda,Geist Backpack ASD Edition,
+5211b2d85ce1,RCMBNT-PWL-1,
+a35d39ca9ce5,RCMBNT-PWL-2,
+f98698023514,RCMBNT-PWL-3,
+4d354103fb11,Strata Arms,
+ca8a49d981e1,Strata Legs,
+ab491ea224dc,Strata Helmet,
+630a72eea841,Strata Backpack,
+b0e0305ae598,Strata Core,
+0e6670946110,Corbel Core Mire,
+4fcb59dca809,Corbel Arms Mire,
+9f5e494f96f4,Corbel Legs Mire,
+ee2530b3ce44,Novikov Backpack Mire,
+f1a5f30c4afe,RCMBNT-RGL-1,
+050bbb4c5c57,RCMBNT-RGL-2,
+3d72c6ba1d71,RCMBNT-RGL-3,
+b7d6b1e84cec,Corbel Helmet Mire,
+78eac56c2619,Yormandi Eye,items_commodities_yormandi_eye
+e8864bef6279,Yormandi Tongue,
+f683ccaaee91,Fresnel Energy LMG,
+acb5ee6357c9,Palatino Helmet,
+4a8f3dc6c029,Palatino Arms,
+9c075882b042,Palatino Legs,
+474518b328b5,Palatino Core,
+a88035343cc2,Palatino Backpack,
+b2df8dc7aa77,Vanduul Plating,
+7bba49f985cc,Vanduul Metal,
+821fe61b4e65,Testudo Legs Turfwar,
+e4e8e38c2356,Testudo Helmet Turfwar,
+a392949d2d06,Testudo Core Turfwar,
+14e1963be835,Testudo Arms Turfwar,
+a16349d23d61,Testudo Backpack Turfwar,
+cf7118979d06,Boomtube Rocket Launcher,
+d60db54b06be,Bluemoon Fungus,harvestable_Armillaria
+5d531b797315,Tripledown Pistol,
+aa9bb901bbec,Wikelo Favor,
+8bfeeb9f5e98,Sadaryx,items_commodities_sadaryx
+9ee6e174c525,R97 Shotgun,
+cb3c15aa4300,Monde Helmet,
+1a0b158eb048,Monde Core,
+94ada3f16316,Monde Arms,
+3edf05ba5828,Monde Legs,
+6f932ce1e08c,Warden Backpack Monde,
+124de89d7963,Vestal Water,
+083ed463dc6f,Berry Blend Smoothie,
+4cd6e69dbd77,Ermer Family Farms Fat Free Ice Cream,
+08220d8d2767,Irradiated Valakkar Pearl (Grade AA),
+89d01344c7ff,MG Scrip,
+b6c122ce3a7d,Council Scrip,
+c30a5939bb67,Quantainium,items_commodities_quantainium
+d1f796daf7b4,Government Cartography Agency Medal (Pristine),
+a33b6ef09abe,DCHS-05 Orbital Positioning Comp-Board,
+dc2ed0c309b4,UEE 6th Platoon Medal (Pristine),
+b4b6502a0e7f,Ace Interceptor Helmet,
+707c76465e45,Tevarin War Service Marker (Pristine),
+cb9e55ac7169,Irradiated Valakkar Fang (Apex),items_commodities_valakkarfang_apex_irradiated
+aa1ec4e351d8,Argo ATLS,
+6996da6137f2,NN-13 Cannon,
+3ae832f6dec8,Argo ATLS GEO,
+71e333dff154,Argo ATLS IKTI,
+499c4000ca87,Polaris Bit,
+521005ec7057,RCMBNT-XTL-1,
+b07d49841c88,RCMBNT-XTL-2,
+a883885819a6,RCMBNT-XTL-3,
+a4090ffabdfb,Copper,items_commodities_copper
+77b7c49f0863,Tungsten,items_commodities_tungsten
+d3f586abbe5d,Corundum,items_commodities_corundum
+0aa959a0e482,Large Artifact Fragment (Pristine),
+dda3d018e818,Irradiated Kopion Horn,items_commodities_kopionhorn_irradiated
+0a928788cb67,Savrilium,items_commodities_savrilium
+8af128af7a5a,Ranta Dung,items_commodities_rantadung
+446f42c1a7e1,Prota,items_commodities_prota
+90a656c7a66e,Revenant Pod,items_commodities_revenantpod
+580aa4ee9553,Amioshi Plague,items_commodities_amioshiplague
+7864af679283,Sunset Berries,items_commodities_sunsetberry
+0e802fa183dc,Heart of the Woods,items_commodities_heartofthewoods
+c57ad9ed7543,Boreal Quasi Grazer Egg,
+e3708cd8b12e,Cave Kopion Horn,items_commodities_kopionhorn_cave
+279f95eb0a1d,Marok Gem,items_commodities_marokgem
+a7f91614cc90,Valakkar Fang (Juvenile),items_commodities_valakkarfang_juvenile
+bb6feb8bb2a8,Irradiated Valakkar Egg,
+7b27b1113342,Agricultural Supplies,items_commodities_agriculturalSupplies
+67bf60946173,Medical Supplies,items_commodities_medicalSupplies
+478ee9af3f59,Iodine,items_commodities_iodine
+b1e6f847e239,Hydrogen Fuel,items_commodities_type_plasmaFuel
+c5ab7d0672fd,Scrap,items_commodities_scrap
+ec489c5ae083,Cobalt,items_commodities_cobalt
+a1e8ada12409,Combat Supplies,items_commodities_militarySupplies
+1e2bbcaa8724,Recycled Material Composite,items_commodities_type_RMC
+14f64b89712e,Laranite,items_commodities_laranite
+b791e5d84f22,Processed Food,items_commodities_processedFood
+f431d0aa3206,ThermalFoam,items_commodities_thermalfoam
+8af7feb24532,Fresh Food,items_commodities_freshFood
+6bc315f54d54,Pressurized Ice,items_commodities_pressurized_ice
+6c1aad782b33,Titanium,items_commodities_titanium
+e4ce2ac56db8,Hydrogen,items_commodities_hydrogen
+34dae487e31f,Mercury,items_commodities_mercury
+be3923f8a9ec,Agricium,items_commodities_agricium
+8f116d732e1e,Quartz,items_commodities_quartz
+3f7cccf4fa92,Distilled Spirits,items_commodities_distilledSpirits
+33ac9b2f41af,Stims,items_commodities_stims
+1154ec41b369,Organics,items_commodities_organimass
+cefa8a960681,Iron,items_commodities_iron
+f30dec8781d9,Atlasium,items_commodities_atlasium
+7fa430a7fc7e,Argon,items_commodities_argon
+454b2d1311d3,Ammonia,items_commodities_ammonia
+0c3cf1b52df3,Construction Materials,items_commodities_ConstructionMaterials
+fbebe083c5b1,Carbon,items_commodities_carbon
+79fe5283c81e,Golden Medmon,items_commodities_goldenmedmon
+cef4a38d0529,Party Favors,items_commodities_PartyFavors
+e7de948b17f6,<= PLACEHOLDER =>,LOC_PLACEHOLDER
+bb0bda29d35f,Souvenirs,items_commodities_Souvenirs
+73abe7b1e6aa,Distilled Spirits,items_commodities_distilledSpirits
+28bebbb6dd2d,Party Favors,items_commodities_PartyFavors
+b77c0df9560a,<= PLACEHOLDER =>,LOC_PLACEHOLDER
+d97989642f71,Souvenirs,items_commodities_Souvenirs
+d0f62e9451b4,Revenant Tree Pollen,items_commodities_altruciatoxin_unprocessed
+bdbfb222e237,Tritium,items_commodities_tritium
+1e9ef3ba495f,Nitrogen,items_commodities_nitrogen
+8f7671185d59,Diamond,items_commodities_diamond
+9768feb3fdb1,Gold,items_commodities_gold
+7f9c25502260,Aphorite,items_commodities_aphorite
+88876a6080be,Carbon,items_commodities_carbon
+4243da2438e7,Carbon,items_commodities_carbon
+3a4edc678b95,Potassium,items_commodities_potassium
+d4d5347c5f84,Potassium,items_commodities_potassium
+f48d962607f1,Potassium,items_commodities_potassium
+977fe39d1cc1,Waste,items_commodities_waste
+db44c489c206,Waste,items_commodities_waste
+be8715d3729e,Waste,items_commodities_waste
+4efc93655d05,Carbon,items_commodities_carbon
+7dc7dc5139f4,Carbon,items_commodities_carbon
+132f5c76a0c3,Carbon,items_commodities_carbon
+d038443ae042,Potassium,items_commodities_potassium
+97e2a503f93f,Potassium,items_commodities_potassium
+5c029d055f53,Waste,items_commodities_waste
+ec47388b272f,Silicon,items_commodities_silicon
+114e57c0cc6e,Aluminum,items_commodities_aluminum
+30408bb7a2b9,Copper,items_commodities_copper
+ebcf38fcd454,Silicon,items_commodities_silicon
+e323e961aac7,Aluminum,items_commodities_aluminum
+672649cddd7f,Agricultural Supplies,items_commodities_agriculturalSupplies
+fd466c72ce59,Hydrogen,items_commodities_hydrogen
+d30881acf3f5,SLAM,items_commodities_slam
+de6836cf512a,Copper,items_commodities_copper
+a652b385e5dd,Aluminum,items_commodities_aluminum
+9b59ead7caea,Processed Food,items_commodities_processedFood
+e7c7d6d4f1cd,Processed Food,items_commodities_processedFood
+0602a448536c,Processed Food,items_commodities_processedFood
+d5c03876f047,Hydrogen,items_commodities_hydrogen
+d95c7dc72b1c,Agricultural Supplies,items_commodities_agriculturalSupplies
+b7bf2e39bafc,ASD Lab Sample,
+2a428e0f46e1,CryoPod (Vanduul),
+d815020065e7,CryoPod,
+bcff6a16c325,WiDoW,items_commodities_widow
+c64ed0fa76a0,E'tam,items_commodities_etam
+c736c13fdb99,Hydrogen,items_commodities_hydrogen
+a89ede7396ed,Quartz,items_commodities_quartz
+a5d5804b02e0,Silicon,items_commodities_silicon
+12c2234b726d,SLAM,items_commodities_slam
+d41840ffa07b,Shield Generator (S1),Salvage_Ship_Component_Shield_Generator_S1_Name
+5d347c7f2088,Power Plant (S1),Salvage_Ship_Component_Power_Plant_S1_Name
+b841ac10870d,Cooler (S1),Salvage_Ship_Component_Cooler_S1_Name
+bcd030f8bfc0,Quantum Drive (S1),Salvage_Ship_Component_Quantum_Drive_S1_Name
+3fa7c2759e74,Ship Weapon (S1 or S2),Salvage_Ship_Component_Ship_Weapon_S1_S2_Name
+5e50cc9d91ae,Ship Mining Laser,Salvage_Ship_Component_Ship_Mining_Laser_Name
+87bcb51d8298,Ship Salvage Head,Salvage_Ship_Component_Ship_Salvage_Head_Name
+9f3423b93e06,Construction Rubble,items_commodities_ConstructionMaterialsPowder
+7f48d80cf93e,Construction Pieces,items_commodities_ConstructionMaterialsScraps
+d542a9747c96,Construction Salvage,items_commodities_ConstructionMaterialsChunks
+1d480a078e56,Ship Weapon (S3 or S4),Salvage_Ship_Component_Ship_Weapon_S3_S4_Name
+a1a2d1a793b7,Ship Missile,Salvage_Ship_Component_Ship_Missile_Name
+15b5089433eb,Ship Bomb,Salvage_Ship_Component_Ship_Bomb_Name
+1c701468646d,"Power Plant, Civilian Grade (S2)",Salvage_Ship_Component_Power_Plant_S2_Civ_G_Name
+7a5544c382c3,"Cooler, Civilian Grade (S2)",Salvage_Ship_Component_Cooler_S2_Civ_G_Name
+a2bf25b42ced,"Shield Generator, Civilian Grade (S2)",Salvage_Ship_Component_Shield_Generator_S2_Civ_G_Name
+66b48c683322,"Power Plant, Military Grade (S2)",Salvage_Ship_Component_Power_Plant_S2_Mil_G_Name
+1f7e1f3959b4,"Cooler, Military Grade (S2)",Salvage_Ship_Component_Cooler_S2_Mil_G_Name
+137a16291290,"Shield Generator, Military Grade (S2)",Salvage_Ship_Component_Shield_Generator_S2_Mil_G_Name
+01f4e6749f96,"Power Plant, Industrial Grade (S2)",Salvage_Ship_Component_Power_Plant_S2_Ind_G_Name
+71b611ff0886,"Cooler, Industrial Grade (S2)",Salvage_Ship_Component_Cooler_S2_Ind_G_Name
+97c65acc3d1c,"Shield Generator, Industrial Grade (S2)",Salvage_Ship_Component_Shield_Generator_S2_Ind_G_Name
+6f485fd39d77,"Quantum Drive, Industrial (S2)",Salvage_Ship_Component_Quantum_Drive_S2_Name
+69c834c27867,"Power Plant, Competition Grade (S2)",Salvage_Ship_Component_Power_Plant_S2_Comp_G_Name
+4734fbeec017,"Cooler, Competition Grade (S2)",Salvage_Ship_Component_Cooler_S2_Comp_G_Name
+08792a0da43a,"Shield Generator, Competition Grade (S2)",Salvage_Ship_Component_Shield_Generator_S2_Comp_G_Name
+0ba6b75cdf40,Dolivine,items_commodities_dolivine
+16a7e491e523,Hadanite,items_commodities_hadanite
+7f068ebd2754,Sadaryx Focus Lens,
+496668b889c6,Beradom,items_commodities_beradom
+09573715702d,Glacosite,items_commodities_glacosite
+0cbc2354efd3,Feynmaline,items_commodities_feynmaline
+7847383427be,Tin,items_commodities_tin
+af99217bbabe,Beryl,items_commodities_beryl
+23596e5299d5,Hephaestanite,items_commodities_hephaestanite
+4fe76be6db38,Borase,items_commodities_borase
+a21b9a72dc69,Torite,items_commodities_torite
+1aec19f0eed6,Taranite,items_commodities_taranite
+6dfc3dd0ee9a,Bexalite,items_commodities_bexalite
+40d5d94978cd,Lindinium,items_commodities_lindinium
+e50109b573e5,Stileron,items_commodities_stileron
+7abf900d2cb4,Riccite,items_commodities_riccite
+34c89bade348,Molina Mold Treatment,items_commodities_MoldTreatment
+1867b99d7007,Molina Mold Samples,items_commodities_MoldSamples
+bfafbce2357f,Molina Ventilation Filters,items_commodities_VentFilters
+cd1ff039a425,Molina Mold Treatment,items_commodities_MoldTreatment
+d7c3de897c0e,Decari Pod,items_commodities_decaripod
+b47322a2599d,Molina Mold,harvestable_MolinaMold
+7f13bf4d94d1,Quantum Fuel,items_commodities_type_quantumFuel
+93c88e84e876,Aluminum (Ore),items_commodities_aluminum_ore
+37b4502d11ef,Copper (Ore),items_commodities_copper_ore
+ce00bf017a92,Corundum (Raw),items_commodities_corundum_raw
+059d2d6be304,Iron (Ore),items_commodities_iron_ore
+9a60c87abe20,Titanium (Ore),items_commodities_titanium_ore
+ab591b2bae61,Quartz (Raw),items_commodities_quartz_raw
+f009ff385c83,Tungsten (Ore),items_commodities_tungsten_ore

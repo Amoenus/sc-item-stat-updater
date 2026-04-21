@@ -1,0 +1,399 @@
+blueprintPoolGuid,poolName,blueprintName,weight
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Fresnel Energy LMG,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Zenith Laser Sniper Rifle,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Geist Armor Arms Forest,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Geist Armor Core Forest,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Geist Armor Legs Forest,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Geist Armor Helmet Forest,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Corbel Arms Mire,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Corbel Core Mire,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Corbel Legs Mire,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Corbel Helmet Mire,1
+5d78a8d6-6911-4eda-97b6-9e315025147d,BP_MISSIONREWARD_ASD2A,Fresnel Energy LMG Battery (165 Cap),1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,"Fresnel ""Rockfall"" Energy LMG",1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,"Zenith ""Landslide"" Laser Sniper Rifle",1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Geist Armor Arms,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Geist Armor Core,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Geist Armor Legs,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Geist Armor Helmet,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Corbel Arms Patina,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Corbel Core Patina,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Corbel Legs Patina,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Corbel Helmet Patina,1
+3ebf3bfa-dde3-4782-90f6-b003b5af1877,BP_MISSIONREWARD_ASD2B,Fresnel Energy LMG Battery (165 Cap),1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,"Zenith ""Thunderstrike"" Laser Sniper Rifle",1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Helmet Desert,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Arms Desert,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Core Desert,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Legs Desert,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Arms Whiteout,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Core Whiteout,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Legs Whiteout,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Geist Armor Helmet Whiteout,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Corbel Arms Halcyon,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Corbel Core Halcyon,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Corbel Legs Halcyon,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Corbel Helmet Halcyon,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,,1
+a79a915d-5186-4f87-8140-69bca9fc335e,BP_MISSIONREWARD_ASD2C,Zenith Laser Sniper Rifle Battery (22 Cap),1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,"Fresnel ""Icebox"" Energy LMG",1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Arms Rogue,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Core Rogue,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Legs Rogue,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Helmet Rogue,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Arms Whiteout,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Core Whiteout,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Legs Whiteout,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Geist Armor Helmet Whiteout,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Corbel Arms Smolder,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Corbel Core Smolder,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Corbel Legs Smolder,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Corbel Helmet Smolder,1
+e0c72a9a-38be-4850-bc0d-dc4f3ee687c2,BP_MISSIONREWARD_ASD2D,Fresnel Energy LMG Battery (165 Cap),1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,"Zenith ""Darkwave"" Laser Sniper Rifle",1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,"Fresnel ""Molten"" Energy LMG",1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,Geist Armor Arms ASD Edition,1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,Geist Armor Core ASD Edition,1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,Geist Armor Legs ASD Edition,1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,Geist Armor Helmet ASD Edition,1
+903fb48b-ea72-48c0-b6d1-ece7c7f1e2f3,BP_MISSIONREWARD_ASD3,Zenith Laser Sniper Rifle Battery (22 Cap),1
+f14e629c-3346-4ca8-9204-df523ae54822,BP_MISSIONREWARD_BHG_ASDFacilityDelving_EngineeringWing_EliminateSpecific,Palatino Arms Sunstone,1
+f14e629c-3346-4ca8-9204-df523ae54822,BP_MISSIONREWARD_BHG_ASDFacilityDelving_EngineeringWing_EliminateSpecific,Palatino Core Sunstone,1
+f14e629c-3346-4ca8-9204-df523ae54822,BP_MISSIONREWARD_BHG_ASDFacilityDelving_EngineeringWing_EliminateSpecific,Palatino Legs Sunstone,1
+f14e629c-3346-4ca8-9204-df523ae54822,BP_MISSIONREWARD_BHG_ASDFacilityDelving_EngineeringWing_EliminateSpecific,Palatino Helmet Sunstone,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Arms Metropolis,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Core Metropolis,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Legs Metropolis,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Helmet Metropolis,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Arms Daystar,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Core Daystar,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Legs Sunstone,1
+6d549de3-21d6-4c46-ba89-2970a4cf7286,BP_MISSIONREWARD_BHG_ASDFacilityDelving_ResearchWing_EliminateSpecific,Palatino Helmet Daystar,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Lumin V SMG,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Arrowhead Sniper Rifle,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Arms,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Core,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Legs,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Helmet,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Shrike Core,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Shrike Arms,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Shrike Legs,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Aves Shrike Helmet,1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Lumin V SMG Battery (45 cap),1
+4937f5e9-f42e-4d8a-a6c4-96517028c548,BP_MISSIONREWARD_BitZeros_BlackBoxRecovery,Arrowhead Sniper Rifle Battery (16 cap),1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Custodian SMG,1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,"Custodian ""Midnight"" SMG",1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,"Custodian ""Scorched"" SMG",1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Arden-SL Arms,1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Arden-SL Core,1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Arden-SL Legs,1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Arden-SL Helmet,1
+fa0be2ae-124b-4505-a45d-80175c8f0b37,BP_MISSIONREWARD_BitZeros_RecoverItem_PyroNyx,Custodian SMG Magazine (60 cap),1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Lumin V SMG,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Core Black,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Arms Black,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Legs Black,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Morningstar Helmet Icefall,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Core Grey,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Arms Grey,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Inquisitor Legs Grey,1
+636a76a2-0fbb-4f7f-aa69-7187f84aa961,BP_MISSIONREWARD_BitZeros_RecoverItem_Stanton,Lumin V SMG Battery (45 cap),1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,P8-AR Rifle,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Arms,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Core,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Legs,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Helmet,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Arms Moonfall,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Core Moonfall,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Legs Moonfall,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,Palatino Helmet Moonfall,1
+0f03e098-cc68-4a14-abe8-7b17a8bec97e,BP_MISSIONREWARD_BountyHuntersGuild_PAF_EliminateSpecific,P8-AR Rifle Magazine (15 Cap),1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,"Karna ""Brimstone"" Rifle",1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,Artimex Core Lodestone,1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,Artimex Arms Lodestone,1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,Artimex Legs Lodestone,1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,Artimex Helmet Lodestone,1
+bd54c374-923e-4095-96c1-3a76e857c35a,BP_MISSIONREWARD_CFP_ChainElim_1and2,Karna Rifle Battery (35 cap),1
+6a166ec8-afd6-4e50-82aa-8b7533f82b41,BP_MISSIONREWARD_CFP_ChainElim_3,"Karna ""Fate"" Rifle",1
+6a166ec8-afd6-4e50-82aa-8b7533f82b41,BP_MISSIONREWARD_CFP_ChainElim_3,Artimex Core (Modified),1
+6a166ec8-afd6-4e50-82aa-8b7533f82b41,BP_MISSIONREWARD_CFP_ChainElim_3,Artimex Arms (Modified),1
+6a166ec8-afd6-4e50-82aa-8b7533f82b41,BP_MISSIONREWARD_CFP_ChainElim_3,Karna Rifle Battery (35 cap),1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Karna Rifle,1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Artimex Arms,1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Artimex Core,1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Artimex Legs,1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Artimex Helmet,1
+633d4069-c160-43d2-892d-2d8222261c20,BP_MISSIONREWARD_CFP_Outpost_RegionAB,Karna Rifle Battery (35 cap),1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Karna Rifle,1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Artimex Core Canuto,1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Artimex Arms Canuto,1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Artimex Legs Canuto,1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Artimex Helmet Canuto,1
+a2da9707-9859-4da0-9f4b-90e5afe45833,BP_MISSIONREWARD_CFP_Outpost_RegionC,Karna Rifle Battery (35 cap),1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,"Karna ""Rager"" Rifle",1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,Artimex Core Wildwood,1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,Artimex Arms Wildwood,1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,Artimex Legs Wildwood,1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,Artimex Helmet Wildwood,1
+e6bdf007-4469-46fd-88d7-8e139c59829a,BP_MISSIONREWARD_CFP_Outpost_RegionD,Karna Rifle Battery (35 cap),1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,FS-9 LMG,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,BR-2 Shotgun,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,Gallant Rifle,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP Arms Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP Core,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP Legs Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,Balor HCH Helmet,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP-mk4 Arms Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP-mk4 Legs Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP-mk4 Core Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,ADP-mk4 Helmet Woodland,1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,FS-9 Magazine (75 cap),1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,BR-2 Shotgun Magazine (12 cap),1
+cf847b27-bf3b-4d50-87c0-de3c68e4e387,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_AB,Gallant Rifle Battery (45 cap),1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,P6-LR Sniper Rifle,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,A03 Sniper Rifle,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,CBH-3 Helmet Base,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,PAB-1 Arms,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,PAB-1 Core,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,PAB-1 Legs,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,TrueDef-Pro Arms,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,TrueDef-Pro Core Base,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,Argus Helmet,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,TrueDef-Pro Legs,1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,A03 Sniper Rifle Magazine (15 cap),1
+16948a53-7be2-4869-9b21-3af06e99f8b7,BP_MISSIONREWARD_CitizensForProsperityDestroyItems_CD,P6-LR Magazine (8 cap),1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,P8-SC SMG,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,C54 SMG,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,S71 Rifle,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkX Arms Woodland,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkX Legs Woodland,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkX Core Woodland,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkX Helmet Woodland,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkV Arms,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkV Legs,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,ORC-mkV Core,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,G-2 Helmet Woodland,1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,P8-SC SMG Magazine (45 cap),1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,C54 SMG Magazine (50 cap),1
+6ba44ab4-9681-4bbf-9fd6-475da08bafd5,BP_MISSIONREWARD_CitizensForProsperityRecoverCargo_Pyro,S71 Rifle Magazine (30 cap),1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,"Parallax ""Sunstone"" Energy Assault Rifle",1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,Antium Arms Jet,1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,Antium Core Jet,1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,Antium Legs Jet,1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,Antium Helmet Jet,1
+af21edb5-3938-45ac-8a35-130e52463f44,BP_MISSIONREWARD_FoxwellEnforcement_Ambush,Parallax Rifle Battery (80 Cap),1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,"Parallax ""Shock Trooper"" Energy Assault Rifle",1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,Antium Arms Storm,1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,Antium Core Storm,1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,Antium Legs Storm,1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,Antium Helmet Storm,1
+ad7ee842-5a39-4f35-a337-91b8e274179f,BP_MISSIONREWARD_FoxwellEnforcement_EscortShips,Parallax Rifle Battery (80 Cap),1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Arms Maroon,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Core Maroon,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Legs Maroon,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Helmet Maroon,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Helmet Moss Camo,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Arms Moss Camo,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Core Moss Camo,1
+5b74b911-ef2e-4bcd-8767-84abdc6bf6f9,BP_MISSIONREWARD_FoxwellEnforcement_Generator,Antium Legs Moss Camo,1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,"Parallax ""Sanguine"" Energy Assault Rifle",1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,Antium Arms Sand,1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,Antium Core Sand,1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,Antium Legs Sand,1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,Antium Helmet Sand,1
+2fefd608-1c2c-4b0f-9c48-24b797f3ba3f,BP_MISSIONREWARD_FoxwellEnforcement_Patrol,Parallax Rifle Battery (80 Cap),1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Parallax Energy Assault Rifle,1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Antium Arms,1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Antium Core,1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Antium Legs,1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Antium Helmet,1
+e489ca64-3152-4ef3-8e86-10e05120d84d,BP_MISSIONREWARD_Foxwell_DefendEntitiesAndEscort,Parallax Rifle Battery (80 Cap),1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Atzkav Sniper Rifle,1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,"Atzkav ""Igniter"" Sniper Rifle",1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,"Atzkav ""Mirage"" Sniper Rifle",1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Calico Arms Tactical,1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Calico Core Tactical,1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Calico Legs Tactical,1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Calico Helmet Tactical,1
+e9947de1-6160-4d62-a319-2f4693140c88,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionAB,Atzkav Sniper Rifle Battery (8 cap),1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,Yubarev Pistol,1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,"Yubarev ""Mirage"" Pistol",1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,"Yubarev ""Igniter"" Pistol",1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,DustUp Arms Tactical,1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,DustUp Core Tactical,1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,DustUp Legs Tactical,1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,DustUp Helmet Tactical,1
+d10c81ec-fc38-4f3e-bb2d-ccea0d10c889,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateALL_RegionCD,Yubarev Pistol Battery (10 cap),1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Ravager-212 Twin Shotgun,1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,"Ripper ""Sunblock"" SMG",1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Dust Devil Armor Arms,1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Dust Devil Armor Core,1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Dust Devil Armor Legs,1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Manticore Helmet,1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Ravager-212 Twin Shotgun Magazine (16 cap),1
+b81b328f-28a5-4d76-b06a-604cc7d5f2b0,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateBoss,Deadrig Shotgun Magazine (8 cap),1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Scalpel Sniper Rifle,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Coda Pistol,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,"Coda ""Nighthawk"" Pistol",1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,"Coda ""Big Boss"" Pistol",1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Morozov-SH Arms,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Morozov-SH Core,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Morozov-SH Legs,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Morozov-SH Helmet,1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Scalpel Sniper Rifle Magazine (12 cap),1
+f05fa898-1580-4ce3-95e2-8f5c4a1d1891,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionAB,Coda Pistol Magazine (6 cap),1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Devastator Shotgun,1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,"Devastator ""Warhawk"" Shotgun",1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,"Devastator ""Midnight"" Shotgun",1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Morozov-SH Core Thule,1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Morozov-SH Arms Thule,1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Morozov-SH Legs Thule,1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Morozov-SH Helmet Thule,1
+9cf3799c-2347-46a6-bd65-203f8a426f79,BP_MISSIONREWARD_HeadHunters_MercenaryFPS_EliminateSpecific_RegionCD,Devastator Shotgun Battery (12 cap),1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,"Pulse ""Blacklist"" Pistol",1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Quartz Energy SMG,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,"Quartz ""Black Op"" Energy SMG",1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Arms,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Core,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Legs,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Helmet,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Helmet Clanguard,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Core Clanguard,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Legs Clanguard,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Testudo Arms Clanguard,1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Quartz Energy SMG Battery (45 cap),1
+c9b51f5a-6073-49f8-bd40-b240d7d35ceb,BP_MISSIONREWARD_IDS_RecoverEncryptedData,Pulse Laser Pistol Battery (60 Cap),1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,"Pulse ""Rouge"" Pistol",1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,Testudo Arms Combustion,1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,Testudo Core Combustion,1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,Testudo Legs Combustion,1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,Testudo Helmet Combustion,1
+efacefc7-916b-4cd1-9f03-43053f6ae867,BP_MISSIONREWARD_InterSec_DefendShip,Pulse Laser Pistol Battery (60 Cap),1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,"Quartz ""Lumen"" Energy SMG",1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Arms Nightveil,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Core Nightveil,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Legs Nightveil,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Helmet Nightveil,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,"Quartz ""Deadfall"" Energy SMG",1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Arms Turfwar,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Core Turfwar,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Legs Turfwar,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Testudo Helmet Turfwar,1
+1fdd6657-5947-4f64-ab2b-3b001d88f1f7,BP_MISSIONREWARD_InterSec_Patrol,Quartz Energy SMG Battery (45 cap),1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Pulse Laser Pistol,1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Testudo Arms Earthshake,1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Testudo Core Earthshake,1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Testudo Legs Earthshake,1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Testudo Helmet Earthshake,1
+36e8ac4d-8962-4b03-89e7-cd7a06fc4adc,BP_MISSIONREWARD_InterSec_ResourceGathering,Pulse Laser Pistol Battery (60 Cap),1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,F55 LMG,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,LH86 Pistol,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Defiance Arms Tactical,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Defiance Core Tactical,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Defiance Legs Tactical,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Defiance Helmet Tactical,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Lynx Arms,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Lynx Legs,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Lynx Core,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,Oracle Helmet,1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,F55 LMG Magazine (150 cap),1
+ce014e33-cfcb-45e9-a12f-06f9baff9db2,BP_MISSIONREWARD_NorthRockFPSKill_EliminateBoss,F55 LMG Magazine (150 cap),1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,Pulse Laser Pistol,1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,"Pulse ""Blacklist"" Pistol",1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,"Pulse ""Rouge"" Pistol",1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,Quartz Energy SMG,1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,"Quartz ""Deadfall"" Energy SMG",1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,"Quartz ""Black Op"" Energy SMG",1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,"Quartz ""Lumen"" Energy SMG",1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,Quartz Energy SMG Battery (45 cap),1
+7c495074-f31a-4f52-bde2-c912b183ac81,BP_MISSIONREWARD_Rayari_RecoverItem_HathorLoot,Pulse Laser Pistol Battery (60 Cap),1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,"Prism ""Deep Sea"" Laser Shotgun",1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,"Prism ""Bonedust"" Laser Shotgun",1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,"Prism ""Firesteel"" Laser Shotgun",1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,Prism Laser Shotgun,1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,Stirling Exploration Suit,1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,Siebe Helmet,1
+5abbcbe8-8af1-4b76-8a85-631eeff5903d,BP_MISSIONREWARD_Rayari_RecoverItem_Irradiated,Prism Laser Shotgun Battery (20 cap),1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,R97 Shotgun,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,"R97 ""Scorched"" Shotgun",1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Arms Daimyo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Core Daimyo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Legs Daimyo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Helmet Daimyo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Arms Crimson Camo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Core Crimson Camo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Legs Crimson Camo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,Monde Helmet Crimson Camo,1
+61b089a0-880c-41da-a2c2-482a1bffe96f,BP_MISSIONREWARD_RDC_Boss,R97 Shotgun Magazine (18 cap),1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,"R97 ""Kismet"" Shotgun",1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,"R97 ""Righteous"" Shotgun",1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Arms Delta Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Legs Delta Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Core Delta Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Helmet Delta Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Helmet Daimyo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Legs Hemlock Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Core Hemlock Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,Monde Arms Hemlock Camo,1
+1e31d7e8-3033-4c98-a477-c474810d48c1,BP_MISSIONREWARD_RDC_Exclusive,R97 Shotgun Magazine (18 cap),1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,R97 Shotgun,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Arms,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Core,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Legs,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Helmet,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Arms Hiro,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Core Hiro,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Legs Hiro,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,Monde Helmet Hiro,1
+e52bf354-8918-474d-987e-55c01bfecdd3,BP_MISSIONREWARD_RDC_Generic,R97 Shotgun Magazine (18 cap),1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,"Arclight ""Herrero"" Pistol",1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,"Arclight ""Desert Shadow"" Pistol",1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,Pembroke Exploration Suit,1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,Pembroke Helmet,1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,Novikov Exploration Suit,1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,Novikov Helmet,1
+5e79204c-6d26-4ddb-95c8-6940028e4d89,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Pyro,Arclight Pistol Battery (30 cap),1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,"Arclight ""Midnight"" Pistol",1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,Strata Arms,1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,Strata Core,1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,Strata Legs,1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,Strata Helmet Shooting Star,1
+ebe453ce-10cc-4811-8c68-217c5fecb79e,BP_MISSIONREWARD_Shubin_ResourceGathering_FPSMining_Stanton,Arclight Pistol Battery (30 cap),1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,"Arclight ""Stormfall"" Pistol",1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Arclight Pistol,1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Venture Arms,1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Venture Core,1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Venture Legs,1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Horizon Helmet,1
+c2bd6ae6-c4a1-4fb1-8421-bd2979f39f77,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_PyroNyx,Arclight Pistol Battery (30 cap),1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,"Arclight ""Nightstalker"" Pistol",1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,Aril Arms,1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,Aril Core,1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,Aril Legs,1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,Aril Helmet,1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,"Arclight ""Warhawk"" Pistol",1
+40438f39-f78c-41bc-a8de-d6f4f4c2daec,BP_MISSIONREWARD_Shubin_ResourceGathering_ShipMining_Stanton,Arclight Pistol Battery (30 cap),1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Pulverizer LMG,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Tripledown Pistol,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Citadel Arms Base,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Citadel Legs Base,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Citadel Core Base,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Fortifier Helmet Base,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Carnifex Armor Core,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Carnifex Armor Legs,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Carnifex Armor Legs,1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Pulverizer LMG Magazine (120 Cap),1
+6876ee7a-114b-4414-9af1-bfdcdd303204,BP_MISSIONREWARD_VaughnGenerator_EliminateBoss,Tripledown Pistol Magazine (12 Cap),1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Killshot Rifle,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Deadrig Shotgun,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Overlord Arms Supernova,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Overlord Core Supernova,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Overlord Legs Supernova,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Overlord Helmet Supernova,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Piecemeal Armor Arms,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Piecemeal Armor Core,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Piecemeal Armor Legs,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Badami Helmet,1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Killshot Rifle Magazine (45 Cap),1
+67a07f1a-ca8c-400d-984a-6088ecd3b482,BP_MISSIONREWARD_VaughnGenerator_EliminateSpecific,Deadrig Shotgun Magazine (8 cap),1
