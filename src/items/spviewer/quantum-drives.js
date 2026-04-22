@@ -1,5 +1,6 @@
 // @ts-check
 import { stat } from '../../lib/format/stat-builder.js';
+import { buildComponentDisplayName } from '../../lib/format/component-name-prefix.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
@@ -7,6 +8,9 @@ export default {
   label: 'SP Quantum Drives',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/quantum_drives.csv',
+  buildName(r, lookupRows) {
+    return buildComponentDisplayName(r, lookupRows);
+  },
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Speed Maximum', 'Delay Spool', 'Delay Cooldown', 'Health'],
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),
   buildValue(r, flavorText) {

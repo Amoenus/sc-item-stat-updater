@@ -21,6 +21,22 @@ export default {
     'Health',
   ],
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
+  buildName(r) {
+    const name = String(r['Name'] ?? '').trim();
+    if (!name) return '';
+
+    const signal = String(r['Tracking Signal'] ?? '').trim().toLowerCase();
+    const signalTags = {
+      infrared: '[IR]',
+      crosssection: '[CS]',
+      electromagnetic: '[EM]',
+    };
+    const key = /** @type {keyof typeof signalTags} */ (signal);
+    const prefix = Object.prototype.hasOwnProperty.call(signalTags, key)
+      ? signalTags[key]
+      : '';
+    return prefix ? `${prefix} ${name}` : name;
+  },
   buildValue(r, flavorText) {
     const isTorpedo = parseInt(r['Size'], 10) >= 7;
 

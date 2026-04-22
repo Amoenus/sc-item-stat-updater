@@ -1,11 +1,15 @@
 // @ts-check
 import { stat } from '../../lib/format/stat-builder.js';
+import { buildComponentDisplayName } from '../../lib/format/component-name-prefix.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
   csvFile: 'spviewer/jumpdrive.spviewer.csv',
   label: 'SP Jump Drives',
   nameColumn: 'Name',
+  buildName(r, lookupRows) {
+    return buildComponentDisplayName(r, lookupRows);
+  },
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('jdrv'),
   buildValue(r, flavorText) {

@@ -1,5 +1,6 @@
 // @ts-check
 import { stat } from '../../lib/format/stat-builder.js';
+import { buildComponentDisplayName } from '../../lib/format/component-name-prefix.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
@@ -11,6 +12,9 @@ export default {
   descKeyMatch: (kl) => kl.includes('desccool_') || kl.includes('desc_cool_'),
   nameKeyToDescKey(nameKey) {
     return nameKey.replace(/(item_)(Name|name|NAME)_?(?=COOL_)/i, '$1Desc_');
+  },
+  buildName(r, lookupRows) {
+    return buildComponentDisplayName(r, lookupRows);
   },
   getAlternateDescKeys(descKey) {
     const altKeys = [];

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:scmdb.net)",
+      "Bash(curl -sSLI https://scmdb.net/)",
+      "Bash(curl -sSL https://scmdb.net/)",
+      "Bash(curl -sSL https://scmdb.net/assets/index-D3dhI5Ej.js)",
+      "Bash(curl -sSL https://scmdb.net/merged.json -o /tmp/merged.json)",
+      "Read(//tmp/**)",
+      "Bash(curl -sSL \"https://scmdb.net/data/merged-4.7.1-live.11638371.json\" -o /tmp/merged.json)",
+      "Bash(node *)",
+      "Bash(mkdir -p /c/tmp)",
+      "Bash(cp /tmp/merged.json /c/tmp/merged.json)",
+      "Read(//c/tmp/**)"
+    ]
+  }
+}

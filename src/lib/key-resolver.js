@@ -12,6 +12,14 @@ const SKIP_SUFFIX_RE = /_(short|mag|barrel|ammo)$/i;
  * @param {string[]} lines - INI file lines
  * @returns {Map<string, string>} displayName → localizationKey
  */
+function keyPreferenceScore(key) {
+  const normalized = String(key ?? '').toLowerCase();
+  let score = 0;
+  if (/_scitem$/.test(normalized)) score += 10;
+  if (normalized.startsWith('item_name')) score += 1;
+  return score;
+}
+
 export function buildReverseNameIndex(lines) {
   const index = new Map();
   for (const line of lines) {
@@ -22,7 +30,14 @@ export function buildReverseNameIndex(lines) {
     if (SKIP_SUFFIX_RE.test(key)) continue;
     const value = line.substring(eqIdx + 1).trim();
     if (!value) continue;
-    if (!index.has(value)) {
+    const existing = index.get(value);
+    if (!existing) {
+      index.set(value, key);
+      continue;
+    }
+    const currentScore = keyPreferenceScore(existing);
+    const candidateScore = keyPreferenceScore(key);
+    if (candidateScore > currentScore) {
       index.set(value, key);
     }
   }

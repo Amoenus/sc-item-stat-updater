@@ -1,5 +1,6 @@
 // @ts-check
 import { stat } from '../../lib/format/stat-builder.js';
+import { buildComponentDisplayName } from '../../lib/format/component-name-prefix.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
@@ -7,6 +8,9 @@ export default {
   label: 'SP Radars',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/radars.csv',
+  buildName(r, lookupRows) {
+    return buildComponentDisplayName(r, lookupRows);
+  },
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc_radr_') || kl.includes('descradr_'),
   buildValue(r, flavorText) {

@@ -7,6 +7,7 @@ import { readIniFile, writeIniFile } from './io/ini-file.js';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from './io/mapping-store.js';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
 import { getLogger } from './logger.js';
+import { preserveNamePrefix } from './localization-utils.js';
 
 const logger = getLogger('updater');
 
@@ -62,6 +63,11 @@ async function loadCsvData(csvPath, config) {
   return rows;
 }
 
+async function loadCsvRows(csvPath) {
+  const csvContent = await fs.readFile(csvPath, 'utf-8');
+  return parseCSV(csvContent);
+}
+
 /** Resolves localization keys for SPViewer configs (no Localization Key column in CSV). */
 async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun) {
   const reverseIndex = buildReverseNameIndex(lines);
@@ -94,6 +100,13 @@ async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun)
   return unresolved;
 }
 
+async function resolveSpviewerLookupRows(config, csvDir) {
+  if (!config.lookupCsvFile) return null;
+  const lookupPath = validateContainedPath(path.resolve(csvDir, config.lookupCsvFile), csvDir, 'lookup CSV filename');
+  return await loadCsvRows(lookupPath);
+}
+
+
 /** Finds the last existing description key index for insertion ordering. */
 function findLastDescIndex(existingKeys, descKeyMatch) {
   let lastDescIdx = -1;
@@ -106,11 +119,28 @@ function findLastDescIndex(existingKeys, descKeyMatch) {
 }
 
 /** Processes a single row: updates existing key or queues a new entry. */
-function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys) {
+function buildNameValue(row, config, lookupRows) {
+  if (typeof config.buildName === 'function') return config.buildName(row, lookupRows);
+  if (config.nameColumn) return row[config.nameColumn];
+  return null;
+}
+
+function normalizeNameAliasSuffix(key) {
+  if (!key) return '';
+  let normalized = String(key).trim();
+  normalized = normalized.replace(/^item_([Nn]ame)(?:_)?/, '');
+  normalized = normalized.replace(/_short$/i, '');
+  if (normalized.toLowerCase().endsWith('_scitem')) {
+    normalized = normalized.slice(0, -7);
+  }
+  return normalized.toLowerCase();
+}
+
+function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, lookupRows) {
   const nameKey = row['Localization Key'];
   const descKey = deriveDescKey(nameKey);
   const altKeys = config.getAlternateDescKeys ? config.getAlternateDescKeys(descKey) : [];
-  const allKeys = [descKey, ...altKeys];
+  const allKeys = [nameKey, descKey, ...altKeys];
 
   if (allKeys.some((k) => updatedKeys.has(k.toLowerCase()))) {
     return { status: 'skipped' };
@@ -119,7 +149,47 @@ function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys
   let anyUpdated = false;
   let anyFound = false;
 
-  for (const targetKey of allKeys) {
+  const nameValue = buildNameValue(row, config, lookupRows);
+  if (nameValue != null) {
+    const foundName = findKey(nameKey, existingKeys);
+    const canonicalNewValue = String(nameValue);
+    if (foundName) {
+      anyFound = true;
+      const oldLine = lines[foundName.idx];
+      const eqIdx = oldLine.indexOf('=');
+      const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
+      const updatedValue = preserveNamePrefix(oldValue, canonicalNewValue);
+      const sanitizedValue = sanitizeIniValue(updatedValue);
+      if (sanitizedValue !== oldValue) {
+        lines[foundName.idx] = `${foundName.key}=${sanitizedValue}`;
+        anyUpdated = true;
+      }
+    }
+
+    const aliasSuffix = normalizeNameAliasSuffix(nameKey);
+    if (aliasSuffix) {
+      for (const [candidateKey, idx] of Object.entries(existingKeys)) {
+        if (candidateKey === nameKey) continue;
+        if (!candidateKey.toLowerCase().startsWith('item_name')) continue;
+        if (normalizeNameAliasSuffix(candidateKey) !== aliasSuffix) continue;
+
+        const aliasLine = lines[idx];
+        const aliasEqIdx = aliasLine.indexOf('=');
+        if (aliasEqIdx < 0) continue;
+        const aliasValue = aliasLine.substring(aliasEqIdx + 1);
+
+        const updatedAliasValue = preserveNamePrefix(aliasValue, canonicalNewValue);
+        const sanitizedAliasValue = sanitizeIniValue(updatedAliasValue);
+        if (sanitizedAliasValue !== aliasValue) {
+          lines[idx] = `${candidateKey}=${sanitizedAliasValue}`;
+          anyUpdated = true;
+          anyFound = true;
+        }
+      }
+    }
+  }
+
+  for (const targetKey of [descKey, ...altKeys]) {
     const found = findKey(targetKey, existingKeys);
     if (found) {
       anyFound = true;
@@ -216,6 +286,7 @@ export async function runUpdate(config, options = {}) {
       skippedCount = 0,
       errorCount = 0;
 
+    const lookupRows = await resolveSpviewerLookupRows(config, opts.csvDir);
     for (const row of rows) {
       const validation = validateRow(row, config.label);
       if (validation === 'skip') {
@@ -229,7 +300,7 @@ export async function runUpdate(config, options = {}) {
       }
 
       try {
-        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys);
+        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, lookupRows);
         if (result.status === 'updated') updatedCount++;
         else if (result.status === 'new') {
           newLines.push(result.line);

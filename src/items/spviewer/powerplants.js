@@ -1,5 +1,6 @@
 // @ts-check
 import { stat } from '../../lib/format/stat-builder.js';
+import { buildComponentDisplayName } from '../../lib/format/component-name-prefix.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
@@ -7,6 +8,9 @@ export default {
   label: 'SP Power Plants',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/powerplants.csv',
+  buildName(r, lookupRows) {
+    return buildComponentDisplayName(r, lookupRows);
+  },
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'SegmentGeneration', 'Health'],
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
   buildValue(r, flavorText) {

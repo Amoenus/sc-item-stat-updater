@@ -5,6 +5,7 @@ import { loadErkulConfigs, loadSpviewerConfigs } from '../src/items/registry.js'
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
+import { runCommodityUpdate } from '../src/lib/commodity-updater.js';
 
 const logger = getLogger('update-all');
 
@@ -94,6 +95,31 @@ for (let i = 0; i < categories.length; i++) {
       cause: err.cause?.message,
     });
   }
+}
+
+bar.update(categories.length, { category: 'Commodities' });
+try {
+  const commodityResult = await runCommodityUpdate({
+    iniPath: options.iniPath,
+    dryRun: options.dryRun,
+    skipBackup: true,
+  });
+  results.push({
+    label: 'Commodities',
+    updatedCount: commodityResult.updatedCount,
+    newCount: 0,
+    skippedCount: 0,
+    errorCount: 0,
+    unresolvedCount: 0,
+    issues: [],
+    summary: `Commodities: Updated ${commodityResult.updatedCount}`,
+  });
+} catch (err) {
+  errors.push({ label: 'Commodities', message: err.message });
+  logger.error('Failed to update commodities', {
+    error: err.message,
+    cause: err.cause?.message,
+  });
 }
 
 bar.update(categories.length, { category: 'Done' });

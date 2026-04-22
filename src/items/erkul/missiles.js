@@ -28,6 +28,9 @@ export default {
     'Health',
   ],
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
+  buildName(r) {
+    return r['Localization Display Name'];
+  },
   buildValue(r, flavorText) {
     const isTorpedo = parseInt(r['Size'], 10) >= 7;
 

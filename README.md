@@ -23,6 +23,8 @@ node bin/update-all.js
 
 Runs all categories using the default source. By default, the tool prefers SPViewer data when available, with Erkul data used as the fallback source.
 
+This also now runs commodity display name updates so raw commodities and illegal commodity markers are kept in sync.
+
 ### Update a single category
 
 ```sh
@@ -47,6 +49,43 @@ node bin/scrape-scmdb.js --delay-ms 2000
 
 - `--delay-ms <ms>` slows SCMDB requests by the specified number of milliseconds.
 
+### Update SCMDB mission titles and descriptions
+
+```sh
+node bin/update-scmdb-missions.js
+```
+
+This updates `global.ini` title and description values from the latest `csv/scmdb/contracts-*.csv` output. It preserves SCMDB placeholder tokens like `[SYSTEM]`, `[LOCATION]`, `[TARGET]`, etc. and only normalizes blueprint tags so the game can continue using the runtime placeholder data.
+
+- adds `<EM4>[BP]</EM4>` when a mission has a guaranteed blueprint reward
+- adds `<EM4>[BP]*</EM4>` when the mission has special or conditional blueprint reward cases
+- removes stale blueprint tags when SCMDB no longer indicates a blueprint reward
+
+### Update commodity display mappings
+
+```sh
+node bin/update-commodities.js
+```
+
+This applies custom commodity display name overrides in `global.ini`, including raw commodity label normalization such as `Ice (Raw)`, `Ouratite (Raw)`, `Silicon (Raw)`, and `Heph (Raw)`.
+
+Additional options:
+
+```sh
+node bin/update-commodities.js --dry-run
+node bin/update-commodities.js --ini-path ./global.ini
+```
+
+- `--dry-run` previews the changes without writing to `global.ini`
+- `--ini-path` points to a custom INI path if you do not want to use the default `./global.ini`
+
+Additional options:
+
+```sh
+node bin/update-scmdb-missions.js --dry-run
+node bin/update-scmdb-missions.js --ini-path ./global.ini --csv-dir ./csv/scmdb
+```
+
 ### Data source options
 
 ```sh
@@ -64,6 +103,7 @@ node bin/update-all.js --source all
 ```
 ├── bin/
 │   ├── update-all.js        # Runs all category updaters
+│   ├── update-commodities.js # Applies custom commodity display mappings
 │   ├── update-item.js       # CLI to run a single category
 │   ├── scrape-spviewer.js   # SPViewer scraping helper
 │   └── scrape-scmdb.js      # SCMDB blueprint mission scraper
