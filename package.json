@@ -35,6 +35,6 @@
     "puppeteer": "^24.40.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.12"
+    "@biomejs/biome": "2.4.13"
   }
 }
