@@ -23,6 +23,28 @@ node bin/update-all.js
 
 Runs all categories using the default source. By default, the tool prefers SPViewer data when available, with Erkul data used as the fallback source.
 
+> Note: `bin/update-all.js` only updates `global.ini` from existing CSV files. It does not fetch or scrape new SPViewer data.
+
+### Scrape SPViewer data
+
+```sh
+node bin/scrape-spviewer.js --all
+```
+
+This command scrapes SPViewer item tables and saves CSV files into `csv/spviewer/`.
+
+To scrape only specific item types:
+
+```sh
+node bin/scrape-spviewer.js Radar Shield
+```
+
+To list supported SPViewer item types:
+
+```sh
+node bin/scrape-spviewer.js --list
+```
+
 ### Update a single category
 
 ```sh
