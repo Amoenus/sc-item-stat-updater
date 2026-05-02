@@ -107,7 +107,7 @@ function findLastDescIndex(existingKeys, descKeyMatch) {
 }
 
 /** Processes a single row: updates existing key or queues a new entry. */
-function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys) {
+function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, force = false) {
   const nameKey = row['Localization Key'];
   const descKey = deriveDescKey(nameKey);
   const altKeys = config.getAlternateDescKeys ? config.getAlternateDescKeys(descKey) : [];
@@ -160,7 +160,8 @@ function buildResult(config, stats, durationMs, dryRun) {
   const suffix = dryRun ? ' (dry run)' : '';
   const errorSuffix = stats.errorCount > 0 ? `, Errors ${stats.errorCount}` : '';
   const unresolvedSuffix = stats.unresolvedCount > 0 ? `, Unresolved ${stats.unresolvedCount}` : '';
-  const summary = `${config.label}: Updated ${stats.updatedCount}, Added ${stats.newCount}, Skipped ${stats.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
+  const foundSuffix = stats.foundCount > 0 ? `, Found ${stats.foundCount}` : '';
+  const summary = `${config.label}: Updated ${stats.updatedCount}, Added ${stats.newCount}${foundSuffix}, Skipped ${stats.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
 
   logger.debug(summary, { label: config.label, ...stats, durationMs, dryRun });
 
@@ -227,7 +228,7 @@ export async function runUpdate(config, options = {}) {
       }
 
       try {
-        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys);
+        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, opts.force);
         if (result.status === 'updated') updatedCount++;
         else if (result.status === 'new') {
           newLines.push(result.line);

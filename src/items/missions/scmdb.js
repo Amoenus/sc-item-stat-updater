@@ -23,16 +23,17 @@ export default {
     if (oldValue) {
       if (isTitle) {
         const normalizedOldValue = oldValue.replace(/\s*(?:<EM4>\[BP(?: Chain)?\]<\/EM4>|\[BP(?: Chain)?\])\s*$/, '');
-        if (oldValue === normalizedOldValue && note && oldValue.includes(noteText)) {
-          return oldValue;
+        if (!noteText) {
+          return normalizedOldValue;
         }
         return `${normalizedOldValue}${note}`;
       }
 
-      if (note && oldValue.includes(noteText) && (!rewardList || oldValue.includes(row['RewardList'] || ''))) {
-        return oldValue;
+      const normalizedOldValue = oldValue.replace(/(?:\\n\\n(?:\[BP Reward\]|\[BP Chain\]))(?:\\n\\n.*)?$/, '');
+      if (!noteText && !rewardList) {
+        return normalizedOldValue;
       }
-      return oldValue + note + rewardList;
+      return `${normalizedOldValue}${note}${rewardList}`;
     }
 
     return description + note + rewardList;
