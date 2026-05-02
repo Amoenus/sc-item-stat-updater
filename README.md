@@ -53,10 +53,22 @@ node bin/scrape-scmdb.js
 
 This command downloads the latest SCMDB merged data file and writes outputs into `csv/scmdb/`, including:
 - `merged-*.json`
-- `contracts.csv`
-- `legacy-contracts.csv`
+- `contracts.csv` — now includes blueprint metadata and chain marker fields:
+  - `isBlueprintReward`
+  - `isBlueprintChainPrerequisite`
+  - `blueprintChainDepth`
+- `legacy-contracts.csv` — also includes the same blueprint marker fields
 - `blueprint-pools.csv`
 - `contract-blueprint-rewards.csv`
+
+It also generates the mission updater source CSV at `csv/missions/scmdb-missions.csv`.
+That CSV includes `Note`, `TitleNote`, and `RewardList` columns so blueprint chain/reward metadata and reward item lists can be appended without replacing existing mission text.
+
+After scraping, run:
+
+```sh
+node bin/update-item.js --csv-dir ./csv mission-scmdb
+```
 
 To list available SCMDB versions:
 

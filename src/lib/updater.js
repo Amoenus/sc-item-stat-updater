@@ -127,24 +127,19 @@ function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys
       const eqIdx = oldLine.indexOf('=');
       const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
       const flavor = extractFlavorText(oldValue);
-      const newValue = sanitizeIniValue(config.buildValue(row, flavor));
+      const newValue = sanitizeIniValue(config.buildValue(row, flavor, oldValue, found.key));
       if (newValue !== oldValue) {
         lines[found.idx] = `${found.key}=${newValue}`;
         anyUpdated = true;
       }
     }
   }
-
-  if (anyUpdated) {
-    for (const k of allKeys) updatedKeys.add(k.toLowerCase());
-    return { status: 'updated' };
-  }
   if (anyFound) {
     for (const k of allKeys) updatedKeys.add(k.toLowerCase());
     return { status: 'skipped' };
   }
 
-  const newValue = sanitizeIniValue(config.buildValue(row, ''));
+  const newValue = sanitizeIniValue(config.buildValue(row, '', '', descKey));
   return { status: 'new', line: `${descKey}=${newValue}` };
 }
 
