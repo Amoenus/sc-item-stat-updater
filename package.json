@@ -4,6 +4,7 @@
   "description": "Updates item descriptions in global.ini with detailed component stats from CSV data files.",
   "scripts": {
     "update": "node bin/update-all.js",
+    "scrape:scmdb": "node bin/scrape-scmdb.js",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",

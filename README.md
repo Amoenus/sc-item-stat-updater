@@ -45,13 +45,38 @@ To list supported SPViewer item types:
 node bin/scrape-spviewer.js --list
 ```
 
+### Scrape SCMDB mission data
+
+```sh
+node bin/scrape-scmdb.js
+```
+
+This command downloads the latest SCMDB merged data file and writes outputs into `csv/scmdb/`, including:
+- `merged-*.json`
+- `contracts.csv`
+- `legacy-contracts.csv`
+- `blueprint-pools.csv`
+- `contract-blueprint-rewards.csv`
+
+To list available SCMDB versions:
+
+```sh
+node bin/scrape-scmdb.js --list-versions
+```
+
+To fetch only the raw SCMDB JSON file:
+
+```sh
+node bin/scrape-scmdb.js --raw
+```
+
 ### Update a single category
 
 ```sh
 node bin/update-item.js <category>
 ```
 
-Available categories include both Erkul and SPViewer sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`.
+Available categories include Erkul, SPViewer, and mission sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`, while mission categories use the `mission-` prefix, for example `mission-scmdb`.
 
 ### Data source options
 
@@ -85,9 +110,12 @@ node bin/update-all.js --source all
 │   │   └── updater.js           # Generic update engine
 │   └── items/
 │       ├── erkul/              # Erkul item configs
+│       ├── missions/           # Mission update configs
 │       └── spviewer/           # SPViewer item configs
 ├── csv/
 │   ├── erkul/                 # Erkul source CSVs
+│   ├── missions/              # Mission source CSVs
+│   ├── scmdb/                 # SCMDB mission data output
 │   └── spviewer/              # SPViewer source CSVs
 └── global.ini               # Star Citizen localization file
 ```
@@ -152,6 +180,9 @@ The project now separates source data into `csv/erkul/` and `csv/spviewer/`.
 | `spviewer/weapongun.spviewer.csv` | Weapon Guns | SPViewer |
 | `spviewer/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
 | `spviewer/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
+| `scmdb/contracts.csv` | SCMDB mission contracts | SCMDB |
+| `scmdb/legacy-contracts.csv` | SCMDB legacy mission contracts | SCMDB |
+| `missions/scmdb-missions.csv` | Mission descriptions | SCMDB |
 
 ## Acknowledgments
 

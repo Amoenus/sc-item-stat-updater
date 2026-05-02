@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 const itemsDir = path.resolve(import.meta.dirname);
 const erkulDir = path.join(itemsDir, 'erkul');
 const spviewerDir = path.join(itemsDir, 'spviewer');
+const missionsDir = path.join(itemsDir, 'missions');
 
 /**
  * Derives a CLI-friendly slug from a config filename.
@@ -49,24 +50,35 @@ export async function loadSpviewerConfigs() {
   return loadConfigsFromDir(spviewerDir, 'sp-');
 }
 
+/** @returns {Promise<Map<string, import('../lib/types.js').ItemConfig>>} */
+export async function loadMissionConfigs() {
+  return loadConfigsFromDir(missionsDir, 'mission-');
+}
+
 /**
- * Loads all configs (default + spviewer) into a single map.
+ * Loads all configs (default + spviewer + missions) into a single map.
  * @returns {Promise<Map<string, import('../lib/types.js').ItemConfig>>}
  */
 export async function loadAllConfigs() {
-  const [erkul, spviewer] = await Promise.all([loadErkulConfigs(), loadSpviewerConfigs()]);
-  return new Map([...erkul, ...spviewer]);
+  const [erkul, spviewer, missions] = await Promise.all([
+    loadErkulConfigs(),
+    loadSpviewerConfigs(),
+    loadMissionConfigs(),
+  ]);
+  return new Map([...erkul, ...spviewer, ...missions]);
 }
 
 /**
  * Loads a single config by its slug name.
- * @param {string} slug - e.g. "coolers" or "sp-weapon-guns"
+ * @param {string} slug - e.g. "coolers", "sp-weapon-guns", or "mission-scmdb"
  * @returns {Promise<import('../lib/types.js').ItemConfig>}
  */
 export async function loadConfig(slug) {
   let filePath;
   if (slug.startsWith('sp-')) {
     filePath = path.join(spviewerDir, `${slug.slice(3)}.js`);
+  } else if (slug.startsWith('mission-')) {
+    filePath = path.join(missionsDir, `${slug.slice(8)}.js`);
   } else {
     filePath = path.join(erkulDir, `${slug}.js`);
   }
@@ -81,7 +93,7 @@ export async function loadConfig(slug) {
 
 /**
  * Lists all available category slugs without loading the modules.
- * @returns {Promise<{ default: string[], spviewer: string[] }>}
+ * @returns {Promise<{ erkul: string[], spviewer: string[], missions: string[] }>}
  */
 export async function listCategories() {
   const readSlugs = async (dir, prefix) => {
@@ -92,6 +104,10 @@ export async function listCategories() {
       return [];
     }
   };
-  const [erkul, spviewer] = await Promise.all([readSlugs(erkulDir, ''), readSlugs(spviewerDir, 'sp-')]);
-  return { erkul, spviewer };
+  const [erkul, spviewer, missions] = await Promise.all([
+    readSlugs(erkulDir, ''),
+    readSlugs(spviewerDir, 'sp-'),
+    readSlugs(missionsDir, 'mission-'),
+  ]);
+  return { erkul, spviewer, missions };
 }
