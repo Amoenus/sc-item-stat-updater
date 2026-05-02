@@ -1,6 +1,6 @@
 # Star Citizen Item Stat Updater
 
-Updates item descriptions in `global.ini` with detailed component stats from CSV data files. The tool supports both Erkul CSV data and SPViewer-derived stats, with SPViewer preferred by default.
+Updates item descriptions in `global.ini` with detailed component stats from CSV data files. The tool supports both Erkul CSV data and SPViewer-derived stats, with SPViewer preferred by default and Erkul retained only as legacy support.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ npm install
 node bin/update-all.js
 ```
 
-Runs all categories using the default source. By default, the tool prefers SPViewer data when available, with Erkul data used as the fallback source.
+Runs all categories using the default source. By default, the tool uses SPViewer data; legacy Erkul data is only used when `--source erkul` is explicitly requested.
 
 > Note: `bin/update-all.js` only updates `global.ini` from existing CSV files. It does not fetch or scrape new SPViewer data.
 
