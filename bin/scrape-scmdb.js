@@ -323,6 +323,19 @@ async function main() {
   const rawFileName = `${selected.file}`;
   writeOutput(rawFileName, JSON.stringify(mergedData, null, 2));
 
+  const miningUrl = `https://scmdb.net/data/mining_data-${selected.file.replace('merged-', '')}`;
+  const craftingItemsUrl = `https://scmdb.net/data/crafting_items-${selected.file.replace('merged-', '')}`;
+  const craftingBlueprintsUrl = `https://scmdb.net/data/crafting_blueprints-${selected.file.replace('merged-', '')}`;
+
+  const miningData = await fetchJson(miningUrl).catch(() => null);
+  const craftingItemsData = await fetchJson(craftingItemsUrl).catch(() => null);
+  const craftingBlueprintsData = await fetchJson(craftingBlueprintsUrl).catch(() => null);
+
+  if (miningData) writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
+  if (craftingItemsData) writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
+  if (craftingBlueprintsData) writeOutput(`crafting_blueprints-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingBlueprintsData, null, 2));
+
+
   if (rawOnly) {
     return;
   }
@@ -366,6 +379,90 @@ async function main() {
 
   if (blueprintPoolRows.length) {
     writeOutput('blueprint-pools.csv', toCsv(blueprintPoolRows, ['id', 'name', 'source', 'blueprints']));
+  }
+
+
+  if (miningData) {
+    const elements = [];
+    for (const [id, el] of Object.entries(miningData.mineableElements || {})) {
+      elements.push({
+        'Element Name': el.name,
+        'Rarity': el.rarity,
+        'Ground Scan Signature': el.groundScanSignature,
+        'Scan Signature': el.scanSignature,
+        'Resistance': el.resistance,
+        'Instability': el.instability
+      });
+    }
+    if (elements.length) {
+      writeOutput('mining-elements.csv', toCsv(elements, ['Element Name', 'Rarity', 'Ground Scan Signature', 'Scan Signature', 'Resistance', 'Instability']));
+    }
+
+    const rarityMap = {};
+    for (const el of Object.values(miningData.mineableElements || {})) {
+      const rarity = (el.rarity || 'Unknown').toLowerCase();
+      const cat = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+      if (!rarityMap[cat]) rarityMap[cat] = [];
+      rarityMap[cat].push(el.name);
+    }
+    const journal = [];
+    for (const [cat, list] of Object.entries(rarityMap)) {
+      list.sort();
+      journal.push({
+        'Rarity Category': cat,
+        'Element List': list.join('\n')
+      });
+    }
+    if (journal.length) {
+      writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
+    }
+
+    const compCache = {};
+    for (const [id, comp] of Object.entries(miningData.compositions || {})) {
+      const names = new Set();
+      for (const part of comp.parts || []) {
+        if (part.elementName) names.add(part.elementName);
+      }
+      compCache[id] = Array.from(names);
+    }
+
+    const locations = {};
+    for (const loc of miningData.locations || []) {
+      const name = loc.locationName;
+      if (!locations[name]) {
+        locations[name] = { ship: new Set(), hand: new Set() };
+      }
+      for (const group of loc.groups || []) {
+        const isHand = group.groupName.includes('FPS');
+        const isShip = group.groupName.includes('SpaceShip') || group.groupName.includes('GroundVehicle') || group.groupName.includes('Ship');
+        if (!isHand && !isShip) continue;
+
+        for (const dep of group.deposits || []) {
+          const parts = compCache[dep.compositionGuid] || [];
+          for (const p of parts) {
+            if (isHand) locations[name].hand.add(p);
+            if (isShip) locations[name].ship.add(p);
+          }
+        }
+      }
+    }
+
+    const locRows = [];
+    for (const [name, dat] of Object.entries(locations)) {
+      const shipList = Array.from(dat.ship).sort().join('\n');
+      const handList = Array.from(dat.hand).sort().join('\n');
+      if (shipList || handList) {
+        locRows.push({
+          'Location Name': name,
+          'Ship Mineables': shipList,
+          'Hand Mineables': handList
+        });
+      }
+    }
+    locRows.sort((a,b) => a['Location Name'].localeCompare(b['Location Name']));
+    if (locRows.length) {
+      writeOutput('mining-locations.csv', toCsv(locRows, ['Location Name', 'Ship Mineables', 'Hand Mineables']));
+    }
   }
 
   if (contractBlueprintRows.length) {
