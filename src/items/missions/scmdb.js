@@ -21,10 +21,15 @@ export default {
     const rewardList = !isTitle && row['RewardList'] ? String.raw`\n\n${row['RewardList']}` : '';
 
     if (oldValue) {
-      if (note && oldValue.includes(noteText)) {
-        return oldValue;
+      if (isTitle) {
+        const normalizedOldValue = oldValue.replace(/\s*(?:<EM4>\[BP(?: Chain)?\]<\/EM4>|\[BP(?: Chain)?\])\s*$/, '');
+        if (oldValue === normalizedOldValue && note && oldValue.includes(noteText)) {
+          return oldValue;
+        }
+        return `${normalizedOldValue}${note}`;
       }
-      if (rewardList && oldValue.includes(row['RewardList'] || '')) {
+
+      if (note && oldValue.includes(noteText) && (!rewardList || oldValue.includes(row['RewardList'] || ''))) {
         return oldValue;
       }
       return oldValue + note + rewardList;

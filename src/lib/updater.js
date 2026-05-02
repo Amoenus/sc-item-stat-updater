@@ -32,6 +32,7 @@ function resolveOptions(options) {
     csvDir: options.csvDir || path.join(baseDir, 'csv'),
     dryRun: options.dryRun || false,
     skipBackup: options.skipBackup || false,
+    force: options.force || false,
   };
 }
 
@@ -136,7 +137,7 @@ function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys
   }
   if (anyFound) {
     for (const k of allKeys) updatedKeys.add(k.toLowerCase());
-    return { status: 'skipped' };
+    return { status: anyUpdated ? 'updated' : 'found' };
   }
 
   const newValue = sanitizeIniValue(config.buildValue(row, '', '', descKey));
@@ -175,6 +176,7 @@ function buildResult(config, stats, durationMs, dryRun) {
  * @param {string} [options.csvDir] - Directory containing CSV files (default: ./csv)
  * @param {boolean} [options.dryRun] - Preview changes without writing (default: false)
  * @param {boolean} [options.skipBackup] - Skip backup rotation (default: false)
+ * @param {boolean} [options.force] - Force writing the INI file when existing rows are found (default: false)
  */
 export async function runUpdate(config, options = {}) {
   const start = performance.now();
@@ -208,6 +210,7 @@ export async function runUpdate(config, options = {}) {
     const issues = unresolvedNames.map((name) => ({ key: name, reason: 'No localization key found', type: 'unresolved' }));
     let updatedCount = 0,
       newCount = 0,
+      foundCount = 0,
       skippedCount = 0,
       errorCount = 0;
 
@@ -229,6 +232,8 @@ export async function runUpdate(config, options = {}) {
         else if (result.status === 'new') {
           newLines.push(result.line);
           newCount++;
+        } else if (result.status === 'found') {
+          foundCount++;
         } else skippedCount++;
       } catch (err) {
         const nameKey = row['Localization Key'];
@@ -240,14 +245,14 @@ export async function runUpdate(config, options = {}) {
 
     insertNewEntries(lines, newLines, lastDescIdx);
 
-    if (!opts.dryRun && (updatedCount > 0 || newCount > 0)) {
+    if (!opts.dryRun && (updatedCount > 0 || newCount > 0 || (opts.force && foundCount > 0))) {
       await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
     }
 
     const durationMs = Math.round(performance.now() - start);
     return buildResult(
       config,
-      { updatedCount, newCount, skippedCount, errorCount, unresolvedCount: unresolvedNames.length, issues },
+      { updatedCount, newCount, skippedCount, foundCount, errorCount, unresolvedCount: unresolvedNames.length, issues },
       durationMs,
       opts.dryRun,
     );

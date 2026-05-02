@@ -16,12 +16,14 @@ function usage() {
 
 Options:
   --version <version>    Use a specific SCMDB merged version file
+  --ptu                  Fetch the latest PTU SCMDB version instead of latest live
   --list-versions        List available SCMDB merged versions
   --raw                  Save only raw SCMDB JSON output
   --help                 Show this help message
 
 Examples:
   node scrape-scmdb.js
+  node scrape-scmdb.js --ptu
   node scrape-scmdb.js --version 4.8.0-ptu.11759767
   node scrape-scmdb.js --list-versions
 `);
@@ -211,6 +213,14 @@ function normalizeLocalizationKey(key) {
   return key.startsWith('@') ? key.slice(1) : key;
 }
 
+function isLiveVersion(version) {
+  return /\blive\b/i.test(version) || /-live\./i.test(version);
+}
+
+function isPtuVersion(version) {
+  return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
+}
+
 function buildMissionRows(contracts, chainData, blueprintPools) {
   return (contracts || []).flatMap((contract) => {
     const rows = [];
@@ -257,6 +267,7 @@ function buildMissionRows(contracts, chainData, blueprintPools) {
 async function main() {
   const args = process.argv.slice(2);
   const versionArgIndex = args.indexOf('--version');
+  const ptu = args.includes('--ptu');
   const listVersions = args.includes('--list-versions');
   const rawOnly = args.includes('--raw');
   const help = args.includes('--help') || args.includes('-h');
@@ -278,10 +289,12 @@ async function main() {
     for (const entry of versions) {
       console.log(`  ${entry.version} -> ${entry.file}`);
     }
+    console.log('');
+    console.log('By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.');
     process.exit(0);
   }
 
-  let selected = versions[0];
+  let selected = null;
   if (versionArgIndex !== -1) {
     const requested = args[versionArgIndex + 1];
     if (!requested) {
@@ -290,6 +303,16 @@ async function main() {
     selected = versions.find((entry) => entry.version === requested);
     if (!selected) {
       throw new Error(`Version not found: ${requested}`);
+    }
+  } else if (ptu) {
+    selected = versions.find((entry) => isPtuVersion(entry.version));
+    if (!selected) {
+      throw new Error('No PTU SCMDB version available');
+    }
+  } else {
+    selected = versions.find((entry) => isLiveVersion(entry.version));
+    if (!selected) {
+      selected = versions[0];
     }
   }
 

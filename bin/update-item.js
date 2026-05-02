@@ -15,6 +15,7 @@ const { values, positionals } = parseArgs({
     'ini-path': { type: 'string', short: 'i' },
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
+    force: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -33,6 +34,7 @@ if (values.help || !category) {
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
   console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: ./csv)');
   console.log('      --dry-run          Preview changes without writing');
+  console.log('      --force            Force update even when values are unchanged');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
@@ -47,6 +49,7 @@ const options = {
   iniPath: values['ini-path'],
   csvDir: values['csv-dir'],
   dryRun: values['dry-run'],
+  force: values.force,
 };
 
 try {

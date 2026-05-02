@@ -76,6 +76,14 @@ To list available SCMDB versions:
 node bin/scrape-scmdb.js --list-versions
 ```
 
+By default, the scraper fetches the latest live SCMDB version. Use `--ptu` to fetch the latest PTU version instead.
+
+To fetch a specific version by its full version string:
+
+```sh
+node bin/scrape-scmdb.js --version 4.8.0-ptu.11759767
+```
+
 To fetch only the raw SCMDB JSON file:
 
 ```sh
