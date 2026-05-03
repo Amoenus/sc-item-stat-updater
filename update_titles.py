@@ -2,10 +2,19 @@
 import csv
 import os
 import re
+from pathlib import Path
 
-# Path to the spviewer CSV directory
-csv_dir = '/mnt/c/Games/Roberts Space Industries/StarCitizen/LIVE/Data/Localization/english/csv/spviewer/4.7.2.11715810-live'
-ini_path = '/mnt/c/Games/Roberts Space Industries/StarCitizen/LIVE/Data/Localization/english/global.ini'
+# Resolve all paths relative to this script so it works on any OS.
+base_dir = Path(__file__).resolve().parent
+spviewer_root = base_dir / 'csv' / 'spviewer'
+ini_path = base_dir / 'global.ini'
+
+version_dirs = [p for p in spviewer_root.iterdir() if p.is_dir()]
+if not version_dirs:
+    raise FileNotFoundError(f"No SPViewer version directories found in: {spviewer_root}")
+
+csv_dir = sorted(version_dirs, key=lambda p: p.name)[-1]
+print(f"Using SPViewer CSV directory: {csv_dir}")
 
 # Mapping from class name to abbreviation
 class_abbrev = {
