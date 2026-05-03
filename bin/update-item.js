@@ -28,7 +28,7 @@ const category = positionals[0];
 
 if (values.help || !category) {
   const available = await listCategories();
-  const allSlugs = [...available.erkul, ...available.spviewer];
+  const allSlugs = [...available.spviewer, ...available.missions];
   console.log('Usage: node update-item.js [options] <category>');
   console.log('\nOptions:');
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');

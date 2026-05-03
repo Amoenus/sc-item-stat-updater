@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { execFileSync } from 'node:child_process';
 import cliProgress from 'cli-progress';
-import { loadErkulConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
+import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
@@ -18,7 +19,7 @@ const { values } = parseArgs({
     'ini-path': { type: 'string', short: 'i' },
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
-    source: { type: 'string', short: 's', default: 'spviewer' },
+    ptu: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -32,7 +33,7 @@ if (values.help) {
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
   console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: ./csv)');
   console.log('      --dry-run          Preview changes without writing');
-  console.log('  -s, --source <name>    Data source: spviewer, erkul, or all (default: spviewer)');
+  console.log('      --ptu              Fetch mission data from latest PTU instead of latest LIVE');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
@@ -48,15 +49,16 @@ const options = {
   dryRun: values['dry-run'],
 };
 
-const source = values.source || 'spviewer';
-let categories;
-if (source === 'erkul') {
-  categories = [...(await loadErkulConfigs()).values()];
-} else if (source === 'all') {
-  categories = [...(await loadSpviewerConfigs()).values(), ...(await loadErkulConfigs()).values(), ...(await loadMissionConfigs()).values()];
-} else {
-  categories = [...(await loadSpviewerConfigs()).values(), ...(await loadMissionConfigs()).values()];
-}
+// Always re-scrape mission data from LIVE (or PTU if --ptu) so the CSV
+// reflects the correct game version rather than whatever the last manual
+// scrape produced.
+const scrapeScript = path.resolve(import.meta.dirname, 'scrape-scmdb.js');
+const scrapeArgs = [...(values.ptu ? ['--ptu'] : [])];
+logger.debug('Re-scraping mission data', { ptu: values.ptu });
+console.log(`Fetching mission data from SCMDB (${values.ptu ? 'PTU' : 'LIVE'})...`);
+execFileSync(process.execPath, [scrapeScript, ...scrapeArgs], { stdio: 'inherit' });
+
+const categories = [...(await loadSpviewerConfigs()).values(), ...(await loadMissionConfigs()).values()];
 
 const totalStart = performance.now();
 logger.debug('Starting batch update', { categoryCount: categories.length, dryRun: options.dryRun });
