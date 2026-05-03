@@ -175,6 +175,49 @@ for (let i = 0; i < categories.length; i++) {
 bar.update(categories.length, { category: 'Done' });
 bar.stop();
 
+// Handle mining journal rebuild (Option A custom function)
+try {
+  const missionConfigs = await loadMissionConfigs();
+  const journalConfig = missionConfigs.get('mission-mining-journal');
+  if (journalConfig && typeof journalConfig.buildJournalValue === 'function') {
+    logger.info('Starting mining journal rebuild');
+    const iniPath = options.iniPath || path.join(repoRoot, 'global.ini');
+    const { lines, index: existingKeys } = await readIniFile(iniPath);
+    const targetKey = 'Journal_General_Mining_Compendium_Content';
+    const found = findKey(targetKey, existingKeys);
+    const oldValue = found ? lines[found.idx].substring(lines[found.idx].indexOf('=') + 1) : '';
+    
+    // Load CSV data for the journal
+    const csvDir = missionCsvDir; // from earlier in the function
+    const rows = await loadSourceData({ csvFile: 'mining-journal.csv' }, csvDir);
+    
+    // Build new value using the custom function
+    const newValue = journalConfig.buildJournalValue(rows, oldValue);
+    
+    if (newValue !== oldValue) {
+      if (found) {
+        lines[found.idx] = `${targetKey}=${newValue}`;
+        logger.info('Updated mining journal in global.ini');
+      } else {
+        lines.push(`${targetKey}=${newValue}`);
+        logger.info('Added mining journal to global.ini');
+      }
+      
+      if (!options.dryRun) {
+        await writeIniFile(iniPath, lines, { skipBackup: true });
+        logger.debug('Wrote mining journal update to global.ini');
+      }
+    } else {
+      logger.info('Mining journal value unchanged');
+    }
+  } else {
+    logger.warn('Mining journal config not found or missing buildJournalValue function');
+  }
+} catch (err) {
+  logger.error('Failed to rebuild mining journal', { error: err.message });
+  errors.push({ label: 'Mining Journal', message: err.message });
+}
+
 const totalDuration = Math.round(performance.now() - totalStart);
 
 console.log();
