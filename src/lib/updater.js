@@ -48,8 +48,11 @@ function validateContainedPath(filePath, baseDir, label) {
 
 /** Reads and validates CSV or JSON data against the config's required columns. */
 async function loadSourceData(config, csvDir) {
-  if (config.jsonFile) {
-    const jsonPath = validateContainedPath(path.resolve(csvDir, config.jsonFile), csvDir, 'JSON filename');
+  if (config.resolveJsonFile || config.jsonFile) {
+    const rawJsonPath = config.resolveJsonFile
+      ? await config.resolveJsonFile(csvDir)
+      : path.resolve(csvDir, config.jsonFile);
+    const jsonPath = validateContainedPath(rawJsonPath, csvDir, 'JSON filename');
     logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
     const jsonContent = await fs.readFile(jsonPath, 'utf-8');
     let data;

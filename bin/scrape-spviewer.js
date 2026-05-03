@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
+// @ts-check
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
@@ -37,15 +38,40 @@ const ITEM_TYPES = [
   'WeaponPersonal',
   'WeaponAttachment',
   'Throwable',
-  // OTHER
 ];
 
 const BASE_URL = 'https://www.spviewer.eu/items';
 
-async function scrapeItems(itemType) {
-  console.log(`Scraping ${itemType} from SPViewer...`);
+/**
+ * Extracts the LIVE and PTU version strings from the SPViewer page header.
+ * The header contains:
+ *   <span class="text-danger ...">4.7.2.11715810</span>   <- LIVE (active when no opacity-5)
+ *   <span class="text-warning ... opacity-5">4.8.0.11768487</span>  <- PTU (inactive when opacity-5)
+ * Active channel = the version span without the opacity-5 class.
+ *
+ * @param {import('puppeteer').Page} page
+ * @returns {Promise<{ live: string | null, ptu: string | null }>}
+ */
+async function extractVersions(page) {
+  return page.evaluate(() => {
+    const liveSpan = document.querySelector('h6.logo-version span.text-danger');
+    const ptuSpan = document.querySelector('h6.logo-version span.text-warning');
+    const live = liveSpan ? liveSpan.textContent.trim() : null;
+    const ptu = ptuSpan ? ptuSpan.textContent.trim() : null;
+    return { live, ptu };
+  });
+}
 
-  const browser = await puppeteer.launch({ headless: true });
+/**
+ * Scrapes item data for a given item type from SPViewer.
+ *
+ * @param {import('puppeteer').Browser} browser
+ * @param {string} itemType
+ * @returns {Promise<{ headers: string[], rows: string[][] }>}
+ */
+async function scrapeItems(browser, itemType) {
+  console.log(`  Scraping ${itemType}...`);
+
   const page = await browser.newPage();
 
   try {
@@ -65,17 +91,14 @@ async function scrapeItems(itemType) {
 
     // Try to show all entries (click "All" in page-size dropdown if present)
     try {
-      // PrimeVue DataTable uses a dropdown for page size
       const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
       if (paginator) {
         await paginator.click();
         await new Promise((r) => setTimeout(r, 500));
-        // Look for an "All" option or the largest page size
         const allOption = await page.$x("//li[contains(text(),'All') or contains(text(),'all')]");
         if (allOption.length) {
           await allOption[0].click();
         } else {
-          // Click the last (largest) option
           const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
           if (options.length) await options[options.length - 1].click();
         }
@@ -85,44 +108,33 @@ async function scrapeItems(itemType) {
       /* pagination handling is best-effort */
     }
 
-    // Small extra delay for any remaining render
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Extract headers and rows from the table
     const data = await page.evaluate(() => {
-      const cleanHeader = (th) => {
+      const cleanHeader = (/** @type {Element} */ th) => {
         const clone = th.cloneNode(true);
-        // Remove filter dropdowns/selects/menus
         for (const el of clone.querySelectorAll(
           'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
         )) {
           el.remove();
         }
-        // Get the first meaningful text (column name), stripping filter values
         let text = clone.textContent.trim();
-        // Remove "AllXxx" suffixes left by filter dropdown option text
         text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
         return text;
       };
 
       const theadRows = [...document.querySelectorAll('table thead tr')];
-
       let headers = [];
 
       if (theadRows.length >= 2) {
-        // Multi-row header: expand group row by colspan, merge with leaf row
         const groupCells = [...theadRows[0].querySelectorAll('th')];
         const leafCells = [...theadRows[theadRows.length - 1].querySelectorAll('th')];
-
-        // Build expanded group names array (one per data column)
         const expanded = [];
         for (const th of groupCells) {
           const name = cleanHeader(th);
           const span = th.colSpan || 1;
           for (let i = 0; i < span; i++) expanded.push({ name, span });
         }
-
-        // Merge: for colspan=1, use group name; for colspan>1, prefix leaf name
         let leafIdx = 0;
         for (let i = 0; i < expanded.length; i++) {
           if (expanded[i].span === 1) {
@@ -146,18 +158,21 @@ async function scrapeItems(itemType) {
 
     return data;
   } finally {
-    await browser.close();
+    await page.close();
   }
 }
 
+/**
+ * @param {{ headers: string[], rows: string[][] }} data
+ * @returns {string}
+ */
 function toCsv({ headers, rows }) {
-  const escape = (v) => {
+  const escape = (/** @type {string} */ v) => {
     if (v.includes(',') || v.includes('"') || v.includes('\n')) {
       return `"${v.replace(/"/g, '""')}"`;
     }
     return v;
   };
-
   const lines = [headers.map(escape).join(','), ...rows.map((row) => row.map(escape).join(','))];
   return `${lines.join('\n')}\n`;
 }
@@ -166,19 +181,26 @@ function toCsv({ headers, rows }) {
 const args = process.argv.slice(2);
 
 if (args.includes('--help') || args.includes('-h')) {
-  console.log(`Usage: node scrape-spviewer.js [itemType ...] [--list] [--json]
+  console.log(`Usage: node scrape-spviewer.js [itemType ...] [options]
 
 Item types: ${ITEM_TYPES.join(', ')}
 
 Options:
-  --list   List available item types
-  --json   Output JSON instead of CSV
-  --all    Scrape all item types
+  --all        Scrape all item types
+  --ptu        Use PTU version label for output directory (default: LIVE)
+  --live       Use LIVE version label for output directory (default)
+  --list       List available item types
+  --json       Output JSON instead of CSV
+  -h, --help   Show this help
+
+Output:
+  CSVs are written to csv/spviewer/<version>-live/ or csv/spviewer/<version>-ptu/
+  The version string is extracted from the SPViewer page header.
 
 Examples:
-  node scrape-spviewer.js Throwable
-  node scrape-spviewer.js Radar Shield --json
-  node scrape-spviewer.js --all`);
+  node scrape-spviewer.js --all
+  node scrape-spviewer.js Radar Shield
+  node scrape-spviewer.js --all --ptu`);
   process.exit(0);
 }
 
@@ -188,6 +210,7 @@ if (args.includes('--list')) {
   process.exit(0);
 }
 
+const usePtu = args.includes('--ptu');
 const useJson = args.includes('--json');
 const useAll = args.includes('--all');
 const types = useAll ? ITEM_TYPES : args.filter((a) => !a.startsWith('--'));
@@ -197,21 +220,59 @@ if (types.length === 0) {
   process.exit(1);
 }
 
+const channel = usePtu ? 'ptu' : 'live';
+console.log(`SPViewer scraper — channel: ${channel.toUpperCase()}`);
+console.log(`Launching browser to detect version...`);
+
+const browser = await puppeteer.launch({ headless: true });
+
+// Navigate to the first item type page to extract version info from the header.
+const versionPage = await browser.newPage();
+await versionPage.goto(`${BASE_URL}?item=${types[0]}`, {
+  waitUntil: 'networkidle2',
+  timeout: 60_000,
+});
+
+const versions = await extractVersions(versionPage);
+await versionPage.close();
+
+const versionRaw = usePtu ? versions.ptu : versions.live;
+if (!versionRaw) {
+  console.error(
+    `Could not detect ${channel.toUpperCase()} version from SPViewer page header.\n` +
+      `Detected: LIVE=${versions.live ?? 'n/a'}, PTU=${versions.ptu ?? 'n/a'}\n` +
+      `The page structure may have changed.`,
+  );
+  await browser.close();
+  process.exit(1);
+}
+
+// Normalise: "4.7.2.11715810" -> "4.7.2.11715810-live" (append channel suffix)
+const version = `${versionRaw}-${channel}`;
+const outDir = join(__rootDir, 'csv', 'spviewer', version);
+
+mkdirSync(outDir, { recursive: true });
+
+console.log(`Version: ${version}`);
+console.log(`Output:  csv/spviewer/${version}/`);
+console.log();
+
 for (const itemType of types) {
   try {
-    const data = await scrapeItems(itemType);
-    console.log(`  Got ${data.rows.length} rows, ${data.headers.length} columns`);
+    const data = await scrapeItems(browser, itemType);
+    console.log(`    ${data.rows.length} rows, ${data.headers.length} columns`);
 
-    const outDir = join(__rootDir, 'csv', 'spviewer');
     const ext = useJson ? 'json' : 'csv';
     const filename = `${itemType.toLowerCase()}.spviewer.${ext}`;
     const outPath = join(outDir, filename);
 
     const content = useJson ? JSON.stringify(data, null, 2) : toCsv(data);
-
     writeFileSync(outPath, content, 'utf-8');
-    console.log(`  Saved to csv/${filename}`);
+    console.log(`    Saved: csv/spviewer/${version}/${filename}`);
   } catch (err) {
-    console.error(`  Failed to scrape ${itemType}: ${err.message}`);
+    console.error(`  FAILED ${itemType}: ${err.message}`);
   }
 }
+
+await browser.close();
+console.log(`\nDone. Scraped ${types.length} item type(s) into csv/spviewer/${version}/`);

@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/selfdestruct.spviewer.csv',
+  csvFile: 'selfdestruct.spviewer.csv',
   label: 'SP Self Destruct',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size'],

@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/bomb.spviewer.csv',
+  csvFile: 'bomb.spviewer.csv',
   label: 'SP Bombs',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/bombs.csv',

@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/quantuminterdictiongenerator.spviewer.csv',
+  csvFile: 'quantuminterdictiongenerator.spviewer.csv',
   label: 'SP QEDs',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/qeds.csv',

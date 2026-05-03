@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/throwable.spviewer.csv',
+  csvFile: 'throwable.spviewer.csv',
   label: 'SP Throwables',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Type'],

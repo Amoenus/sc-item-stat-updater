@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/jumpdrive.spviewer.csv',
+  csvFile: 'jumpdrive.spviewer.csv',
   label: 'SP Jump Drives',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'Health'],

@@ -44,25 +44,29 @@ if (values.verbose) setLogLevel('debug');
 if (values['json-logs']) setJsonOutput(true);
 
 /**
- * Finds the latest versioned subfolder under csv/scmdb/ that matches the
- * requested channel (live or ptu). Folder names come from SCMDB version
- * strings, e.g. "4.1.1-live.9800000" or "4.2.0-ptu.9900000".
+ * Finds the latest versioned subfolder under a base directory that matches
+ * the requested channel (live or ptu).
  *
- * @param {string} scmdbBase - absolute path to csv/scmdb/
- * @param {boolean} ptu      - true to look for PTU versions, false for LIVE
+ * SCMDB folders:   "4.1.1-live.9800000" or "4.2.0-ptu.9900000"
+ * SPViewer folders: "4.7.2.11715810-live" or "4.8.0.11768487-ptu"
+ *
+ * @param {string} base   - absolute path to the parent directory
+ * @param {boolean} ptu   - true to look for PTU versions, false for LIVE
+ * @param {string} source - label used in error messages (e.g. "SCMDB", "SPViewer")
+ * @param {string} scraper - name of the scraper script to suggest in error messages
  * @returns {Promise<string>} - absolute path to the best matching version folder
  */
-async function resolveLatestVersionDir(scmdbBase, ptu) {
+async function resolveLatestVersionDir(base, ptu, source, scraper) {
   let entries;
   try {
-    entries = await fs.readdir(scmdbBase, { withFileTypes: true });
+    entries = await fs.readdir(base, { withFileTypes: true });
   } catch {
-    throw new Error(`SCMDB output directory not found: ${scmdbBase}. Run scrape-scmdb.js${ptu ? ' --ptu' : ''} first.`);
+    throw new Error(`${source} output directory not found: ${base}. Run ${scraper}${ptu ? ' --ptu' : ''} first.`);
   }
 
   const isMatch = ptu
-    ? (name) => /\bptu\b/i.test(name) || /-ptu\./i.test(name)
-    : (name) => /\blive\b/i.test(name) || /-live\./i.test(name);
+    ? (name) => /\bptu\b/i.test(name) || /-ptu[.\b]/i.test(name) || name.endsWith('-ptu')
+    : (name) => /\blive\b/i.test(name) || /-live[.\b]/i.test(name) || name.endsWith('-live');
 
   const dirs = entries
     .filter((e) => e.isDirectory() && isMatch(e.name))
@@ -71,19 +75,18 @@ async function resolveLatestVersionDir(scmdbBase, ptu) {
 
   if (dirs.length === 0) {
     throw new Error(
-      `No ${ptu ? 'PTU' : 'LIVE'} SCMDB version folder found under ${scmdbBase}. ` +
-      `Run scrape-scmdb.js${ptu ? ' --ptu' : ''} first.`
+      `No ${ptu ? 'PTU' : 'LIVE'} ${source} version folder found under ${base}. ` +
+      `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
     );
   }
 
   // Use the last (latest) matching directory.
-  return path.join(scmdbBase, dirs[dirs.length - 1]);
+  return path.join(base, dirs[dirs.length - 1]);
 }
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
-// If --csv-dir is provided explicitly, use it as-is for all categories.
-// Otherwise auto-detect the latest versioned SCMDB folder.
+// Resolve versioned SCMDB directory (or use --csv-dir override for SCMDB).
 let csvDir;
 let scmdbVersion = '(custom)';
 
@@ -91,10 +94,20 @@ if (values['csv-dir']) {
   csvDir = values['csv-dir'];
 } else {
   const scmdbBase = path.join(repoRoot, 'csv', 'scmdb');
-  const versionDir = await resolveLatestVersionDir(scmdbBase, values.ptu);
+  const versionDir = await resolveLatestVersionDir(scmdbBase, values.ptu, 'SCMDB', 'scrape-scmdb.js');
   csvDir = versionDir;
   scmdbVersion = path.basename(versionDir);
 }
+
+// Resolve versioned SPViewer directory (always auto-detected — no override flag for now).
+const spviewerBase = path.join(repoRoot, 'csv', 'spviewer');
+const spviewerVersionDir = await resolveLatestVersionDir(
+  spviewerBase,
+  values.ptu,
+  'SPViewer',
+  'scrape-spviewer.js',
+);
+const spviewerVersion = path.basename(spviewerVersionDir);
 
 const options = {
   iniPath: values['ini-path'],
@@ -103,24 +116,24 @@ const options = {
 };
 
 const channel = values.ptu ? 'PTU' : 'LIVE';
-logger.info('Starting batch update', { version: scmdbVersion, channel, dryRun: options.dryRun });
-console.log(`=== Starting update — SCMDB version: ${scmdbVersion} (${channel}) ===\n`);
+logger.info('Starting batch update', { scmdbVersion, spviewerVersion, channel, dryRun: options.dryRun });
+console.log(`=== Starting update (${channel}) ===`);
+console.log(`  SCMDB:    ${scmdbVersion}`);
+console.log(`  SPViewer: ${spviewerVersion}\n`);
 
-// SPViewer configs reference files like "spviewer/cooler.spviewer.csv" relative
-// to the repo-root csv/ folder — they are not SCMDB-sourced and must not be
-// redirected into the version dir.
-// Mission configs live inside the versioned SCMDB folder under a missions/ subdir.
-// If the caller provided --csv-dir explicitly we honour it for missions as well
-// (they can put everything in one flat dir if they prefer).
-const repoCsvDir = path.join(repoRoot, 'csv');
-const missionCsvDir = path.join(csvDir, 'missions');
+// SPViewer configs: use the versioned spviewer directory.
+// Mission configs: use the versioned SCMDB root directory. Individual configs
+//   are responsible for their own subdirectory paths (e.g. scmdb.js uses
+//   csvFile: 'missions/scmdb-missions.csv', commodities.js globs merged-*.json
+//   at the root level via resolveJsonFile).
+const missionCsvDir = csvDir;
 
 const spviewerConfigs = [...(await loadSpviewerConfigs()).values()];
 const missionConfigs = [...(await loadMissionConfigs()).values()];
 
 // Tag each config with the csvDir it should use.
 const categories = [
-  ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: repoCsvDir })),
+  ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: spviewerVersionDir })),
   ...missionConfigs.map((cfg) => ({ config: cfg, csvDir: missionCsvDir })),
 ];
 

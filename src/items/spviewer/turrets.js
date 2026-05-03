@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/turret.spviewer.csv',
+  csvFile: 'turret.spviewer.csv',
   label: 'SP Turrets',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Health'],

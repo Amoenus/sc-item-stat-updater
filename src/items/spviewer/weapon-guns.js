@@ -4,7 +4,7 @@ import { isWeaponDescKey } from '../shared/weapon-matchers.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/weapongun.spviewer.csv',
+  csvFile: 'weapongun.spviewer.csv',
   label: 'SP Weapon Guns',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/weapons.csv',

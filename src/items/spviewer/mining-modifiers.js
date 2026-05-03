@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/miningmodifier.spviewer.csv',
+  csvFile: 'miningmodifier.spviewer.csv',
   label: 'SP Mining Modifiers',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Type', 'Charges', 'Duration'],

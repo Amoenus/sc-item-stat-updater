@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/quantumdrive.spviewer.csv',
+  csvFile: 'quantumdrive.spviewer.csv',
   label: 'SP Quantum Drives',
   nameColumn: 'Name',
   lookupCsvFile: 'erkul/quantum_drives.csv',

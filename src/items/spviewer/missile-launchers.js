@@ -3,7 +3,7 @@ import { stat } from '../../lib/format/stat-builder.js';
 
 /** @type {import('../../lib/types.js').ItemConfig} */
 export default {
-  csvFile: 'spviewer/missilelauncher.spviewer.csv',
+  csvFile: 'missilelauncher.spviewer.csv',
   label: 'SP Missile Launchers',
   nameColumn: 'Name',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Missile carriage Quantity', 'Missile carriage Size', 'Health'],
