@@ -1,6 +1,6 @@
 # Star Citizen Item Stat Updater
 
-Updates item descriptions in `global.ini` with detailed component stats from CSV data files. The tool supports both Erkul CSV data and SPViewer-derived stats, with SPViewer preferred by default and Erkul retained only as legacy support.
+Updates item descriptions in `global.ini` with detailed component stats from CSV data files sourced from SPViewer and SCMDB.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ npm install
 node bin/update-all.js
 ```
 
-Runs all categories using the default source. By default, the tool uses SPViewer data; legacy Erkul data is only used when `--source erkul` is explicitly requested.
+Runs all categories (SPViewer + SCMDB missions) using both data sources.
 
 > Note: `bin/update-all.js` only updates `global.ini` from existing CSV files. It does not fetch or scrape new SPViewer data.
 
@@ -96,19 +96,7 @@ node bin/scrape-scmdb.js --raw
 node bin/update-item.js <category>
 ```
 
-Available categories include Erkul, SPViewer, and mission sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`, while mission categories use the `mission-` prefix, for example `mission-scmdb`.
-
-### Data source options
-
-```sh
-node bin/update-all.js --source spviewer
-node bin/update-all.js --source erkul
-node bin/update-all.js --source all
-```
-
-- `spviewer` (default) uses SPViewer-derived stats where available
-- `erkul` uses raw Erkul CSV data
-- `all` processes both sources
+Available categories include SPViewer and mission sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`, while mission categories use the `mission-` prefix, for example `mission-scmdb`.
 
 ## Project structure
 
@@ -129,11 +117,9 @@ node bin/update-all.js --source all
 │   │   │   └── text-utils.js    # Key derivation & flavor text extraction
 │   │   └── updater.js           # Generic update engine
 │   └── items/
-│       ├── erkul/              # Erkul item configs
 │       ├── missions/           # Mission update configs
 │       └── spviewer/           # SPViewer item configs
 ├── csv/
-│   ├── erkul/                 # Erkul source CSVs
 │   ├── missions/              # Mission source CSVs
 │   ├── scmdb/                 # SCMDB mission data output
 │   └── spviewer/              # SPViewer source CSVs
@@ -150,7 +136,7 @@ The update engine (`src/lib/updater.js`):
 4. Replaces the value with a formatted stat block while preserving any existing flavor text
 5. Writes the updated `global.ini` back (UTF-8 with BOM)
 
-Each item module (`src/items/*.js`) provides:
+Each item module (`src/items/spviewer/*.js` or `src/items/missions/*.js`) provides:
 - `csvFile` — which CSV to read
 - `buildValue(row, flavorText)` — formats the stat block
 - `descKeyMatch(key)` — identifies existing keys for insertion point
@@ -160,22 +146,8 @@ Scripts are idempotent — running them multiple times produces no duplicates.
 
 ## CSV files
 
-The project now separates source data into `csv/erkul/` and `csv/spviewer/`.
-
 | CSV | Category | Source |
 |-----|----------|--------|
-| `erkul/quantum_drives.csv` | Quantum Drives | Erkul |
-| `erkul/coolers.csv` | Coolers | Erkul |
-| `erkul/powerplants.csv` | Power Plants | Erkul |
-| `erkul/shields.csv` | Shields | Erkul |
-| `erkul/weapons.csv` | Weapons | Erkul |
-| `erkul/bombs.csv` | Bombs | Erkul |
-| `erkul/emps.csv` | EMPs | Erkul |
-| `erkul/mining_lasers.csv` | Mining Lasers | Erkul |
-| `erkul/missiles.csv` | Missiles | Erkul |
-| `erkul/qeds.csv` | Quantum Enforcement Devices | Erkul |
-| `erkul/radars.csv` | Radars | Erkul |
-| `erkul/tractor_beams.csv` | Tractor Beams | Erkul |
 | `spviewer/bomb.spviewer.csv` | Bombs | SPViewer |
 | `spviewer/cooler.spviewer.csv` | Coolers | SPViewer |
 | `spviewer/emp.spviewer.csv` | EMPs | SPViewer |
@@ -213,5 +185,5 @@ The included `global.ini` is based on localization work from:
 
 CSV component data is sourced from:
 
-- Erkul: [erkul.games](https://www.erkul.games/)
 - SPViewer: [spviewer.eu](https://www.spviewer.eu/)
+- SCMDB: [scmdb.net](https://www.scmdb.net/)
