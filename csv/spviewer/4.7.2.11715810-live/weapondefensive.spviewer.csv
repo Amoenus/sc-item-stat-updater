@@ -1,0 +1,171 @@
+Size,Name,Manufacturer,Type,Ammo Quantity,Ammo Speed,Ammo Range,Ammo Lifetime,Ammo Signature IR,Ammo Signature CS,Ammo Signature EM,Ammo Signature dB,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Mass,K µSCU
+1,AEGS Avenger CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Avenger CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Eclipse CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Eclipse CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Firebird CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Firebird CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Gladius CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Gladius CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Hammerhead CML Chaff,Aegis Dynamics,Noise,12,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Hammerhead CML Flare,Aegis Dynamics,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Idris CML Chaff,Aegis Dynamics,Noise,300,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Idris CML Flare,Aegis Dynamics,Decoy,600,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Javelin CML Decoy,Joker Engineering,Decoy,92,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Peregrine CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Peregrine CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Raven CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Raven CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Retaliator CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Retaliator CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Sabre CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,AEGS Sabre CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Asgard CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Asgard CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL CML Decoy Small,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL CML Noise Small,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL F7A CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL F7A CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL F7A Mk1 CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL F7A Mk1 CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Gladiator CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Gladiator CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Hawk CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Hawk CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Hurricane CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Hurricane CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Paladin CML Chaff,Anvil Aerospace,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Paladin CML Flare,Anvil Aerospace,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Valkyrie CML Chaff,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ANVL Valkyrie CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO CML Chaff Small,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO MPUV CML Chaff Small,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO MPUV CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO RAFT CML Chaff Small,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO RAFT CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO SRV CML Chaff Small,Aegis Dynamics,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ARGO SRV CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CNOU CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CNOU CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+0,CNOU HoverQuad CML Chaff,Consolidated Outland,Noise,4,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+0,CNOU HoverQuad CML Flare,Consolidated Outland,Decoy,12,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CNOU Nomad CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,CNOU Nomad CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS CML Decoy Big,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS CML Noise Big,Joker Engineering,Noise,10,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Intrepid CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Intrepid CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Spirit CML Chaff,Joker Engineering,Noise,10,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Spirit CML Flare,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starfighter CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starfighter CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Chaff,Joker Engineering,Noise,20,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Chaff Rear Right,Joker Engineering,Noise,20,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Chaff Top Right,Joker Engineering,Noise,20,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Chaff Under Right,Joker Engineering,Noise,20,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Flare,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Flare Rear Left,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Flare Top Left,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,CRUS Starlifter CML Flare Under Left,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Clipper CML Decoy,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Clipper CML Noise,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,DRAK Corsair CML Chaff,Drake Interplanetary,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,DRAK Corsair CML Decoy,Drake Interplanetary,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Cutter CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Cutter CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Dragonfly CML Chaff,Drake Interplanetary,Noise,1,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Dragonfly CML Flare,Drake Interplanetary,Decoy,5,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Golem CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Golem CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Vulture CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,DRAK Vulture CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR CML Decoy Talon,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR CML Noise Talon,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR Prowler CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,ESPR Prowler CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,GAMA CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,GAMA CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,GAMA Syulen CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,GAMA Syulen CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,JOKR Defcon CML Chaff,Joker Engineering,Noise,10,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,JOKR Defcon CML Flare,Joker Engineering,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,Krig wolf CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,Krig wolf CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Fortune CML Chaff,Musashi Industrial & Starflight Concern,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Fortune CML Flare,Musashi Industrial & Starflight Concern,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Fury CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Fury CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull A CML Chaff,Musashi Industrial & Starflight Concern,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull A CML Flare,Musashi Industrial & Starflight Concern,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull B CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull B CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull C CML Chaff,Joker Engineering,Noise,60,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Hull C CML Flare,Joker Engineering,Decoy,100,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Prospector CML Chaff,Musashi Industrial & Starflight Concern,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Prospector CML Flare,Musashi Industrial & Starflight Concern,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Razor CML Chaff,Musashi Industrial & Starflight Concern,Noise,2,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Razor CML Flare,Musashi Industrial & Starflight Concern,Decoy,20,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Reliant CML Chaff,Musashi Industrial & Starflight Concern,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Reliant CML Flare,Musashi Industrial & Starflight Concern,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Starlancer CML Chaff,Joker Engineering,Noise,60,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,MISC Starlancer CML Flare,Joker Engineering,Decoy,100,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,MRAI Guardian CML Decoy,Mirai,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,MRAI Guardian CML Noise,Mirai,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,ORIG CML Decoy Small,Origin Jumpworks,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,ORIG CML Noise Small,Origin Jumpworks,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ORIG M50 CML Chaff,Origin Jumpworks,Noise,2,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,ORIG M50 CML Flare,Origin Jumpworks,Decoy,24,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+0,ORIG X1 CML Chaff,Origin Jumpworks,Noise,4,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+0,ORIG X1 CML Flare,Origin Jumpworks,Decoy,12,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Apollo CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Apollo CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Aurora Mk2 Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Aurora Mk2 Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,RSI CML Chaff,Roberts Space Industries,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI CML Decoy Small GS,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,RSI CML Flare,Roberts Space Industries,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI CML Noise Small,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI CML Noise Small GS,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,RSI Constellation CML Decoy,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,RSI Constellation CML Noise,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Mantis CML Chaff,Roberts Space Industries,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Mantis CML Flare,Roberts Space Industries,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Meteor CML Chaff,Roberts Space Industries,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Meteor CML Flare,Roberts Space Industries,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Perseus CML Decoy,Roberts Space Industries,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Perseus CML Noise,Roberts Space Industries,Noise,10,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Polaris CML Decoy,Roberts Space Industries,Decoy,30,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Polaris CML Noise,Roberts Space Industries,Noise,15,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Salvation CML Chaff,Joker Engineering,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Salvation CML Flare,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Scorpius CML Chaff,Roberts Space Industries,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Scorpius CML Flare,Roberts Space Industries,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Zeus CML Decoy,Roberts Space Industries,Decoy,25,90,1080,12,40000,20000,60000,0,1000,1,1,1,1,1,1,150,84
+1,RSI Zeus CML Noise,Roberts Space Industries,Noise,10,180,144,0.8,80000,100000,150000,0,1000,1,1,1,1,1,1,150,84
+1,TMBL Nova CML Decoy Small,Aegis Dynamics,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,TMBL Nova CML Noise Small,Joker Engineering,Noise,5,250,625,2.5,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,TMBL Storm CML Decoy Small,Tumbril Land Systems,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,TMBL Storm CML Noise Small,Tumbril Land Systems,Noise,5,250,625,2.5,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL Blade CML Chaff,Vanduul,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL Blade CML Flare,Vanduul,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL CML Chaff,Vanduul,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL CML Flare,Vanduul,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL Stinger CML Chaff,Vanduul,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+2,VNCL Stinger CML Flare,Vanduul,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,XIAN Nox CML Chaff,Aopoa,Noise,1,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,XIAN Nox CML Flare,Aopoa,Decoy,5,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,XIAN Scout CML Chaff,Aopoa,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,XIAN Scout CML Flare,Aopoa,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84
+1,XNAA SanTokYai CML Chaff,Aopoa,Noise,5,180,144,0.8,30000,20000,30000,0,1000,1,1,1,1,1,1,150,84
+1,XNAA SanTokYai CML Flare,Aopoa,Decoy,48,65,520,8,20000,6500,20000,0,1000,1,1,1,1,1,1,150,84

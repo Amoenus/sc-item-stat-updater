@@ -1,0 +1,4 @@
+Size,Name,Manufacturer,Damage Total,Damage Physical,Damage Energy,Damage Distortion,Explosion Proximity,Explosion Radius,Delay Arm,Delay Ignite,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Mass,K µSCU
+10,Colossus Bomb,FireStorm Kinetics,568 297,45 677,522 620,0,0.5,250,5,0.2,1000,1,1,1,0.19048,,,951,10 000
+5,Stormburst Bomb,FireStorm Kinetics,46 702,22 346,24 356,0,0.5,100,3,0.2,1000,1,1,1,0.19048,,,252,3 000
+3,Thunderball Bomb,FireStorm Kinetics,27 000,12 500,14 500,0,0.5,40,0.5,0.1,1000,1,1,1,0.19048,,,252,3 000

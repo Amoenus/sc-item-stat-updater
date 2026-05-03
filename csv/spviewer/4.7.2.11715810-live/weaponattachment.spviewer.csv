@@ -1,0 +1,100 @@
+Size,Name,Manufacturer,Slot,Type,Weapon Modifier Damage,Weapon Modifier Projectile Speed,Weapon Modifier Ammo Cost,Weapon Modifier Sound Radius,Weapon Modifier Muzzle flash,Weapon Modifier Heat Generation,Recoil Modifier Recoil,Recoil Modifier Decay,Aim Curve Recoil Modifier Pitch,Aim Curve Recoil Modifier Yaw,Aim Curve Recoil Modifier Roll,Spread Modifier Min,Spread Modifier Max,Spread Modifier First Attack,Spread Modifier Per Attack,Spread Modifier Decay,ADS Modifier Magnification 1,ADS Modifier Magnification 2,ADS Modifier Aim Time,Mass,µSCU
+1,250-E Laser Pointer,NV-TAC,Bottom Attachment,Laser Pointer,,,,,,,,,,,,-12%,-12%,-12%,-12%,,,,,0.1,110
+3,Black Prism (8x Telescopic),Kastak Arms,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,8x,1x,,0.1,1 900
+1,Brightspot Flashlight Purple,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,Delta (1x Reflex),NV-TAC,Iron Sight,Optic Reflex,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+1,Delta LL (1x Reflex),NV-TAC,Iron Sight,Optic Reflex,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+1,"Delta ""Scorched"" (1x Reflex)",NV-TAC,Iron Sight,Optic Reflex,,,,,,,,,,,,,,,,,1x,3x,+2%,0.1,100
+2,EE04 (4x Telescopic),Behring,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,6x,+25%,0.1,700
+3,EE08 (8x Telescopic),Behring,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,8x,1x,,0.1,1 900
+1,EE16 (16x Telescopic),Behring,Iron Sight,undefined,,,,,,,,,,,,,,,,,10x,12x,,0.1,1 900
+1,EE16 (16x Telescopic),Behring,Iron Sight,undefined,,,,,,,,,,,,,,,,,10x,12x,,0.1,1 900
+3,EE16 (16x Telescopic),Behring,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,,0.1,1 900
+1,"Emod ""Scorched"" Stabilizer1",ArmaMod,Barrel,Stabilizer,,-13%,,+20%,-50%,,-30%,+40%,+40%,+40%,+40%,-20%,-20%,-20%,-20%,-20%,,,,0.1,50
+1,Emod Stabilizer1,ArmaMod,Barrel,Stabilizer,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,50
+2,Emod Stabilizer2,ArmaMod,Barrel,Stabilizer,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,110
+3,Emod Stabilizer3,ArmaMod,Barrel,Stabilizer,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,260
+2,"Emod ""Tweaker"" Stabilizer2",ArmaMod,Barrel,Stabilizer,+12%,,+100%,+20%,-50%,-80%,-15%,-15%,+40%,+40%,+40%,+25%,+25%,+25%,+25%,,,,,0.1,110
+1,Escalate Stabilizer1,ArmaMod,Barrel,Stabilizer,-10%,,,,-50%,,,,+200%,+50%,+50%,,,,,,,,,0.1,50
+2,Escalate Stabilizer2,ArmaMod,Barrel,Stabilizer,-5%,,,+20%,-50%,,,,+30%,+30%,+30%,,,,+20%,,,,,0.1,110
+3,Escalate Stabilizer3,ArmaMod,Barrel,Stabilizer,+10%,,+100%,,-50%,,,,,,,,,,,,,,,0.1,260
+3,FarSight (8x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+3,"FarSight ""Darkwave"" (8x Telescopic)",@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+3,"FarSight ""Golden Blossom"" (8x Telescopic)",@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+3,"FarSight ""Landslide"" (8x Telescopic)",@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+3,"FarSight ""Snow Camo"" (8x Telescopic)",@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+3,"FarSight ""Thunderstrike"" (8x Telescopic)",@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,8x,,0.1,1 900
+1,FieldLite Flashlight,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,FieldLite Flashlight Blue,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,FieldLite Flashlight Red,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,FieldLite Flashlight Yellow,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,"FieldLite ""Scorched"" Flashlight",NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+1,FocalWave-10 (1x Holographic),@LOC_PLACEHOLDER,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,1x,+8%,0.1,100
+1,FocalWave-20 (2x Holographic),@LOC_PLACEHOLDER,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,2x,1x,+8%,0.1,100
+1,FocalWave-30 (3x Holographic),@LOC_PLACEHOLDER,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,1x,+8%,0.1,100
+1,Gamma (1x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+4,Gamma (1x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,1x,,0.1,1 447
+1,"Gamma ""Black Op"" (1x Holographic)",NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+1,Gamma Duo (2x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,2x,3x,+15%,0.1,100
+1,Gamma Duo LL (2x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,2x,1x,+15%,0.1,100
+1,Gamma LL (1x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+1,Gamma Plus (3x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,3x,+15%,0.1,100
+1,Gamma Plus LL (3x Holographic),NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,1x,+15%,0.1,100
+1,"Gamma Plus ""Lumen"" (3x Holographic)",NV-TAC,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,3x,+15%,0.1,100
+1,HG-2 Jaeger (2x Holographic),Klaus & Werner,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,2x,4x,+5%,0.1,100
+1,HG-3 Jaeger (3x Holographic),Klaus & Werner,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,4.5x,+5%,0.1,100
+1,HG-15 Jaeger (1.5x Holographic),Klaus & Werner,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1.5x,3x,+5%,0.1,100
+1,Lux Flashlight,NV-TAC,Bottom Attachment,Flashlight,,,,,,,,,,,,,,,,,,,,0.1,110
+3,Omarof (16x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,-25%,0.1,1 900
+3,Omarof (16x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,-25%,0.1,1 900
+3,Omarof (16x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,-25%,0.1,1 900
+3,Omarof (16x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,-25%,0.1,1 900
+3,Omarof (16x Telescopic),@LOC_PLACEHOLDER,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,16x,1x,-25%,0.1,1 900
+2,OT4-RF (4x Telescopic),Gemini,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,1x,+25%,0.1,700
+2,"OT4-RF ""Scorched"" (4x Telescopic)",Gemini,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,2.5x,+5%,0.1,700
+3,OT8-RF (8x Telescopic),Gemini,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,8x,1x,,0.1,1 900
+3,"OT8-RF ""HighSec"" (8x Telescopic)",Gemini,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,8x,1x,,0.1,1 900
+3,"OT8-RF ""Scorched"" (8x Telescopic)",Gemini,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,8x,4x,,0.1,1 900
+1,PT1 (1x Holographic),Behring,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,1x,2x,+15%,0.1,100
+1,PT2 (2x Holographic),Behring,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,2x,3x,+15%,0.1,100
+1,PT3 (3x Holographic),Behring,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,4x,+15%,0.1,100
+1,"PT3 ""Deadfall"" (3x Holographic)",Behring,Iron Sight,Optic Holographic,,,,,,,,,,,,,,,,,3x,4x,+15%,0.1,100
+1,Quell Suppressor1,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,+10%,,,-25%,-25%,-25%,,,,,,,,,0.1,120
+2,Quell Suppressor2,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,-25%,,,-22%,-22%,-22%,+7%,+7%,+7%,+7%,,,,,0.1,180
+3,Quell Suppressor3,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,,,,,,,-15%,,,+25%,,,,,0.1,450
+1,RD-1 Jaeger (1x Red Dot),Klaus & Werner,Iron Sight,Optic Reflex,,,,,,,,,,,,,,,,,1x,3x,+5%,0.1,100
+1,RF1 (1x Reflex),Behring,Iron Sight,Optic Reflex,,,,,,,,,,,,,,,,,1x,1x,+15%,0.1,100
+1,Sion Compensator1,ArmaMod,Barrel,Compensator,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,20
+2,Sion Compensator2,ArmaMod,Barrel,Compensator,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,60
+3,Sion Compensator3,ArmaMod,Barrel,Compensator,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,,,,,,,,,0.1,130
+2,"Sion ""Scorched"" Compensator2",ArmaMod,Barrel,Compensator,-10%,-13%,,+20%,-50%,,-40%,-40%,-20%,-20%,-20%,-10%,-10%,-10%,-10%,-10%,,,,0.1,60
+1,"Sion ""Tweaker"" Compensator1",ArmaMod,Barrel,Compensator,,,,,-50%,,-30%,-30%,+35%,+35%,-20%,+20%,+20%,+20%,+20%,+20%,,,,0.1,20
+2,"Sion ""Tweaker"" Compensator2",ArmaMod,Barrel,Compensator,-10%,,,+20%,-50%,,-70%,-30%,-35%,-35%,-20%,+25%,+25%,+25%,+25%,+25%,,,+25%,0.1,60
+1,Stark Compensator1,ArmaMod,Barrel,Compensator,+18%,,,,-50%,,,,,,,,,,,,,,,0.1,20
+2,Stark Compensator2,ArmaMod,Barrel,Compensator,,,,,-50%,,,,-25%,-25%,-25%,+15%,+15%,+15%,+15%,,,,+7%,0.1,20
+3,Stark Compensator3,ArmaMod,Barrel,Compensator,+7%,+7%,,+20%,-50%,,-30%,-30%,,,,+30%,+30%,+30%,+30%,,,,,0.1,20
+1,Stoic Suppressor1,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,,,,-15%,-45%,,+20%,+20%,+20%,+20%,,,,,0.1,120
+2,Stoic Suppressor2,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,,,,-15%,-45%,,-13%,-13%,-13%,-13%,,,,+12%,0.1,180
+3,Stoic Suppressor3,ArmaMod,Barrel,Suppressor,,,,-34%,-100%,,,,-25%,-25%,,,-50%,,,,,,-10%,0.1,450
+1,Tacit Suppressor1,ArmaMod,Barrel,Suppressor,-8%,,,-34%,-100%,,,,,,,,,,,,,,,0.1,120
+2,Tacit Suppressor2,ArmaMod,Barrel,Suppressor,-8%,,,-60%,-100%,,,,,,,,,,,,,,,0.1,180
+3,Tacit Suppressor3,ArmaMod,Barrel,Suppressor,-8%,,,-60%,-100%,,,,,,,,,,,,,,,0.1,450
+2,Tau Plus (4x Telescopic),NV-TAC,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,6x,+25%,0.1,700
+2,Tau Plus LL (4x Telescopic),NV-TAC,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,6x,+25%,0.1,700
+2,"Tau Plus ""Scorched"" (4x Telescopic)",NV-TAC,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,4x,2x,+5%,0.1,700
+3,Theta Pro (8x Telescopic),NV-TAC,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,6x,10x,,0.1,1 900
+3,Theta Pro LL (8x Telescopic),NV-TAC,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,6x,1x,,0.1,1 900
+1,Torrent Compensator1,ArmaMod,Barrel,Compensator,,,,+20%,-50%,,-30%,-30%,+10%,+10%,+10%,-20%,-20%,-20%,-20%,,,,+15%,0.1,20
+2,Torrent Compensator2,ArmaMod,Barrel,Compensator,+5%,+35%,,,-50%,,,,+18%,+18%,,+23%,+23%,+23%,+23%,,,,+15%,0.1,20
+3,Torrent Compensator3,ArmaMod,Barrel,Compensator,,,,+20%,-50%,,-30%,-30%,-20%,-20%,-20%,-23%,-23%,-23%,-23%,+33%,,,,0.1,20
+3,Touchstone (8x Monitor),Klaus & Werner,Iron Sight,Optic Monitor,,,,,,,,,,,,,,,,,8x,1x,,0.1,1 900
+1,Tracer Laser Pointer Green,NV-TAC,Bottom Attachment,Laser Pointer,,,,,,,,,,,,-12%,-12%,-12%,-12%,,,,,0.1,110
+1,Tracer Laser Pointer Orange,NV-TAC,Bottom Attachment,Laser Pointer,,,,,,,,,,,,-12%,-12%,-12%,-12%,,,,,0.1,110
+2,TS-25 Basara (2.5x Telescopic),Klaus & Werner,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,2x,5x,+5%,0.1,100
+2,TS-35 Basara (3.5x Telescopic),Klaus & Werner,Iron Sight,Optic Telescopic,,,,,,,,,,,,,,,,,3x,5.5x,+5%,0.1,100
+1,Veil Flash Hider1,ArmaMod,Barrel,Flash Hider,,,,,-100%,,-15%,-15%,,,,,,,,,,,,0.1,70
+2,Veil Flash Hider2,ArmaMod,Barrel,Flash Hider,,,,,-100%,,-15%,-15%,,,,,,,,,,,,0.1,100
+3,Veil Flash Hider3,ArmaMod,Barrel,Flash Hider,,,,,-100%,,-15%,-15%,,,,,,,,,,,,0.1,200
+1,Vera Compensator1,ArmaMod,Barrel,Compensator,,,,,-50%,,,,,,,,,-35%,-35%,+20%,,,+20%,0.1,20
+2,Vera Compensator2,ArmaMod,Barrel,Compensator,,,,,-50%,,,,-30%,-30%,-30%,+40%,+40%,+40%,+40%,+40%,,,,0.1,20
+3,Vera Compensator3,ArmaMod,Barrel,Compensator,,-15%,,,-50%,,,,+50%,+50%,+50%,-10%,+10%,-10%,-10%,,,,-35%,0.1,20
