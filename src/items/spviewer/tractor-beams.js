@@ -6,7 +6,6 @@ export default {
   csvFile: 'tractorbeam.spviewer.csv',
   label: 'SP Tractor Beams',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/tractor_beams.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Tractor Force (MN)', 'Tractor Range', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('tractorbeam'),
   buildValue(r, flavorText) {

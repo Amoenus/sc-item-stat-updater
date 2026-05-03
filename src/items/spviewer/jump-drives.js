@@ -6,7 +6,6 @@ export default {
   csvFile: 'jumpdrive.spviewer.csv',
   label: 'SP Jump Drives',
   nameColumn: 'Name',
-  requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('jdrv'),
   buildValue(r, flavorText) {
     return stat(r)

@@ -237,11 +237,11 @@ const versions = await extractVersions(versionPage);
 await versionPage.close();
 
 const versionRaw = usePtu ? versions.ptu : versions.live;
-if (!versionRaw) {
+if (!versionRaw || !/^\d+\.\d+\.\d+\.\d+$/.test(versionRaw)) {
   console.error(
-    `Could not detect ${channel.toUpperCase()} version from SPViewer page header.\n` +
+    `Could not detect a valid ${channel.toUpperCase()} version from SPViewer page header.\n` +
       `Detected: LIVE=${versions.live ?? 'n/a'}, PTU=${versions.ptu ?? 'n/a'}\n` +
-      `The page structure may have changed.`,
+      `Expected format: X.Y.Z.NNNNNNN — page structure may have changed or version is not yet available.`,
   );
   await browser.close();
   process.exit(1);

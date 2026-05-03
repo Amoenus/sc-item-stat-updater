@@ -6,7 +6,6 @@ export default {
   csvFile: 'quantuminterdictiongenerator.spviewer.csv',
   label: 'SP QEDs',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/qeds.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Range Jamming', 'Range Interdiction'],
   descKeyMatch: (kl) => kl.includes('descqdmp_') || kl.includes('descqed_'),
   buildValue(r, flavorText) {

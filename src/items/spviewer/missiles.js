@@ -6,7 +6,6 @@ export default {
   csvFile: 'missile.spviewer.csv',
   label: 'SP Missiles',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/missiles.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',

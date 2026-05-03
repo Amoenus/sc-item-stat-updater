@@ -6,7 +6,6 @@ export default {
   csvFile: 'quantumdrive.spviewer.csv',
   label: 'SP Quantum Drives',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/quantum_drives.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Speed Maximum', 'Delay Spool', 'Delay Cooldown', 'Health'],
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),
   buildValue(r, flavorText) {

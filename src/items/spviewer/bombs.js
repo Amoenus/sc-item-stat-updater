@@ -6,7 +6,6 @@ export default {
   csvFile: 'bomb.spviewer.csv',
   label: 'SP Bombs',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/bombs.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',

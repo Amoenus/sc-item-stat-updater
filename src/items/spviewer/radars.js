@@ -6,7 +6,6 @@ export default {
   csvFile: 'radar.spviewer.csv',
   label: 'SP Radars',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/radars.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc_radr_') || kl.includes('descradr_'),
   buildValue(r, flavorText) {

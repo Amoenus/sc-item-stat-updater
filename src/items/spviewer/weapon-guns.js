@@ -7,7 +7,6 @@ export default {
   csvFile: 'weapongun.spviewer.csv',
   label: 'SP Weapon Guns',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/weapons.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',

@@ -6,7 +6,6 @@ export default {
   csvFile: 'emp.spviewer.csv',
   label: 'SP EMPs',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/emps.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',

@@ -6,7 +6,6 @@ export default {
   csvFile: 'shield.spviewer.csv',
   label: 'SP Shields',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/shields.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',

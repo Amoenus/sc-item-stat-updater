@@ -6,7 +6,6 @@ export default {
   csvFile: 'powerplant.spviewer.csv',
   label: 'SP Power Plants',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/powerplants.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'SegmentGeneration', 'Health'],
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
   buildValue(r, flavorText) {

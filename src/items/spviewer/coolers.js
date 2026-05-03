@@ -6,7 +6,6 @@ export default {
   csvFile: 'cooler.spviewer.csv',
   label: 'SP Coolers',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/coolers.csv',
   requiredColumns: ['Name', 'Manufacturer', 'Size', 'Class', 'Grade', 'CoolingGeneration', 'Health'],
   descKeyMatch: (kl) => kl.includes('desccool_') || kl.includes('desc_cool_'),
   nameKeyToDescKey(nameKey) {

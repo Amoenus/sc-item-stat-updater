@@ -6,7 +6,6 @@ export default {
   csvFile: 'weaponmining.spviewer.csv',
   label: 'SP Mining Lasers',
   nameColumn: 'Name',
-  lookupCsvFile: 'erkul/mining_lasers.csv',
   requiredColumns: [
     'Name',
     'Manufacturer',
