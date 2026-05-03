@@ -46,8 +46,35 @@ function validateContainedPath(filePath, baseDir, label) {
   return resolved;
 }
 
-/** Reads and validates CSV data against the config's required columns. */
-async function loadCsvData(csvPath, config) {
+/** Reads and validates CSV or JSON data against the config's required columns. */
+async function loadSourceData(config, csvDir) {
+  if (config.jsonFile) {
+    const jsonPath = validateContainedPath(path.resolve(csvDir, config.jsonFile), csvDir, 'JSON filename');
+    logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
+    const jsonContent = await fs.readFile(jsonPath, 'utf-8');
+    let data;
+    try {
+      data = JSON.parse(jsonContent);
+    } catch (err) {
+      throw new Error(`Invalid JSON file: ${err.message}`);
+    }
+    const rows = config.parseJson ? config.parseJson(data) : [];
+    if (!Array.isArray(rows)) {
+      throw new Error(`JSON parser must return an array for ${config.label}`);
+    }
+    logger.debug('Parsed JSON rows', { count: rows.length, label: config.label });
+
+    if (config.requiredColumns && rows.length > 0) {
+      const rowColumns = Object.keys(rows[0]);
+      const missing = config.requiredColumns.filter((col) => !rowColumns.includes(col));
+      if (missing.length > 0) {
+        throw new Error(`JSON schema mismatch: missing columns: ${missing.join(', ')}`);
+      }
+    }
+    return rows;
+  }
+
+  const csvPath = validateContainedPath(path.resolve(csvDir, config.csvFile), csvDir, 'CSV filename');
   logger.debug('Reading CSV file', { file: csvPath, label: config.label });
   const csvContent = await fs.readFile(csvPath, 'utf-8');
   const rows = parseCSV(csvContent);
@@ -107,20 +134,26 @@ function findLastDescIndex(existingKeys, descKeyMatch) {
 }
 
 /** Processes a single row: updates existing key or queues a new entry. */
-function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, force = false) {
+function getTargetKeys(config, row, deriveDescKey) {
+  if (config.getTargetKeys) {
+    return config.getTargetKeys(row, deriveDescKey);
+  }
   const nameKey = row['Localization Key'];
   const descKey = deriveDescKey(nameKey);
   const altKeys = config.getAlternateDescKeys ? config.getAlternateDescKeys(descKey) : [];
-  const allKeys = [descKey, ...altKeys];
+  return [descKey, ...altKeys];
+}
 
-  if (allKeys.some((k) => updatedKeys.has(k.toLowerCase()))) {
+function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, force = false) {
+  const targetKeys = getTargetKeys(config, row, deriveDescKey);
+  if (targetKeys.some((k) => updatedKeys.has(k.toLowerCase()))) {
     return { status: 'skipped' };
   }
 
   let anyUpdated = false;
   let anyFound = false;
 
-  for (const targetKey of allKeys) {
+  for (const targetKey of targetKeys) {
     const found = findKey(targetKey, existingKeys);
     if (found) {
       anyFound = true;
@@ -136,12 +169,12 @@ function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys
     }
   }
   if (anyFound) {
-    for (const k of allKeys) updatedKeys.add(k.toLowerCase());
+    for (const k of targetKeys) updatedKeys.add(k.toLowerCase());
     return { status: anyUpdated ? 'updated' : 'found' };
   }
 
-  const newValue = sanitizeIniValue(config.buildValue(row, '', '', descKey));
-  return { status: 'new', line: `${descKey}=${newValue}` };
+  const newValue = sanitizeIniValue(config.buildValue(row, '', '', targetKeys[0]));
+  return { status: 'new', line: `${targetKeys[0]}=${newValue}` };
 }
 
 /** Inserts new lines at the correct position (after last matching desc key). */
@@ -169,12 +202,12 @@ function buildResult(config, stats, durationMs, dryRun) {
 }
 
 /**
- * Runs a CSV-based update against global.ini.
+ * Runs a source-based update against global.ini.
  *
  * @param {import('./types.js').ItemConfig} config
  * @param {object} [options]
  * @param {string} [options.iniPath] - Path to global.ini (default: ./global.ini relative to project root)
- * @param {string} [options.csvDir] - Directory containing CSV files (default: ./csv)
+ * @param {string} [options.csvDir] - Directory containing CSV and JSON files (default: ./csv)
  * @param {boolean} [options.dryRun] - Preview changes without writing (default: false)
  * @param {boolean} [options.skipBackup] - Skip backup rotation (default: false)
  * @param {boolean} [options.force] - Force writing the INI file when existing rows are found (default: false)
@@ -183,13 +216,6 @@ export async function runUpdate(config, options = {}) {
   const start = performance.now();
   const opts = resolveOptions(options);
 
-  const csvPath = validateContainedPath(path.resolve(opts.csvDir, config.csvFile), opts.csvDir, 'CSV filename');
-
-  try {
-    await fs.access(csvPath);
-  } catch {
-    throw new Error(`CSV file not found: ${csvPath}`);
-  }
   try {
     await fs.access(opts.iniPath);
   } catch {
@@ -197,7 +223,7 @@ export async function runUpdate(config, options = {}) {
   }
 
   try {
-    const rows = await loadCsvData(csvPath, config);
+    const rows = await loadSourceData(config, opts.csvDir);
     const { lines, index: existingKeys } = await readIniFile(opts.iniPath);
 
     const unresolvedNames = config.nameColumn
