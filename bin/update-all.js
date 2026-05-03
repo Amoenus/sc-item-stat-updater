@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { loadErkulConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
+import { loadErkulConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
@@ -53,9 +53,9 @@ let categories;
 if (source === 'erkul') {
   categories = [...(await loadErkulConfigs()).values()];
 } else if (source === 'all') {
-  categories = [...(await loadSpviewerConfigs()).values(), ...(await loadErkulConfigs()).values()];
+  categories = [...(await loadSpviewerConfigs()).values(), ...(await loadErkulConfigs()).values(), ...(await loadMissionConfigs()).values()];
 } else {
-  categories = [...(await loadSpviewerConfigs()).values()];
+  categories = [...(await loadSpviewerConfigs()).values(), ...(await loadMissionConfigs()).values()];
 }
 
 const totalStart = performance.now();
