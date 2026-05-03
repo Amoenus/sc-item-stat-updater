@@ -5,11 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
-const outDir = join(repoRoot, 'csv', 'scmdb');
-const missionsOutDir = join(repoRoot, 'csv', 'missions');
 
-mkdirSync(outDir, { recursive: true });
-mkdirSync(missionsOutDir, { recursive: true });
+// outDir and missionsOutDir are set inside main() after the version is resolved.
+let outDir;
+let missionsOutDir;
 
 function usage() {
   console.log(`Usage: node scrape-scmdb.js [options]
@@ -213,11 +212,11 @@ function normalizeLocalizationKey(key) {
   return key.startsWith('@') ? key.slice(1) : key;
 }
 
-function isLiveVersion(version) {
+export function isLiveVersion(version) {
   return /\blive\b/i.test(version) || /-live\./i.test(version);
 }
 
-function isPtuVersion(version) {
+export function isPtuVersion(version) {
   return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
 }
 
@@ -317,6 +316,12 @@ async function main() {
   }
 
   console.log(`Using SCMDB version ${selected.version}`);
+
+  // Version-scoped output dirs: csv/scmdb/<version>/ and csv/scmdb/<version>/missions/
+  outDir = join(repoRoot, 'csv', 'scmdb', selected.version);
+  missionsOutDir = join(outDir, 'missions');
+  mkdirSync(outDir, { recursive: true });
+  mkdirSync(missionsOutDir, { recursive: true });
 
   const mergedUrl = `https://scmdb.net/data/${selected.file}`;
   const mergedData = await fetchJson(mergedUrl);
@@ -471,7 +476,7 @@ async function main() {
     ]));
   }
 
-  console.log('SCMDB scrape complete. Outputs are in csv/scmdb/');
+  console.log(`SCMDB scrape complete. Outputs saved to csv/scmdb/${selected.version}/`);
 }
 
 try {
