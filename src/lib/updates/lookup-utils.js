@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
+import { listMatchingFiles } from '../io/discovery.js';
 
 /**
  * Returns sorted SPViewer CSV filenames from a directory.
@@ -8,8 +8,9 @@ import path from 'node:path';
  * @returns {Promise<string[]>}
  */
 export async function listSpviewerCsvFiles(spviewerDir) {
-  const entries = await fs.readdir(spviewerDir);
-  return entries.filter((name) => name.endsWith('.spviewer.csv')).sort();
+  return listMatchingFiles(spviewerDir, (name) => name.endsWith('.spviewer.csv'), {
+    label: 'SPViewer directory',
+  });
 }
 
 /**

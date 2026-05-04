@@ -1,8 +1,8 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { inspect, parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
+import { findLatestMatchingDirectory } from '../src/lib/io/discovery.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
@@ -15,7 +15,7 @@ import { regenMiningLocations } from './regen-mining-locations.js';
 const logger = getLogger('update-all');
 
 process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled rejection', { error: String(reason) });
+  logger.error('Unhandled rejection', { error: inspect(reason, { depth: 3 }) });
   process.exit(1);
 });
 
@@ -66,31 +66,17 @@ if (values['json-logs']) setJsonOutput(true);
  * @returns {Promise<string>} - absolute path to the best matching version folder
  */
 async function resolveLatestVersionDir(base, ptu, source, scraper) {
-  let entries;
-  try {
-    entries = await fs.readdir(base, { withFileTypes: true });
-  } catch {
-    throw new Error(`${source} output directory not found: ${base}. Run ${scraper}${ptu ? ' --ptu' : ''} first.`);
-  }
-
   const isMatch = ptu
     ? (name) => /\bptu\b/i.test(name) || /-ptu[.\b]/i.test(name) || name.endsWith('-ptu')
     : (name) => /\blive\b/i.test(name) || /-live[.\b]/i.test(name) || name.endsWith('-live');
 
-  const dirs = entries
-    .filter((e) => e.isDirectory() && isMatch(e.name))
-    .map((e) => e.name)
-    .sort(); // lexicographic sort works well for semver-like version strings
-
-  if (dirs.length === 0) {
-    throw new Error(
+  return findLatestMatchingDirectory(base, isMatch, {
+    label: `${source} output directory`,
+    notFoundMessage: `${source} output directory not found: ${base}. Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
+    noMatchMessage:
       `No ${ptu ? 'PTU' : 'LIVE'} ${source} version folder found under ${base}. ` +
-        `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
-    );
-  }
-
-  // Use the last (latest) matching directory.
-  return path.join(base, dirs[dirs.length - 1]);
+      `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
+  });
 }
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
