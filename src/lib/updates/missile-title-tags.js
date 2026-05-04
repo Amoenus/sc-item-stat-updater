@@ -12,7 +12,7 @@ const MISSILE_SIGNAL_TAG = {
   Infrared: 'IR',
 };
 
-const MISSILE_KEY_PATTERN = /^(item_nameg?misl_.*?)(_[a-z]+)?$/i;
+const MISSILE_KEY_PATTERN = /^(item_nameg?misl_.*?)(_short)?$/i;
 const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
 
 function normalizeSpaces(value) {
