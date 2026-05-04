@@ -8,7 +8,8 @@ const logger = getLogger('ini-file');
 /**
  * Reads an INI file using streaming I/O and builds a key index in a single pass.
  * Handles UTF-8 BOM stripping.
- * @returns {{ lines: string[], index: Record<string, number> }}
+ * @param {string} filePath
+ * @returns {Promise<{ lines: string[], index: Record<string, number> }>}
  */
 export async function readIniFile(filePath) {
   const lines = [];
@@ -26,7 +27,7 @@ export async function readIniFile(filePath) {
   for await (const rawLine of rl) {
     let line = rawLine;
     if (isFirst) {
-      if (line.charCodeAt(0) === 0xfeff) line = line.slice(1);
+      if (line.codePointAt(0) === 0xfeff) line = line.slice(1);
       isFirst = false;
     }
 

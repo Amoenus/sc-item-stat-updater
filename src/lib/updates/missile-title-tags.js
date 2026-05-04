@@ -1,8 +1,9 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { parseCSV } from '../io/csv-parser.js';
-import { writeIniFile } from '../io/ini-file.js';
+import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
+import { normalizeSpaces } from './title-tag-utils.js';
 
 const logger = getLogger('missile-title-tags-update');
 
@@ -14,13 +15,6 @@ const MISSILE_SIGNAL_TAG = {
 
 const MISSILE_KEY_PATTERN = /^(item_nameg?misl_.*?)(_short)?$/i;
 const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
-
-function normalizeSpaces(value) {
-  return String(value || '')
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
-}
 
 async function buildMissileSignalLookup(spviewerDir, repoRoot) {
   const missileCsvPath = path.join(spviewerDir, 'missile.spviewer.csv');
@@ -121,8 +115,7 @@ export async function runMissileTitleTagUpdate({ iniPath, spviewerDir, repoRoot,
     missileNameCount: nameCount,
   });
 
-  const iniText = await fs.readFile(iniPath, 'utf-8');
-  const lines = iniText.replace(/^\ufeff/, '').split(/\r?\n/);
+  const { lines } = await Promise.resolve(readIniFile(iniPath));
   const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMissileSignalTags(lines, keyToTag);
 
   if (!dryRun && updatedCount > 0) {
