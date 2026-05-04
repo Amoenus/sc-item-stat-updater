@@ -6,7 +6,8 @@ export default {
   // Only update keys already in the INI; never insert orphan commodity entries
   noInsert: true,
   // Only match _ore_desc and _raw_desc keys — those carry flavor text and scanner data
-  descKeyMatch: (/** @type {string} */ kl) => kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
+  descKeyMatch: (/** @type {string} */ kl) =>
+    kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
 
   /**
    * Derives the target INI key from the Element Name.
@@ -34,16 +35,13 @@ export default {
     // No suffix in CSV name — try both _raw_desc and _ore_desc; the updater
     // (noInsert: true) will keep only the variant that already exists in the INI.
     const keyBase = elementName.toLowerCase().replace(/[\s-]/g, '');
-    return [
-      `items_commodities_${keyBase}_raw_desc`,
-      `items_commodities_${keyBase}_ore_desc`,
-    ];
+    return [`items_commodities_${keyBase}_raw_desc`, `items_commodities_${keyBase}_ore_desc`];
   },
 
   /**
    * Builds the new INI value by appending scanner data stats.
    *
-  * @param {{'Element Name': string, 'Rarity': string, 'Scan Signature': string, 'Resistance': string, 'Instability': string, 'Ground Scan Signature'?: string}} row
+   * @param {{'Element Name': string, 'Rarity': string, 'Scan Signature': string, 'Resistance': string, 'Instability': string, 'Ground Scan Signature'?: string}} row
    * @param {string} flavorText - existing flavor text from INI
    * @param {string} oldValue - current INI value
    * @param {string} targetKey - the INI key being updated
@@ -55,7 +53,7 @@ export default {
     // Strip any previously-appended scanner block first for idempotency.
     const statsBlockMarker = '\\n\\n** Scanner Data **';
     const statsBlockIndex = oldValue.indexOf(statsBlockMarker);
-    let cleanFlavorText = statsBlockIndex !== -1 ? oldValue.substring(0, statsBlockIndex) : oldValue;
+    const cleanFlavorText = statsBlockIndex !== -1 ? oldValue.substring(0, statsBlockIndex) : oldValue;
 
     // Build the stats block
     const rarity = row['Rarity'] || 'N/A';
@@ -64,18 +62,14 @@ export default {
     const instability = row['Instability'] || 'N/A';
 
     // Capitalize rarity (Title Case)
-    const formattedRarity = rarity === 'N/A' ? 'N/A' :
-      rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
+    const formattedRarity = rarity === 'N/A' ? 'N/A' : rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
 
     let statsBlock = `\\n\\n** Scanner Data **\\nRarity: ${formattedRarity}\\nScan Signature: ${scanSignature}\\nResistance: ${resistance}\\nInstability: ${instability}`;
 
     // Add Ground Scan Signature if present
     const groundScanSignature = row['Ground Scan Signature'];
     if (groundScanSignature && groundScanSignature.trim() !== '') {
-      statsBlock = statsBlock.replace(
-        /(Scan Signature: [^\\]*)/,
-        `$1\\nGround Scan Signature: ${groundScanSignature}`
-      );
+      statsBlock = statsBlock.replace(/(Scan Signature: [^\\]*)/, `$1\\nGround Scan Signature: ${groundScanSignature}`);
     }
 
     return cleanFlavorText + statsBlock;

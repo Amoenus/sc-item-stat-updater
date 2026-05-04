@@ -330,9 +330,7 @@ export async function runUpdate(config, options = {}) {
     const context = new UpdateContext(config, lines, existingKeys, unresolvedNames, opts.dryRun);
 
     for (const row of rows) {
-      const validation = config.getTargetKeys && !row['Localization Key']
-        ? 'valid'
-        : validateRow(row, config.label);
+      const validation = config.getTargetKeys && !row['Localization Key'] ? 'valid' : validateRow(row, config.label);
       if (validation === 'skip') {
         context.markSkipped();
         continue;
