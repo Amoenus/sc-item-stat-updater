@@ -21,6 +21,7 @@ export default {
   label: 'SCMDB mission descriptions',
   csvFile: 'missions/scmdb-missions.csv',
   requiredColumns: ['Localization Key', 'Description'],
+  noInsert: true,
   descKeyMatch: (key) => /_desc|_description/i.test(key),
   buildValue(row, _flavorText, oldValue, targetKey) {
     const description = row['Description'] ?? row['Text'] ?? '';
