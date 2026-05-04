@@ -47,54 +47,54 @@ function validateContainedPath(filePath, baseDir, label) {
   return resolved;
 }
 
-/** Reads and validates CSV or JSON data against the config's required columns. */
-async function loadSourceData(config, csvDir) {
-  if (config.resolveJsonFile || config.jsonFile) {
-    const rawJsonPath = config.resolveJsonFile
-      ? await config.resolveJsonFile(csvDir)
-      : path.resolve(csvDir, config.jsonFile);
-    const jsonPath = validateContainedPath(rawJsonPath, csvDir, 'JSON filename');
-    logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
-    const data = await readJsonFile(jsonPath);
-    const rows = config.parseJson ? config.parseJson(data) : [];
-    if (!Array.isArray(rows)) {
-      throw new TypeError(`JSON parser must return an array for ${config.label}`);
-    }
-    logger.debug('Parsed JSON rows', { count: rows.length, label: config.label });
-
-    if (config.requiredColumns && rows.length > 0) {
-      const rowColumns = Object.keys(rows[0]);
-      const missing = config.requiredColumns.filter((col) => !rowColumns.includes(col));
-      if (missing.length > 0) {
-        throw new Error(`JSON schema mismatch: missing columns: ${missing.join(', ')}`);
-      }
-    }
-    return rows;
+function validateColumns(rows, requiredColumns, sourceLabel) {
+  if (!requiredColumns || rows.length === 0) {
+    return;
   }
+  const columns = Object.keys(rows[0]);
+  const missing = requiredColumns.filter((col) => !columns.includes(col));
+  if (missing.length > 0) {
+    throw new Error(`${sourceLabel} schema mismatch: missing columns: ${missing.join(', ')}`);
+  }
+}
 
+async function loadJsonSourceData(config, csvDir) {
+  const rawJsonPath = config.resolveJsonFile
+    ? await config.resolveJsonFile(csvDir)
+    : path.resolve(csvDir, config.jsonFile);
+  const jsonPath = validateContainedPath(rawJsonPath, csvDir, 'JSON filename');
+  logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
+  const data = await readJsonFile(jsonPath);
+  const rows = config.parseJson ? config.parseJson(data) : [];
+  if (!Array.isArray(rows)) {
+    throw new TypeError(`JSON parser must return an array for ${config.label}`);
+  }
+  logger.debug('Parsed JSON rows', { count: rows.length, label: config.label });
+  validateColumns(rows, config.requiredColumns, 'JSON');
+  return rows;
+}
+
+async function loadCsvSourceData(config, csvDir) {
   const csvPath = validateContainedPath(path.resolve(csvDir, config.csvFile), csvDir, 'CSV filename');
   logger.debug('Reading CSV file', { file: csvPath, label: config.label });
   const rows = await readCsvFile(csvPath);
   logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
-
-  if (config.requiredColumns && rows.length > 0) {
-    const csvColumns = Object.keys(rows[0]);
-    const missing = config.requiredColumns.filter((col) => !csvColumns.includes(col));
-    if (missing.length > 0) {
-      throw new Error(`CSV schema mismatch: missing columns: ${missing.join(', ')}`);
-    }
-  }
+  validateColumns(rows, config.requiredColumns, 'CSV');
   return rows;
+}
+
+/** Reads and validates CSV or JSON data against the config's required columns. */
+async function loadSourceData(config, csvDir) {
+  if (config.resolveJsonFile || config.jsonFile) {
+    return loadJsonSourceData(config, csvDir);
+  }
+  return loadCsvSourceData(config, csvDir);
 }
 
 /** Resolves localization keys for SPViewer configs (no Localization Key column in CSV). */
 async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun) {
   const reverseIndex = buildReverseNameIndex(lines);
-  let lookupMap = null;
-  if (config.lookupCsvFile) {
-    const lookupPath = validateContainedPath(path.resolve(csvDir, config.lookupCsvFile), csvDir, 'lookup CSV filename');
-    lookupMap = await buildLookupMap(lookupPath);
-  }
+  const lookupMap = config.lookupCsvFile ? await loadLookupMap(config.lookupCsvFile, csvDir) : null;
   const mappingsDir = path.resolve(baseDir, 'mappings');
   const mappingBasename = path.basename(config.csvFile).replace(/\.csv$/i, '.json');
   const mappingFile = path.join(mappingsDir, mappingBasename);
@@ -117,6 +117,11 @@ async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun)
     });
   }
   return unresolved;
+}
+
+async function loadLookupMap(lookupCsvFile, csvDir) {
+  const lookupPath = validateContainedPath(path.resolve(csvDir, lookupCsvFile), csvDir, 'lookup CSV filename');
+  return buildLookupMap(lookupPath);
 }
 
 /** Finds the last existing description key index for insertion ordering. */
@@ -177,6 +182,85 @@ function processRow(row, context, deriveDescKey, _force = false) {
   }
 
   context.markMissing(targetKeys[0]);
+}
+
+function shouldValidateRow(config, row) {
+  return !(config.getTargetKeys && !row['Localization Key']);
+}
+
+function buildUnresolvedIssues(unresolvedNames) {
+  return unresolvedNames.map((name) => ({
+    key: name,
+    reason: 'No localization key found',
+    type: 'unresolved',
+  }));
+}
+
+function createStats(issues, unresolvedCount) {
+  return {
+    updatedCount: 0,
+    newCount: 0,
+    skippedCount: 0,
+    foundCount: 0,
+    errorCount: 0,
+    unresolvedCount,
+    issues,
+  };
+}
+
+function applyRowResult(result, config, newLines, stats) {
+  if (result.status === 'updated') {
+    stats.updatedCount++;
+    return;
+  }
+  if (result.status === 'new') {
+    if (config.noInsert) {
+      stats.skippedCount++;
+      return;
+    }
+    newLines.push(result.line);
+    stats.newCount++;
+    return;
+  }
+  if (result.status === 'found') {
+    stats.foundCount++;
+    return;
+  }
+  stats.skippedCount++;
+}
+
+function processRows(rows, config, deriveDescKey, existingKeys, lines, updatedKeys) {
+  const newLines = [];
+  const stats = createStats([], 0);
+
+  for (const row of rows) {
+    const validation = shouldValidateRow(config, row) ? validateRow(row, config.label) : 'valid';
+    if (validation === 'skip') {
+      stats.skippedCount++;
+      continue;
+    }
+    if (validation === 'invalid') {
+      stats.issues.push({ key: row['Localization Key'], reason: 'Invalid localization key', type: 'error' });
+      stats.errorCount++;
+      continue;
+    }
+
+    try {
+      const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys);
+      applyRowResult(result, config, newLines, stats);
+    } catch (err) {
+      const nameKey = row['Localization Key'];
+      logger.debug('Failed to process row, skipping', { label: config.label, key: nameKey, error: err.message });
+      stats.issues.push({ key: nameKey, reason: `Build failed: ${err.message}`, type: 'error' });
+      stats.errorCount++;
+    }
+  }
+
+  return { newLines, stats };
+}
+
+function shouldWriteIni(opts, stats) {
+  return !opts.dryRun && (stats.updatedCount > 0 || stats.newCount > 0 || (opts.force && stats.foundCount > 0));
 }
 
 /** Inserts new lines at the correct position (after last matching desc key). */
