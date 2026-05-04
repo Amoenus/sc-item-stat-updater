@@ -2,6 +2,7 @@ import path from 'node:path';
 import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
+import { buildLookupMapFromRows } from './lookup-utils.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -83,18 +84,18 @@ async function buildFpsTitleLookup(spviewerDir) {
   const attachmentPath = path.join(spviewerDir, ATTACHMENT_CSV);
   const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
 
-  const nameToTag = new Map();
-
-  for (const row of personalRows) {
+  const nameToTag = buildLookupMapFromRows(personalRows, (row) => {
     const name = normalizeSpaces(row.Name || '');
-    if (!name) continue;
-    nameToTag.set(name.toLowerCase(), { name, tag: buildPersonalTag(row) });
-  }
+    if (!name) return null;
+    return [name.toLowerCase(), { name, tag: buildPersonalTag(row) }];
+  });
 
-  for (const row of attachmentRows) {
+  for (const [key, value] of buildLookupMapFromRows(attachmentRows, (row) => {
     const name = normalizeSpaces(row.Name || '');
-    if (!name) continue;
-    nameToTag.set(name.toLowerCase(), { name, tag: buildAttachmentTag(row) });
+    if (!name) return null;
+    return [name.toLowerCase(), { name, tag: buildAttachmentTag(row) }];
+  })) {
+    nameToTag.set(key, value);
   }
 
   return nameToTag;
