@@ -149,7 +149,7 @@ function getTargetKeys(config, row, deriveDescKey) {
 
 function processRow(row, context, deriveDescKey, _force = false) {
   const targetKeys = getTargetKeys(context.config, row, deriveDescKey);
-  if (targetKeys.some((k) => context.updatedKeys.has(k.toLowerCase()))) {
+  if (targetKeys.length === 0 || targetKeys.some((k) => context.updatedKeys.has(k.toLowerCase()))) {
     context.markSkipped();
     return;
   }
@@ -330,7 +330,9 @@ export async function runUpdate(config, options = {}) {
     const context = new UpdateContext(config, lines, existingKeys, unresolvedNames, opts.dryRun);
 
     for (const row of rows) {
-      const validation = validateRow(row, config.label);
+      const validation = config.getTargetKeys && !row['Localization Key']
+        ? 'valid'
+        : validateRow(row, config.label);
       if (validation === 'skip') {
         context.markSkipped();
         continue;
