@@ -5,6 +5,18 @@
  * into `global.ini`. This module allows mission updates to be processed
  * through the existing updater engine.
  */
+function formatMissionNote(noteText, isTitle) {
+  if (!noteText) {
+    return '';
+  }
+
+  if (!isTitle) {
+    return String.raw`\n\n${noteText}`;
+  }
+
+  return /^\s/.test(noteText) ? noteText : ` ${noteText}`;
+}
+
 export default {
   label: 'SCMDB mission descriptions',
   csvFile: 'missions/scmdb-missions.csv',
@@ -14,10 +26,7 @@ export default {
     const description = row['Description'] ?? row['Text'] ?? '';
     const isTitle = /_title/i.test(targetKey);
     const noteText = isTitle ? row['TitleNote'] : row['Note'];
-    let note = '';
-    if (noteText) {
-      note = isTitle ? noteText : String.raw`\n\n${noteText}`;
-    }
+    const note = formatMissionNote(noteText, isTitle);
     const rewardList = !isTitle && row['RewardList'] ? String.raw`\n\n${row['RewardList']}` : '';
 
     if (oldValue) {
