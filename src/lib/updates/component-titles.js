@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseCSV } from '../io/csv-parser.js';
-import { writeIniFile } from '../io/ini-file.js';
+import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 import {
   applyTagToFamily,
@@ -112,8 +112,8 @@ export async function runComponentTitleUpdate({ iniPath, spviewerDir, dryRun }) 
     componentCount: nameToPrefix.size,
   });
 
-  const iniText = await fs.readFile(iniPath, 'utf-8');
-  const lines = iniText.replace(/^\ufeff/, '').split(/\r?\n/);
+  const iniData = await Promise.resolve(readIniFile(iniPath));
+  const { lines } = iniData;
   const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMiningTitlePrefixes(lines, nameToPrefix);
 
   if (!dryRun && updatedCount > 0) {
