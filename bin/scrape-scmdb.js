@@ -225,21 +225,37 @@ function buildContractBlueprintRows(contracts, blueprintPools) {
 
 function buildBlueprintRewardList(contract, blueprintPools) {
   if (!Array.isArray(contract.blueprintRewards)) return '';
-  const names = new Set();
+
+  const formatChance = (chance) => {
+    const numericChance = Number(chance);
+    if (!Number.isFinite(numericChance)) {
+      return null;
+    }
+    return `${Math.round(numericChance * 100)}% chance`;
+  };
+
+  const sections = [];
   for (const entry of contract.blueprintRewards) {
     const pool = blueprintPools?.[entry.blueprintPool];
     if (!pool || !Array.isArray(pool.blueprints)) continue;
-    for (const blueprint of pool.blueprints) {
-      if (blueprint && typeof blueprint.name === 'string') {
-        names.add(blueprint.name);
-      }
+
+    const itemNames = pool.blueprints
+      .map((blueprint) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
+      .filter(Boolean);
+
+    if (itemNames.length === 0) {
+      continue;
     }
+
+    const poolName = entry.poolName || pool.name || entry.blueprintPool || 'Unknown blueprint pool';
+    const chanceText = formatChance(entry.chance);
+    const oneOfText = `1 of ${itemNames.length}`;
+    const details = chanceText ? `${chanceText} — ${oneOfText}` : oneOfText;
+    const itemLines = itemNames.map((name) => `- ${name}`).join(String.raw`\n`);
+    sections.push([poolName, details, itemLines].join(String.raw`\n`));
   }
-  return names.size > 0
-    ? Array.from(names)
-        .map((name) => `- ${name}`)
-        .join(String.raw`\n`)
-    : '';
+
+  return sections.join(String.raw`\n\n`);
 }
 
 function normalizeLocalizationKey(key) {
@@ -273,7 +289,7 @@ function buildMissionRows(contracts, chainData, blueprintPools) {
         descTag = '[BP Chain]';
       }
       const rewardList = blueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
-      const descriptionNote = descTag + (rewardList ? String.raw`\n\n${rewardList}` : '');
+      const descriptionNote = descTag;
 
       if (titleKey && contract.title) {
         rows.push({
