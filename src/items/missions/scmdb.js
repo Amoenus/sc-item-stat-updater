@@ -27,7 +27,10 @@ export default {
     const isTitle = /_title/i.test(targetKey);
     const noteText = isTitle ? row['TitleNote'] : row['Note'];
     const note = formatMissionNote(noteText, isTitle);
-    const rewardList = !isTitle && row['RewardList'] ? String.raw`\n\n${row['RewardList']}` : '';
+    const rewardListValue = !isTitle && row['RewardList'] ? row['RewardList'] : '';
+    const noteContainsRewardList =
+      !isTitle && typeof noteText === 'string' && rewardListValue && noteText.includes(rewardListValue);
+    const rewardList = rewardListValue && !noteContainsRewardList ? String.raw`\n\n${rewardListValue}` : '';
 
     if (oldValue) {
       if (isTitle) {
