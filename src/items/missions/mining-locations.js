@@ -1,9 +1,11 @@
 // @ts-check
 // @ts-check
-import { createRequire } from 'node:module';
+import { readJsonRelative } from '../../lib/io/json-file.js';
 
-const _require = createRequire(import.meta.url);
-const locationKeyMap = _require('./locationKeyMap.json');
+const locationKeyMap = await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map');
+const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
+const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
+const INI_NEWLINE = String.raw`\n`;
 
 // Roman numeral -> digit substitution (longest match first to avoid partial replacements)
 /** @type {Record<string, string>} */
@@ -19,8 +21,8 @@ const ROMAN_RE = /\b(VIII|VII|VI|IV|V|III|II|I)\b/g;
  */
 function toLocationSlug(name) {
   return name
-    .replace(ROMAN_RE, /** @param {string} m */ (m) => ROMAN_MAP[m])
-    .replace(/[\s\-_]+/g, '')
+    .replaceAll(ROMAN_RE, /** @param {string} m */ (m) => ROMAN_MAP[m])
+    .replaceAll(/[\s\-_]+/g, '')
     .toLowerCase();
 }
 
@@ -31,7 +33,8 @@ export default {
   // Optional columns (added by enriched scraper): 'Ground Vehicle Mineables', 'Quality Note'
   // Only update keys that already exist in the INI (planet/moon descs don't get new entries)
   noInsert: true,
-  descKeyMatch: (/** @type {string} */ kl) => /_desc$/i.test(kl) && !kl.startsWith('items_') && !kl.startsWith('journal_'),
+  descKeyMatch: (/** @type {string} */ kl) =>
+    /_desc$/i.test(kl) && !kl.startsWith('items_') && !kl.startsWith('journal_'),
 
   /**
    * Derives the target INI key(s) for a location row.
@@ -76,12 +79,12 @@ export default {
    * Builds the new INI value for a location description.
    *
    * @param {{'Location Name': string, 'Ship Mineables': string, 'Hand Mineables': string, 'Ground Vehicle Mineables'?: string, 'Quality Note'?: string}} row
-   * @param {string} flavorText - existing flavor text from INI (everything before first "Potential " section)
+   * @param {string} _flavorText - existing flavor text from INI (everything before first "Potential " section)
    * @param {string} oldValue - current INI value
    * @param {string} targetKey - the INI key being updated
    * @returns {string} new INI value with updated mineable sections
    */
-  buildValue(row, flavorText, oldValue, targetKey) {
+  buildValue(row, _flavorText, oldValue, targetKey) {
     // If we don't have a target key (not in our map), skip the update
     if (!targetKey) {
       return oldValue;
@@ -89,10 +92,9 @@ export default {
 
     // Extract flavor text: everything before the first "Potential " or "Quality Notes:" section
     const firstSectionIdx = Math.min(
-      ...[
-        oldValue.indexOf('\\n\\nPotential '),
-        oldValue.indexOf('\\n\\nQuality Notes:'),
-      ].filter((i) => i !== -1).concat([Infinity]),
+      ...[oldValue.indexOf(POTENTIAL_SECTION_MARKER), oldValue.indexOf(QUALITY_NOTES_MARKER)]
+        .filter((i) => i !== -1)
+        .concat([Infinity]),
     );
     const cleanFlavorText = firstSectionIdx === Infinity ? oldValue : oldValue.substring(0, firstSectionIdx);
 
@@ -100,8 +102,7 @@ export default {
     /** @type {Record<string, string>} */
     const sections = {};
     const potentialRegex = /\\n\\nPotential ([^:]+):\\n([\s\S]*?)(?=\\n\\nPotential |\\n\\nQuality Notes:|$)/g;
-    let match;
-    while ((match = potentialRegex.exec(oldValue)) !== null) {
+    for (let match = potentialRegex.exec(oldValue); match !== null; match = potentialRegex.exec(oldValue)) {
       const sectionName = match[1]; // e.g., "Ship Mineables"
       const sectionContent = match[2].trim();
       sections[sectionName] = sectionContent;
@@ -113,11 +114,11 @@ export default {
         .split(/\r?\n/)
         .map((item) => item.trim())
         .filter((item) => item.length > 0)
-        .join('\\n');
+        .join(INI_NEWLINE);
 
     // Update Ship Mineables from CSV (now weighted: "Mineral — XX.X%")
     const shipMineables = row['Ship Mineables'] || '';
-    if (shipMineables.trim() !== '') {
+    if (shipMineables.trim()) {
       sections['Ship Mineables'] = toIniLines(shipMineables);
     } else {
       delete sections['Ship Mineables'];
@@ -125,7 +126,7 @@ export default {
 
     // Update Hand Mineables from CSV (now weighted: "Mineral — XX.X%")
     const handMineables = row['Hand Mineables'] || '';
-    if (handMineables.trim() !== '') {
+    if (handMineables.trim()) {
       sections['Hand Mineables'] = toIniLines(handMineables);
     } else {
       delete sections['Hand Mineables'];
@@ -133,25 +134,19 @@ export default {
 
     // Update Ground Vehicle Mineables from CSV if the column is present
     const groundMineables = row['Ground Vehicle Mineables'] || '';
-    if (groundMineables.trim() !== '') {
+    if (groundMineables.trim()) {
       sections['Ground Vehicle Mineables'] = toIniLines(groundMineables);
     }
     // If the CSV column is absent or empty, preserve whatever was already in the INI (do nothing)
 
     // Define canonical section order
-    const sectionOrder = [
-      'Ship Mineables',
-      'Ground Vehicle Mineables',
-      'Hand Mineables',
-      'Harvestables',
-      'Creatures',
-    ];
+    const sectionOrder = ['Ship Mineables', 'Ground Vehicle Mineables', 'Hand Mineables', 'Harvestables', 'Creatures'];
 
     // Re-assemble Potential sections
     let result = cleanFlavorText;
     for (const sectionName of sectionOrder) {
       if (sections[sectionName] !== undefined && sections[sectionName].trim() !== '') {
-        result += `\\n\\nPotential ${sectionName}:\\n${sections[sectionName]}`;
+        result += String.raw`\n\nPotential ${sectionName}:\n${sections[sectionName]}`;
       }
     }
 
@@ -159,7 +154,7 @@ export default {
     const qualityNote = row['Quality Note'] || '';
     if (qualityNote.trim() !== '') {
       const noteLines = toIniLines(qualityNote);
-      result += `\\n\\nQuality Notes:\\n${noteLines}`;
+      result += String.raw`\n\nQuality Notes:\n${noteLines}`;
     }
 
     return result;

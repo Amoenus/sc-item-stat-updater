@@ -2,13 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
+import { regenMiningLocations } from './regen-mining-locations.js';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
-import { runMiningJournalUpdate } from '../src/lib/updates/mining-journal-update.js';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
 
@@ -25,6 +25,7 @@ const { values } = parseArgs({
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
     ptu: { type: 'boolean', default: false },
+    'include-mining-journal': { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -41,6 +42,7 @@ if (values.help) {
   );
   console.log('      --dry-run          Preview changes without writing');
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
+  console.log('      --include-mining-journal  Also update mining compendium journal entry');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
@@ -129,6 +131,18 @@ console.log(`  SPViewer: ${spviewerVersion}\n`);
 //   csvFile: 'missions/scmdb-missions.csv', commodities.js globs merged-*.json
 //   at the root level via resolveJsonFile).
 const missionCsvDir = csvDir;
+
+try {
+  logger.info('Regenerating mining-locations.csv', { missionCsvDir });
+  regenMiningLocations({
+    scmdbDir: missionCsvDir,
+    log: (message) => logger.debug(message),
+  });
+} catch (err) {
+  logger.error('Failed to regenerate mining-locations.csv', { error: err.message });
+  await shutdownLogger();
+  process.exit(1);
+}
 
 const spviewerConfigs = [...(await loadSpviewerConfigs()).values()];
 const missionConfigs = [...(await loadMissionConfigs()).values()].filter((c) => !c.skip);
@@ -238,18 +252,21 @@ try {
   errors.push({ label: 'Missile title tags', message: err.message });
 }
 
-try {
-  const miningJournalResult = await runMiningJournalUpdate({
-    iniPath,
-    missionCsvDir,
-    dryRun: options.dryRun,
-  });
-  if (miningJournalResult) {
-    results.push(miningJournalResult);
+if (values['include-mining-journal']) {
+  try {
+    const { runMiningJournalUpdate } = await import('../src/lib/updates/mining-journal-update.js');
+    const miningJournalResult = await runMiningJournalUpdate({
+      iniPath,
+      missionCsvDir,
+      dryRun: options.dryRun,
+    });
+    if (miningJournalResult) {
+      results.push(miningJournalResult);
+    }
+  } catch (err) {
+    logger.error('Failed to update Mining journal', { error: err.message });
+    errors.push({ label: 'Mining journal', message: err.message });
   }
-} catch (err) {
-  logger.error('Failed to update Mining journal', { error: err.message });
-  errors.push({ label: 'Mining journal', message: err.message });
 }
 
 try {
