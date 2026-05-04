@@ -1,9 +1,9 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { buildJournalValue } from '../../items/missions/mining-journal.js';
 import { parseCSV } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
-import { buildJournalValue } from '../../items/missions/mining-journal.js';
 
 const logger = getLogger('mining-journal-update');
 const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';

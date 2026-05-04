@@ -438,9 +438,13 @@ async function main() {
     writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
     writeOutput('mining_data.json', JSON.stringify(miningData, null, 2));
   }
-  if (craftingItemsData) writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
-  if (craftingBlueprintsData) writeOutput(`crafting_blueprints-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingBlueprintsData, null, 2));
-
+  if (craftingItemsData)
+    writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
+  if (craftingBlueprintsData)
+    writeOutput(
+      `crafting_blueprints-${selected.file.replace('merged-', '')}`,
+      JSON.stringify(craftingBlueprintsData, null, 2),
+    );
 
   if (rawOnly) {
     return;
@@ -573,14 +577,15 @@ async function main() {
       for (const group of loc.groups || []) {
         const isHand = group.groupName.includes('FPS');
         const isGround = group.groupName.includes('GroundVehicle');
-        const isShip = !isHand && !isGround && (
-          group.groupName.includes('SpaceShip') || group.groupName.includes('Ship')
-        );
+        const isShip =
+          !isHand && !isGround && (group.groupName.includes('SpaceShip') || group.groupName.includes('Ship'));
         if (!isHand && !isGround && !isShip) continue;
 
-        const target = isHand ? locationData[name].hand
-          : isGround ? locationData[name].ground
-          : locationData[name].ship;
+        const target = isHand
+          ? locationData[name].hand
+          : isGround
+            ? locationData[name].ground
+            : locationData[name].ship;
 
         const gp = group.groupProbability ?? 1;
         for (const dep of group.deposits || []) {
@@ -609,9 +614,16 @@ async function main() {
     }
     locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
     if (locRows.length) {
-      writeOutput('mining-locations.csv', toCsv(locRows, [
-        'Location Name', 'Ship Mineables', 'Hand Mineables', 'Ground Vehicle Mineables', 'Quality Note',
-      ]));
+      writeOutput(
+        'mining-locations.csv',
+        toCsv(locRows, [
+          'Location Name',
+          'Ship Mineables',
+          'Hand Mineables',
+          'Ground Vehicle Mineables',
+          'Quality Note',
+        ]),
+      );
     }
   }
 

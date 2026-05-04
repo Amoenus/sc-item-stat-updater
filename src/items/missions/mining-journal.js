@@ -25,8 +25,8 @@ export function buildJournalValue(rows, oldValue) {
       // Split element list by actual newlines from CSV, then trim
       const elements = elementList
         .split(/\r?\n/)
-        .map(elem => elem.trim())
-        .filter(elem => elem.length > 0);
+        .map((elem) => elem.trim())
+        .filter((elem) => elem.length > 0);
 
       if (elements.length > 0) {
         rarityGroups[rarityCategory] = elements;

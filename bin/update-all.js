@@ -2,7 +2,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { regenMiningLocations } from './regen-mining-locations.js';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
@@ -11,6 +10,7 @@ import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js'
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
+import { regenMiningLocations } from './regen-mining-locations.js';
 
 const logger = getLogger('update-all');
 

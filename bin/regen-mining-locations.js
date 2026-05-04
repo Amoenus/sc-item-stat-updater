@@ -8,7 +8,7 @@
  * Reads:  <scmdb-dir>/mining_data.json or csv/scmdb/<latest-version>/mining_data.json
  * Writes: <scmdb-dir>/mining-locations.csv
  */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -29,10 +29,7 @@ function toCsv(rows, headers) {
     if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
     return text;
   };
-  const lines = [
-    headers.map(escape).join(','),
-    ...rows.map((row) => headers.map((col) => escape(row[col])).join(',')),
-  ];
+  const lines = [headers.map(escape).join(','), ...rows.map((row) => headers.map((col) => escape(row[col])).join(','))];
   return `${lines.join('\n')}\n`;
 }
 
@@ -145,9 +142,8 @@ export function regenMiningLocations(options = {}) {
     for (const group of loc.groups || []) {
       const isHand = group.groupName.includes('FPS');
       const isGround = group.groupName.includes('GroundVehicle');
-      const isShip = !isHand && !isGround && (
-        group.groupName.includes('SpaceShip') || group.groupName.includes('Ship')
-      );
+      const isShip =
+        !isHand && !isGround && (group.groupName.includes('SpaceShip') || group.groupName.includes('Ship'));
       if (!isHand && !isGround && !isShip) continue;
 
       let target;
@@ -183,7 +179,11 @@ export function regenMiningLocations(options = {}) {
   locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
 
   const csvContent = toCsv(locRows, [
-    'Location Name', 'Ship Mineables', 'Hand Mineables', 'Ground Vehicle Mineables', 'Quality Note',
+    'Location Name',
+    'Ship Mineables',
+    'Hand Mineables',
+    'Ground Vehicle Mineables',
+    'Quality Note',
   ]);
 
   const outPath = join(outDir, 'mining-locations.csv');
@@ -240,9 +240,7 @@ export function runCli() {
   regenMiningLocations({ scmdbDir: values['scmdb-dir'] });
 }
 
-const isEntrypoint = process.argv[1]
-  ? pathToFileURL(resolve(process.argv[1])).href === import.meta.url
-  : false;
+const isEntrypoint = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href === import.meta.url : false;
 
 if (isEntrypoint) {
   runCli();
