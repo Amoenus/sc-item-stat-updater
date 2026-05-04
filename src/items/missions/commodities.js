@@ -1,6 +1,5 @@
 // @ts-check
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { findLatestMatchingFile } from '../../lib/io/discovery.js';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(
   [
@@ -22,20 +21,11 @@ const ILLEGAL_COMMODITY_KEYS = new Set(
  * @returns {Promise<string>} resolved absolute path to the json file
  */
 async function resolveJsonFile(csvDir) {
-  let entries;
-  try {
-    entries = await fs.readdir(csvDir);
-  } catch {
-    throw new Error(`Commodities: SCMDB directory not found: ${csvDir}`);
-  }
-
-  const candidates = entries.filter((name) => name.startsWith('merged-') && name.endsWith('.json')).sort();
-
-  if (candidates.length === 0) {
-    throw new Error(`Commodities: no merged-*.json found in ${csvDir}. Run scrape-scmdb.js first.`);
-  }
-
-  return path.join(csvDir, candidates[candidates.length - 1]);
+  return findLatestMatchingFile(csvDir, (name) => name.startsWith('merged-') && name.endsWith('.json'), {
+    label: 'Commodities SCMDB directory',
+    notFoundMessage: `Commodities: SCMDB directory not found: ${csvDir}`,
+    noMatchMessage: `Commodities: no merged-*.json found in ${csvDir}. Run scrape-scmdb.js first.`,
+  });
 }
 
 /** @type {import('../../lib/types.js').ItemConfig} */

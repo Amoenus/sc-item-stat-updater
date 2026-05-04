@@ -1,7 +1,7 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import { buildJournalValue } from '../../items/missions/mining-journal.js';
 import { readCsvFile } from '../io/csv-parser.js';
+import { pathExists } from '../io/discovery.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 
@@ -18,13 +18,8 @@ const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
 export async function runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun }) {
   const journalCsvPath = path.join(missionCsvDir, 'mining-journal.csv');
 
-  try {
-    await fs.access(journalCsvPath);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      return null;
-    }
-    throw err;
+  if (!(await pathExists(journalCsvPath))) {
+    return null;
   }
 
   const start = performance.now();
