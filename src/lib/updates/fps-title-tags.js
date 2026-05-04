@@ -1,6 +1,5 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseCSV } from '../io/csv-parser.js';
+import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 import {
@@ -82,20 +81,17 @@ function buildAttachmentTag(row) {
 async function buildFpsTitleLookup(spviewerDir) {
   const personalPath = path.join(spviewerDir, PERSONAL_CSV);
   const attachmentPath = path.join(spviewerDir, ATTACHMENT_CSV);
-  const [personalCsv, attachmentCsv] = await Promise.all([
-    fs.readFile(personalPath, 'utf-8'),
-    fs.readFile(attachmentPath, 'utf-8'),
-  ]);
+  const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
 
   const nameToTag = new Map();
 
-  for (const row of parseCSV(personalCsv)) {
+  for (const row of personalRows) {
     const name = normalizeSpaces(row.Name || '');
     if (!name) continue;
     nameToTag.set(name.toLowerCase(), { name, tag: buildPersonalTag(row) });
   }
 
-  for (const row of parseCSV(attachmentCsv)) {
+  for (const row of attachmentRows) {
     const name = normalizeSpaces(row.Name || '');
     if (!name) continue;
     nameToTag.set(name.toLowerCase(), { name, tag: buildAttachmentTag(row) });

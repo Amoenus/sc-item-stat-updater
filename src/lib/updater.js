@@ -2,8 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sanitizeIniValue } from './format/formatter.js';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
-import { parseCSV } from './io/csv-parser.js';
+import { readCsvFile } from './io/csv-parser.js';
 import { readIniFile, writeIniFile } from './io/ini-file.js';
+import { readJsonFile } from './io/json-file.js';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from './io/mapping-store.js';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
 import { getLogger } from './logger.js';
@@ -54,16 +55,10 @@ async function loadSourceData(config, csvDir) {
       : path.resolve(csvDir, config.jsonFile);
     const jsonPath = validateContainedPath(rawJsonPath, csvDir, 'JSON filename');
     logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
-    const jsonContent = await fs.readFile(jsonPath, 'utf-8');
-    let data;
-    try {
-      data = JSON.parse(jsonContent);
-    } catch (err) {
-      throw new Error(`Invalid JSON file: ${err.message}`);
-    }
+    const data = await readJsonFile(jsonPath);
     const rows = config.parseJson ? config.parseJson(data) : [];
     if (!Array.isArray(rows)) {
-      throw new Error(`JSON parser must return an array for ${config.label}`);
+      throw new TypeError(`JSON parser must return an array for ${config.label}`);
     }
     logger.debug('Parsed JSON rows', { count: rows.length, label: config.label });
 
@@ -79,8 +74,7 @@ async function loadSourceData(config, csvDir) {
 
   const csvPath = validateContainedPath(path.resolve(csvDir, config.csvFile), csvDir, 'CSV filename');
   logger.debug('Reading CSV file', { file: csvPath, label: config.label });
-  const csvContent = await fs.readFile(csvPath, 'utf-8');
-  const rows = parseCSV(csvContent);
+  const rows = await readCsvFile(csvPath);
   logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
 
   if (config.requiredColumns && rows.length > 0) {
