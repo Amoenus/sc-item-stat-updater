@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { buildJournalValue } from '../../items/missions/mining-journal.js';
-import { parseCSV } from '../io/csv-parser.js';
+import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 
@@ -28,8 +28,7 @@ export async function runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun })
   }
 
   const start = performance.now();
-  const journalCsvText = await fs.readFile(journalCsvPath, 'utf-8');
-  const journalRows = parseCSV(journalCsvText);
+  const journalRows = await readCsvFile(journalCsvPath);
   const iniData = await Promise.resolve(readIniFile(iniPath));
   const { lines: journalLines, index: journalIdx } = iniData;
   const matchKey = Object.keys(journalIdx).find((key) => key.toLowerCase() === JOURNAL_KEY.toLowerCase());

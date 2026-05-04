@@ -1,7 +1,7 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseCSV } from '../io/csv-parser.js';
+import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { readJsonFile } from '../io/json-file.js';
 import { getLogger } from '../logger.js';
 import { normalizeSpaces } from './title-tag-utils.js';
 
@@ -20,12 +20,10 @@ async function buildMissileSignalLookup(spviewerDir, repoRoot) {
   const missileCsvPath = path.join(spviewerDir, 'missile.spviewer.csv');
   const mappingPath = path.join(repoRoot, 'mappings', 'missile.spviewer.json');
 
-  const [missileCsvText, mappingText] = await Promise.all([
-    fs.readFile(missileCsvPath, 'utf-8'),
-    fs.readFile(mappingPath, 'utf-8'),
+  const [rows, mappingData] = await Promise.all([
+    readCsvFile(missileCsvPath),
+    readJsonFile(mappingPath, 'missile mapping JSON'),
   ]);
-
-  const rows = parseCSV(missileCsvText);
   /** @type {Map<string, string>} */
   const nameToTag = new Map();
   for (const row of rows) {
@@ -35,18 +33,9 @@ async function buildMissileSignalLookup(spviewerDir, repoRoot) {
     if (!name || !tag) continue;
     nameToTag.set(name, tag);
   }
-
-  /** @type {Record<string, string>} */
-  let mappingData = {};
-  try {
-    mappingData = JSON.parse(mappingText);
-  } catch (err) {
-    throw new Error(`Invalid missile mapping JSON: ${err.message}`);
-  }
-
   /** @type {Map<string, string>} */
   const keyToTag = new Map();
-  for (const [name, locKey] of Object.entries(mappingData)) {
+  for (const [name, locKey] of Object.entries(/** @type {Record<string, string>} */ (mappingData))) {
     const tag = nameToTag.get(name);
     if (!tag) continue;
     keyToTag.set(locKey.toLowerCase(), tag);
