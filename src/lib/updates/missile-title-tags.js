@@ -3,6 +3,7 @@ import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { readJsonFile } from '../io/json-file.js';
 import { getLogger } from '../logger.js';
+import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils.js';
 import { normalizeSpaces } from './title-tag-utils.js';
 
 const logger = getLogger('missile-title-tags-update');
@@ -24,22 +25,18 @@ async function buildMissileSignalLookup(spviewerDir, repoRoot) {
     readCsvFile(missileCsvPath),
     readJsonFile(mappingPath, 'missile mapping JSON'),
   ]);
-  /** @type {Map<string, string>} */
-  const nameToTag = new Map();
-  for (const row of rows) {
+  const nameToTag = buildLookupMapFromRows(rows, (row) => {
     const name = normalizeSpaces(row.Name || '');
     const signal = normalizeSpaces(row['Tracking Signal'] || '');
     const tag = MISSILE_SIGNAL_TAG[signal];
-    if (!name || !tag) continue;
-    nameToTag.set(name, tag);
-  }
-  /** @type {Map<string, string>} */
-  const keyToTag = new Map();
-  for (const [name, locKey] of Object.entries(/** @type {Record<string, string>} */ (mappingData))) {
-    const tag = nameToTag.get(name);
-    if (!tag) continue;
-    keyToTag.set(locKey.toLowerCase(), tag);
-  }
+    if (!name || !tag) return null;
+    return [name, tag];
+  });
+  const keyToTag = buildMappedKeyLookup(
+    /** @type {Record<string, string>} */ (mappingData),
+    nameToTag,
+    (localizationKey) => localizationKey.toLowerCase(),
+  );
 
   return { keyToTag, nameCount: nameToTag.size };
 }

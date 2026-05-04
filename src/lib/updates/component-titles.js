@@ -1,8 +1,7 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
+import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -31,27 +30,22 @@ function getMiningPrefix(cls, size, grade) {
 }
 
 async function buildMiningTitleLookup(spviewerDir) {
-  const files = (await fs.readdir(spviewerDir)).filter((name) => name.endsWith('.spviewer.csv')).sort();
-  const nameToPrefix = new Map();
-
-  for (const filename of files) {
-    const filePath = path.join(spviewerDir, filename);
+  const files = await listSpviewerCsvFiles(spviewerDir);
+  const nameToPrefix = await buildLookupFromCsvFiles(spviewerDir, files, async (filePath) => {
     const rows = await readCsvFile(filePath);
-
-    for (const row of rows) {
-      const name = normalizeSpaces(row.Name || '');
-      if (!name) continue;
-      const cls = (row.Class || '').trim();
-      const size = (row.Size || '').trim();
-      const grade = (row.Grade || '').trim();
-      const prefix = getMiningPrefix(cls, size, grade);
-      if (!prefix) continue;
-      nameToPrefix.set(name.toLowerCase(), {
-        name,
-        prefix,
-      });
-    }
-  }
+    return rows
+      .map((row) => {
+        const name = normalizeSpaces(row.Name || '');
+        if (!name) return null;
+        const cls = (row.Class || '').trim();
+        const size = (row.Size || '').trim();
+        const grade = (row.Grade || '').trim();
+        const prefix = getMiningPrefix(cls, size, grade);
+        if (!prefix) return null;
+        return [name.toLowerCase(), { name, prefix }];
+      })
+      .filter(Boolean);
+  });
 
   return { files, nameToPrefix };
 }
