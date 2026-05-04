@@ -7,8 +7,9 @@ import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
-import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
+import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
 import { runMiningJournalUpdate } from '../src/lib/updates/mining-journal-update.js';
+import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
 
 const logger = getLogger('update-all');
@@ -196,6 +197,25 @@ try {
 } catch (err) {
   logger.error('Failed to update component titles', { error: err.message });
   errors.push({ label: 'Component Titles', message: err.message });
+}
+
+try {
+  logger.info('Starting FPS title tag update');
+  const fpsTagResult = await runFpsTitleTagUpdate({
+    iniPath,
+    spviewerDir: spviewerVersionDir,
+    dryRun: options.dryRun,
+  });
+  results.push(fpsTagResult);
+  logger.info('FPS title tag update complete', {
+    updatedCount: fpsTagResult.updatedCount,
+    matchedCount: fpsTagResult.matchedCount,
+    scannedCount: fpsTagResult.scannedCount,
+    dryRun: options.dryRun,
+  });
+} catch (err) {
+  logger.error('Failed to update FPS title tags', { error: err.message });
+  errors.push({ label: 'FPS title tags', message: err.message });
 }
 
 try {
