@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseCSV } from '../io/csv-parser.js';
+import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 import {
@@ -36,8 +36,7 @@ async function buildMiningTitleLookup(spviewerDir) {
 
   for (const filename of files) {
     const filePath = path.join(spviewerDir, filename);
-    const csvText = await fs.readFile(filePath, 'utf-8');
-    const rows = parseCSV(csvText);
+    const rows = await readCsvFile(filePath);
 
     for (const row of rows) {
       const name = normalizeSpaces(row.Name || '');

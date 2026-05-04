@@ -2862,7 +2862,9 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": ["Pyro"],
+            "locations": [
+              "Pyro"
+            ],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -2891,7 +2893,9 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": ["Pyro"],
+            "locations": [
+              "Pyro"
+            ],
             "distribution": {
               "min": 201,
               "max": 1000,
@@ -2912,7 +2916,9 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": ["Pyro"],
+            "locations": [
+              "Pyro"
+            ],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -2933,7 +2939,9 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": ["Pyro"],
+            "locations": [
+              "Pyro"
+            ],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -2955,7 +2963,9 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -2976,7 +2986,9 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -2997,7 +3009,9 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3008,7 +3022,9 @@
           ],
           "rcd": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3017,7 +3033,10 @@
               }
             },
             {
-              "locations": ["Breaker Stations Interior", "Breaker Stations Large Geode"],
+              "locations": [
+                "Breaker Stations Interior",
+                "Breaker Stations Large Geode"
+              ],
               "distribution": {
                 "min": 651,
                 "max": 1000,
@@ -3038,7 +3057,9 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3059,7 +3080,9 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3070,7 +3093,9 @@
           ],
           "torite": [
             {
-              "locations": ["Pyro"],
+              "locations": [
+                "Pyro"
+              ],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3079,7 +3104,10 @@
               }
             },
             {
-              "locations": ["Breaker Stations Interior", "Breaker Stations Large Geode"],
+              "locations": [
+                "Breaker Stations Interior",
+                "Breaker Stations Large Geode"
+              ],
               "distribution": {
                 "min": 651,
                 "max": 1000,
@@ -3088,7 +3116,10 @@
               }
             },
             {
-              "locations": ["Breaker Stations Interior", "Breaker Stations Large Geode"],
+              "locations": [
+                "Breaker Stations Interior",
+                "Breaker Stations Large Geode"
+              ],
               "distribution": {
                 "min": 651,
                 "max": 1000,
