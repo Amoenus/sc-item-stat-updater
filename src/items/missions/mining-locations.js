@@ -28,6 +28,7 @@ export default {
   csvFile: 'mining-locations.csv',
   label: 'Mining locations',
   requiredColumns: ['Location Name', 'Ship Mineables', 'Hand Mineables'],
+  // Optional columns (added by enriched scraper): 'Ground Vehicle Mineables', 'Quality Note'
   // Only update keys that already exist in the INI (planet/moon descs don't get new entries)
   noInsert: true,
   descKeyMatch: (/** @type {string} */ kl) => /_desc$/i.test(kl) && !kl.startsWith('items_') && !kl.startsWith('journal_'),
@@ -74,7 +75,7 @@ export default {
   /**
    * Builds the new INI value for a location description.
    *
-   * @param {{'Location Name': string, 'Ship Mineables': string, 'Hand Mineables': string}} row
+   * @param {{'Location Name': string, 'Ship Mineables': string, 'Hand Mineables': string, 'Ground Vehicle Mineables'?: string, 'Quality Note'?: string}} row
    * @param {string} flavorText - existing flavor text from INI (everything before first "Potential " section)
    * @param {string} oldValue - current INI value
    * @param {string} targetKey - the INI key being updated
@@ -86,17 +87,19 @@ export default {
       return oldValue;
     }
 
-    // Extract flavor text: everything before the first "Potential " section heading
-    const potentialIndex = oldValue.indexOf('\\n\\nPotential ');
-    let cleanFlavorText = oldValue;
-    if (potentialIndex !== -1) {
-      cleanFlavorText = oldValue.substring(0, potentialIndex);
-    }
+    // Extract flavor text: everything before the first "Potential " or "Quality Notes:" section
+    const firstSectionIdx = Math.min(
+      ...[
+        oldValue.indexOf('\\n\\nPotential '),
+        oldValue.indexOf('\\n\\nQuality Notes:'),
+      ].filter((i) => i !== -1).concat([Infinity]),
+    );
+    const cleanFlavorText = firstSectionIdx === Infinity ? oldValue : oldValue.substring(0, firstSectionIdx);
 
     // Parse existing "Potential X:" sections into a dict
     /** @type {Record<string, string>} */
     const sections = {};
-    const potentialRegex = /\\n\\nPotential ([^:]+):\\n([\s\S]*?)(?=\\n\\nPotential |$)/g;
+    const potentialRegex = /\\n\\nPotential ([^:]+):\\n([\s\S]*?)(?=\\n\\nPotential |\\n\\nQuality Notes:|$)/g;
     let match;
     while ((match = potentialRegex.exec(oldValue)) !== null) {
       const sectionName = match[1]; // e.g., "Ship Mineables"
@@ -104,36 +107,36 @@ export default {
       sections[sectionName] = sectionContent;
     }
 
-    // Get CSV values
-    const shipMineables = row['Ship Mineables'] || '';
-    const handMineables = row['Hand Mineables'] || '';
-
-    // Update sections
-    if (shipMineables.trim() !== '') {
-      // Split on actual newlines from CSV, join with literal \n for INI
-      const shipList = shipMineables
+    // Helper: parse a CSV cell (real newlines) into an INI-escaped line string
+    const toIniLines = (/** @type {string} */ csvCell) =>
+      csvCell
         .split(/\r?\n/)
-        .map(item => item.trim())
-        .filter(item => item.length > 0)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
         .join('\\n');
-      sections['Ship Mineables'] = shipList;
+
+    // Update Ship Mineables from CSV (now weighted: "Mineral — XX.X%")
+    const shipMineables = row['Ship Mineables'] || '';
+    if (shipMineables.trim() !== '') {
+      sections['Ship Mineables'] = toIniLines(shipMineables);
     } else {
-      // Remove section if empty in CSV
       delete sections['Ship Mineables'];
     }
 
+    // Update Hand Mineables from CSV (now weighted: "Mineral — XX.X%")
+    const handMineables = row['Hand Mineables'] || '';
     if (handMineables.trim() !== '') {
-      const handList = handMineables
-        .split(/\r?\n/)
-        .map(item => item.trim())
-        .filter(item => item.length > 0)
-        .join('\\n');
-      sections['Hand Mineables'] = handList;
+      sections['Hand Mineables'] = toIniLines(handMineables);
     } else {
       delete sections['Hand Mineables'];
     }
 
-    // Note: We do not modify Ground Vehicle Mineables, Harvestables, Creatures
+    // Update Ground Vehicle Mineables from CSV if the column is present
+    const groundMineables = row['Ground Vehicle Mineables'] || '';
+    if (groundMineables.trim() !== '') {
+      sections['Ground Vehicle Mineables'] = toIniLines(groundMineables);
+    }
+    // If the CSV column is absent or empty, preserve whatever was already in the INI (do nothing)
 
     // Define canonical section order
     const sectionOrder = [
@@ -141,19 +144,22 @@ export default {
       'Ground Vehicle Mineables',
       'Hand Mineables',
       'Harvestables',
-      'Creatures'
+      'Creatures',
     ];
 
-    // Re-assemble
+    // Re-assemble Potential sections
     let result = cleanFlavorText;
-
     for (const sectionName of sectionOrder) {
-      if (sections[sectionName] !== undefined) {
-        const content = sections[sectionName];
-        if (content.trim() !== '') {
-          result += `\\n\\nPotential ${sectionName}:\\n${content}`;
-        }
+      if (sections[sectionName] !== undefined && sections[sectionName].trim() !== '') {
+        result += `\\n\\nPotential ${sectionName}:\\n${sections[sectionName]}`;
       }
+    }
+
+    // Append Quality Notes section if the CSV provides one (idempotent: old value already stripped above)
+    const qualityNote = row['Quality Note'] || '';
+    if (qualityNote.trim() !== '') {
+      const noteLines = toIniLines(qualityNote);
+      result += `\\n\\nQuality Notes:\\n${noteLines}`;
     }
 
     return result;

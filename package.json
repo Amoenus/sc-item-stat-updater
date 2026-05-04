@@ -5,6 +5,7 @@
   "scripts": {
     "update": "node bin/update-all.js",
     "scrape:scmdb": "node bin/scrape-scmdb.js",
+    "regen:mining-locations": "node bin/regen-mining-locations.js",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
