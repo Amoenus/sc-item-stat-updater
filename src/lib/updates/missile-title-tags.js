@@ -1,7 +1,7 @@
-import path from 'node:path';
 import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
 import { readJsonFile } from '../io/json-file.js';
+import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils.js';
 import { normalizeSpaces } from './title-tag-utils.js';
@@ -18,8 +18,8 @@ const MISSILE_KEY_PATTERN = /^(item_nameg?misl_.*?)(_short)?$/i;
 const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
 
 async function buildMissileSignalLookup(spviewerDir, repoRoot) {
-  const missileCsvPath = path.join(spviewerDir, 'missile.spviewer.csv');
-  const mappingPath = path.join(repoRoot, 'mappings', 'missile.spviewer.json');
+  const missileCsvPath = resolveSpviewerCsvPath(spviewerDir, 'missile.spviewer.csv');
+  const mappingPath = resolveMappingJsonPath(repoRoot, 'missile.spviewer.json');
 
   const [rows, mappingData] = await Promise.all([
     readCsvFile(missileCsvPath),

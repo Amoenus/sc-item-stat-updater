@@ -1,5 +1,5 @@
-import path from 'node:path';
 import { listMatchingFiles } from '../io/discovery.js';
+import { resolveChildPath } from '../io/path-conventions.js';
 
 /**
  * Returns sorted SPViewer CSV filenames from a directory.
@@ -68,7 +68,7 @@ export function buildMappedKeyLookup(nameToLocalizationKey, nameLookup, normaliz
 export async function buildLookupFromCsvFiles(baseDir, filenames, loadEntries) {
   const lookup = new Map();
   for (const filename of filenames) {
-    const filePath = path.join(baseDir, filename);
+    const filePath = resolveChildPath(baseDir, filename, 'SPViewer lookup CSV filename');
     const entries = await loadEntries(filePath, filename);
     for (const [key, value] of entries) {
       lookup.set(key, value);
