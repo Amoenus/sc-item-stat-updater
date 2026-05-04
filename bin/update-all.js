@@ -3,10 +3,13 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
-import { parseCSV } from '../src/lib/io/csv-parser.js';
-import { backupIniFile, readIniFile, writeIniFile } from '../src/lib/io/ini-file.js';
+import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
+import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
+import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
+import { runMiningJournalUpdate } from '../src/lib/updates/mining-journal-update.js';
+import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
 
 const logger = getLogger('update-all');
 
@@ -85,134 +88,6 @@ async function resolveLatestVersionDir(base, ptu, source, scraper) {
 
   // Use the last (latest) matching directory.
   return path.join(base, dirs[dirs.length - 1]);
-}
-
-const MINING_CLASS_ABBREV = {
-  Stealth: 'Sth',
-  Industrial: 'Ind',
-  Civilian: 'Civ',
-  Competition: 'Cmp',
-  Military: 'Mil',
-};
-
-const COMPONENT_NAME_LINE_PATTERN = /^(item_name_?.*?)=(.*)$/i;
-const PREFIXED_COMPONENT_NAME_PATTERN = /^\S+\s+(.+)$/u;
-
-function normalizeSpaces(value) {
-  return String(value || '')
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
-}
-
-function getMiningPrefix(cls, size, grade) {
-  const abbr = MINING_CLASS_ABBREV[cls] || (cls ? cls.slice(0, 3) : '???');
-  return `${abbr}/${size}/${grade}`;
-}
-
-async function buildMiningTitleLookup(spviewerDir) {
-  const files = (await fs.readdir(spviewerDir)).filter((name) => name.endsWith('.spviewer.csv')).sort();
-  const nameToPrefix = new Map();
-
-  for (const filename of files) {
-    const filePath = path.join(spviewerDir, filename);
-    const csvText = await fs.readFile(filePath, 'utf-8');
-    const rows = parseCSV(csvText);
-
-    for (const row of rows) {
-      const name = normalizeSpaces(row.Name || '');
-      if (!name) continue;
-      const cls = (row.Class || '').trim();
-      const size = (row.Size || '').trim();
-      const grade = (row.Grade || '').trim();
-      nameToPrefix.set(name.toLowerCase(), {
-        name,
-        prefix: getMiningPrefix(cls, size, grade),
-      });
-    }
-  }
-
-  return { files, nameToPrefix };
-}
-
-function resolveBaseName(currentValue, nameToPrefix) {
-  const normalized = normalizeSpaces(currentValue);
-  if (!normalized) return null;
-
-  const exact = nameToPrefix.get(normalized.toLowerCase());
-  if (exact) return exact;
-
-  const prefixed = PREFIXED_COMPONENT_NAME_PATTERN.exec(normalized);
-  if (prefixed) {
-    const base = nameToPrefix.get(prefixed[1].toLowerCase());
-    if (base) return base;
-  }
-
-  return null;
-}
-
-function applyMiningTitlePrefixes(lines, nameToPrefix) {
-  const updatedLines = [];
-  let scannedCount = 0;
-  let matchedCount = 0;
-  let updatedCount = 0;
-
-  for (const line of lines) {
-    const match = COMPONENT_NAME_LINE_PATTERN.exec(line);
-    if (!match) {
-      updatedLines.push(line);
-      continue;
-    }
-
-    scannedCount++;
-    const key = match[1];
-    const currentValue = match[2];
-    const base = resolveBaseName(currentValue, nameToPrefix);
-
-    if (!base) {
-      updatedLines.push(line);
-      continue;
-    }
-
-    matchedCount++;
-    const newValue = `${base.prefix} ${base.name}`;
-    if (newValue === currentValue) {
-      updatedLines.push(line);
-      continue;
-    }
-
-    updatedLines.push(`${key}=${newValue}`);
-    updatedCount++;
-  }
-
-  return { updatedLines, scannedCount, matchedCount, updatedCount };
-}
-
-async function runMiningTitleUpdate(iniPath, spviewerDir, dryRun) {
-  const { files, nameToPrefix } = await buildMiningTitleLookup(spviewerDir);
-
-  logger.info('Loaded mining title lookup data', {
-    csvFileCount: files.length,
-    componentCount: nameToPrefix.size,
-  });
-
-  const iniText = await fs.readFile(iniPath, 'utf-8');
-  const lines = iniText.replace(/^\ufeff/, '').split(/\r?\n/);
-  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMiningTitlePrefixes(lines, nameToPrefix);
-
-  if (!dryRun && updatedCount > 0) {
-    await writeIniFile(iniPath, updatedLines, { skipBackup: true });
-  }
-
-  const durationMs = 0;
-  return {
-    label: 'Component Titles',
-    updatedCount,
-    matchedCount,
-    scannedCount,
-    issues: [],
-    summary: `Component Titles: Updated ${updatedCount}, Matched ${matchedCount}, Scanned ${scannedCount}${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
 }
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
@@ -306,16 +181,16 @@ bar.stop();
 
 try {
   logger.info('Starting component title update');
-  const miningStart = performance.now();
-  const miningResult = await runMiningTitleUpdate(iniPath, spviewerVersionDir, options.dryRun);
-  const miningDuration = Math.round(performance.now() - miningStart);
-  miningResult.summary = `Component Titles: Updated ${miningResult.updatedCount}, Matched ${miningResult.matchedCount}, Scanned ${miningResult.scannedCount}${options.dryRun ? ' (dry run)' : ''} [${miningDuration}ms]`;
+  const miningResult = await runComponentTitleUpdate({
+    iniPath,
+    spviewerDir: spviewerVersionDir,
+    dryRun: options.dryRun,
+  });
   results.push(miningResult);
   logger.info('Component title update complete', {
     updatedCount: miningResult.updatedCount,
     matchedCount: miningResult.matchedCount,
     scannedCount: miningResult.scannedCount,
-    durationMs: miningDuration,
     dryRun: options.dryRun,
   });
 } catch (err) {
@@ -323,44 +198,49 @@ try {
   errors.push({ label: 'Component Titles', message: err.message });
 }
 
-// === Mining Journal (single-key full-rewrite, handled outside the standard loop) ===
 try {
-  const journalCsvPath = path.join(missionCsvDir, 'mining-journal.csv');
-  await fs.access(journalCsvPath);
-  const { buildJournalValue } = await import('../src/items/missions/mining-journal.js');
-  const journalStart = performance.now();
-  const journalCsvText = await fs.readFile(journalCsvPath, 'utf-8');
-  const journalRows = parseCSV(journalCsvText);
-  const { lines: journalLines, index: journalIdx } = await readIniFile(iniPath);
-  const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
-  const matchKey = Object.keys(journalIdx).find(
-    (k) => k.toLowerCase() === JOURNAL_KEY.toLowerCase(),
-  );
-  if (matchKey !== undefined) {
-    const oldLine = journalLines[journalIdx[matchKey]];
-    const eqIdx = oldLine.indexOf('=');
-    const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-    const newValue = buildJournalValue(journalRows, oldValue);
-    const journalDuration = Math.round(performance.now() - journalStart);
-    const updated = newValue !== oldValue;
-    if (updated && !options.dryRun) {
-      journalLines[journalIdx[matchKey]] = `${matchKey}=${newValue}`;
-      await writeIniFile(iniPath, journalLines, { skipBackup: true });
-    }
-    results.push({
-      label: 'Mining journal',
-      issues: [],
-      summary: `Mining journal: Updated ${updated ? 1 : 0}, Matched 1 [${journalDuration}ms]`,
-    });
-    logger.info('Mining journal update complete', { updated, durationMs: journalDuration });
-  } else {
-    logger.warn('Mining journal: key not found in INI', { key: JOURNAL_KEY });
+  logger.info('Starting missile title tag update');
+  const missileTagResult = await runMissileTitleTagUpdate({
+    iniPath,
+    spviewerDir: spviewerVersionDir,
+    repoRoot,
+    dryRun: options.dryRun,
+  });
+  results.push(missileTagResult);
+  logger.info('Missile title tag update complete', {
+    updatedCount: missileTagResult.updatedCount,
+    matchedCount: missileTagResult.matchedCount,
+    scannedCount: missileTagResult.scannedCount,
+    dryRun: options.dryRun,
+  });
+} catch (err) {
+  logger.error('Failed to update missile title tags', { error: err.message });
+  errors.push({ label: 'Missile title tags', message: err.message });
+}
+
+try {
+  const miningJournalResult = await runMiningJournalUpdate({
+    iniPath,
+    missionCsvDir,
+    dryRun: options.dryRun,
+  });
+  if (miningJournalResult) {
+    results.push(miningJournalResult);
   }
 } catch (err) {
-  if (err.code !== 'ENOENT') {
-    logger.error('Failed to update Mining journal', { error: err.message });
-    errors.push({ label: 'Mining journal', message: err.message });
-  }
+  logger.error('Failed to update Mining journal', { error: err.message });
+  errors.push({ label: 'Mining journal', message: err.message });
+}
+
+try {
+  const rawCommodityLabelResult = await runRawCommodityLabelFixUpdate({
+    iniPath,
+    dryRun: options.dryRun,
+  });
+  results.push(rawCommodityLabelResult);
+} catch (err) {
+  logger.error('Failed to apply raw commodity label fixes', { error: err.message });
+  errors.push({ label: 'Raw commodity labels', message: err.message });
 }
 
 const totalDuration = Math.round(performance.now() - totalStart);
