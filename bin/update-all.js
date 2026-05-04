@@ -4,7 +4,7 @@ import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { parseCSV } from '../src/lib/io/csv-parser.js';
-import { backupIniFile, writeIniFile } from '../src/lib/io/ini-file.js';
+import { backupIniFile, readIniFile, writeIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 
@@ -255,7 +255,7 @@ console.log(`  SPViewer: ${spviewerVersion}\n`);
 const missionCsvDir = csvDir;
 
 const spviewerConfigs = [...(await loadSpviewerConfigs()).values()];
-const missionConfigs = [...(await loadMissionConfigs()).values()];
+const missionConfigs = [...(await loadMissionConfigs()).values()].filter((c) => !c.skip);
 
 // Tag each config with the csvDir it should use.
 const categories = [
@@ -321,6 +321,46 @@ try {
 } catch (err) {
   logger.error('Failed to update component titles', { error: err.message });
   errors.push({ label: 'Component Titles', message: err.message });
+}
+
+// === Mining Journal (single-key full-rewrite, handled outside the standard loop) ===
+try {
+  const journalCsvPath = path.join(missionCsvDir, 'mining-journal.csv');
+  await fs.access(journalCsvPath);
+  const { buildJournalValue } = await import('../src/items/missions/mining-journal.js');
+  const journalStart = performance.now();
+  const journalCsvText = await fs.readFile(journalCsvPath, 'utf-8');
+  const journalRows = parseCSV(journalCsvText);
+  const { lines: journalLines, index: journalIdx } = await readIniFile(iniPath);
+  const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
+  const matchKey = Object.keys(journalIdx).find(
+    (k) => k.toLowerCase() === JOURNAL_KEY.toLowerCase(),
+  );
+  if (matchKey !== undefined) {
+    const oldLine = journalLines[journalIdx[matchKey]];
+    const eqIdx = oldLine.indexOf('=');
+    const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
+    const newValue = buildJournalValue(journalRows, oldValue);
+    const journalDuration = Math.round(performance.now() - journalStart);
+    const updated = newValue !== oldValue;
+    if (updated && !options.dryRun) {
+      journalLines[journalIdx[matchKey]] = `${matchKey}=${newValue}`;
+      await writeIniFile(iniPath, journalLines, { skipBackup: true });
+    }
+    results.push({
+      label: 'Mining journal',
+      issues: [],
+      summary: `Mining journal: Updated ${updated ? 1 : 0}, Matched 1 [${journalDuration}ms]`,
+    });
+    logger.info('Mining journal update complete', { updated, durationMs: journalDuration });
+  } else {
+    logger.warn('Mining journal: key not found in INI', { key: JOURNAL_KEY });
+  }
+} catch (err) {
+  if (err.code !== 'ENOENT') {
+    logger.error('Failed to update Mining journal', { error: err.message });
+    errors.push({ label: 'Mining journal', message: err.message });
+  }
 }
 
 const totalDuration = Math.round(performance.now() - totalStart);

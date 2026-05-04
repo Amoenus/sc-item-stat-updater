@@ -348,15 +348,13 @@ async function main() {
   const craftingItemsData = await fetchJson(craftingItemsUrl).catch(() => null);
   const craftingBlueprintsData = await fetchJson(craftingBlueprintsUrl).catch(() => null);
 
-  if (miningData)
+  if (miningData) {
     writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
-  if (craftingItemsData)
-    writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
-  if (craftingBlueprintsData)
-    writeOutput(
-      `crafting_blueprints-${selected.file.replace('merged-', '')}`,
-      JSON.stringify(craftingBlueprintsData, null, 2),
-    );
+    writeOutput('mining_data.json', JSON.stringify(miningData, null, 2));
+  }
+  if (craftingItemsData) writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
+  if (craftingBlueprintsData) writeOutput(`crafting_blueprints-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingBlueprintsData, null, 2));
+
 
   if (rawOnly) {
     return;
