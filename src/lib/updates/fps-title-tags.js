@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { readCsvFile } from '../io/csv-parser.js';
 import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { resolveSpviewerCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows } from './lookup-utils.js';
 import {
@@ -80,8 +80,8 @@ function buildAttachmentTag(row) {
 }
 
 async function buildFpsTitleLookup(spviewerDir) {
-  const personalPath = path.join(spviewerDir, PERSONAL_CSV);
-  const attachmentPath = path.join(spviewerDir, ATTACHMENT_CSV);
+  const personalPath = resolveSpviewerCsvPath(spviewerDir, PERSONAL_CSV);
+  const attachmentPath = resolveSpviewerCsvPath(spviewerDir, ATTACHMENT_CSV);
   const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
 
   const nameToTag = buildLookupMapFromRows(personalRows, (row) => {
