@@ -1,8 +1,9 @@
 import { readCsvFile } from '../io/csv-parser.js';
-import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { resolveSpviewerCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows } from './lookup-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -175,21 +176,19 @@ export async function runFpsTitleTagUpdate({ iniPath, spviewerDir, dryRun }) {
     titleCount: nameToTag.size,
   });
 
-  const iniData = await Promise.resolve(readIniFile(iniPath));
+  const iniData = await readIniFile(iniPath);
   const { lines } = iniData;
   const { updatedLines, scannedCount, matchedCount, updatedCount } = applyFpsTitleTags(lines, nameToTag);
 
-  if (!dryRun && updatedCount > 0) {
-    await writeIniFile(iniPath, updatedLines, { skipBackup: true });
-  }
+  await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
-  return {
+  return buildScannedUpdateResult({
     label: 'FPS title tags',
     updatedCount,
     matchedCount,
     scannedCount,
-    issues: [],
-    summary: `FPS title tags: Updated ${updatedCount}, Matched ${matchedCount}, Scanned ${scannedCount}${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
+    dryRun,
+    durationMs,
+  });
 }

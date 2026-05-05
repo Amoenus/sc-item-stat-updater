@@ -55,6 +55,28 @@ export async function readIniFile(filePath) {
   return { lines, index, duplicates };
 }
 
+/**
+ * Finds a localization key in an INI index using case-insensitive matching.
+ *
+ * @param {Record<string, number>} index
+ * @param {string} targetKey
+ * @returns {string | undefined}
+ */
+export function findIniKey(index, targetKey) {
+  if (targetKey in index) {
+    return targetKey;
+  }
+
+  const targetLower = targetKey.toLowerCase();
+  for (const key of Object.keys(index)) {
+    if (key.toLowerCase() === targetLower) {
+      return key;
+    }
+  }
+
+  return undefined;
+}
+
 const MAX_BACKUPS = 3;
 
 export async function backupIniFile(filePath) {
@@ -96,4 +118,25 @@ export async function writeIniFile(filePath, lines, { skipBackup = false } = {})
       throw err;
     }
   }
+}
+
+/**
+ * Writes INI lines only when there are changes to persist.
+ *
+ * @param {string} filePath
+ * @param {string[]} lines
+ * @param {object} [options]
+ * @param {number} [options.updatedCount]
+ * @param {boolean} [options.dryRun]
+ * @param {boolean} [options.skipBackup]
+ * @returns {Promise<boolean>} true when a write was performed
+ */
+export async function writeIniFileIfChanged(filePath, lines, options = {}) {
+  const { updatedCount = 0, dryRun = false, skipBackup = true } = options;
+  if (dryRun || updatedCount <= 0) {
+    return false;
+  }
+
+  await writeIniFile(filePath, lines, { skipBackup });
+  return true;
 }

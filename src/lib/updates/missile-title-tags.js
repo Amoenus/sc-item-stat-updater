@@ -1,10 +1,11 @@
 import { readCsvFile } from '../io/csv-parser.js';
-import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { readJsonFile } from '../io/json-file.js';
 import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils.js';
 import { normalizeSpaces } from './title-tag-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('missile-title-tags-update');
 
@@ -101,20 +102,18 @@ export async function runMissileTitleTagUpdate({ iniPath, spviewerDir, repoRoot,
     missileNameCount: nameCount,
   });
 
-  const { lines } = await Promise.resolve(readIniFile(iniPath));
+  const { lines } = await readIniFile(iniPath);
   const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMissileSignalTags(lines, keyToTag);
 
-  if (!dryRun && updatedCount > 0) {
-    await writeIniFile(iniPath, updatedLines, { skipBackup: true });
-  }
+  await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
-  return {
+  return buildScannedUpdateResult({
     label: 'Missile title tags',
     updatedCount,
     matchedCount,
     scannedCount,
-    issues: [],
-    summary: `Missile title tags: Updated ${updatedCount}, Matched ${matchedCount}, Scanned ${scannedCount}${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
+    dryRun,
+    durationMs,
+  });
 }

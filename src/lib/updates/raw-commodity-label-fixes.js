@@ -1,5 +1,6 @@
-import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { findIniKey, readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('raw-commodity-label-fixes-update');
 
@@ -18,9 +19,8 @@ const RAW_COMMODITY_LABEL_FIXES = {
  */
 export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }) {
   const start = performance.now();
-  const iniData = await Promise.resolve(readIniFile(iniPath));
+  const iniData = await readIniFile(iniPath);
   const { lines, index } = iniData;
-  const indexKeys = Object.keys(index);
 
   const issues = [];
   let matchedCount = 0;
@@ -28,7 +28,7 @@ export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }) {
   const scannedCount = Object.keys(RAW_COMMODITY_LABEL_FIXES).length;
 
   for (const [targetKey, targetValue] of Object.entries(RAW_COMMODITY_LABEL_FIXES)) {
-    const matchKey = indexKeys.find((key) => key.toLowerCase() === targetKey.toLowerCase());
+    const matchKey = findIniKey(index, targetKey);
     if (matchKey === undefined) {
       issues.push({ key: targetKey, reason: 'Localization key not found', type: 'unresolved' });
       continue;
@@ -48,9 +48,7 @@ export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }) {
     updatedCount++;
   }
 
-  if (!dryRun && updatedCount > 0) {
-    await writeIniFile(iniPath, lines, { skipBackup: true });
-  }
+  await writeIniFileIfChanged(iniPath, lines, { dryRun, updatedCount, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
   logger.info('Raw commodity label fix update complete', {
@@ -62,12 +60,13 @@ export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }) {
     durationMs,
   });
 
-  return {
+  return buildScannedUpdateResult({
     label: 'Raw commodity labels',
     updatedCount,
     matchedCount,
     scannedCount,
     issues,
-    summary: `Raw commodity labels: Updated ${updatedCount}, Matched ${matchedCount}, Scanned ${scannedCount}${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
+    dryRun,
+    durationMs,
+  });
 }
