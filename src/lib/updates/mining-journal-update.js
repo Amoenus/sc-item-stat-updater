@@ -1,9 +1,10 @@
 import { buildJournalValue } from '../../items/missions/mining-journal.js';
 import { readCsvFile } from '../io/csv-parser.js';
 import { pathExists } from '../io/discovery.js';
-import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { findIniKey, readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { resolveMissionCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('mining-journal-update');
 const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
@@ -13,7 +14,14 @@ const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
  * @param {string} params.iniPath
  * @param {string} params.missionCsvDir
  * @param {boolean} params.dryRun
- * @returns {Promise<null | {label: string, issues: Array<unknown>, summary: string}>}
+ * @returns {Promise<null | {
+ *   label: string,
+ *   updatedCount: number,
+ *   matchedCount: number,
+ *   scannedCount: number,
+ *   issues: Array<unknown>,
+ *   summary: string,
+ * }>}
  */
 export async function runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun }) {
   const journalCsvPath = resolveMissionCsvPath(missionCsvDir, 'mining-journal.csv');
@@ -24,9 +32,9 @@ export async function runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun })
 
   const start = performance.now();
   const journalRows = await readCsvFile(journalCsvPath);
-  const iniData = await Promise.resolve(readIniFile(iniPath));
+  const iniData = await readIniFile(iniPath);
   const { lines: journalLines, index: journalIdx } = iniData;
-  const matchKey = Object.keys(journalIdx).find((key) => key.toLowerCase() === JOURNAL_KEY.toLowerCase());
+  const matchKey = findIniKey(journalIdx, JOURNAL_KEY);
 
   if (matchKey === undefined) {
     logger.warn('Mining journal: key not found in INI', { key: JOURNAL_KEY });
@@ -39,17 +47,21 @@ export async function runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun })
   const newValue = buildJournalValue(journalRows, oldValue);
   const updated = newValue !== oldValue;
 
-  if (updated && !dryRun) {
+  if (updated) {
     journalLines[journalIdx[matchKey]] = `${matchKey}=${newValue}`;
-    await writeIniFile(iniPath, journalLines, { skipBackup: true });
   }
+
+  await writeIniFileIfChanged(iniPath, journalLines, { dryRun, updatedCount: updated ? 1 : 0, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
   logger.info('Mining journal update complete', { updated, durationMs, dryRun });
 
-  return {
+  return buildScannedUpdateResult({
     label: 'Mining journal',
-    issues: [],
-    summary: `Mining journal: Updated ${updated ? 1 : 0}, Matched 1${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
+    updatedCount: updated ? 1 : 0,
+    matchedCount: 1,
+    scannedCount: 1,
+    dryRun,
+    durationMs,
+  });
 }

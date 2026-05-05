@@ -1,7 +1,8 @@
 import { readCsvFile } from '../io/csv-parser.js';
-import { readIniFile, writeIniFile } from '../io/ini-file.js';
+import { readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { getLogger } from '../logger.js';
 import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -105,21 +106,19 @@ export async function runComponentTitleUpdate({ iniPath, spviewerDir, dryRun }) 
     componentCount: nameToPrefix.size,
   });
 
-  const iniData = await Promise.resolve(readIniFile(iniPath));
+  const iniData = await readIniFile(iniPath);
   const { lines } = iniData;
   const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMiningTitlePrefixes(lines, nameToPrefix);
 
-  if (!dryRun && updatedCount > 0) {
-    await writeIniFile(iniPath, updatedLines, { skipBackup: true });
-  }
+  await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
-  return {
+  return buildScannedUpdateResult({
     label: 'Component Titles',
     updatedCount,
     matchedCount,
     scannedCount,
-    issues: [],
-    summary: `Component Titles: Updated ${updatedCount}, Matched ${matchedCount}, Scanned ${scannedCount}${dryRun ? ' (dry run)' : ''} [${durationMs}ms]`,
-  };
+    dryRun,
+    durationMs,
+  });
 }

@@ -3,9 +3,10 @@ import path from 'node:path';
 import { sanitizeIniValue } from './format/formatter.js';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
 import { readCsvFile } from './io/csv-parser.js';
-import { readIniFile, writeIniFile } from './io/ini-file.js';
+import { findIniKey, readIniFile, writeIniFile } from './io/ini-file.js';
 import { readJsonFile } from './io/json-file.js';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from './io/mapping-store.js';
+import { resolveChildPath } from './io/path-conventions.js';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
 import { getLogger } from './logger.js';
 
@@ -37,16 +38,6 @@ function resolveOptions(options) {
   };
 }
 
-/** Validates a file path stays within a base directory (path traversal protection). */
-function validateContainedPath(filePath, baseDir, label) {
-  const resolved = path.resolve(filePath);
-  const resolvedBase = path.resolve(baseDir);
-  if (!resolved.startsWith(resolvedBase + path.sep) && resolved !== resolvedBase) {
-    throw new Error(`Path traversal detected in ${label}: ${filePath}`);
-  }
-  return resolved;
-}
-
 function validateColumns(rows, requiredColumns, sourceLabel) {
   if (!requiredColumns || rows.length === 0) {
     return;
@@ -61,8 +52,9 @@ function validateColumns(rows, requiredColumns, sourceLabel) {
 async function loadJsonSourceData(config, csvDir) {
   const rawJsonPath = config.resolveJsonFile
     ? await config.resolveJsonFile(csvDir)
-    : path.resolve(csvDir, config.jsonFile);
-  const jsonPath = validateContainedPath(rawJsonPath, csvDir, 'JSON filename');
+    : resolveChildPath(csvDir, config.jsonFile, 'JSON filename');
+  const normalizedJsonPath = path.isAbsolute(rawJsonPath) ? path.relative(csvDir, rawJsonPath) : rawJsonPath;
+  const jsonPath = resolveChildPath(csvDir, normalizedJsonPath, 'JSON filename');
   logger.debug('Reading JSON file', { file: jsonPath, label: config.label });
   const data = await readJsonFile(jsonPath);
   const rows = config.parseJson ? config.parseJson(data) : [];
@@ -75,7 +67,7 @@ async function loadJsonSourceData(config, csvDir) {
 }
 
 async function loadCsvSourceData(config, csvDir) {
-  const csvPath = validateContainedPath(path.resolve(csvDir, config.csvFile), csvDir, 'CSV filename');
+  const csvPath = resolveChildPath(csvDir, config.csvFile, 'CSV filename');
   logger.debug('Reading CSV file', { file: csvPath, label: config.label });
   const rows = await readCsvFile(csvPath);
   logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
@@ -120,7 +112,7 @@ async function resolveSpviewerKeys(rows, config, lines, csvDir, baseDir, dryRun)
 }
 
 async function loadLookupMap(lookupCsvFile, csvDir) {
-  const lookupPath = validateContainedPath(path.resolve(csvDir, lookupCsvFile), csvDir, 'lookup CSV filename');
+  const lookupPath = resolveChildPath(csvDir, lookupCsvFile, 'lookup CSV filename');
   return buildLookupMap(lookupPath);
 }
 
@@ -157,16 +149,17 @@ function processRow(row, context, deriveDescKey, _force = false) {
   let anyFound = false;
 
   for (const targetKey of targetKeys) {
-    const found = findKey(targetKey, context.existingKeys);
-    if (found) {
+    const foundKey = findIniKey(context.existingKeys, targetKey);
+    if (foundKey) {
       anyFound = true;
-      const oldLine = context.lines[found.idx];
+      const lineIndex = context.existingKeys[foundKey];
+      const oldLine = context.lines[lineIndex];
       const eqIdx = oldLine.indexOf('=');
       const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
       const flavor = extractFlavorText(oldValue);
-      const newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, found.key));
+      const newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, foundKey));
       if (newValue !== oldValue) {
-        context.lines[found.idx] = `${found.key}=${newValue}`;
+        context.lines[lineIndex] = `${foundKey}=${newValue}`;
         anyUpdated = true;
       }
     }
@@ -438,15 +431,4 @@ export async function runUpdate(config, options = {}) {
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${err.message}`, { cause: err });
   }
-}
-
-function findKey(targetKey, existingKeys) {
-  if (targetKey in existingKeys) {
-    return { key: targetKey, idx: existingKeys[targetKey] };
-  }
-  const lc = targetKey.toLowerCase();
-  for (const [k, idx] of Object.entries(existingKeys)) {
-    if (k.toLowerCase() === lc) return { key: k, idx };
-  }
-  return null;
 }
