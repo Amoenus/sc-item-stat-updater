@@ -3,6 +3,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  buildMiningElementRows,
+  buildMiningJournalRows,
+  buildMiningLocationRows,
+} from '../src/lib/scmdb/mining-parser.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
 
@@ -441,17 +447,7 @@ async function main() {
   }
 
   if (miningData) {
-    const elements = [];
-    for (const [_id, el] of Object.entries(miningData.mineableElements || {})) {
-      elements.push({
-        'Element Name': el.name,
-        Rarity: el.rarity,
-        'Ground Scan Signature': el.groundScanSignature,
-        'Scan Signature': el.scanSignature,
-        Resistance: el.resistance,
-        Instability: el.instability,
-      });
-    }
+    const elements = buildMiningElementRows(miningData);
     if (elements.length) {
       writeOutput(
         'mining-elements.csv',
@@ -466,71 +462,12 @@ async function main() {
       );
     }
 
-    const rarityMap = {};
-    for (const el of Object.values(miningData.mineableElements || {})) {
-      const rarity = (el.rarity || 'Unknown').toLowerCase();
-      const cat = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-      if (!rarityMap[cat]) rarityMap[cat] = [];
-      rarityMap[cat].push(el.name);
-    }
-    const journal = [];
-    for (const [cat, list] of Object.entries(rarityMap)) {
-      list.sort();
-      journal.push({
-        'Rarity Category': cat,
-        'Element List': list.join('\n'),
-      });
-    }
+    const journal = buildMiningJournalRows(miningData);
     if (journal.length) {
       writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
     }
 
-    const compCache = {};
-    for (const [id, comp] of Object.entries(miningData.compositions || {})) {
-      const names = new Set();
-      for (const part of comp.parts || []) {
-        if (part.elementName) names.add(part.elementName);
-      }
-      compCache[id] = Array.from(names);
-    }
-
-    const locations = {};
-    for (const loc of miningData.locations || []) {
-      const name = loc.locationName;
-      if (!locations[name]) {
-        locations[name] = { ship: new Set(), hand: new Set() };
-      }
-      for (const group of loc.groups || []) {
-        const isHand = group.groupName.includes('FPS');
-        const isShip =
-          group.groupName.includes('SpaceShip') ||
-          group.groupName.includes('GroundVehicle') ||
-          group.groupName.includes('Ship');
-        if (!isHand && !isShip) continue;
-
-        for (const dep of group.deposits || []) {
-          const parts = compCache[dep.compositionGuid] || [];
-          for (const p of parts) {
-            if (isHand) locations[name].hand.add(p);
-            if (isShip) locations[name].ship.add(p);
-          }
-        }
-      }
-    }
-
-    const locRows = [];
-    for (const [name, dat] of Object.entries(locations)) {
-      const shipList = Array.from(dat.ship).sort().join('\n');
-      const handList = Array.from(dat.hand).sort().join('\n');
-      if (shipList || handList) {
-        locRows.push({
-          'Location Name': name,
-          'Ship Mineables': shipList,
-          'Hand Mineables': handList,
-        });
-      }
-    }
-    locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
+    const locRows = buildMiningLocationRows(miningData);
     if (locRows.length) {
       writeOutput('mining-locations.csv', toCsv(locRows, ['Location Name', 'Ship Mineables', 'Hand Mineables']));
     }
