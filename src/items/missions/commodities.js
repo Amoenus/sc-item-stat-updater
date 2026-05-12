@@ -29,14 +29,10 @@ async function resolveJsonFile(csvDir) {
     throw new Error(`Commodities: SCMDB directory not found: ${csvDir}`);
   }
 
-  const candidates = entries
-    .filter((name) => name.startsWith('merged-') && name.endsWith('.json'))
-    .sort();
+  const candidates = entries.filter((name) => name.startsWith('merged-') && name.endsWith('.json')).sort();
 
   if (candidates.length === 0) {
-    throw new Error(
-      `Commodities: no merged-*.json found in ${csvDir}. Run scrape-scmdb.js first.`,
-    );
+    throw new Error(`Commodities: no merged-*.json found in ${csvDir}. Run scrape-scmdb.js first.`);
   }
 
   return path.join(csvDir, candidates[candidates.length - 1]);
@@ -59,12 +55,7 @@ export default {
     return `${prefix}${displayName}`;
   },
   parseJson(data) {
-    if (
-      !data ||
-      typeof data !== 'object' ||
-      !data.resourcePools ||
-      typeof data.resourcePools !== 'object'
-    ) {
+    if (!data || typeof data !== 'object' || !data.resourcePools || typeof data.resourcePools !== 'object') {
       return [...ILLEGAL_COMMODITY_KEYS].map((key) => ({ 'Localization Key': key, Name: '' }));
     }
     const rows = Object.values(data.resourcePools)

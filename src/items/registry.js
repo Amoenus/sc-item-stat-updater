@@ -54,10 +54,7 @@ export async function loadMissionConfigs() {
  * @returns {Promise<Map<string, import('../lib/types.js').ItemConfig>>}
  */
 export async function loadAllConfigs() {
-  const [spviewer, missions] = await Promise.all([
-    loadSpviewerConfigs(),
-    loadMissionConfigs(),
-  ]);
+  const [spviewer, missions] = await Promise.all([loadSpviewerConfigs(), loadMissionConfigs()]);
   return new Map([...spviewer, ...missions]);
 }
 
@@ -97,9 +94,6 @@ export async function listCategories() {
       return [];
     }
   };
-  const [spviewer, missions] = await Promise.all([
-    readSlugs(spviewerDir, 'sp-'),
-    readSlugs(missionsDir, 'mission-'),
-  ]);
+  const [spviewer, missions] = await Promise.all([readSlugs(spviewerDir, 'sp-'), readSlugs(missionsDir, 'mission-')]);
   return { spviewer, missions };
 }

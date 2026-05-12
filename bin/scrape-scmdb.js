@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -94,9 +94,7 @@ function collectBlueprintChainData(contracts) {
     if (!prerequisites || typeof prerequisites !== 'object') return [];
     const completedTags = prerequisites.completedContractTags;
     if (!completedTags || typeof completedTags !== 'object') return [];
-    return Array.isArray(completedTags.tags)
-      ? completedTags.tags.filter((tag) => typeof tag === 'string')
-      : [];
+    return Array.isArray(completedTags.tags) ? completedTags.tags.filter((tag) => typeof tag === 'string') : [];
   };
 
   for (const contract of contracts) {
@@ -204,7 +202,11 @@ function buildBlueprintRewardList(contract, blueprintPools) {
       }
     }
   }
-  return names.size > 0 ? Array.from(names).map((name) => `- ${name}`).join(String.raw`\n`) : '';
+  return names.size > 0
+    ? Array.from(names)
+        .map((name) => `- ${name}`)
+        .join(String.raw`\n`)
+    : '';
 }
 
 function normalizeLocalizationKey(key) {
@@ -221,46 +223,48 @@ export function isPtuVersion(version) {
 }
 
 function buildMissionRows(contracts, chainData, blueprintPools) {
-  return (contracts || []).flatMap((contract) => {
-    const rows = [];
-    const blueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-    const blueprintChain = chainData.blueprintChainDepth.get(contract.id) > 0;
-    const titleKey = normalizeLocalizationKey(contract.titleKey || '');
-    const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
-    let titleTag = '';
-    let descTag = '';
-    if (blueprintReward) {
-      titleTag = ' <EM4>[BP]</EM4>';
-      descTag = '[BP Reward]';
-    } else if (blueprintChain) {
-      titleTag = ' <EM4>[BP Chain]</EM4>';
-      descTag = '[BP Chain]';
-    }
-    const rewardList = blueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
-    const descriptionNote = descTag + (rewardList ? String.raw`\n\n${rewardList}` : '');
+  return (contracts || [])
+    .flatMap((contract) => {
+      const rows = [];
+      const blueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
+      const blueprintChain = chainData.blueprintChainDepth.get(contract.id) > 0;
+      const titleKey = normalizeLocalizationKey(contract.titleKey || '');
+      const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
+      let titleTag = '';
+      let descTag = '';
+      if (blueprintReward) {
+        titleTag = ' <EM4>[BP]</EM4>';
+        descTag = '[BP Reward]';
+      } else if (blueprintChain) {
+        titleTag = ' <EM4>[BP Chain]</EM4>';
+        descTag = '[BP Chain]';
+      }
+      const rewardList = blueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
+      const descriptionNote = descTag + (rewardList ? String.raw`\n\n${rewardList}` : '');
 
-    if (titleKey && contract.title) {
-      rows.push({
-        'Localization Key': titleKey,
-        Description: contract.title,
-        TitleNote: titleTag,
-        Note: '',
-        RewardList: '',
-      });
-    }
+      if (titleKey && contract.title) {
+        rows.push({
+          'Localization Key': titleKey,
+          Description: contract.title,
+          TitleNote: titleTag,
+          Note: '',
+          RewardList: '',
+        });
+      }
 
-    if (descKey && contract.description) {
-      rows.push({
-        'Localization Key': descKey,
-        Description: contract.description,
-        Note: descriptionNote,
-        TitleNote: '',
-        RewardList: rewardList,
-      });
-    }
+      if (descKey && contract.description) {
+        rows.push({
+          'Localization Key': descKey,
+          Description: contract.description,
+          Note: descriptionNote,
+          TitleNote: '',
+          RewardList: rewardList,
+        });
+      }
 
-    return rows;
-  }).filter(Boolean);
+      return rows;
+    })
+    .filter(Boolean);
 }
 
 async function main() {
@@ -289,7 +293,9 @@ async function main() {
       console.log(`  ${entry.version} -> ${entry.file}`);
     }
     console.log('');
-    console.log('By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.');
+    console.log(
+      'By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.',
+    );
     process.exit(0);
   }
 
@@ -336,10 +342,15 @@ async function main() {
   const craftingItemsData = await fetchJson(craftingItemsUrl).catch(() => null);
   const craftingBlueprintsData = await fetchJson(craftingBlueprintsUrl).catch(() => null);
 
-  if (miningData) writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
-  if (craftingItemsData) writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
-  if (craftingBlueprintsData) writeOutput(`crafting_blueprints-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingBlueprintsData, null, 2));
-
+  if (miningData)
+    writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
+  if (craftingItemsData)
+    writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
+  if (craftingBlueprintsData)
+    writeOutput(
+      `crafting_blueprints-${selected.file.replace('merged-', '')}`,
+      JSON.stringify(craftingBlueprintsData, null, 2),
+    );
 
   if (rawOnly) {
     return;
@@ -357,27 +368,70 @@ async function main() {
   const contractBlueprintRows = buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools);
 
   if (missionRows.length) {
-    writeMissionOutput('scmdb-missions.csv', toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList']));
+    writeMissionOutput(
+      'scmdb-missions.csv',
+      toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList']),
+    );
   }
 
   if (contractRows.length) {
     const headers = [
-      'id', 'debugName', 'category', 'missionType', 'missionTypeKey', 'title', 'titleKey',
-      'description', 'descriptionKey', 'descriptionLocKey', 'rewardUEC', 'timeToComplete',
-      'canBeShared', 'illegal', 'factionGuid', 'locations', 'destinations',
-      'prerequisites', 'tokenSubstitutions', 'minStanding', 'maxStanding', 'blueprintRewards',
-      'isBlueprintReward', 'isBlueprintChainPrerequisite', 'blueprintChainDepth',
+      'id',
+      'debugName',
+      'category',
+      'missionType',
+      'missionTypeKey',
+      'title',
+      'titleKey',
+      'description',
+      'descriptionKey',
+      'descriptionLocKey',
+      'rewardUEC',
+      'timeToComplete',
+      'canBeShared',
+      'illegal',
+      'factionGuid',
+      'locations',
+      'destinations',
+      'prerequisites',
+      'tokenSubstitutions',
+      'minStanding',
+      'maxStanding',
+      'blueprintRewards',
+      'isBlueprintReward',
+      'isBlueprintChainPrerequisite',
+      'blueprintChainDepth',
     ];
     writeOutput('contracts.csv', toCsv(contractRows, headers));
   }
 
   if (legacyRows.length) {
     const headers = [
-      'id', 'debugName', 'category', 'missionType', 'missionTypeKey', 'title', 'titleKey',
-      'description', 'descriptionKey', 'descriptionLocKey', 'rewardUEC', 'timeToComplete',
-      'canBeShared', 'illegal', 'factionGuid', 'locations', 'destinations',
-      'prerequisites', 'tokenSubstitutions', 'minStanding', 'maxStanding', 'blueprintRewards',
-      'isBlueprintReward', 'isBlueprintChainPrerequisite', 'blueprintChainDepth',
+      'id',
+      'debugName',
+      'category',
+      'missionType',
+      'missionTypeKey',
+      'title',
+      'titleKey',
+      'description',
+      'descriptionKey',
+      'descriptionLocKey',
+      'rewardUEC',
+      'timeToComplete',
+      'canBeShared',
+      'illegal',
+      'factionGuid',
+      'locations',
+      'destinations',
+      'prerequisites',
+      'tokenSubstitutions',
+      'minStanding',
+      'maxStanding',
+      'blueprintRewards',
+      'isBlueprintReward',
+      'isBlueprintChainPrerequisite',
+      'blueprintChainDepth',
     ];
     writeOutput('legacy-contracts.csv', toCsv(legacyRows, headers));
   }
@@ -386,21 +440,30 @@ async function main() {
     writeOutput('blueprint-pools.csv', toCsv(blueprintPoolRows, ['id', 'name', 'source', 'blueprints']));
   }
 
-
   if (miningData) {
     const elements = [];
-    for (const [id, el] of Object.entries(miningData.mineableElements || {})) {
+    for (const [_id, el] of Object.entries(miningData.mineableElements || {})) {
       elements.push({
         'Element Name': el.name,
-        'Rarity': el.rarity,
+        Rarity: el.rarity,
         'Ground Scan Signature': el.groundScanSignature,
         'Scan Signature': el.scanSignature,
-        'Resistance': el.resistance,
-        'Instability': el.instability
+        Resistance: el.resistance,
+        Instability: el.instability,
       });
     }
     if (elements.length) {
-      writeOutput('mining-elements.csv', toCsv(elements, ['Element Name', 'Rarity', 'Ground Scan Signature', 'Scan Signature', 'Resistance', 'Instability']));
+      writeOutput(
+        'mining-elements.csv',
+        toCsv(elements, [
+          'Element Name',
+          'Rarity',
+          'Ground Scan Signature',
+          'Scan Signature',
+          'Resistance',
+          'Instability',
+        ]),
+      );
     }
 
     const rarityMap = {};
@@ -415,7 +478,7 @@ async function main() {
       list.sort();
       journal.push({
         'Rarity Category': cat,
-        'Element List': list.join('\n')
+        'Element List': list.join('\n'),
       });
     }
     if (journal.length) {
@@ -439,7 +502,10 @@ async function main() {
       }
       for (const group of loc.groups || []) {
         const isHand = group.groupName.includes('FPS');
-        const isShip = group.groupName.includes('SpaceShip') || group.groupName.includes('GroundVehicle') || group.groupName.includes('Ship');
+        const isShip =
+          group.groupName.includes('SpaceShip') ||
+          group.groupName.includes('GroundVehicle') ||
+          group.groupName.includes('Ship');
         if (!isHand && !isShip) continue;
 
         for (const dep of group.deposits || []) {
@@ -460,20 +526,31 @@ async function main() {
         locRows.push({
           'Location Name': name,
           'Ship Mineables': shipList,
-          'Hand Mineables': handList
+          'Hand Mineables': handList,
         });
       }
     }
-    locRows.sort((a,b) => a['Location Name'].localeCompare(b['Location Name']));
+    locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
     if (locRows.length) {
       writeOutput('mining-locations.csv', toCsv(locRows, ['Location Name', 'Ship Mineables', 'Hand Mineables']));
     }
   }
 
   if (contractBlueprintRows.length) {
-    writeOutput('contract-blueprint-rewards.csv', toCsv(contractBlueprintRows, [
-      'contractId', 'debugName', 'title', 'blueprintPoolId', 'poolName', 'chance', 'trigger', 'blueprintSource', 'blueprintItems',
-    ]));
+    writeOutput(
+      'contract-blueprint-rewards.csv',
+      toCsv(contractBlueprintRows, [
+        'contractId',
+        'debugName',
+        'title',
+        'blueprintPoolId',
+        'poolName',
+        'chance',
+        'trigger',
+        'blueprintSource',
+        'blueprintItems',
+      ]),
+    );
   }
 
   console.log(`SCMDB scrape complete. Outputs saved to csv/scmdb/${selected.version}/`);
