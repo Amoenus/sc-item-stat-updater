@@ -147,37 +147,43 @@ function getTargetKeys(config, row, deriveDescKey) {
   return [descKey, ...altKeys];
 }
 
-function processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, force = false) {
-  const targetKeys = getTargetKeys(config, row, deriveDescKey);
-  if (targetKeys.some((k) => updatedKeys.has(k.toLowerCase()))) {
-    return { status: 'skipped' };
+function processRow(row, context, deriveDescKey, _force = false) {
+  const targetKeys = getTargetKeys(context.config, row, deriveDescKey);
+  if (targetKeys.some((k) => context.updatedKeys.has(k.toLowerCase()))) {
+    context.markSkipped();
+    return;
   }
 
   let anyUpdated = false;
   let anyFound = false;
 
   for (const targetKey of targetKeys) {
-    const found = findKey(targetKey, existingKeys);
+    const found = findKey(targetKey, context.existingKeys);
     if (found) {
       anyFound = true;
-      const oldLine = lines[found.idx];
+      const oldLine = context.lines[found.idx];
       const eqIdx = oldLine.indexOf('=');
       const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
       const flavor = extractFlavorText(oldValue);
-      const newValue = sanitizeIniValue(config.buildValue(row, flavor, oldValue, found.key));
+      const newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, found.key));
       if (newValue !== oldValue) {
-        lines[found.idx] = `${found.key}=${newValue}`;
+        context.lines[found.idx] = `${found.key}=${newValue}`;
         anyUpdated = true;
       }
     }
   }
   if (anyFound) {
-    for (const k of targetKeys) updatedKeys.add(k.toLowerCase());
-    return { status: anyUpdated ? 'updated' : 'found' };
+    for (const k of targetKeys) context.updatedKeys.add(k.toLowerCase());
+    if (anyUpdated) {
+      context.markUpdated();
+    } else {
+      context.markFound();
+    }
+    return;
   }
 
-  const newValue = sanitizeIniValue(config.buildValue(row, '', '', targetKeys[0]));
-  return { status: 'new', line: `${targetKeys[0]}=${newValue}` };
+  const newValue = sanitizeIniValue(context.config.buildValue(row, '', '', targetKeys[0]));
+  context.markNew(`${targetKeys[0]}=${newValue}`);
 }
 
 /** Inserts new lines at the correct position (after last matching desc key). */
@@ -191,17 +197,78 @@ function insertNewEntries(lines, newLines, lastDescIdx) {
   }
 }
 
-/** Builds the summary result object. */
-function buildResult(config, stats, durationMs, dryRun) {
-  const suffix = dryRun ? ' (dry run)' : '';
-  const errorSuffix = stats.errorCount > 0 ? `, Errors ${stats.errorCount}` : '';
-  const unresolvedSuffix = stats.unresolvedCount > 0 ? `, Unresolved ${stats.unresolvedCount}` : '';
-  const foundSuffix = stats.foundCount > 0 ? `, Found ${stats.foundCount}` : '';
-  const summary = `${config.label}: Updated ${stats.updatedCount}, Added ${stats.newCount}${foundSuffix}, Skipped ${stats.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
+class UpdateContext {
+  constructor(config, lines, existingKeys, unresolvedNames, dryRun) {
+    this.config = config;
+    this.lines = lines;
+    this.existingKeys = existingKeys;
+    this.dryRun = dryRun;
 
-  logger.debug(summary, { label: config.label, ...stats, durationMs, dryRun });
+    this.updatedKeys = new Set();
+    this.newLines = [];
+    this.issues = unresolvedNames.map((name) => ({
+      key: name,
+      reason: 'No localization key found',
+      type: 'unresolved',
+    }));
 
-  return { label: config.label, ...stats, issues: stats.issues, summary };
+    this.updatedCount = 0;
+    this.newCount = 0;
+    this.foundCount = 0;
+    this.skippedCount = 0;
+    this.errorCount = 0;
+    this.unresolvedCount = unresolvedNames.length;
+  }
+
+  markSkipped() {
+    this.skippedCount++;
+  }
+
+  markInvalid(key, reason = 'Invalid localization key') {
+    this.issues.push({ key, reason, type: 'error' });
+    this.errorCount++;
+  }
+
+  markError(key, error) {
+    logger.debug('Failed to process row, skipping', { label: this.config.label, key, error: error.message });
+    this.issues.push({ key, reason: `Build failed: ${error.message}`, type: 'error' });
+    this.errorCount++;
+  }
+
+  markUpdated() {
+    this.updatedCount++;
+  }
+
+  markNew(line) {
+    this.newLines.push(line);
+    this.newCount++;
+  }
+
+  markFound() {
+    this.foundCount++;
+  }
+
+  buildResult(durationMs) {
+    const suffix = this.dryRun ? ' (dry run)' : '';
+    const errorSuffix = this.errorCount > 0 ? `, Errors ${this.errorCount}` : '';
+    const unresolvedSuffix = this.unresolvedCount > 0 ? `, Unresolved ${this.unresolvedCount}` : '';
+    const foundSuffix = this.foundCount > 0 ? `, Found ${this.foundCount}` : '';
+    const summary = `${this.config.label}: Updated ${this.updatedCount}, Added ${this.newCount}${foundSuffix}, Skipped ${this.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
+
+    const stats = {
+      updatedCount: this.updatedCount,
+      newCount: this.newCount,
+      skippedCount: this.skippedCount,
+      foundCount: this.foundCount,
+      errorCount: this.errorCount,
+      unresolvedCount: this.unresolvedCount,
+      issues: this.issues,
+    };
+
+    logger.debug(summary, { label: this.config.label, ...stats, durationMs, dryRun: this.dryRun });
+
+    return { label: this.config.label, ...stats, summary };
+  }
 }
 
 /**
@@ -235,57 +302,35 @@ export async function runUpdate(config, options = {}) {
 
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
-    const updatedKeys = new Set();
-    const newLines = [];
-    const issues = unresolvedNames.map((name) => ({ key: name, reason: 'No localization key found', type: 'unresolved' }));
-    let updatedCount = 0,
-      newCount = 0,
-      foundCount = 0,
-      skippedCount = 0,
-      errorCount = 0;
+
+    const context = new UpdateContext(config, lines, existingKeys, unresolvedNames, opts.dryRun);
 
     for (const row of rows) {
       const validation = validateRow(row, config.label);
       if (validation === 'skip') {
-        skippedCount++;
+        context.markSkipped();
         continue;
       }
       if (validation === 'invalid') {
-        issues.push({ key: row['Localization Key'], reason: 'Invalid localization key', type: 'error' });
-        errorCount++;
+        context.markInvalid(row['Localization Key']);
         continue;
       }
 
       try {
-        const result = processRow(row, config, deriveDescKey, existingKeys, lines, updatedKeys, opts.force);
-        if (result.status === 'updated') updatedCount++;
-        else if (result.status === 'new') {
-          newLines.push(result.line);
-          newCount++;
-        } else if (result.status === 'found') {
-          foundCount++;
-        } else skippedCount++;
+        processRow(row, context, deriveDescKey, opts.force);
       } catch (err) {
-        const nameKey = row['Localization Key'];
-        logger.debug('Failed to process row, skipping', { label: config.label, key: nameKey, error: err.message });
-        issues.push({ key: nameKey, reason: `Build failed: ${err.message}`, type: 'error' });
-        errorCount++;
+        context.markError(row['Localization Key'], err);
       }
     }
 
-    insertNewEntries(lines, newLines, lastDescIdx);
+    insertNewEntries(lines, context.newLines, lastDescIdx);
 
-    if (!opts.dryRun && (updatedCount > 0 || newCount > 0 || (opts.force && foundCount > 0))) {
+    if (!opts.dryRun && (context.updatedCount > 0 || context.newCount > 0 || (opts.force && context.foundCount > 0))) {
       await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
     }
 
     const durationMs = Math.round(performance.now() - start);
-    return buildResult(
-      config,
-      { updatedCount, newCount, skippedCount, foundCount, errorCount, unresolvedCount: unresolvedNames.length, issues },
-      durationMs,
-      opts.dryRun,
-    );
+    return context.buildResult(durationMs);
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${err.message}`, { cause: err });
   }

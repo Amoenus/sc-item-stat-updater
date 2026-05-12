@@ -10,7 +10,7 @@ export default {
   csvFile: 'missions/scmdb-missions.csv',
   requiredColumns: ['Localization Key', 'Description'],
   descKeyMatch: (key) => /_desc|_description/i.test(key),
-  buildValue(row, flavorText, oldValue, targetKey) {
+  buildValue(row, _flavorText, oldValue, targetKey) {
     const description = row['Description'] ?? row['Text'] ?? '';
     const isTitle = /_title/i.test(targetKey);
     const noteText = isTitle ? row['TitleNote'] : row['Note'];

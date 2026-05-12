@@ -1,5 +1,5 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
@@ -31,7 +31,9 @@ if (values.help) {
   console.log('Usage: node update-all.js [options]');
   console.log('\nOptions:');
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
-  console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: auto-detected from latest scraped version)');
+  console.log(
+    '  -c, --csv-dir <path>   Directory containing CSV files (default: auto-detected from latest scraped version)',
+  );
   console.log('      --dry-run          Preview changes without writing');
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
   console.log('  -v, --verbose          Enable verbose logging');
@@ -76,7 +78,7 @@ async function resolveLatestVersionDir(base, ptu, source, scraper) {
   if (dirs.length === 0) {
     throw new Error(
       `No ${ptu ? 'PTU' : 'LIVE'} ${source} version folder found under ${base}. ` +
-      `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
+        `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
     );
   }
 
@@ -101,12 +103,7 @@ if (values['csv-dir']) {
 
 // Resolve versioned SPViewer directory (always auto-detected — no override flag for now).
 const spviewerBase = path.join(repoRoot, 'csv', 'spviewer');
-const spviewerVersionDir = await resolveLatestVersionDir(
-  spviewerBase,
-  values.ptu,
-  'SPViewer',
-  'scrape-spviewer.js',
-);
+const spviewerVersionDir = await resolveLatestVersionDir(spviewerBase, values.ptu, 'SPViewer', 'scrape-spviewer.js');
 const spviewerVersion = path.basename(spviewerVersionDir);
 
 const options = {
