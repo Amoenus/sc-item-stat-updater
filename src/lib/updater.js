@@ -13,7 +13,7 @@ const logger = getLogger('updater');
 /** Localization keys must contain only word chars, hyphens, and dots. */
 const VALID_KEY_PATTERN = /^[\w\-.]+$/;
 
-function validateRow(row, label) {
+export function validateRow(row, label) {
   const nameKey = row['Localization Key'];
   if (!nameKey || nameKey === 'N/A') return 'skip';
   if (!VALID_KEY_PATTERN.test(nameKey)) {
