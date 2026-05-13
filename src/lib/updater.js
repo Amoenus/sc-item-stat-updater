@@ -1,7 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sanitizeIniValue } from './format/formatter.js';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
+import {
+  appendMissingPlaceholders,
+  nameKeyToDescKey as defaultNameKeyToDescKey,
+  extractFlavorText,
+} from './format/text-utils.js';
 import { parseCSV } from './io/csv-parser.js';
 import { readIniFile, writeIniFile } from './io/ini-file.js';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from './io/mapping-store.js';
@@ -165,7 +169,8 @@ function processRow(row, context, deriveDescKey, _force = false) {
       const eqIdx = oldLine.indexOf('=');
       const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
       const flavor = extractFlavorText(oldValue);
-      const newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, found.key));
+      let newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, found.key));
+      newValue = appendMissingPlaceholders(oldValue, newValue);
       if (newValue !== oldValue) {
         context.lines[found.idx] = `${found.key}=${newValue}`;
         anyUpdated = true;

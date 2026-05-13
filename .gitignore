@@ -3,3 +3,4 @@ node_modules/
 
 *.gfx
 *.swf
+global.ini.backup.*
