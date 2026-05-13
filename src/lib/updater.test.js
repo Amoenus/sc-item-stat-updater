@@ -1,7 +1,7 @@
-import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
-import { validateRow } from './updater.js';
+import { describe, it, mock } from 'node:test';
 import { getLogger } from './logger.js';
+import { validateRow } from './updater.js';
 
 describe('updater: validateRow', () => {
   it('should return "valid" for a valid localization key', () => {
