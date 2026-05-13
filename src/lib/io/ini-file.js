@@ -1,6 +1,9 @@
 import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
+import { getLogger } from '../logger.js';
+
+const logger = getLogger('ini-file');
 
 /**
  * Reads an INI file using streaming I/O and builds a key index in a single pass.
@@ -10,6 +13,7 @@ import { createInterface } from 'node:readline';
 export async function readIniFile(filePath) {
   const lines = [];
   const index = {};
+  const duplicates = new Map();
 
   const rl = createInterface({
     input: createReadStream(filePath, { encoding: 'utf-8' }),
@@ -29,12 +33,25 @@ export async function readIniFile(filePath) {
     lines.push(line);
     const eqIdx = line.indexOf('=');
     if (eqIdx > -1) {
-      index[line.substring(0, eqIdx)] = lineNum;
+      const key = line.substring(0, eqIdx);
+      if (key.endsWith(',P') || key.endsWith(',G')) {
+        lineNum++;
+        continue;
+      }
+
+      if (key in index) {
+        if (!duplicates.has(key)) {
+          duplicates.set(key, [index[key]]);
+        }
+        duplicates.get(key).push(lineNum);
+        logger.warn('Duplicate key detected in INI file', { key, lineNum });
+      }
+      index[key] = lineNum;
     }
     lineNum++;
   }
 
-  return { lines, index };
+  return { lines, index, duplicates };
 }
 
 const MAX_BACKUPS = 3;
