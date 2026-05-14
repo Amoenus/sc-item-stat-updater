@@ -9,6 +9,14 @@ import {
   buildMiningLocationRows,
 } from '../src/lib/scmdb/mining-parser.js';
 
+import {
+  buildBlueprintPoolRows,
+  buildContractBlueprintRows,
+  buildContractRow,
+  buildMissionRows,
+  collectBlueprintChainData,
+} from '../src/lib/scmdb/mission-parser.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
 
@@ -47,12 +55,6 @@ function toCsv(rows, headers) {
   return `${lines.join('\n')}\n`;
 }
 
-function flattenValue(value) {
-  if (value === undefined || value === null) return '';
-  if (typeof value === 'string') return value;
-  return JSON.stringify(value);
-}
-
 async function fetchJson(url) {
   const res = await fetch(url, { headers: { 'User-Agent': 'SCMDB Scraper' } });
   if (!res.ok) {
@@ -75,202 +77,12 @@ function writeMissionOutput(fileName, content) {
   console.log(`Saved missions/${fileName}`);
 }
 
-function collectBlueprintChainData(contracts) {
-  const contractById = new Map(contracts.map((contract) => [contract.id, contract]));
-  const tagProviders = new Map();
-
-  for (const contract of contracts) {
-    if (!Array.isArray(contract.completionTags)) continue;
-    for (const completionTag of contract.completionTags) {
-      const tag = completionTag?.tag;
-      if (typeof tag !== 'string') continue;
-      const list = tagProviders.get(tag) ?? [];
-      list.push(contract.id);
-      tagProviders.set(tag, list);
-    }
-  }
-
-  const isBlueprintReward = new Map();
-  const blueprintChainDepth = new Map();
-
-  const queue = [];
-
-  const getRequiredTags = (contract) => {
-    const prerequisites = contract.prerequisites;
-    if (!prerequisites || typeof prerequisites !== 'object') return [];
-    const completedTags = prerequisites.completedContractTags;
-    if (!completedTags || typeof completedTags !== 'object') return [];
-    return Array.isArray(completedTags.tags) ? completedTags.tags.filter((tag) => typeof tag === 'string') : [];
-  };
-
-  for (const contract of contracts) {
-    const reward = Array.isArray(contract.blueprintRewards) && contract.blueprintRewards.length > 0;
-    if (reward) {
-      isBlueprintReward.set(contract.id, true);
-      blueprintChainDepth.set(contract.id, 0);
-      const requiredTags = getRequiredTags(contract);
-      for (const tag of requiredTags) {
-        for (const providerId of tagProviders.get(tag) ?? []) {
-          queue.push({ contractId: providerId, depth: 1 });
-        }
-      }
-    }
-  }
-
-  while (queue.length > 0) {
-    const { contractId, depth } = queue.shift();
-    const currentDepth = blueprintChainDepth.get(contractId);
-    if (currentDepth !== undefined && currentDepth <= depth) {
-      continue;
-    }
-    blueprintChainDepth.set(contractId, depth);
-    const contract = contractById.get(contractId);
-    if (!contract) continue;
-    const requiredTags = getRequiredTags(contract);
-    for (const tag of requiredTags) {
-      for (const providerId of tagProviders.get(tag) ?? []) {
-        if (providerId === contractId) continue;
-        queue.push({ contractId: providerId, depth: depth + 1 });
-      }
-    }
-  }
-
-  return { isBlueprintReward, blueprintChainDepth };
-}
-
-function buildContractRow(contract, chainData) {
-  const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-  const depth = chainData.blueprintChainDepth.get(contract.id);
-  return {
-    id: contract.id,
-    debugName: contract.debugName,
-    category: contract.category,
-    missionType: contract.missionType,
-    missionTypeKey: contract.missionTypeKey,
-    title: contract.title,
-    titleKey: contract.titleKey,
-    description: contract.description,
-    descriptionKey: contract.descriptionKey,
-    descriptionLocKey: contract.descriptionLocKey,
-    rewardUEC: contract.rewardUEC,
-    timeToComplete: contract.timeToComplete,
-    canBeShared: contract.canBeShared,
-    illegal: contract.illegal,
-    factionGuid: contract.factionGuid,
-    locations: flattenValue(contract.locations),
-    destinations: flattenValue(contract.destinations),
-    prerequisites: flattenValue(contract.prerequisites),
-    tokenSubstitutions: flattenValue(contract.tokenSubstitutions),
-    minStanding: flattenValue(contract.minStanding),
-    maxStanding: flattenValue(contract.maxStanding),
-    blueprintRewards: flattenValue(contract.blueprintRewards),
-    isBlueprintReward: isBlueprintReward ? 'true' : 'false',
-    isBlueprintChainPrerequisite: depth > 0 ? 'true' : 'false',
-    blueprintChainDepth: depth !== undefined ? String(depth) : '',
-  };
-}
-
-function buildBlueprintPoolRows(blueprintPools) {
-  return Object.entries(blueprintPools || {}).map(([id, pool]) => ({
-    id,
-    name: pool.name,
-    source: pool.source,
-    blueprints: flattenValue(pool.blueprints),
-  }));
-}
-
-function buildContractBlueprintRows(contracts, blueprintPools) {
-  return (contracts || []).flatMap((contract) => {
-    if (!Array.isArray(contract.blueprintRewards)) return [];
-    return contract.blueprintRewards.map((entry) => ({
-      contractId: contract.id,
-      debugName: contract.debugName,
-      title: contract.title,
-      blueprintPoolId: entry.blueprintPool,
-      poolName: entry.poolName,
-      chance: entry.chance,
-      trigger: entry.trigger,
-      blueprintSource: blueprintPools?.[entry.blueprintPool]?.source,
-      blueprintItems: flattenValue(blueprintPools?.[entry.blueprintPool]?.blueprints),
-    }));
-  });
-}
-
-function buildBlueprintRewardList(contract, blueprintPools) {
-  if (!Array.isArray(contract.blueprintRewards)) return '';
-  const names = new Set();
-  for (const entry of contract.blueprintRewards) {
-    const pool = blueprintPools?.[entry.blueprintPool];
-    if (!pool || !Array.isArray(pool.blueprints)) continue;
-    for (const blueprint of pool.blueprints) {
-      if (blueprint && typeof blueprint.name === 'string') {
-        names.add(blueprint.name);
-      }
-    }
-  }
-  return names.size > 0
-    ? Array.from(names)
-        .map((name) => `- ${name}`)
-        .join(String.raw`\n`)
-    : '';
-}
-
-function normalizeLocalizationKey(key) {
-  if (!key || typeof key !== 'string') return '';
-  return key.startsWith('@') ? key.slice(1) : key;
-}
-
 export function isLiveVersion(version) {
   return /\blive\b/i.test(version) || /-live\./i.test(version);
 }
 
 export function isPtuVersion(version) {
   return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
-}
-
-function buildMissionRows(contracts, chainData, blueprintPools) {
-  return (contracts || [])
-    .flatMap((contract) => {
-      const rows = [];
-      const blueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-      const blueprintChain = chainData.blueprintChainDepth.get(contract.id) > 0;
-      const titleKey = normalizeLocalizationKey(contract.titleKey || '');
-      const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
-      let titleTag = '';
-      let descTag = '';
-      if (blueprintReward) {
-        titleTag = ' <EM4>[BP]</EM4>';
-        descTag = '[BP Reward]';
-      } else if (blueprintChain) {
-        titleTag = ' <EM4>[BP Chain]</EM4>';
-        descTag = '[BP Chain]';
-      }
-      const rewardList = blueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
-      const descriptionNote = descTag + (rewardList ? String.raw`\n\n${rewardList}` : '');
-
-      if (titleKey && contract.title) {
-        rows.push({
-          'Localization Key': titleKey,
-          Description: contract.title,
-          TitleNote: titleTag,
-          Note: '',
-          RewardList: '',
-        });
-      }
-
-      if (descKey && contract.description) {
-        rows.push({
-          'Localization Key': descKey,
-          Description: contract.description,
-          Note: descriptionNote,
-          TitleNote: '',
-          RewardList: rewardList,
-        });
-      }
-
-      return rows;
-    })
-    .filter(Boolean);
 }
 
 async function main() {

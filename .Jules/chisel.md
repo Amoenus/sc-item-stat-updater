@@ -1,0 +1,3 @@
+## 2025-05-14 - Scraper Decoupling
+Learning: The `bin/scrape-scmdb.js` file functioned as a massive procedural God-class handling both raw SCMDB JSON downloading, directory setup, CSV file I/O, and complex domain mapping for missions/blueprints.
+Action: Extracted all domain mapping, traversal (blueprint chain depths), and array generation (mission rows) into a distinct, typed module `src/lib/scmdb/mission-parser.js`. I/O layers must remain purely concerned with CLI args and writing to disk, relying on pure parser functions containing standard `@typedef`s to replace undocumented generic object graphs.
