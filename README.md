@@ -197,17 +197,3 @@ CSV component data is sourced from:
 
 - SPViewer: [spviewer.eu](https://www.spviewer.eu/)
 - SCMDB: [scmdb.net](https://www.scmdb.net/)
-
-## Disclaimer
-
-This is an independent, community-created open-source project and is not affiliated with, endorsed by, or sponsored by Cloud Imperium Games Corporation, Cloud Imperium Rights LLC, Cloud Imperium Rights Ltd., or Roberts Space Industries Corp.
-
-Star Citizen and Squadron 42 are trademarks of Cloud Imperium Rights LLC. All game content, assets, and related intellectual property are the property of their respective owners.
-
-This project also has no affiliation with the third-party data services it relies on:
-
-- [SPViewer](https://www.spviewer.eu/) — an independent community tool for browsing Star Citizen item stats
-- [SCMDB](https://www.scmdb.net/) — an independent community database for Star Citizen mission and crafting data
-- [StarMeld](https://github.com/BeltaKoda/StarMeld) and [StarStrings](https://github.com/MrKraken/StarStrings) — independent community localization projects
-
-Use of this project is at your own risk. The authors provide no warranties and accept no liability for any issues arising from its use. Star Citizen is still in active development; game data and localization keys may change at any time.

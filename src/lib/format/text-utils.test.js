@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import { appendMissingPlaceholders, extractPlaceholders } from './text-utils.js';
+import { appendMissingPlaceholders, extractFlavorText, extractPlaceholders, nameKeyToDescKey } from './text-utils.js';
 
 test('text-utils: extractPlaceholders', async (t) => {
   await t.test('should extract percent placeholders', () => {
