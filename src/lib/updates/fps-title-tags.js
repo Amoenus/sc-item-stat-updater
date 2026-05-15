@@ -3,7 +3,6 @@ import { readIniFile, writeIniFileIfChanged } from '../io/ini-file.js';
 import { resolveSpviewerCsvPath } from '../io/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows } from './lookup-utils.js';
-import { buildScannedUpdateResult } from './update-result.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -12,6 +11,7 @@ import {
   resolveBaseFromCurrentValue,
   toVariantFamilyKey,
 } from './title-tag-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('fps-title-tags-update');
 

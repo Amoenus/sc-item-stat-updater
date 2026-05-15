@@ -32,9 +32,7 @@ const ScmdbStandingSchema = z.object({
  * typed concretely; everything else passes through for serialisation.
  */
 const ScmdbPrerequisitesSchema = z.looseObject({
-  completedContractTags: z
-    .object({ tags: z.array(z.string()).optional() })
-    .nullish(),
+  completedContractTags: z.object({ tags: z.array(z.string()).optional() }).nullish(),
 });
 
 const ScmdbBlueprintRewardEntrySchema = z.object({

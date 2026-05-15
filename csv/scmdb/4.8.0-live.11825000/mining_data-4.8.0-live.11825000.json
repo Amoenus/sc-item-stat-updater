@@ -25,16 +25,7 @@
       "rarity": "uncommon",
       "scanSignature": 3885,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        346,
-        588,
-        667,
-        796,
-        852,
-        943,
-        971,
-        1000
-      ],
+      "qualityBands": [346, 588, 667, 796, 852, 943, 971, 1000],
       "materialName": "Agricium"
     },
     "3776294d-5689-41f2-b03d-e8fcd17ede6a": {
@@ -51,16 +42,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4285,
-      "qualityBands": [
-        318,
-        511,
-        614,
-        783,
-        896,
-        919,
-        953,
-        1000
-      ],
+      "qualityBands": [318, 511, 614, 783, 896, 919, 953, 1000],
       "materialName": "Aluminum"
     },
     "9bd0e34c-2b34-42a3-b41d-381088ff6fed": {
@@ -76,16 +58,7 @@
       "clusterFactor": 0.1,
       "rarity": "uncommon",
       "scanSignature": 3840,
-      "qualityBands": [
-        287,
-        575,
-        602,
-        741,
-        854,
-        927,
-        963,
-        1000
-      ],
+      "qualityBands": [287, 575, 602, 741, 854, 927, 963, 1000],
       "materialName": "Aslarite"
     },
     "cad02f99-292c-4ee4-93cc-a73868f11ddb": {
@@ -102,16 +75,7 @@
       "rarity": "rare",
       "scanSignature": 3540,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        324,
-        547,
-        677,
-        717,
-        860,
-        937,
-        955,
-        1000
-      ],
+      "qualityBands": [324, 547, 677, 717, 860, 937, 955, 1000],
       "materialName": "Beryl"
     },
     "f48b147f-713e-481f-adf2-ff9869ac61bd": {
@@ -128,16 +92,7 @@
       "rarity": "rare",
       "scanSignature": 3600,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        302,
-        597,
-        632,
-        756,
-        875,
-        941,
-        959,
-        1000
-      ],
+      "qualityBands": [302, 597, 632, 756, 875, 941, 959, 1000],
       "materialName": "Bexalite"
     },
     "07f6158a-6494-4b7c-9dd0-bbaab7362137": {
@@ -154,16 +109,7 @@
       "rarity": "rare",
       "scanSignature": 3570,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        359,
-        584,
-        676,
-        743,
-        892,
-        903,
-        976,
-        1000
-      ],
+      "qualityBands": [359, 584, 676, 743, 892, 903, 976, 1000],
       "materialName": "Borase"
     },
     "ee12edc1-a2c3-4202-909d-9b729a050a3f": {
@@ -180,16 +126,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4240,
-      "qualityBands": [
-        359,
-        593,
-        652,
-        742,
-        855,
-        917,
-        958,
-        1000
-      ],
+      "qualityBands": [359, 593, 652, 742, 855, 917, 958, 1000],
       "materialName": "Copper"
     },
     "b471b96c-efbb-4342-90de-cfa087604d8e": {
@@ -206,16 +143,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4225,
-      "qualityBands": [
-        309,
-        504,
-        665,
-        793,
-        886,
-        904,
-        971,
-        1000
-      ],
+      "qualityBands": [309, 504, 665, 793, 886, 904, 971, 1000],
       "materialName": "Corundum"
     },
     "f2f5bf2e-87f9-4f3d-bb59-b4e11eceeaad": {
@@ -232,16 +160,7 @@
       "rarity": "rare",
       "scanSignature": 3585,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        264,
-        553,
-        644,
-        786,
-        864,
-        916,
-        959,
-        1000
-      ],
+      "qualityBands": [264, 553, 644, 786, 864, 916, 959, 1000],
       "materialName": "Gold"
     },
     "220c2e18-9324-4528-b399-2f908488b204": {
@@ -257,16 +176,7 @@
       "clusterFactor": 0.5,
       "rarity": "common",
       "scanSignature": 4180,
-      "qualityBands": [
-        330,
-        572,
-        692,
-        758,
-        896,
-        916,
-        975,
-        1000
-      ],
+      "qualityBands": [330, 572, 692, 758, 896, 916, 975, 1000],
       "materialName": "Hephaestanite"
     },
     "51745536-ff2b-4840-a6f8-b1ed498a77ff": {
@@ -283,16 +193,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4300,
-      "qualityBands": [
-        322,
-        561,
-        659,
-        714,
-        873,
-        922,
-        966,
-        1000
-      ],
+      "qualityBands": [322, 561, 659, 714, 873, 922, 966, 1000],
       "materialName": "Pressurized Ice"
     },
     "05708bae-1cb1-4e63-bb95-ec7f4a3ef430": {
@@ -309,16 +210,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4270,
-      "qualityBands": [
-        325,
-        521,
-        664,
-        710,
-        874,
-        907,
-        970,
-        1000
-      ],
+      "qualityBands": [325, 521, 664, 710, 874, 907, 970, 1000],
       "materialName": "Iron"
     },
     "8375a8d8-1627-4d35-ae91-6f39b373c3ad": {
@@ -335,16 +227,7 @@
       "rarity": "uncommon",
       "scanSignature": 3825,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        298,
-        510,
-        698,
-        707,
-        858,
-        910,
-        975,
-        1000
-      ],
+      "qualityBands": [298, 510, 698, 707, 858, 910, 975, 1000],
       "materialName": "Laranite"
     },
     "1ec31863-26a8-446e-9805-448bb50253ed": {
@@ -360,16 +243,7 @@
       "clusterFactor": 0.1,
       "rarity": "epic",
       "scanSignature": 3400,
-      "qualityBands": [
-        305,
-        585,
-        618,
-        729,
-        853,
-        930,
-        954,
-        1000
-      ],
+      "qualityBands": [305, 585, 618, 729, 853, 930, 954, 1000],
       "materialName": "Lindinium"
     },
     "2ee59447-83e0-4f26-899e-df66780008e3": {
@@ -384,16 +258,7 @@
       "explosionMultiplier": 0,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        348,
-        523,
-        686,
-        717,
-        861,
-        916,
-        975,
-        1000
-      ]
+      "qualityBands": [348, 523, 686, 717, 861, 916, 975, 1000]
     },
     "169ed316-3944-432f-88fa-0a39c5e6d2de": {
       "name": "Carinite",
@@ -408,16 +273,7 @@
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        273,
-        554,
-        647,
-        716,
-        880,
-        909,
-        959,
-        1000
-      ]
+      "qualityBands": [273, 554, 647, 716, 880, 909, 959, 1000]
     },
     "60d46a41-5930-4a13-9c72-bd988192d3a1": {
       "name": "Carinitepure",
@@ -443,16 +299,7 @@
       "explosionMultiplier": 0,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        304,
-        577,
-        621,
-        743,
-        886,
-        901,
-        957,
-        1000
-      ]
+      "qualityBands": [304, 577, 621, 743, 886, 901, 957, 1000]
     },
     "3af2af8d-5850-4900-ac7a-f9b38a959a07": {
       "name": "Hadanite",
@@ -466,16 +313,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        274,
-        526,
-        665,
-        762,
-        867,
-        916,
-        959,
-        1000
-      ]
+      "qualityBands": [274, 526, 665, 762, 867, 916, 959, 1000]
     },
     "f5b8c10a-521b-40f6-8761-1863e71fb8d4": {
       "name": "Jaclium",
@@ -489,16 +327,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        284,
-        576,
-        607,
-        781,
-        864,
-        941,
-        955,
-        1000
-      ]
+      "qualityBands": [284, 576, 607, 781, 864, 941, 955, 1000]
     },
     "7e324c5c-1b28-400a-ab66-290188ef282c": {
       "name": "Janalite",
@@ -512,16 +341,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        269,
-        596,
-        632,
-        732,
-        898,
-        926,
-        964,
-        1000
-      ]
+      "qualityBands": [269, 596, 632, 732, 898, 926, 964, 1000]
     },
     "af5ae7e0-467e-44c1-abd1-b5ce8ed63bcf": {
       "name": "Sadaryx",
@@ -535,16 +355,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        258,
-        510,
-        688,
-        797,
-        865,
-        940,
-        971,
-        1000
-      ]
+      "qualityBands": [258, 510, 688, 797, 865, 940, 971, 1000]
     },
     "8bb75cd2-f59d-40a5-9077-55089c1626c4": {
       "name": "Saldynium",
@@ -558,16 +369,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "fpsScanSignature": 3000,
-      "qualityBands": [
-        301,
-        575,
-        674,
-        757,
-        861,
-        938,
-        955,
-        1000
-      ]
+      "qualityBands": [301, 575, 674, 757, 861, 938, 955, 1000]
     },
     "76e7e6e9-6508-47a1-a381-e34ec1c997ce": {
       "name": "Beradom",
@@ -581,16 +383,7 @@
       "explosionMultiplier": 0,
       "clusterFactor": 0,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        287,
-        578,
-        656,
-        723,
-        881,
-        937,
-        969,
-        1000
-      ]
+      "qualityBands": [287, 578, 656, 723, 881, 937, 969, 1000]
     },
     "c793af1c-7dab-457e-a74d-88c435c9708b": {
       "name": "Carinite",
@@ -603,16 +396,7 @@
       "optimalWindowThinness": 10,
       "explosionMultiplier": 0.5,
       "clusterFactor": 0,
-      "qualityBands": [
-        273,
-        554,
-        647,
-        716,
-        880,
-        909,
-        959,
-        1000
-      ]
+      "qualityBands": [273, 554, 647, 716, 880, 909, 959, 1000]
     },
     "7e0eaf11-77e6-48c9-a184-f88648e7c148": {
       "name": "Feynmaline",
@@ -626,16 +410,7 @@
       "explosionMultiplier": 1,
       "clusterFactor": 0,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        371,
-        561,
-        682,
-        769,
-        880,
-        906,
-        965,
-        1000
-      ]
+      "qualityBands": [371, 561, 682, 769, 880, 906, 965, 1000]
     },
     "7e465c37-1d58-4533-a6e4-13abf1073554": {
       "name": "Glacosite",
@@ -649,16 +424,7 @@
       "explosionMultiplier": 0,
       "clusterFactor": 0,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        360,
-        567,
-        678,
-        724,
-        857,
-        916,
-        972,
-        1000
-      ]
+      "qualityBands": [360, 567, 678, 724, 857, 916, 972, 1000]
     },
     "8723956e-e947-4b84-9dcb-b2c6137895ab": {
       "name": "Ouratite (Raw)",
@@ -673,16 +439,7 @@
       "clusterFactor": 0.1,
       "rarity": "epic",
       "scanSignature": 3370,
-      "qualityBands": [
-        310,
-        523,
-        647,
-        779,
-        860,
-        912,
-        960,
-        1000
-      ],
+      "qualityBands": [310, 523, 647, 779, 860, 912, 960, 1000],
       "materialName": "Ouratite"
     },
     "fc62043c-3f29-4fff-b754-2301762723f7": {
@@ -699,16 +456,7 @@
       "rarity": "legendary",
       "scanSignature": 3170,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        344,
-        514,
-        669,
-        762,
-        852,
-        901,
-        974,
-        1000
-      ],
+      "qualityBands": [344, 514, 669, 762, 852, 901, 974, 1000],
       "materialName": "Quantainium"
     },
     "1d35c0bc-9142-42ff-8a83-0ec68d69a128": {
@@ -725,16 +473,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4210,
-      "qualityBands": [
-        330,
-        522,
-        641,
-        710,
-        899,
-        914,
-        969,
-        1000
-      ],
+      "qualityBands": [330, 522, 641, 710, 899, 914, 969, 1000],
       "materialName": "Quartz"
     },
     "905e9623-5e74-4a92-9cb1-72203ed8baad": {
@@ -750,16 +489,7 @@
       "clusterFactor": 0,
       "rarity": "epic",
       "scanSignature": 3385,
-      "qualityBands": [
-        325,
-        525,
-        671,
-        743,
-        870,
-        942,
-        965,
-        1000
-      ],
+      "qualityBands": [325, 525, 671, 743, 870, 942, 965, 1000],
       "materialName": "Riccite"
     },
     "6426f04e-2f7d-4c8e-a615-64aa582eaa31": {
@@ -775,16 +505,7 @@
       "clusterFactor": 0.1,
       "rarity": "legendary",
       "scanSignature": 3200,
-      "qualityBands": [
-        322,
-        580,
-        636,
-        776,
-        878,
-        905,
-        967,
-        1000
-      ],
+      "qualityBands": [322, 580, 636, 776, 878, 905, 967, 1000],
       "materialName": "Savrilium"
     },
     "9498a080-84c0-41f4-b88f-71942c60c43f": {
@@ -800,16 +521,7 @@
       "clusterFactor": 0,
       "rarity": "legendary",
       "scanSignature": 3185,
-      "qualityBands": [
-        330,
-        517,
-        681,
-        747,
-        874,
-        947,
-        972,
-        1000
-      ],
+      "qualityBands": [330, 517, 681, 747, 874, 947, 972, 1000],
       "materialName": "Stileron"
     },
     "219e8523-b953-4517-812a-0fb2eb023209": {
@@ -826,16 +538,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4255,
-      "qualityBands": [
-        310,
-        510,
-        672,
-        782,
-        889,
-        926,
-        968,
-        1000
-      ],
+      "qualityBands": [310, 510, 672, 782, 889, 926, 968, 1000],
       "materialName": "Silicon"
     },
     "8893c670-f9f7-48df-a05b-e85764994256": {
@@ -852,16 +555,7 @@
       "rarity": "rare",
       "scanSignature": 3555,
       "groundScanSignature": 4000,
-      "qualityBands": [
-        310,
-        525,
-        646,
-        718,
-        853,
-        925,
-        957,
-        1000
-      ],
+      "qualityBands": [310, 525, 646, 718, 853, 925, 957, 1000],
       "materialName": "Taranite"
     },
     "16b426e2-7ce1-4fb4-8b34-4d8617dd6a97": {
@@ -878,16 +572,7 @@
       "rarity": "common",
       "groundScanSignature": 4000,
       "scanSignature": 4195,
-      "qualityBands": [
-        340,
-        537,
-        664,
-        704,
-        880,
-        940,
-        964,
-        1000
-      ],
+      "qualityBands": [340, 537, 664, 704, 880, 940, 964, 1000],
       "materialName": "Tin"
     },
     "7b9055e5-6d62-44dd-a725-a31d838301eb": {
@@ -904,16 +589,7 @@
       "rarity": "uncommon",
       "groundScanSignature": 4000,
       "scanSignature": 3855,
-      "qualityBands": [
-        295,
-        516,
-        622,
-        784,
-        866,
-        916,
-        959,
-        1000
-      ],
+      "qualityBands": [295, 516, 622, 784, 866, 916, 959, 1000],
       "materialName": "Titanium"
     },
     "d0b10af3-e0f3-4bc3-b2d9-737dbb7846cf": {
@@ -929,16 +605,7 @@
       "clusterFactor": 0.05,
       "rarity": "uncommon",
       "scanSignature": 3900,
-      "qualityBands": [
-        262,
-        528,
-        661,
-        785,
-        873,
-        944,
-        951,
-        1000
-      ],
+      "qualityBands": [262, 528, 661, 785, 873, 944, 951, 1000],
       "materialName": "Torite"
     },
     "8f6a7e06-934d-4339-a0a2-75420b81369a": {
@@ -955,16 +622,7 @@
       "rarity": "uncommon",
       "groundScanSignature": 4000,
       "scanSignature": 3870,
-      "qualityBands": [
-        363,
-        530,
-        662,
-        787,
-        858,
-        902,
-        964,
-        1000
-      ],
+      "qualityBands": [363, 530, 662, 787, 858, 902, 964, 1000],
       "materialName": "Tungsten"
     }
   },
@@ -3301,16 +2959,7 @@
       ]
     }
   },
-  "qualityBandBoundaries": [
-    0,
-    400,
-    600,
-    700,
-    800,
-    900,
-    950,
-    999
-  ],
+  "qualityBandBoundaries": [0, 400, 600, 700, 800, 900, 950, 999],
   "qualityDistribution": {
     "creatures": {
       "default": {
@@ -3322,9 +2971,7 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": [
-              "Pyro"
-            ],
+            "locations": ["Pyro"],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -3353,9 +3000,7 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": [
-              "Pyro"
-            ],
+            "locations": ["Pyro"],
             "distribution": {
               "min": 201,
               "max": 1000,
@@ -3376,9 +3021,7 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": [
-              "Pyro"
-            ],
+            "locations": ["Pyro"],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -3399,9 +3042,7 @@
       "locationOverrides": {
         "pyro": [
           {
-            "locations": [
-              "Pyro"
-            ],
+            "locations": ["Pyro"],
             "distribution": {
               "min": 1,
               "max": 1000,
@@ -3423,9 +3064,7 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3446,9 +3085,7 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3469,9 +3106,7 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3482,9 +3117,7 @@
           ],
           "rcd": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3493,10 +3126,7 @@
               }
             },
             {
-              "locations": [
-                "Breaker Stations Interior",
-                "Breaker Stations Large Geode"
-              ],
+              "locations": ["Breaker Stations Interior", "Breaker Stations Large Geode"],
               "distribution": {
                 "min": 651,
                 "max": 1000,
@@ -3517,9 +3147,7 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3540,9 +3168,7 @@
         "locationOverrides": {
           "pyro": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3553,9 +3179,7 @@
           ],
           "torite": [
             {
-              "locations": [
-                "Pyro"
-              ],
+              "locations": ["Pyro"],
               "distribution": {
                 "min": 501,
                 "max": 1000,
@@ -3564,10 +3188,7 @@
               }
             },
             {
-              "locations": [
-                "Breaker Stations Interior",
-                "Breaker Stations Large Geode"
-              ],
+              "locations": ["Breaker Stations Interior", "Breaker Stations Large Geode"],
               "distribution": {
                 "min": 651,
                 "max": 1000,

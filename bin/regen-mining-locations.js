@@ -196,18 +196,18 @@ export function regenMiningLocations(options = {}) {
     log(`\n[${row['Location Name']}]`);
     if (row['Ship Mineables']) {
       log('  Ship Mineables:');
-      row['Ship Mineables'].split('\n').forEach((l) => log('    ' + l));
+      row['Ship Mineables'].split('\n').forEach((l) => log(`    ${l}`));
     }
     if (row['Hand Mineables']) {
       log('  Hand Mineables:');
-      row['Hand Mineables'].split('\n').forEach((l) => log('    ' + l));
+      row['Hand Mineables'].split('\n').forEach((l) => log(`    ${l}`));
     }
     if (row['Ground Vehicle Mineables']) {
       log('  Ground Vehicle Mineables:');
-      row['Ground Vehicle Mineables'].split('\n').forEach((l) => log('    ' + l));
+      row['Ground Vehicle Mineables'].split('\n').forEach((l) => log(`    ${l}`));
     }
     if (row['Quality Note']) {
-      log('  Quality Note: ' + row['Quality Note']);
+      log(`  Quality Note: ${row['Quality Note']}`);
     }
   }
 
