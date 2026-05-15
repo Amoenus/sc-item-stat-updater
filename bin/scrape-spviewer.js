@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { SpviewerScrapedDataSchema } from '../src/lib/schemas/spviewer.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootDir = join(__dirname, '..');
@@ -156,7 +157,14 @@ async function scrapeItems(browser, itemType) {
       return { headers, rows };
     });
 
-    return data;
+    const result = SpviewerScrapedDataSchema.safeParse(data);
+    if (!result.success) {
+      throw new Error(
+        `SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`,
+      );
+    }
+
+    return result.data;
   } finally {
     await page.close();
   }

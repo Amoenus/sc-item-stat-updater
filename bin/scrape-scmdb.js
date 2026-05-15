@@ -8,6 +8,13 @@ import {
   buildMiningJournalRows,
   buildMiningLocationRows,
 } from '../src/lib/scmdb/mining-parser.js';
+import {
+  ScmdbCraftingBlueprintsSchema,
+  ScmdbCraftingItemsSchema,
+  ScmdbMergedDataSchema,
+  ScmdbMiningDataSchema,
+  ScmdbVersionsSchema,
+} from '../src/lib/schemas/scmdb.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
@@ -59,6 +66,26 @@ async function fetchJson(url) {
     throw new Error(`Fetch failed ${res.status} ${res.statusText} for ${url}`);
   }
   return res.json();
+}
+
+/**
+ * Fetches JSON from a URL and validates it against a Zod schema.
+ * Throws a descriptive error immediately if the response does not conform.
+ *
+ * @template T
+ * @param {string} url
+ * @param {import('zod').ZodType<T>} schema
+ * @returns {Promise<T>}
+ */
+async function fetchAndValidate(url, schema) {
+  const raw = await fetchJson(url);
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    throw new Error(
+      `Schema validation failed for ${url}:\n${result.error.toString()}`,
+    );
+  }
+  return result.data;
 }
 
 function writeOutput(fileName, content) {
@@ -287,11 +314,7 @@ async function main() {
   }
 
   const versionsUrl = 'https://scmdb.net/data/versions.json';
-  const versions = await fetchJson(versionsUrl);
-
-  if (!Array.isArray(versions) || versions.length === 0) {
-    throw new Error('Unable to read SCMDB versions list');
-  }
+  const versions = await fetchAndValidate(versionsUrl, ScmdbVersionsSchema);
 
   if (listVersions) {
     console.log('Available SCMDB versions:');
@@ -336,31 +359,36 @@ async function main() {
   mkdirSync(missionsOutDir, { recursive: true });
 
   const mergedUrl = `https://scmdb.net/data/${selected.file}`;
-  const mergedData = await fetchJson(mergedUrl);
-  const rawFileName = `${selected.file}`;
-  writeOutput(rawFileName, JSON.stringify(mergedData, null, 2));
+  const mergedRaw = await fetchJson(mergedUrl);
+  writeOutput(selected.file, JSON.stringify(mergedRaw, null, 2));
 
   const miningUrl = `https://scmdb.net/data/mining_data-${selected.file.replace('merged-', '')}`;
   const craftingItemsUrl = `https://scmdb.net/data/crafting_items-${selected.file.replace('merged-', '')}`;
   const craftingBlueprintsUrl = `https://scmdb.net/data/crafting_blueprints-${selected.file.replace('merged-', '')}`;
 
-  const miningData = await fetchJson(miningUrl).catch(() => null);
-  const craftingItemsData = await fetchJson(craftingItemsUrl).catch(() => null);
-  const craftingBlueprintsData = await fetchJson(craftingBlueprintsUrl).catch(() => null);
+  const miningRaw = await fetchJson(miningUrl).catch(() => null);
+  const craftingItemsRaw = await fetchJson(craftingItemsUrl).catch(() => null);
+  const craftingBlueprintsRaw = await fetchJson(craftingBlueprintsUrl).catch(() => null);
 
-  if (miningData)
-    writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningData, null, 2));
-  if (craftingItemsData)
-    writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsData, null, 2));
-  if (craftingBlueprintsData)
+  if (miningRaw) writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningRaw, null, 2));
+  if (craftingItemsRaw)
+    writeOutput(`crafting_items-${selected.file.replace('merged-', '')}`, JSON.stringify(craftingItemsRaw, null, 2));
+  if (craftingBlueprintsRaw)
     writeOutput(
       `crafting_blueprints-${selected.file.replace('merged-', '')}`,
-      JSON.stringify(craftingBlueprintsData, null, 2),
+      JSON.stringify(craftingBlueprintsRaw, null, 2),
     );
 
   if (rawOnly) {
     return;
   }
+
+  // Validate at the integration boundary before data enters the transformation pipeline.
+  // Fail fast with a descriptive error if the upstream API shape has changed.
+  const mergedData = ScmdbMergedDataSchema.parse(mergedRaw);
+  const miningData = miningRaw ? ScmdbMiningDataSchema.parse(miningRaw) : null;
+  if (craftingItemsRaw) ScmdbCraftingItemsSchema.parse(craftingItemsRaw);
+  if (craftingBlueprintsRaw) ScmdbCraftingBlueprintsSchema.parse(craftingBlueprintsRaw);
 
   const chainData = collectBlueprintChainData(Array.isArray(mergedData.contracts) ? mergedData.contracts : []);
   const contractRows = Array.isArray(mergedData.contracts)
