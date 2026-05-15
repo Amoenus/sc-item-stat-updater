@@ -1,0 +1,34 @@
+Size,Name,Manufacturer,Type,Charges,Duration,Power Modifier Mining,Power Modifier Extract,Rock Modifier Resistance,Rock Modifier Instability,Rock Modifier Optimal Charge Zone,Rock Modifier Optimal Rate,Rock Modifier Shatter Damage,Rock Modifier Cluster Factor,Rock Modifier Overcharge Rate,Rock Modifier Inert Materials,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Mass,K µSCU
+2,BoreMax,Thermyte Concern,Gadget,,Passive,,,+10%,-70%,,,,+30%,,,10,1,1,1,0.1,,,10,10.2
+1,Brandt,Musashi Industrial & Starflight Concern,Module,5,60s,+35%,,+15.5%,,,,-30%,,,,200,1,1,1,0.1,,,1.5,5.998
+1,FLTR,Greycat Industrial,Module,1,Passive,,-15%,,,,,,,,-20%,200,1,1,1,0.1,,,1.5,10.387
+1,FLTR-L,Greycat Industrial,Module,1,Passive,,-10%,,,,,,,,-23%,200,1,1,1,0.1,,,1.5,10.387
+1,FLTR-XL,Greycat Industrial,Module,1,Passive,,-5%,,,,,,,,-24%,200,1,1,1,0.1,,,1.5,13.147
+1,Focus,Thermyte Concern,Module,1,Passive,-15%,,,,+30%,,,,,,200,1,1,1,0.1,,,1.5,6.984
+1,Focus II,Thermyte Concern,Module,1,Passive,-10%,,,,+37%,,,,,,200,1,1,1,0.1,,,1.5,6.984
+1,Focus III,Thermyte Concern,Module,1,Passive,-5%,,,,+40%,,,,,,200,1,1,1,0.1,,,1.5,6.988
+1,Forel,Shubin Interstellar,Module,6,60s,,+50%,+15.5%,,,,,,-60%,,200,1,1,1,0.1,,,1.5,5.998
+1,Lifeline,Greycat Industrial,Module,3,15s,,,-15.5%,-20%,,,,,+60%,,200,1,1,1,0.1,,,1.5,5.699
+2,Okunis,Shubin Interstellar,Gadget,,Passive,,,,,+50%,+100%,,-20%,,,10,1,1,1,0.1,,,10,10.2
+2,OptiMax,Greycat Industrial,Gadget,,Passive,,,-25%,,-30%,,,+60%,,,10,1,1,1,0.1,,,10,10.2
+1,Optimum,Greycat Industrial,Module,5,60s,-15%,,,-10%,,,,,-80%,,200,1,1,1,0.1,,,1.5,4.785
+1,Rieger,Shubin Interstellar,Module,1,Passive,+15%,,,,-10%,,,,,,200,1,1,1,0.1,,,1.5,7.708
+1,Rieger-C2,Shubin Interstellar,Module,1,Passive,+20%,,,,-3%,,,,,,200,1,1,1,0.1,,,1.5,7.708
+1,Rieger-C3,Shubin Interstellar,Module,1,Passive,+25%,,,,-1%,,,,,,200,1,1,1,0.1,,,1.5,7.71
+1,Rime,Greycat Industrial,Module,10,20s,-15%,,-24.8%,,,,-10%,,,,200,1,1,1,0.1,,,1.5,5.699
+1,ROC,Thermyte Concern,Module,0,Passive,,,,,,,,,,,200,1,1,1,0.1,,,,10.644
+2,Sabir,Shubin Interstellar,Gadget,,Passive,,,-50%,+15%,+50%,,,,,,10,1,1,1,0.1,,,10,10.2
+2,Stalwart,Thermyte Concern,Gadget,,Passive,,,,-35%,-30%,+50%,,+30%,,,10,1,1,1,0.1,,,10,10.2
+1,Stampede,Thermyte Concern,Module,6,30s,+35%,-15%,,-10%,,,-10%,,,,200,1,1,1,0.1,,,1.5,10.644
+1,Surge,Thermyte Concern,Module,7,15s,+50%,,-15.5%,+10%,,,,,,,200,1,1,1,0.1,,,1.5,10.644
+1,Torpid,Greycat Industrial,Module,5,60s,,,,,,+60%,+40%,,-60%,,200,1,1,1,0.1,,,1.5,5.699
+1,Torrent,Thermyte Concern,Module,1,Passive,,,,,-10%,+30%,,,,,200,1,1,1,0.1,,,1.5,7.892
+1,Torrent II,Thermyte Concern,Module,1,Passive,,,,,-3%,+35%,,,,,200,1,1,1,0.1,,,1.5,9.492
+1,Torrent III,Thermyte Concern,Module,1,Passive,,,,,-1%,+45%,,,,,200,1,1,1,0.1,,,1.5,10.521
+1,Vaux,Shubin Interstellar,Module,1,Passive,,+15%,,,,-20%,,,,,200,1,1,1,0.1,,,1.5,4.561
+1,Vaux-C2,Shubin Interstellar,Module,1,Passive,,+20%,,,,-15%,,,,,200,1,1,1,0.1,,,1.5,4.918
+1,Vaux-C3,Shubin Interstellar,Module,1,Passive,,+25%,,,,-5%,,,,,200,1,1,1,0.1,,,1.5,7.153
+2,Waveshift,Greycat Industrial,Gadget,,Passive,,,,-35%,+100%,-30%,,,,,10,1,1,1,0.1,,,10,10.2
+1,XTR,Greycat Industrial,Module,1,Passive,,-15%,,,+15%,,,,,-5%,200,1,1,1,0.1,,,1.5,5.966
+1,XTR-L,Greycat Industrial,Module,1,Passive,,-10%,,,+22%,,,,,-5.75%,200,1,1,1,0.1,,,1.5,6.917
+1,XTR-XL,Greycat Industrial,Module,1,Passive,,-5%,,,+25%,,,,,-6%,200,1,1,1,0.1,,,1.5,7.559

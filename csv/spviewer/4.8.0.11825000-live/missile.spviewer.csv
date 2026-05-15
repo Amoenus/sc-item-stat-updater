@@ -1,0 +1,65 @@
+Size,Name,Manufacturer,Rack Compatibility,Tracking Signal,Tracking Signal Min.,Speed  m/s,Damage Total,Damage Physical,Damage Energy,Damage Distortion,Explosion Safety Distance,Explosion Proximity,Explosion Radius,Delay Arm,Delay Lock,Delay Ignite,Target Lock Acquisition,Target Lock Range,Target Lock Angle,Target Lock Ratio Min.,Fuel  Tank,Flight Time,Flight Distance,Flight Boost Phase Duration,Flight Terminal Phase Time,Flight Terminal Phase Angle,Health,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Damage Multipliers Stun,Mass,K µSCU
+1,'Arrow' I Missile,Vanduul,Ship,Infrared,15.3,1 372,600,600,0,0,5,0.5,4 - 6,1,0.5,0.2,1.7,1 700 - 10 000,45,1,30,15,20 580,2,1.5,45,25,1,1,1,1,,,70,15.625
+2,'Bullet' II Missile,Vanduul,Ship,Infrared,18.4,1 029,1 300,1 300,0,0,5,0.5,9 - 11,1.25,0.8,0.2,1.7,1 800 - 10 000,45,1,40,30,30 870,2,1.5,45,25,1,1,1,1,,,113,31.25
+3,'Chaos' III Missile,Vanduul,Ship,Infrared,19.8,857.5,2 500,2 500,0,0,5,0.5,11 - 13,1.5,1,0.3,0.4,1 900 - 25 000,60,1,45,35,30 012,2,1.5,45,25,1,1,1,1,,,171,46.875
+4,'Dragon' IV Missile,Behring,Ship,Infrared,30.4,686,5 000,5 000,0,0,5,0.5,16 - 22,1.5,1.3,0.5,1,2 000 - 25 000,45,1,55,45,30 870,2,1.5,45,25,1,1,1,1,,,212,62.5
+9,Argos IX Torpedo,Talon,Ship,CrossSection,9,514,400 000,400 000,0,0,1500,0.5,18 - 22,4,5,0.8,1.7,2 500 - 40 000,12,1,130,90,46 260,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+3,Argos IX-G Torpedo,Talon,Ground Vehicle,CrossSection,11.2,450,4 500,4 500,0,0,5,0.5,4 - 6,1.5,3,0.52,1.7,50 - 25 000,12,1,10,30,13 500,0.5,3,45,1 000,1,1,1,1,,,449,1 000
+9,Argos IX-G Torpedo,Talon,Ground Vehicle,CrossSection,9,514,560 000,560 000,0,0,1500,0.5,18 - 22,4,5,0.8,1.7,50 - 40 000,12,1,130,90,46 260,0.5,1.5,45,667,1,1,1,1,,,449,140.625
+3,Arrester III Missile,FireStorm Kinetics,Ship,CrossSection,6,857.5,3 200,3 200,0,0,5,0.5,4 - 6,1.5,1,0.3,0.8,1 900 - 25 000,60,1,50,35,30 012,1,0.5,120,25,1,1,1,1,,,119,46.875
+4,Assailant IV Missile,Talon,Ship,CrossSection,8,686,6 500,6 500,0,0,5,0.5,4 - 9,1.5,1.3,0.5,1,2 000 - 25 000,45,1,55,45,30 870,1.5,1.5,45,25,1,1,1,1,,,224,62.5
+4,Assailant IV-G Missile,Talon,Ground Vehicle,CrossSection,8,686,7 400,7 400,0,0,5,0.5,14 - 19,1.5,1.3,0.5,1,50 - 25 000,45,1,55,45,30 870,0.5,1.5,45,25,1,1,1,1,,,224,62.5
+12,Calamity XII-CS Torpedo,Talon,Ship,CrossSection,11.2,230,1 150 000,1 150 000,0,0,1500,0.5,32 - 38,5,10,0.2,1.7,3 500 - 35 000,20,1,130,165,37 950,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+12,Calamity XII-EM Torpedo,Talon,Ship,Electromagnetic,11.2,230,1 050 000,1 050 000,0,0,1500,0.5,38 - 52,5,10,0.2,1.7,3 500 - 35 000,20,1,130,165,37 950,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+12,Calamity XII-IR Torpedo,Talon,Ship,Infrared,11.2,230,910 000,910 000,0,0,1500,0.5,45 - 65,5,10,0.2,1.7,3 500 - 35 000,20,1,130,165,37 950,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+2,Dominator II Missile,Talon,Ship,Electromagnetic,13.86,1 029,1 500,1 500,0,0,5,0.5,5 - 7,1.25,0.84,0.2,1.7,1 800 - 10 000,45,1,40,30,30 870,2,1.5,45,25,1,1,1,1,,,136,31.25
+2,Dominator II-G Missile,Talon,Ground Vehicle,Electromagnetic,13.86,1 029,2 100,2 100,0,0,5,0.5,5 - 7,1.25,0.84,0.2,1.7,50 - 10 000,45,1,40,30,30 870,0.5,1.5,45,25,1,1,1,1,,,136,31.25
+10,"EX-T10-CS ""Executor"" Torpedo",Behring,Ship,CrossSection,11.2,375,805 000,805 000,0,0,1500,0.5,23 - 27,1,7,0.8,1.7,2 500 - 27 000,20,1,130,135,50 625,1.5,1.5,45,667,1,1,1,1,,,855,140.625
+10,"EX-T10-EM ""Executor"" Torpedo",Behring,Ship,Electromagnetic,11.2,375,730 000,730 000,0,0,1500,0.5,29 - 35,1,7,0.8,1.7,2 500 - 27 000,20,1,130,135,50 625,1.5,1.5,45,667,1,1,1,1,,,855,140.625
+10,"EX-T10-IR ""Executor"" Torpedo",Behring,Ship,Infrared,11.2,375,670 000,670 000,0,0,1500,0.5,34 - 42,1,7,0.8,1.7,2 500 - 27 000,20,1,130,135,50 625,1.5,1.5,45,667,1,1,1,1,,,855,140.625
+12,"EX-T12-CS ""Executor"" Torpedo",Behring,Ship,CrossSection,11.2,350,1 230 000,1 230 000,0,0,1500,0.5,30 - 34,5,10,0.2,1.7,3 500 - 35 000,20,1,130,135,47 250,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+12,"EX-T12-EM ""Executor"" Torpedo",Behring,Ship,Electromagnetic,11.2,350,1 075 000,1 075 000,0,0,1500,0.5,36 - 48,5,10,0.2,1.7,3 500 - 35 000,20,1,130,135,47 250,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+12,"EX-T12-IR ""Executor"" Torpedo",Behring,Ship,Infrared,11.2,350,950 000,950 000,0,0,1500,0.5,42 - 61,5,10,0.2,1.7,3 500 - 35 000,20,1,130,135,47 250,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+7,Hellion VII Missile,Talon,Ship,Infrared,11,514,90 000,90 000,0,0,5,0.5,13 - 26,3,2,0.5,1.7,50 - 35 000,20,1,110,80,41 120,2,1.5,45,200,1,1,1,1,,,452,109.375
+7,Hellion VII-G Missile,Talon,Ground Vehicle,Infrared,11,514,126 000,126 000,0,0,5,0.5,13 - 26,3,2,0.5,1.7,50 - 35 000,20,1,110,80,41 120,0.5,1.5,45,200,1,1,1,1,,,452,109.375
+2,Ignite II Missile,FireStorm Kinetics,Ship,Infrared,17.8,1 029,1 440,1 440,0,0,5,0.5,7 - 8,1.25,0.3,0.2,0.6,1 800 - 10 000,60,1,40,30,30 870,1,0.5,120,25,1,1,1,1,,,113,31.25
+2,Ignite II-G Missile,FireStorm Kinetics,Ground Vehicle,Infrared,17.8,1 029,2 000,2 000,0,0,5,0.5,7 - 8,1.25,0.3,0.2,0.6,50 - 10 000,60,1,40,30,30 870,1,0.5,120,25,1,1,1,1,,,113,31.25
+1,Marksman I Missile,Behring,Ship,Infrared,15,1 372,650,650,0,0,5,0.5,3 - 5,1.5,0.5,0.1,0.3,1 700 - 10 000,60,1,30,15,20 580,2,1,45,25,1,1,1,1,,,56,15.625
+1,Marksman I-G Missile,Behring,Ground Vehicle,Infrared,15,1 372,900,900,0,0,5,0.5,3 - 5,1.5,0.5,0.1,0.3,50 - 10 000,60,1,30,15,20 580,0.5,1,45,25,1,1,1,1,,,56,15.625
+9,MISL S09 CS TALN Argos 2,Talon,Ship,CrossSection,9,250,380 000,380 000,0,0,1500,0.5,20 - 26,4,5,0.8,1.7,2 500 - 30 000,12,1,64,60,15 000,1.5,1.5,45,667,1,1,1,1,,,449,140.625
+0,Nova Pyrotechnica Venom Rocket (Rattler II),Nova Pyrotechnica,Ship,Infrared,11.2,1 500,300,100,200,0,5,0.2,0.5 - 0.8,1.5,0,0.2,1.7,,12,1,32,30,45 000,1.5,1.5,80,1 000,1,1,1,1,,,89,84
+4,Pathfinder IV Missile,Behring,Ship,Infrared,30.2,686,5 300,5 300,0,0,5,0.5,14 - 19,1.5,1.3,0.5,1,2 000 - 25 000,45,1,55,45,30 870,2,1.5,45,25,1,1,1,1,,,203,62.5
+4,Pathfinder IV-G Missile,Behring,Ground Vehicle,Infrared,30.2,686,9 100,9 100,0,0,5,0.5,4 - 9,1.5,1.3,0.5,1,50 - 25 000,45,1,55,45,30 870,0.5,1.5,45,25,1,1,1,1,,,203,62.5
+1,Pioneer I Missile,Behring,Ship,Electromagnetic,25.375,1 372,750,750,0,0,5,0.5,2 - 3,1.3,0.9,0.1,0.5,1 700 - 10 000,60,1,30,15,20 580,2,1.5,45,25,1,1,1,1,,,51,15.625
+1,Pioneer I-G Missile,Behring,Ground Vehicle,Electromagnetic,25.375,1 372,1 050,1 050,0,0,5,0.5,2 - 3,1.3,0.9,0.1,0.5,50 - 10 000,60,1,30,15,20 580,0.5,1.5,45,25,1,1,1,1,,,51,15.625
+4,Raptor IV Missile,Talon,Ship,Electromagnetic,40.9,686,5 750,5 750,0,0,5,0.5,9 - 12,1.5,1.7,0.5,1,2 000 - 25 000,45,1,55,45,30 870,2,1.5,45,25,1,1,1,1,,,221,62.5
+2,Rattler II Missile,Nova Pyrotechnica,Ship,Infrared,16.5,1 029,1 370,1 370,0,0,5,0.5,3 - 6,1.25,0.8,0.2,1.7,1 800 - 5 000,45,1,40,10,10 290,2,1.5,45,25,1,1,1,1,,,133,31.25
+5,Reaper V Missile,Talon,Ship,Electromagnetic,22,560,15 500,15 500,0,0,5,0.5,13 - 20,2,1,0.5,0.4,2 000 - 30 000,20,1,100,60,33 600,2,1.5,45,50,1,1,1,1,,,326,78.125
+5,Reaper V-G Missile,Talon,Ground Vehicle,Electromagnetic,22,560,22 000,22 000,0,0,5,0.5,13 - 20,2,1,0.5,0.4,50 - 30 000,20,1,100,60,33 600,0.5,1.5,45,50,1,1,1,1,,,326,78.125
+5,Scimitar V Missile,Talon,Ship,Electromagnetic,22,560,14 500,14 500,0,0,5,0.5,15 - 24,1.5,2.3,0.52,1.7,50 - 30 000,20,1,100,60,33 600,2,2.5,45,50,1,1,1,1,,,314,78.125
+5,Scimitar V-G Missile,Talon,Ground Vehicle,Electromagnetic,22,560,20 000,20 000,0,0,5,0.5,15 - 24,1.5,2.3,0.52,1.7,50 - 30 000,20,1,100,60,33 600,0.5,2.5,45,50,1,1,1,1,,,314,78.125
+9,Seeker IX Torpedo,Talon,Ship,Electromagnetic,11.2,514,350 000,350 000,0,0,1500,0.5,25 - 32,4,5,0.8,1.7,2 500 - 40 000,20,1,130,90,46 260,2,1.5,45,667,1,1,1,1,,,447,140.625
+9,Seeker IX-G Torpedo,Talon,Ground Vehicle,Electromagnetic,11.2,514,490 000,490 000,0,0,1500,0.5,25 - 32,4,5,0.8,1.7,50 - 40 000,20,1,130,90,46 260,0.5,1.5,45,667,1,1,1,1,,,447,140.625
+1,Spark I Missile,FireStorm Kinetics,Ship,CrossSection,4,1 372,800,800,0,0,5,0.5,1 - 2,0.8,0.4,0.2,0.6,1 700 - 10 000,60,1,30,15,20 580,1.5,0.8,45,25,1,1,1,1,,,63,15.625
+1,Spark I-G Missile,FireStorm Kinetics,Ground Vehicle,CrossSection,4,1 372,1 150,1 150,0,0,5,0.5,1 - 2,0.8,0.4,0.2,0.6,50 - 10 000,60,1,30,15,20 580,0.5,0.8,45,25,1,1,1,1,,,63,15.625
+5,Stalker V Missile,Talon,Ship,CrossSection,8,560,18 000,18 000,0,0,5,0.5,8 - 10,2,1,0.5,1.7,2 000 - 30 000,20,1,100,60,33 600,1.5,1.5,45,50,1,1,1,1,,,303,78.125
+5,Stalker V-G Missile,Talon,Ground Vehicle,CrossSection,8,560,25 000,25 000,0,0,5,0.5,8 - 10,2,1,0.5,1.7,50 - 30 000,20,1,100,60,33 600,0.5,1.5,45,50,1,1,1,1,,,303,78.125
+2,StrikeForce II Missile,Thermyte Concern,Ship,CrossSection,5,1 029,1 600,1 600,0,0,5,0.5,3 - 6,1.25,0.1,0.2,0.6,1 800 - 10 000,60,1,40,30,30 870,1.5,1.5,45,25,1,1,1,1,,,72,31.25
+2,StrikeForce II-G Missile,Thermyte Concern,Ground Vehicle,CrossSection,5,1 029,2 250,2 250,0,0,5,0.5,3 - 6,1.25,0.1,0.2,0.6,50 - 10 000,60,1,40,30,30 870,0.5,1.5,45,25,1,1,1,1,,,72,31.25
+1,TaskForce I Missile,Thermyte Concern,Ship,Electromagnetic,20.3,1 372,700,700,0,0,5,0.5,2 - 4,1,0.1,0.1,0.6,1 700 - 10 000,60,1,30,15,20 580,2,1.5,45,25,1,1,1,1,,,25,15.625
+1,TaskForce I-G Missile,Thermyte Concern,Ground Vehicle,Electromagnetic,20.3,1 372,980,980,0,0,5,0.5,2 - 4,1,0.1,0.1,0.6,50 - 10 000,60,1,30,15,20 580,0.5,1.5,45,25,1,1,1,1,,,25,15.625
+2,Tempest II Missile,FireStorm Kinetics,Ship,CrossSection,5,1 029,1 700,1 700,0,0,5,0.5,2 - 4,1.25,0.1,0.2,0.6,1 800 - 10 000,60,1,40,30,30 870,1.5,1.5,45,25,1,1,1,1,,,121,31.25
+2,Tempest II-G Missile,FireStorm Kinetics,Ground Vehicle,CrossSection,5,1 029,2 400,2 400,0,0,5,0.5,2 - 4,1.25,0.1,0.2,0.6,50 - 10 000,60,1,40,30,30 870,0.5,1.5,45,25,1,1,1,1,,,121,31.25
+3,Thunderbolt III Missile,FireStorm Kinetics,Ship,Electromagnetic,11.9,857.5,2 900,2 900,0,0,5,0.5,5 - 8,1.5,1,0.3,0.8,1 900 - 25 000,60,1,45,35,30 012,2,1.5,45,25,1,1,1,1,,,119,46.875
+3,Thunderbolt III-G Missile,Talon,Ground Vehicle,CrossSection,11.2,450,4 100,4 100,0,0,5,0.5,5 - 8,1.5,3,0.52,1.7,50 - 25 000,12,1,10,30,13 500,0.5,3,45,1 000,1,1,1,1,,,449,1 000
+9,Typhoon IX Torpedo,Talon,Ship,Infrared,11,514,300 000,300 000,0,0,1500,0.5,30 - 40,1,5,0.8,1.7,2 500 - 40 000,20,1,130,90,46 260,2,1.5,45,667,1,1,1,1,,,452,140.625
+9,Typhoon IX-G Torpedo,Talon,Ground Vehicle,Infrared,11,514,420 000,420 000,0,0,1500,0.5,30 - 40,1,5,0.8,1.7,50 - 40 000,20,1,130,90,46 260,0.5,1.5,45,667,1,1,1,1,,,452,140.625
+5,Valkyrie V Missile,Talon,Ship,Infrared,22,560,12 000,12 000,0,0,5,0.5,20 - 32,2,1,0.5,1.7,2 000 - 30 000,20,1,100,60,33 600,2,1.5,45,50,1,1,1,1,,,314,78.125
+5,Valkyrie V-G Missile,Talon,Ground Vehicle,Infrared,22,560,17 000,17 000,0,0,5,0.5,20 - 32,2,1,0.5,1.7,50 - 30 000,20,1,100,60,33 600,0.5,1.5,45,50,1,1,1,1,,,314,78.125
+10,Vanduul Cleaver,Vanduul,Ship,CrossSection,11.2,527,610 000,61 000,549 000,0,1500,0.5,40 - 50,1.5,5,0.52,1.7,0 - 30 000,20,1,64,60,31 620,2,1.5,45,667,1,1,1,1,,,449,187.5
+10,Vanquisher X-CS Torpedo,Talon,Ship,CrossSection,11.2,255,805 000,805 000,0,0,1500,0.5,25 - 30,1,7,0.8,1.7,2 500 - 40 000,12,1,130,165,42 075,1.5,1.5,45,667,1,1,1,1,,,905,140.625
+10,Vanquisher X-EM Torpedo,Talon,Ship,Electromagnetic,11.2,255,720 000,720 000,0,0,1500,0.5,34 - 42,1,7,0.8,1.7,2 500 - 40 000,20,1,130,165,42 075,1.5,1.5,45,667,1,1,1,1,,,905,140.625
+10,Vanquisher X-IR Torpedo,Talon,Ship,Infrared,11.2,255,630 000,630 000,0,0,1500,0.5,38 - 47,1,7,0.8,1.7,2 500 - 40 000,20,1,130,165,42 075,1.5,1.5,45,667,1,1,1,1,,,905,140.625
+3,Viper III Missile,Nova Pyrotechnica,Ship,Infrared,19.7,857.5,2 650,2 650,0,0,5,0.5,7 - 11,1.5,1,0.3,0.8,1 900 - 25 000,60,1,45,35,30 012,2,1.5,45,25,1,1,1,1,,,189,46.875
+3,Viper III-G Missile,Nova Pyrotechnica,Ground Vehicle,Infrared,16.5,1 029,3 700,3 700,0,0,5,0.5,7 - 11,1.25,0.8,0.2,1.7,50 - 25 000,45,1,40,10,10 290,0.5,1.5,45,25,1,1,1,1,,,133,31.25
+10,"VT-T10 ""Veritas"" Torpedo",Behring,Ship,Infrared,11.2,270,650 000,650 000,0,0,1500,0.5,36 - 45,1,7,0.8,1.7,2 500 - 30 000,20,1,64,150,40 500,2,1.5,45,667,1,1,1,1,,,449,140.625
