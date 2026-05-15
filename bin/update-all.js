@@ -9,6 +9,7 @@ import { runUpdate } from '../src/lib/updater.js';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
+import { runMissingStringsUpdate } from '../src/lib/updates/missing-strings.js';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
 import { regenMiningLocations } from './regen-mining-locations.js';
 
@@ -264,6 +265,18 @@ try {
 } catch (err) {
   logger.error('Failed to apply raw commodity label fixes', { error: err.message });
   errors.push({ label: 'Raw commodity labels', message: err.message });
+}
+
+try {
+  const missingStringsResult = await runMissingStringsUpdate({
+    iniPath,
+    patchPath: path.join(repoRoot, 'missing-strings.ini'),
+    dryRun: options.dryRun,
+  });
+  results.push(missingStringsResult);
+} catch (err) {
+  logger.error('Failed to insert missing strings', { error: err.message });
+  errors.push({ label: 'Missing strings', message: err.message });
 }
 
 const totalDuration = Math.round(performance.now() - totalStart);
