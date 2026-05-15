@@ -1,0 +1,9 @@
+Size,Name,Manufacturer,Class,Grade,Jump Drive Characteristics Alignment Rate,Jump Drive Characteristics Alignment Decay Rate,Jump Drive Characteristics Tuning Rate,Jump Drive Characteristics Tuning Decay Rate,Jump Drive Characteristics Fuel Usage Multiplier,Distortion Resistance Shutdown Dmg,Distortion Resistance Decay Delay,Distortion Resistance Decay Rate,Distortion Resistance Shutdown Time,EM Emit Active,EM Emit Decay,IR Emit,Health,Damage Multipliers Active,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Lifetime,Self Repair Stun,Self Repair Use,Self Repair Time to Repair,Mass,K µSCU
+2,Excelsior,Tarsus,Civilian,C,0.2,0.1,0.22,0.1,1.5,1 200,1,240,2.5s,0,0.15,0,350,0.8,0.8,1,0.1,1,1,,1,59.5,20%,320,775.76
+4,Exfiltrate,-,-,A,0.2,0.1,0.26,0.1,8,1 728,1,345.6,2.5s,0,0.15,0,41 000,0.8,0.8,1,0.1,1,1,,1,558,20%,25 000,0.001
+3,Exodus,Tarsus,Civilian,C,0.2,0.1,0.24,0.1,4.5,1 440,1,288,2.5s,0,0.15,0,960,0.8,0.8,1,0.1,1,1,,1,104,20%,950,6 066
+1,Explorer,Tarsus,Civilian,A,0.33,0.1,0.2,0.1,1,1 000,1,200,2.5s,0,0.15,0,130,0.8,0.8,1,0.1,1,1,,1,34,20%,110,91.29
+4,JDRV AEGS S04 Javelin SCItem,Aegis Dynamics,-,C,0.2,0.1,0.26,0.1,8,1 728,1,345.6,2.5s,0,0.15,0,77 000,0.8,0.8,1,0.1,1,1,,1,781,20%,130 000,0.001
+4,JDRV ORIG S04 890J SCItem,-,-,C,0.2,0.1,0.26,0.1,8,1 728,1,345.6,2.5s,0,0.15,0,6 300,0.8,0.8,1,0.1,1,1,,1,255,20%,8 500,0.001
+4,JDRV RSI S04 Bengal SCItem,-,-,A,0.2,0.1,0.26,0.1,8,1 728,1,345.6,2.5s,0,0.15,0,280 000,0.8,0.8,1,0.1,1,1,,1,1140,20%,380 000,0.001
+4,JDRV TARS S04 C Explorer,Tarsus,-,C,0.2,0.1,0.26,0.1,8,1 728,1,345.6,2.5s,0,0.15,0,2 700,0.8,0.8,1,0.1,1,1,,1,182,20%,2 800,0.001

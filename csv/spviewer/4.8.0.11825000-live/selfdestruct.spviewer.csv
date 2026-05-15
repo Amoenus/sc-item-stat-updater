@@ -1,0 +1,8 @@
+Size,Name,Manufacturer,Explosion Countdown,Explosion Damage,Explosion Radius
+1,Self Destruct Unit,-,10s,500,5 - 10
+1,Self Destruct Unit,-,120s,120 000,100 - 175
+1,Self Destruct Unit,-,20s,2 500,10 - 30
+1,Self Destruct Unit,-,30s,5 000,5 - 50
+1,Self Destruct Unit,-,45s,15 000,30 - 80
+1,Self Destruct Unit,-,60s,30 000,50 - 120
+1,Self Destruct Unit,-,80s,60 000,80 - 150

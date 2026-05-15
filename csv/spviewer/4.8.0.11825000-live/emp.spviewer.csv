@@ -1,0 +1,8 @@
+Size,Name,Manufacturer,Damage Total,Damage Radius,Delay Charge,Delay Unleash,Cooldown,Distortion Resistance Shutdown Dmg,Distortion Resistance Decay Delay,Distortion Resistance Decay Rate,Distortion Resistance Shutdown Time,EM Emit Active,EM Emit Decay,IR Emit,Power Segment Usage Start,Power Segment Usage Min,Cooling Usage Max,Cooling Usage Min,Temperature (°C) Max,Temperature (°C) Cooling Threshold,Temperature (°C) IR Threshold,Temperature (°C) Overheat,Temperature (°C) Max,Health,Damage Multipliers Recovery,Damage Multipliers Physical,Damage Multipliers Energy,Damage Multipliers Distortion,Damage Multipliers Thermal,Damage Multipliers Biochemical,Lifetime,Self Repair Stun,Self Repair Use,Self Repair Time to Repair,Mass,K µSCU
+4,Magstrand EMP Generator,-,3 300,250 - 1100,22,1.5,16,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,4 000,84
+4,REP-8 EMP Generator,Behring,2 750,250 - 750,20,1.5,22,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,4 000,2 100
+4,REP-VS EMP Generator,Behring,3 300,250 - 900,26,1.5,40,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,4 000,2 100
+2,TroMag Burst Generator,-,2 475,150 - 750,12,0.75,12,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,200,252
+2,TroMag Burst Generator,MaxOx,2 750,150 - 600,15,0.75,12,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,200,252
+2,TroMag Burst Generator,-,1 800,250 - 750,12,0.75,12,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,200,0.001
+1,TroMag Burst Generator,Tumbril Land Systems,1 000,150 - 400,12,0.75,6,500 000,0,500 000,1s,0,0.15,0,1,1,,,,,,,,150,1,1,1,1,1,1,1 440,1,120,20%,10,84
