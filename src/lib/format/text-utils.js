@@ -25,14 +25,11 @@ export function extractPlaceholders(value) {
   if (!value) return [];
   const placeholders = [];
 
-  const tildeRegex = /(~\w+\(.*?\))/g;
-  let match;
-  while ((match = tildeRegex.exec(value)) !== null) {
+  for (const match of value.matchAll(/(~\w+\(.*?\))/g)) {
     placeholders.push(match[1]);
   }
 
-  const percentRegex = /(%\w+)/g;
-  while ((match = percentRegex.exec(value)) !== null) {
+  for (const match of value.matchAll(/(%\w+)/g)) {
     placeholders.push(match[1]);
   }
 

@@ -187,8 +187,7 @@ function processRow(row, context, deriveDescKey, _force = false) {
     return;
   }
 
-  const newValue = sanitizeIniValue(context.config.buildValue(row, '', '', targetKeys[0]));
-  context.markNew(`${targetKeys[0]}=${newValue}`);
+  context.markMissing(targetKeys[0]);
 }
 
 /** Inserts new lines at the correct position (after last matching desc key). */
@@ -199,6 +198,24 @@ function insertNewEntries(lines, newLines, lastDescIdx) {
     for (let i = 0; i < newLines.length; i++) lines.splice(lastDescIdx + 1 + i, 0, newLines[i]);
   } else {
     lines.push(...newLines);
+  }
+}
+
+export function validateIntegrity(originalLineCount, lines) {
+  if (originalLineCount - lines.length > 10) {
+    throw new Error(
+      `Integrity validation failed: File shrank excessively (original: ${originalLineCount}, new: ${lines.length})`,
+    );
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line && !line.startsWith(';') && !line.startsWith('[')) {
+      if (!line.includes('=')) {
+        throw new Error(
+          `Integrity validation failed: Structural issue detected on line ${i + 1} (missing '=' delimiter)`,
+        );
+      }
+    }
   }
 }
 
@@ -253,6 +270,12 @@ class UpdateContext {
     this.foundCount++;
   }
 
+  markMissing(key) {
+    logger.info('Missing key in target INI file, skipping', { label: this.config.label, key });
+    this.issues.push({ key, reason: 'Key missing from global.ini', type: 'missing' });
+    this.skippedCount++;
+  }
+
   buildResult(durationMs) {
     const suffix = this.dryRun ? ' (dry run)' : '';
     const errorSuffix = this.errorCount > 0 ? `, Errors ${this.errorCount}` : '';
@@ -300,6 +323,7 @@ export async function runUpdate(config, options = {}) {
   try {
     const rows = await loadSourceData(config, opts.csvDir);
     const { lines, index: existingKeys } = await readIniFile(opts.iniPath);
+    const originalLineCount = lines.length;
 
     const unresolvedNames = config.nameColumn
       ? await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun)
@@ -329,6 +353,8 @@ export async function runUpdate(config, options = {}) {
     }
 
     insertNewEntries(lines, context.newLines, lastDescIdx);
+
+    validateIntegrity(originalLineCount, lines);
 
     if (!opts.dryRun && (context.updatedCount > 0 || context.newCount > 0 || (opts.force && context.foundCount > 0))) {
       await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
