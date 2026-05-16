@@ -2,7 +2,6 @@
 import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
 import { getLogger } from '../logger.js';
 import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils.js';
-import { buildScannedUpdateResult } from './update-result.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -11,6 +10,7 @@ import {
   resolveBaseFromCurrentValue,
   toVariantFamilyKey,
 } from './title-tag-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('component-titles-update');
 
@@ -32,21 +32,25 @@ function getMiningPrefix(cls: string, size: string, grade: string): string | nul
 
 async function buildMiningTitleLookup(spviewerDir: string) {
   const files = await listSpviewerCsvFiles(spviewerDir);
-  const nameToPrefix = await buildLookupFromCsvFiles<{ name: string; prefix: string }>(spviewerDir, files, async (filePath: string) => {
-    const rows = await readCsvFile(filePath);
-    const entries: Array<readonly [string, { name: string; prefix: string }]> = [];
-    for (const row of rows) {
-      const name = normalizeSpaces(row.Name || '');
-      if (!name) continue;
-      const cls = (row.Class || '').trim();
-      const size = (row.Size || '').trim();
-      const grade = (row.Grade || '').trim();
-      const prefix = getMiningPrefix(cls, size, grade);
-      if (!prefix) continue;
-      entries.push([name.toLowerCase(), { name, prefix }]);
-    }
-    return entries;
-  });
+  const nameToPrefix = await buildLookupFromCsvFiles<{ name: string; prefix: string }>(
+    spviewerDir,
+    files,
+    async (filePath: string) => {
+      const rows = await readCsvFile(filePath);
+      const entries: Array<readonly [string, { name: string; prefix: string }]> = [];
+      for (const row of rows) {
+        const name = normalizeSpaces(row.Name || '');
+        if (!name) continue;
+        const cls = (row.Class || '').trim();
+        const size = (row.Size || '').trim();
+        const grade = (row.Grade || '').trim();
+        const prefix = getMiningPrefix(cls, size, grade);
+        if (!prefix) continue;
+        entries.push([name.toLowerCase(), { name, prefix }]);
+      }
+      return entries;
+    },
+  );
 
   return { files, nameToPrefix };
 }
@@ -97,7 +101,15 @@ function applyMiningTitlePrefixes(lines: string[], nameToPrefix: Map<string, { n
  * @param {string} params.spviewerDir
  * @param {boolean} params.dryRun
  */
-export async function runComponentTitleUpdate({ iniPath, spviewerDir, dryRun }: { iniPath: string; spviewerDir: string; dryRun: boolean }) {
+export async function runComponentTitleUpdate({
+  iniPath,
+  spviewerDir,
+  dryRun,
+}: {
+  iniPath: string;
+  spviewerDir: string;
+  dryRun: boolean;
+}) {
   const start = performance.now();
   const { files, nameToPrefix } = await buildMiningTitleLookup(spviewerDir);
 

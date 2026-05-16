@@ -1,7 +1,7 @@
 import { SeverityNumber } from '@opentelemetry/api-logs';
-import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
-import type { ReadableLogRecord } from '@opentelemetry/sdk-logs';
 import { ExportResultCode } from '@opentelemetry/core';
+import type { ReadableLogRecord } from '@opentelemetry/sdk-logs';
+import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 
 export type LogAttributes = Record<string, string | number | boolean | undefined | null>;
 

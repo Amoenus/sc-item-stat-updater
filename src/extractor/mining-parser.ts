@@ -1,39 +1,4 @@
-interface MiningElementDTO {
-  name: string;
-  rarity?: string;
-  groundScanSignature?: number;
-  scanSignature?: number;
-  resistance?: number;
-  instability?: number;
-}
-
-interface MiningCompositionPartDTO {
-  elementName?: string;
-}
-
-interface MiningCompositionDTO {
-  parts?: MiningCompositionPartDTO[];
-}
-
-interface MiningDepositDTO {
-  compositionGuid?: string;
-}
-
-interface MiningGroupDTO {
-  groupName: string;
-  deposits?: MiningDepositDTO[];
-}
-
-interface MiningLocationDTO {
-  locationName: string;
-  groups?: MiningGroupDTO[];
-}
-
-interface MiningDataDTO {
-  mineableElements?: Record<string, MiningElementDTO>;
-  compositions?: Record<string, MiningCompositionDTO>;
-  locations?: MiningLocationDTO[];
-}
+import type { ScmdbMiningDataDTO as MiningDataDTO } from '../schema/scmdb.schemas.js';
 
 /**
  * Builds rows for the mining elements CSV.

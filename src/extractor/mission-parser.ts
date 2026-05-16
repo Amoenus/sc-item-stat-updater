@@ -1,60 +1,7 @@
-interface CompletionTag {
-  tag?: string;
-}
-
-interface PrerequisitesDTO {
-  completedContractTags?: {
-    tags?: string[];
-  } | null;
-}
-
-interface BlueprintRewardDTO {
-  blueprintPool?: string;
-  poolName?: string | null;
-  chance?: number | null;
-  trigger?: string | null;
-}
-
-interface ContractDTO {
-  id: string;
-  debugName?: string | null;
-  category?: string | null;
-  missionType?: string | null;
-  missionTypeKey?: string | null;
-  title?: string | null;
-  titleKey?: string | null;
-  description?: string | null;
-  descriptionKey?: string | null;
-  descriptionLocKey?: string | null;
-  rewardUEC?: number | null;
-  timeToComplete?: number | null;
-  canBeShared?: boolean | null;
-  illegal?: boolean | null;
-  factionGuid?: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  locations?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  destinations?: any;
-  prerequisites?: PrerequisitesDTO | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tokenSubstitutions?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  minStanding?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  maxStanding?: any;
-  blueprintRewards?: BlueprintRewardDTO[] | null;
-  completionTags?: CompletionTag[] | null;
-}
-
-interface BlueprintDTO {
-  name?: string | null;
-}
-
-interface BlueprintPoolDTO {
-  name?: string | null;
-  source?: string | null;
-  blueprints?: BlueprintDTO[] | null;
-}
+import type {
+  ScmdbBlueprintPoolDTO as BlueprintPoolDTO,
+  ScmdbContractDTO as ContractDTO,
+} from '../schema/scmdb.schemas.js';
 
 interface ChainDataDTO {
   isBlueprintReward: Map<string, boolean>;
@@ -99,7 +46,9 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
     if (!prerequisites || typeof prerequisites !== 'object') return [];
     const completedTags = prerequisites.completedContractTags;
     if (!completedTags || typeof completedTags !== 'object') return [];
-    return Array.isArray(completedTags.tags) ? completedTags.tags.filter((tag): tag is string => typeof tag === 'string') : [];
+    return Array.isArray(completedTags.tags)
+      ? completedTags.tags.filter((tag): tag is string => typeof tag === 'string')
+      : [];
   };
 
   for (const contract of contracts) {
@@ -177,7 +126,9 @@ export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO)
 /**
  * Builds blueprint pool rows.
  */
-export function buildBlueprintPoolRows(blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined): Record<string, unknown>[] {
+export function buildBlueprintPoolRows(
+  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+): Record<string, unknown>[] {
   return Object.entries(blueprintPools || {}).map(([id, pool]) => ({
     id,
     name: pool.name,
@@ -232,7 +183,7 @@ export function buildBlueprintRewardList(
     if (!pool || !Array.isArray(pool.blueprints)) continue;
 
     const itemNames = pool.blueprints
-      .map((blueprint: BlueprintDTO) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
+      .map((blueprint) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
       .filter((n: string | null): n is string => Boolean(n));
 
     if (itemNames.length === 0) {

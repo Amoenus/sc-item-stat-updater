@@ -31,24 +31,22 @@ const ScmdbStandingSchema = z.object({
  * Only the one field accessed structurally by the transformation pipeline is
  * typed concretely; everything else passes through for serialisation.
  */
-const ScmdbPrerequisitesSchema = z.looseObject({
-  completedContractTags: z
-    .object({ tags: z.array(z.string()).optional() })
-    .nullish(),
+export const ScmdbPrerequisitesSchema = z.looseObject({
+  completedContractTags: z.object({ tags: z.array(z.string()).optional() }).nullish(),
 });
 
-const ScmdbBlueprintRewardEntrySchema = z.object({
+export const ScmdbBlueprintRewardEntrySchema = z.object({
   blueprintPool: z.string().optional(),
   poolName: z.string().nullish(),
   chance: z.number().nullish(),
   trigger: z.string().nullish(),
 });
 
-const ScmdbCompletionTagSchema = z.object({
+export const ScmdbCompletionTagSchema = z.object({
   tag: z.string().optional(),
 });
 
-const ScmdbContractSchema = z.object({
+export const ScmdbContractSchema = z.object({
   id: z.string(),
   debugName: z.string().nullish(),
   category: z.string().nullish(),
@@ -74,7 +72,7 @@ const ScmdbContractSchema = z.object({
   completionTags: z.array(ScmdbCompletionTagSchema).nullish(),
 });
 
-const ScmdbBlueprintPoolSchema = z.object({
+export const ScmdbBlueprintPoolSchema = z.object({
   name: z.string().nullish(),
   source: z.string().nullish(),
   blueprints: z.array(z.object({ name: z.string().nullish() })).nullish(),
@@ -161,3 +159,14 @@ export const ScmdbCraftingItemsSchema = z.object({
 export const ScmdbCraftingBlueprintsSchema = z.object({
   version: z.string(),
 });
+
+// ---------------------------------------------------------------------------
+// Derived Types
+// ---------------------------------------------------------------------------
+
+export type ScmdbContractDTO = z.infer<typeof ScmdbContractSchema>;
+export type ScmdbBlueprintPoolDTO = z.infer<typeof ScmdbBlueprintPoolSchema>;
+export type ScmdbPrerequisitesDTO = z.infer<typeof ScmdbPrerequisitesSchema>;
+export type ScmdbBlueprintRewardDTO = z.infer<typeof ScmdbBlueprintRewardEntrySchema>;
+export type ScmdbCompletionTagDTO = z.infer<typeof ScmdbCompletionTagSchema>;
+export type ScmdbMiningDataDTO = z.infer<typeof ScmdbMiningDataSchema>;
