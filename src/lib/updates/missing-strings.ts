@@ -16,7 +16,15 @@ const logger = getLogger('missing-strings-update');
  * @param {boolean} [params.dryRun]
  * @returns {Promise<{label: string, updatedCount: number, matchedCount: number, scannedCount: number, issues: Array<{key: string, reason: string, type: string}>, summary: string}>}
  */
-export async function runMissingStringsUpdate({ iniPath, patchPath, dryRun = false }: { iniPath: string; patchPath: string; dryRun?: boolean }) {
+export async function runMissingStringsUpdate({
+  iniPath,
+  patchPath,
+  dryRun = false,
+}: {
+  iniPath: string;
+  patchPath: string;
+  dryRun?: boolean;
+}) {
   const start = performance.now();
 
   try {

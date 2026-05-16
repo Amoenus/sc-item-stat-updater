@@ -23,7 +23,10 @@ export async function listSpviewerCsvFiles(spviewerDir: string): Promise<string[
  * @param {(row: T) => null | undefined | readonly [string, V]} buildEntry
  * @returns {Map<string, V>}
  */
-export function buildLookupMapFromRows<V>(rows: Iterable<Record<string, string>>, buildEntry: (row: Record<string, string>) => null | undefined | readonly [string, V]): Map<string, V> {
+export function buildLookupMapFromRows<V>(
+  rows: Iterable<Record<string, string>>,
+  buildEntry: (row: Record<string, string>) => null | undefined | readonly [string, V],
+): Map<string, V> {
   const lookup = new Map();
   for (const row of rows) {
     const entry = buildEntry(row);
@@ -44,7 +47,11 @@ export function buildLookupMapFromRows<V>(rows: Iterable<Record<string, string>>
  * @param {(localizationKey: string) => string} [normalizeKey]
  * @returns {Map<string, V>}
  */
-export function buildMappedKeyLookup<V>(nameToLocalizationKey: Record<string, string>, nameLookup: Map<string, V>, normalizeKey: (key: string) => string = (key) => key): Map<string, V> {
+export function buildMappedKeyLookup<V>(
+  nameToLocalizationKey: Record<string, string>,
+  nameLookup: Map<string, V>,
+  normalizeKey: (key: string) => string = (key) => key,
+): Map<string, V> {
   const lookup = new Map();
   for (const [name, localizationKey] of Object.entries(nameToLocalizationKey)) {
     const value = nameLookup.get(name);
@@ -65,7 +72,11 @@ export function buildMappedKeyLookup<V>(nameToLocalizationKey: Record<string, st
  * @param {(filePath: string, filename: string) => Promise<Iterable<readonly [string, V]>>} loadEntries
  * @returns {Promise<Map<string, V>>}
  */
-export async function buildLookupFromCsvFiles<V>(baseDir: string, filenames: string[], loadEntries: (filePath: string, filename: string) => Promise<Iterable<readonly [string, V]>>): Promise<Map<string, V>> {
+export async function buildLookupFromCsvFiles<V>(
+  baseDir: string,
+  filenames: string[],
+  loadEntries: (filePath: string, filename: string) => Promise<Iterable<readonly [string, V]>>,
+): Promise<Map<string, V>> {
   const lookup = new Map();
   for (const filename of filenames) {
     const filePath = resolveChildPath(baseDir, filename, 'SPViewer lookup CSV filename');

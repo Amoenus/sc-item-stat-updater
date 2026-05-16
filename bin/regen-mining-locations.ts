@@ -28,7 +28,10 @@ function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
     if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
     return text;
   };
-  const lines = [headers.map(escape).join(','), ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(','))];
+  const lines = [
+    headers.map(escape).join(','),
+    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(',')),
+  ];
   return `${lines.join('\n')}\n`;
 }
 
@@ -53,7 +56,19 @@ function toWeightedMineableList(weightMap: Record<string, number>): string {
  * @param {object} qualityDistribution
  * @returns {Map<string, string[]>}
  */
-function buildLocationQualityNotes(qualityDistribution: { shipmineables?: Record<string, { default?: { min?: number }; locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>> }> } | undefined): Map<string, string[]> {
+function buildLocationQualityNotes(
+  qualityDistribution:
+    | {
+        shipmineables?: Record<
+          string,
+          {
+            default?: { min?: number };
+            locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>>;
+          }
+        >;
+      }
+    | undefined,
+): Map<string, string[]> {
   /** @type {Map<string, string[]>} */
   const notes = new Map();
 
@@ -110,7 +125,11 @@ function resolveTargetDir(scmdbDir: string | undefined): string {
  * @param {{ scmdbDir?: string, log?: (message: string) => void }} [options]
  * @returns {{ outPath: string, rowCount: number, outDir: string }}
  */
-export function regenMiningLocations(options: { scmdbDir?: string; log?: (message: string) => void } = {}): { outPath: string; rowCount: number; outDir: string } {
+export function regenMiningLocations(options: { scmdbDir?: string; log?: (message: string) => void } = {}): {
+  outPath: string;
+  rowCount: number;
+  outDir: string;
+} {
   const log = options.log ?? defaultLogger;
   const outDir = resolveTargetDir(options.scmdbDir);
 
@@ -133,7 +152,10 @@ export function regenMiningLocations(options: { scmdbDir?: string; log?: (messag
   const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
 
   // Build per-location weighted deposit maps
-  const locationData: Record<string, { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }> = {};
+  const locationData: Record<
+    string,
+    { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }
+  > = {};
   for (const loc of miningData.locations || []) {
     const name = loc.locationName;
     if (!locationData[name]) {

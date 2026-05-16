@@ -11,7 +11,9 @@ const logger = getLogger('ini-file');
  * @param {string} filePath
  * @returns {Promise<{ lines: string[], index: Record<string, number> }>}
  */
-export async function readIniFile(filePath: string): Promise<{ lines: string[]; index: Record<string, number>; duplicates: Map<string, number[]> }> {
+export async function readIniFile(
+  filePath: string,
+): Promise<{ lines: string[]; index: Record<string, number>; duplicates: Map<string, number[]> }> {
   const lines: string[] = [];
   const index: Record<string, number> = {};
   const duplicates = new Map<string, number[]>();
@@ -103,7 +105,11 @@ export async function backupIniFile(filePath: string): Promise<void> {
  * Uses atomic write (temp file + rename) for crash safety.
  * Falls back to direct overwrite if rename fails (e.g. file locked by editor).
  */
-export async function writeIniFile(filePath: string, lines: string[], { skipBackup = false }: { skipBackup?: boolean } = {}): Promise<void> {
+export async function writeIniFile(
+  filePath: string,
+  lines: string[],
+  { skipBackup = false }: { skipBackup?: boolean } = {},
+): Promise<void> {
   if (!skipBackup) await backupIniFile(filePath);
   const content = `\ufeff${lines.join('\n')}`;
   const tmpPath = `${filePath}.tmp`;

@@ -18,8 +18,8 @@
 import path from 'node:path';
 import { inspect, parseArgs } from 'node:util';
 import { readArtifactFile } from '../src/artifact/artifact.js';
-import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { applyArtifact } from '../src/artifact/loader.js';
+import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 
 const logger = getLogger('apply-artifact');
 
@@ -91,7 +91,10 @@ try {
   }
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to apply artifact', { error: error.message, cause: (err instanceof Error && 'cause' in err && err.cause instanceof Error) ? err.cause.message : undefined });
+  logger.error('Failed to apply artifact', {
+    error: error.message,
+    cause: err instanceof Error && 'cause' in err && err.cause instanceof Error ? err.cause.message : undefined,
+  });
   console.error(`ERROR: ${error.message}`);
   await shutdownLogger();
   process.exit(1);

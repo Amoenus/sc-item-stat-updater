@@ -68,7 +68,10 @@ async function extractVersions(page: import('puppeteer').Page): Promise<{ live: 
  * @param {string} itemType
  * @returns {Promise<{ headers: string[], rows: string[][] }>}
  */
-async function scrapeItems(browser: import('puppeteer').Browser, itemType: string): Promise<{ headers: string[]; rows: string[][] }> {
+async function scrapeItems(
+  browser: import('puppeteer').Browser,
+  itemType: string,
+): Promise<{ headers: string[]; rows: string[][] }> {
   console.log(`  Scraping ${itemType}...`);
 
   const page = await browser.newPage();
@@ -124,7 +127,7 @@ async function scrapeItems(browser: import('puppeteer').Browser, itemType: strin
         for (const th of groupCells) {
           const clone = th.cloneNode(true) as Element;
           for (const el of clone.querySelectorAll(STRIP_SELECTOR)) el.remove();
-          let text = (clone.textContent ?? '').trim();
+          const text = (clone.textContent ?? '').trim();
           const name = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
           const span = th.colSpan || 1;
           for (let i = 0; i < span; i++) expanded.push({ name, span });
@@ -163,9 +166,7 @@ async function scrapeItems(browser: import('puppeteer').Browser, itemType: strin
 
     const result = SpviewerScrapedDataSchema.safeParse(data);
     if (!result.success) {
-      throw new Error(
-        `SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`,
-      );
+      throw new Error(`SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`);
     }
 
     return result.data;

@@ -30,7 +30,11 @@ export async function readJsonFile(filePath: string, label = 'JSON file'): Promi
  * @param {string} [label]
  * @returns {Promise<any>}
  */
-export async function readJsonRelative(importMetaUrl: string, relativePath: string, label = relativePath): Promise<unknown> {
+export async function readJsonRelative(
+  importMetaUrl: string,
+  relativePath: string,
+  label = relativePath,
+): Promise<unknown> {
   const moduleDir = path.dirname(fileURLToPath(importMetaUrl));
   const filePath = path.resolve(moduleDir, relativePath);
   return readJsonFile(filePath, label);

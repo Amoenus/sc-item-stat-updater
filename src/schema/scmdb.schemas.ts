@@ -32,9 +32,7 @@ const ScmdbStandingSchema = z.object({
  * typed concretely; everything else passes through for serialisation.
  */
 const ScmdbPrerequisitesSchema = z.looseObject({
-  completedContractTags: z
-    .object({ tags: z.array(z.string()).optional() })
-    .nullish(),
+  completedContractTags: z.object({ tags: z.array(z.string()).optional() }).nullish(),
 });
 
 const ScmdbBlueprintRewardEntrySchema = z.object({
@@ -161,3 +159,15 @@ export const ScmdbCraftingItemsSchema = z.object({
 export const ScmdbCraftingBlueprintsSchema = z.object({
   version: z.string(),
 });
+
+// ---------------------------------------------------------------------------
+// Exported Inferred Types
+// ---------------------------------------------------------------------------
+
+export type ScmdbContractDTO = z.infer<typeof ScmdbContractSchema>;
+export type ScmdbBlueprintPoolDTO = z.infer<typeof ScmdbBlueprintPoolSchema>;
+export type ScmdbBlueprintDTO = NonNullable<ScmdbBlueprintPoolDTO['blueprints']>[number];
+export type ScmdbMiningDataDTO = z.infer<typeof ScmdbMiningDataSchema>;
+export type ScmdbBlueprintRewardDTO = z.infer<typeof ScmdbBlueprintRewardEntrySchema>;
+export type ScmdbCompletionTagDTO = z.infer<typeof ScmdbCompletionTagSchema>;
+export type ScmdbPrerequisitesDTO = z.infer<typeof ScmdbPrerequisitesSchema>;

@@ -1,44 +1,9 @@
-interface MiningElementDTO {
-  name: string;
-  rarity?: string;
-  groundScanSignature?: number;
-  scanSignature?: number;
-  resistance?: number;
-  instability?: number;
-}
-
-interface MiningCompositionPartDTO {
-  elementName?: string;
-}
-
-interface MiningCompositionDTO {
-  parts?: MiningCompositionPartDTO[];
-}
-
-interface MiningDepositDTO {
-  compositionGuid?: string;
-}
-
-interface MiningGroupDTO {
-  groupName: string;
-  deposits?: MiningDepositDTO[];
-}
-
-interface MiningLocationDTO {
-  locationName: string;
-  groups?: MiningGroupDTO[];
-}
-
-interface MiningDataDTO {
-  mineableElements?: Record<string, MiningElementDTO>;
-  compositions?: Record<string, MiningCompositionDTO>;
-  locations?: MiningLocationDTO[];
-}
+import type { ScmdbMiningDataDTO } from '../schema/scmdb.schemas.js';
 
 /**
  * Builds rows for the mining elements CSV.
  */
-export function buildMiningElementRows(miningData: MiningDataDTO): Record<string, unknown>[] {
+export function buildMiningElementRows(miningData: ScmdbMiningDataDTO): Record<string, unknown>[] {
   const elements = [];
   for (const [_id, el] of Object.entries(miningData.mineableElements || {})) {
     elements.push({
@@ -56,7 +21,7 @@ export function buildMiningElementRows(miningData: MiningDataDTO): Record<string
 /**
  * Builds rows for the mining journal CSV.
  */
-export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string, unknown>[] {
+export function buildMiningJournalRows(miningData: ScmdbMiningDataDTO): Record<string, unknown>[] {
   const rarityMap: Record<string, string[]> = {};
   for (const el of Object.values(miningData.mineableElements || {})) {
     const rarity = (el.rarity || 'Unknown').toLowerCase();
@@ -78,7 +43,7 @@ export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string
 /**
  * Builds rows for the mining locations CSV.
  */
-export function buildMiningLocationRows(miningData: MiningDataDTO): Record<string, unknown>[] {
+export function buildMiningLocationRows(miningData: ScmdbMiningDataDTO): Record<string, unknown>[] {
   const compCache: Record<string, string[]> = {};
   for (const [id, comp] of Object.entries(miningData.compositions || {})) {
     const names = new Set<string>();

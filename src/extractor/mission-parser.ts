@@ -1,60 +1,11 @@
-interface CompletionTag {
-  tag?: string;
-}
-
-interface PrerequisitesDTO {
-  completedContractTags?: {
-    tags?: string[];
-  } | null;
-}
-
-interface BlueprintRewardDTO {
-  blueprintPool?: string;
-  poolName?: string | null;
-  chance?: number | null;
-  trigger?: string | null;
-}
-
-interface ContractDTO {
-  id: string;
-  debugName?: string | null;
-  category?: string | null;
-  missionType?: string | null;
-  missionTypeKey?: string | null;
-  title?: string | null;
-  titleKey?: string | null;
-  description?: string | null;
-  descriptionKey?: string | null;
-  descriptionLocKey?: string | null;
-  rewardUEC?: number | null;
-  timeToComplete?: number | null;
-  canBeShared?: boolean | null;
-  illegal?: boolean | null;
-  factionGuid?: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  locations?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  destinations?: any;
-  prerequisites?: PrerequisitesDTO | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tokenSubstitutions?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  minStanding?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  maxStanding?: any;
-  blueprintRewards?: BlueprintRewardDTO[] | null;
-  completionTags?: CompletionTag[] | null;
-}
-
-interface BlueprintDTO {
-  name?: string | null;
-}
-
-interface BlueprintPoolDTO {
-  name?: string | null;
-  source?: string | null;
-  blueprints?: BlueprintDTO[] | null;
-}
+import type {
+  ScmdbBlueprintDTO,
+  ScmdbBlueprintPoolDTO,
+  ScmdbBlueprintRewardDTO,
+  ScmdbCompletionTagDTO,
+  ScmdbContractDTO,
+  ScmdbPrerequisitesDTO,
+} from '../schema/scmdb.schemas.js';
 
 interface ChainDataDTO {
   isBlueprintReward: Map<string, boolean>;
@@ -74,7 +25,7 @@ export function flattenValue(value: any): string {
 /**
  * Collects chain data for blueprint missions.
  */
-export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDTO {
+export function collectBlueprintChainData(contracts: ScmdbContractDTO[]): ChainDataDTO {
   const contractById = new Map(contracts.map((contract) => [contract.id, contract]));
   const tagProviders = new Map<string, string[]>();
 
@@ -94,12 +45,14 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
 
   const queue: Array<{ contractId: string; depth: number }> = [];
 
-  const getRequiredTags = (contract: ContractDTO): string[] => {
+  const getRequiredTags = (contract: ScmdbContractDTO): string[] => {
     const prerequisites = contract.prerequisites;
     if (!prerequisites || typeof prerequisites !== 'object') return [];
     const completedTags = prerequisites.completedContractTags;
     if (!completedTags || typeof completedTags !== 'object') return [];
-    return Array.isArray(completedTags.tags) ? completedTags.tags.filter((tag): tag is string => typeof tag === 'string') : [];
+    return Array.isArray(completedTags.tags)
+      ? completedTags.tags.filter((tag): tag is string => typeof tag === 'string')
+      : [];
   };
 
   for (const contract of contracts) {
@@ -142,7 +95,7 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
 /**
  * Builds a contract row.
  */
-export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO): Record<string, unknown> {
+export function buildContractRow(contract: ScmdbContractDTO, chainData: ChainDataDTO): Record<string, unknown> {
   const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
   const depth = chainData.blueprintChainDepth.get(contract.id);
   return {
@@ -177,7 +130,9 @@ export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO)
 /**
  * Builds blueprint pool rows.
  */
-export function buildBlueprintPoolRows(blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined): Record<string, unknown>[] {
+export function buildBlueprintPoolRows(
+  blueprintPools: Record<string, ScmdbBlueprintPoolDTO> | null | undefined,
+): Record<string, unknown>[] {
   return Object.entries(blueprintPools || {}).map(([id, pool]) => ({
     id,
     name: pool.name,
@@ -190,8 +145,8 @@ export function buildBlueprintPoolRows(blueprintPools: Record<string, BlueprintP
  * Builds contract blueprint rows.
  */
 export function buildContractBlueprintRows(
-  contracts: ContractDTO[],
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  contracts: ScmdbContractDTO[],
+  blueprintPools: Record<string, ScmdbBlueprintPoolDTO> | null | undefined,
 ): Record<string, unknown>[] {
   return (contracts || []).flatMap((contract) => {
     if (!Array.isArray(contract.blueprintRewards)) return [];
@@ -213,8 +168,8 @@ export function buildContractBlueprintRows(
  * Builds a blueprint reward list.
  */
 export function buildBlueprintRewardList(
-  contract: ContractDTO,
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  contract: ScmdbContractDTO,
+  blueprintPools: Record<string, ScmdbBlueprintPoolDTO> | null | undefined,
 ): string {
   if (!Array.isArray(contract.blueprintRewards)) return '';
 
@@ -232,7 +187,7 @@ export function buildBlueprintRewardList(
     if (!pool || !Array.isArray(pool.blueprints)) continue;
 
     const itemNames = pool.blueprints
-      .map((blueprint: BlueprintDTO) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
+      .map((blueprint: ScmdbBlueprintDTO) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
       .filter((n: string | null): n is string => Boolean(n));
 
     if (itemNames.length === 0) {
@@ -261,9 +216,9 @@ export function normalizeLocalizationKey(key: string): string {
  * Builds mission rows.
  */
 export function buildMissionRows(
-  contracts: ContractDTO[],
+  contracts: ScmdbContractDTO[],
   chainData: ChainDataDTO,
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  blueprintPools: Record<string, ScmdbBlueprintPoolDTO> | null | undefined,
 ): Record<string, unknown>[] {
   return (contracts || [])
     .flatMap((contract) => {
