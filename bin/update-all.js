@@ -2,6 +2,7 @@ import path from 'node:path';
 import { inspect, parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
+import { writeArtifactFile } from '../src/lib/artifact.js';
 import { findLatestMatchingDirectory } from '../src/lib/io/discovery.js';
 import { backupIniFile } from '../src/lib/io/ini-file.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
@@ -25,6 +26,7 @@ const { values } = parseArgs({
     'ini-path': { type: 'string', short: 'i' },
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
+    'emit-artifact': { type: 'string' },
     ptu: { type: 'boolean', default: false },
     'include-mining-journal': { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
@@ -42,6 +44,7 @@ if (values.help) {
     '  -c, --csv-dir <path>   Directory containing CSV files (default: auto-detected from latest scraped version)',
   );
   console.log('      --dry-run          Preview changes without writing');
+  console.log('      --emit-artifact <path>  Write a patch artifact JSON to the given path (ADR 002)');
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
   console.log('      --include-mining-journal  Also update mining compendium journal entry');
   console.log('  -v, --verbose          Enable verbose logging');
@@ -280,6 +283,33 @@ try {
 }
 
 const totalDuration = Math.round(performance.now() - totalStart);
+
+// Emit patch artifact if requested (ADR 002).
+if (values['emit-artifact']) {
+  const artifactPath = path.resolve(values['emit-artifact']);
+  const mergedEntries = {};
+  for (const r of results) {
+    if (r.patches) Object.assign(mergedEntries, r.patches);
+  }
+  const artifact = {
+    generatedAt: new Date().toISOString(),
+    scmdbVersion,
+    spviewerVersion,
+    entries: mergedEntries,
+    stats: {
+      categoryCount: categories.length,
+      totalEntries: Object.keys(mergedEntries).length,
+    },
+  };
+  try {
+    await writeArtifactFile(artifactPath, artifact);
+    logger.info('Patch artifact written', { path: artifactPath, entries: artifact.stats.totalEntries });
+    console.log(`\n✓ Artifact written → ${artifactPath} (${artifact.stats.totalEntries} entries)`);
+  } catch (err) {
+    logger.error('Failed to write patch artifact', { error: err.message });
+    console.error(`ERROR writing artifact: ${err.message}`);
+  }
+}
 
 console.log();
 for (const r of results) console.log(r.summary);

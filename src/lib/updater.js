@@ -160,6 +160,7 @@ function processRow(row, context, deriveDescKey, _force = false) {
       const newValue = sanitizeIniValue(context.config.buildValue(row, flavor, oldValue, foundKey));
       if (newValue !== oldValue) {
         context.lines[lineIndex] = `${foundKey}=${newValue}`;
+        context.patches[foundKey] = newValue;
         anyUpdated = true;
       }
     }
@@ -294,6 +295,7 @@ class UpdateContext {
 
     this.updatedKeys = new Set();
     this.newLines = [];
+    this.patches = {};
     this.issues = unresolvedNames.map((name) => ({
       key: name,
       reason: 'No localization key found',
@@ -361,7 +363,7 @@ class UpdateContext {
 
     logger.debug(summary, { label: this.config.label, ...stats, durationMs, dryRun: this.dryRun });
 
-    return { label: this.config.label, ...stats, summary };
+    return { label: this.config.label, ...stats, patches: this.patches, newLines: this.newLines, summary };
   }
 }
 
@@ -431,4 +433,21 @@ export async function runUpdate(config, options = {}) {
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${err.message}`, { cause: err });
   }
+}
+
+/**
+ * Runs the Extract+Transform phase for one item config and returns a patch manifest
+ * (key→value pairs) without writing to global.ini. This is the per-category primitive
+ * used by the artifact generator (ADR 002).
+ *
+ * @param {import('./types.js').ItemConfig} config
+ * @param {object} [options]
+ * @param {string} [options.iniPath]
+ * @param {string} [options.csvDir]
+ * @returns {Promise<{ label: string, patches: Record<string, string>, newLines: string[], issues: Array, stats: object }>}
+ */
+export async function buildPatchData(config, options = {}) {
+  const result = await runUpdate(config, { ...options, dryRun: true, skipBackup: true });
+  const { patches, newLines, issues, summary, label, ...stats } = result;
+  return { label, patches, newLines, issues, stats, summary };
 }
