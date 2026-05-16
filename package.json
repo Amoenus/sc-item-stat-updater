@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "description": "Updates item descriptions in global.ini with detailed component stats from CSV data files.",
   "scripts": {
-    "update": "node bin/update-all.js",
-    "scrape:scmdb": "node bin/scrape-scmdb.js",
-    "regen:mining-locations": "node bin/regen-mining-locations.js",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "update": "node --import tsx/esm bin/update-all.ts",
+    "scrape:scmdb": "node --import tsx/esm bin/scrape-scmdb.ts",
+    "regen:mining-locations": "node --import tsx/esm bin/regen-mining-locations.ts",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "check:ci": "biome ci .",
-    "test": "node --test src/**/*.test.js"
+    "test": "node --import tsx/esm --test src/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -39,6 +42,10 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.12"
+    "@biomejs/biome": "2.4.12",
+    "@types/cli-progress": "^3.11.6",
+    "@types/node": "^25.8.0",
+    "tsx": "^4.22.0",
+    "typescript": "^6.0.3"
   }
 }

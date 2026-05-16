@@ -18,7 +18,7 @@ npm install
 ### Update all categories
 
 ```sh
-node bin/update-all.js
+npm run update
 ```
 
 Runs all categories (SPViewer + SCMDB missions) using both data sources. It automatically detects the latest versioned directories for LIVE data.
@@ -27,12 +27,12 @@ Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
 - `--dry-run` to preview changes without modifying `global.ini`.
 
-> Note: `bin/update-all.js` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
+> Note: `npm run update` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
 
 ### Scrape SPViewer data
 
 ```sh
-node bin/scrape-spviewer.js --all
+node --import tsx/esm bin/scrape-spviewer.ts --all
 ```
 
 This command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`.
@@ -40,13 +40,13 @@ This command scrapes SPViewer item tables and saves CSV files into versioned dir
 To scrape only specific item types:
 
 ```sh
-node bin/scrape-spviewer.js Radar Shield
+node --import tsx/esm bin/scrape-spviewer.ts Radar Shield
 ```
 
 To list supported SPViewer item types:
 
 ```sh
-node bin/scrape-spviewer.js --list
+node --import tsx/esm bin/scrape-spviewer.ts --list
 ```
 
 Options:
@@ -57,7 +57,7 @@ Options:
 ### Scrape SCMDB mission data
 
 ```sh
-node bin/scrape-scmdb.js
+npm run scrape:scmdb
 ```
 
 This command downloads the latest SCMDB merged data file and writes outputs into `csv/scmdb/<version>/`, including:
@@ -76,13 +76,13 @@ That CSV includes `Note`, `TitleNote`, and `RewardList` columns so blueprint cha
 After scraping, run:
 
 ```sh
-node bin/update-item.js -c ./csv/scmdb/<version> mission-scmdb
+node --import tsx/esm bin/update-item.ts -c ./csv/scmdb/<version> mission-scmdb
 ```
 
 To list available SCMDB versions:
 
 ```sh
-node bin/scrape-scmdb.js --list-versions
+npm run scrape:scmdb -- --list-versions
 ```
 
 By default, the scraper fetches the latest live SCMDB version. Use `--ptu` to fetch the latest PTU version instead.
@@ -90,55 +90,69 @@ By default, the scraper fetches the latest live SCMDB version. Use `--ptu` to fe
 To fetch a specific version by its full version string:
 
 ```sh
-node bin/scrape-scmdb.js --version 4.8.0-ptu.11759767
+npm run scrape:scmdb -- --version 4.8.0-ptu.11759767
 ```
 
 To fetch only the raw SCMDB JSON file:
 
 ```sh
-node bin/scrape-scmdb.js --raw
+npm run scrape:scmdb -- --raw
 ```
 
 ### Update a single category
 
 ```sh
-node bin/update-item.js -c <csv-directory> <category>
+node --import tsx/esm bin/update-item.ts -c <csv-directory> <category>
 ```
 
 Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/spviewer/<version>-live`). Available categories include SPViewer and mission sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`, while mission categories use the `mission-` prefix, for example `mission-scmdb`.
+
+### Type checking
+
+```sh
+npm run typecheck
+```
+
+Runs `tsc --noEmit` to validate TypeScript types without emitting any output files.
 
 ## Project structure
 
 ```
 ├── bin/
-│   ├── update-all.js        # Runs all category updaters
-│   ├── update-item.js       # CLI to run a single category
-│   └── scrape-spviewer.js   # SPViewer scraping helper
+│   ├── update-all.ts        # Runs all category updaters
+│   ├── update-item.ts       # CLI to run a single category
+│   ├── scrape-spviewer.ts   # SPViewer scraping helper
+│   └── scrape-scmdb.ts      # SCMDB scraping helper
 ├── src/
 │   ├── lib/
-│   │   ├── io/
-│   │   │   ├── csv-parser.js    # CSV parsing
-│   │   │   ├── ini-file.js      # global.ini read/write/indexing
-│   │   │   └── mapping-store.js # SPViewer mapping persistence
+│   │   ├── io/local/
+│   │   │   ├── csv-parser.ts    # CSV parsing
+│   │   │   ├── ini-file.ts      # global.ini read/write/indexing
+│   │   │   └── mapping-store.ts # SPViewer mapping persistence
 │   │   ├── format/
-│   │   │   ├── formatter.js     # Number formatting
-│   │   │   ├── stat-builder.js  # Stat block construction
-│   │   │   └── text-utils.js    # Key derivation & flavor text extraction
-│   │   └── updater.js           # Generic update engine
+│   │   │   ├── formatter.ts     # Number formatting
+│   │   │   ├── stat-builder.ts  # Stat block construction
+│   │   │   └── text-utils.ts    # Key derivation & flavor text extraction
+│   │   ├── updates/             # Standalone update modules
+│   │   ├── types.ts             # Shared TypeScript interfaces
+│   │   └── updater.ts           # Generic update engine
+│   ├── extractor/
+│   │   ├── mining-parser.ts     # Mining data extractor
+│   │   └── mission-parser.ts    # Mission data extractor
 │   └── items/
-│       ├── missions/           # Mission update configs
-│       └── spviewer/           # SPViewer item configs
+│       ├── missions/            # Mission update configs
+│       └── spviewer/            # SPViewer item configs
 ├── csv/
-│   ├── scmdb/                 # SCMDB mission data output
-│   │   └── <version>/         # Versioned directory
-│   └── spviewer/              # SPViewer source CSVs
+│   ├── scmdb/                   # SCMDB mission data output
+│   │   └── <version>/           # Versioned directory
+│   └── spviewer/                # SPViewer source CSVs
 │       └── <version>-[live|ptu]/ # Versioned directory
-└── global.ini               # Star Citizen localization file
+└── global.ini                   # Star Citizen localization file
 ```
 
 ## How it works
 
-The update engine (`src/lib/updater.js`):
+The update engine (`src/lib/updater.ts`):
 
 1. Reads the item's CSV file
 2. Reads `global.ini`
@@ -146,7 +160,7 @@ The update engine (`src/lib/updater.js`):
 4. Replaces the value with a formatted stat block while preserving any existing flavor text
 5. Writes the updated `global.ini` back (UTF-8 with BOM)
 
-Each item module (`src/items/spviewer/*.js` or `src/items/missions/*.js`) provides:
+Each item module (`src/items/spviewer/*.ts` or `src/items/missions/*.ts`) provides:
 - `csvFile` — which CSV to read
 - `buildValue(row, flavorText)` — formats the stat block
 - `descKeyMatch(key)` — identifies existing keys for insertion point
