@@ -1,12 +1,12 @@
 ﻿import fs from 'node:fs/promises';
 import path from 'node:path';
-import { sanitizeIniValue } from './format/formatter.js';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
 import { readCsvFile } from '../io/local/csv-parser.js';
 import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file.js';
 import { readJsonFile } from '../io/local/json-file.js';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store.js';
 import { resolveChildPath } from '../io/local/path-conventions.js';
+import { sanitizeIniValue } from './format/formatter.js';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
 import { getLogger } from './logger.js';
 import type { ItemConfig } from './types.js';
@@ -56,7 +56,11 @@ function resolveOptions(options: UpdateOptions): ResolvedOptions {
   };
 }
 
-function validateColumns(rows: Record<string, string>[], requiredColumns: string[] | undefined, sourceLabel: string): void {
+function validateColumns(
+  rows: Record<string, string>[],
+  requiredColumns: string[] | undefined,
+  sourceLabel: string,
+): void {
   if (!requiredColumns || rows.length === 0) {
     return;
   }
@@ -212,7 +216,10 @@ function processRow(
   context.markMissing(targetKeys[0] ?? '');
 }
 
-function shouldWriteIni(opts: ResolvedOptions, stats: { updatedCount: number; newCount: number; foundCount: number }): boolean {
+function shouldWriteIni(
+  opts: ResolvedOptions,
+  stats: { updatedCount: number; newCount: number; foundCount: number },
+): boolean {
   return !opts.dryRun && (stats.updatedCount > 0 || stats.newCount > 0 || (opts.force && stats.foundCount > 0));
 }
 
@@ -263,7 +270,13 @@ class UpdateContext {
   errorCount: number;
   unresolvedCount: number;
 
-  constructor(config: ItemConfig, lines: string[], existingKeys: Record<string, number>, unresolvedNames: string[], dryRun: boolean) {
+  constructor(
+    config: ItemConfig,
+    lines: string[],
+    existingKeys: Record<string, number>,
+    unresolvedNames: string[],
+    dryRun: boolean,
+  ) {
     this.config = config;
     this.lines = lines;
     this.existingKeys = existingKeys;
@@ -337,7 +350,13 @@ class UpdateContext {
       issues: this.issues,
     };
 
-    logger.debug(summary, { label: this.config.label, durationMs, dryRun: this.dryRun, ...stats, issues: this.issues.length });
+    logger.debug(summary, {
+      label: this.config.label,
+      durationMs,
+      dryRun: this.dryRun,
+      ...stats,
+      issues: this.issues.length,
+    });
 
     return { label: this.config.label, ...stats, patches: this.patches, newLines: this.newLines, summary };
   }

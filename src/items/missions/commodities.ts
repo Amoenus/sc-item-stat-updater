@@ -1,5 +1,5 @@
-﻿import type { ItemConfig } from '../../lib/types.js';
-import { findLatestMatchingFile } from '../../io/local/discovery.js';
+﻿import { findLatestMatchingFile } from '../../io/local/discovery.js';
+import type { ItemConfig } from '../../lib/types.js';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(
   [
@@ -45,11 +45,25 @@ export default {
     return `${prefix}${displayName}`;
   },
   parseJson(data: unknown) {
-    if (!data || typeof data !== 'object' || !('resourcePools' in data) || !data.resourcePools || typeof data.resourcePools !== 'object') {
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      !('resourcePools' in data) ||
+      !data.resourcePools ||
+      typeof data.resourcePools !== 'object'
+    ) {
       return [...ILLEGAL_COMMODITY_KEYS].map((key) => ({ 'Localization Key': key, Name: '' }));
     }
     const rows = Object.values(data.resourcePools as Record<string, unknown>)
-      .filter((entry): entry is { nameKey: string; name: string } => !!entry && typeof entry === 'object' && 'nameKey' in entry && 'name' in entry && typeof (entry as {nameKey:unknown}).nameKey === 'string' && typeof (entry as {name:unknown}).name === 'string')
+      .filter(
+        (entry): entry is { nameKey: string; name: string } =>
+          !!entry &&
+          typeof entry === 'object' &&
+          'nameKey' in entry &&
+          'name' in entry &&
+          typeof (entry as { nameKey: unknown }).nameKey === 'string' &&
+          typeof (entry as { name: unknown }).name === 'string',
+      )
       .map((entry) => ({
         'Localization Key': entry.nameKey,
         Name: entry.name,

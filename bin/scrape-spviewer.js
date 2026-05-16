@@ -159,9 +159,7 @@ async function scrapeItems(browser, itemType) {
 
     const result = SpviewerScrapedDataSchema.safeParse(data);
     if (!result.success) {
-      throw new Error(
-        `SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`,
-      );
+      throw new Error(`SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`);
     }
 
     return result.data;

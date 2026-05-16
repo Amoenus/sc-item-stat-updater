@@ -1,3 +1,7 @@
 ## 2025-05-14 - Scraper Decoupling
 Learning: The `bin/scrape-scmdb.js` file functioned as a massive procedural God-class handling both raw SCMDB JSON downloading, directory setup, CSV file I/O, and complex domain mapping for missions/blueprints.
 Action: Extracted all domain mapping, traversal (blueprint chain depths), and array generation (mission rows) into a distinct, typed module `src/lib/scmdb/mission-parser.js`. I/O layers must remain purely concerned with CLI args and writing to disk, relying on pure parser functions containing standard `@typedef`s to replace undocumented generic object graphs.
+
+## 2024-05-16 - SCMDB DTO Consolidation
+Learning: Found widespread duplication of generic, unstructured interface definitions matching upstream SCMDB JSON data in `mission-parser.ts` and `mining-parser.ts`. These manual types introduced the risk of `any` fields and loose typing. By exporting Zod schemas from `src/schema/scmdb.schemas.ts` and deriving strict types via `z.infer`, we ensure a single source of truth for both runtime validation and compile-time TypeScript checks, eliminating massive `any` vulnerabilities.
+Action: Derived and exported explicit DTO types (e.g., `ScmdbContractDTO`, `ScmdbMiningDataDTO`) directly from `scmdb.schemas.ts` and removed the manual redundant interface definitions inside the extractor modules.

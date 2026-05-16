@@ -45,7 +45,13 @@ export async function applyArtifact(
   artifact: { entries: Record<string, string> },
   iniPath: string,
   options: { dryRun?: boolean; skipBackup?: boolean; skipMissing?: boolean } = {},
-): Promise<{ updatedCount: number; skippedCount: number; insertedCount: number; issues: Array<{ key: string; reason: string; type: string }>; summary: string }> {
+): Promise<{
+  updatedCount: number;
+  skippedCount: number;
+  insertedCount: number;
+  issues: Array<{ key: string; reason: string; type: string }>;
+  summary: string;
+}> {
   const { dryRun = false, skipBackup = false, skipMissing = true } = options;
   const start = performance.now();
 

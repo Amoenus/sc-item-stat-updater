@@ -57,7 +57,10 @@ function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
     }
     return text;
   };
-  const lines = [headers.map(escape).join(','), ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(','))];
+  const lines = [
+    headers.map(escape).join(','),
+    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(',')),
+  ];
   return `${lines.join('\n')}\n`;
 }
 
@@ -73,9 +76,7 @@ async function fetchAndValidate<T>(url: string, schema: import('zod').ZodType<T>
   const raw = await fetchJson(url);
   const result = schema.safeParse(raw);
   if (!result.success) {
-    throw new Error(
-      `Schema validation failed for ${url}:\n${result.error.toString()}`,
-    );
+    throw new Error(`Schema validation failed for ${url}:\n${result.error.toString()}`);
   }
   return result.data;
 }
@@ -131,7 +132,19 @@ function toWeightedMineableList(weightMap: Record<string, number>): string {
  * @param {object} qualityDistribution
  * @returns {Map<string, string[]>}
  */
-function buildLocationQualityNotes(qualityDistribution: { shipmineables?: Record<string, { default?: { min?: number }; locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>> }> } | undefined): Map<string, string[]> {
+function buildLocationQualityNotes(
+  qualityDistribution:
+    | {
+        shipmineables?: Record<
+          string,
+          {
+            default?: { min?: number };
+            locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>>;
+          }
+        >;
+      }
+    | undefined,
+): Map<string, string[]> {
   const notes: Map<string, string[]> = new Map();
 
   const sm = qualityDistribution?.shipmineables;
@@ -383,7 +396,10 @@ async function main() {
 
     // Build per-location weighted deposit maps.
     // Weight = groupProbability * relativeProbability, then normalised to % within each mining type.
-    const locationData: Record<string, { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }> = {};
+    const locationData: Record<
+      string,
+      { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }
+    > = {};
     for (const loc of miningData.locations || []) {
       const name = loc.locationName;
       if (!locationData[name]) {

@@ -33,10 +33,8 @@ async function buildMissileSignalLookup(spviewerDir: string, repoRoot: string) {
     if (!name || !tag) return null;
     return [name, tag];
   });
-  const keyToTag = buildMappedKeyLookup(
-    (mappingData) as Record<string, string>,
-    nameToTag,
-    (localizationKey) => localizationKey.toLowerCase(),
+  const keyToTag = buildMappedKeyLookup(mappingData as Record<string, string>, nameToTag, (localizationKey) =>
+    localizationKey.toLowerCase(),
   );
 
   return { keyToTag, nameCount: nameToTag.size };
@@ -93,7 +91,17 @@ function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) 
  * @param {string} params.repoRoot
  * @param {boolean} params.dryRun
  */
-export async function runMissileTitleTagUpdate({ iniPath, spviewerDir, repoRoot, dryRun }: { iniPath: string; spviewerDir: string; repoRoot: string; dryRun: boolean }) {
+export async function runMissileTitleTagUpdate({
+  iniPath,
+  spviewerDir,
+  repoRoot,
+  dryRun,
+}: {
+  iniPath: string;
+  spviewerDir: string;
+  repoRoot: string;
+  dryRun: boolean;
+}) {
   const start = performance.now();
   const { keyToTag, nameCount } = await buildMissileSignalLookup(spviewerDir, repoRoot);
 

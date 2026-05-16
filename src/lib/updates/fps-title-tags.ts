@@ -3,7 +3,6 @@ import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
 import { resolveSpviewerCsvPath } from '../../io/local/path-conventions.js';
 import { getLogger } from '../logger.js';
 import { buildLookupMapFromRows } from './lookup-utils.js';
-import { buildScannedUpdateResult } from './update-result.js';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -12,6 +11,7 @@ import {
   resolveBaseFromCurrentValue,
   toVariantFamilyKey,
 } from './title-tag-utils.js';
+import { buildScannedUpdateResult } from './update-result.js';
 
 const logger = getLogger('fps-title-tags-update');
 
@@ -151,7 +151,12 @@ function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: strin
     }
 
     processedFamilies.add(familyKey);
-    updatedCount += applyTagToFamily(updatedLines, familyIndex, familyKey, (cleanName: string) => `[${base.tag}] ${cleanName}`);
+    updatedCount += applyTagToFamily(
+      updatedLines,
+      familyIndex,
+      familyKey,
+      (cleanName: string) => `[${base.tag}] ${cleanName}`,
+    );
   }
 
   return {
@@ -168,7 +173,15 @@ function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: strin
  * @param {string} params.spviewerDir
  * @param {boolean} params.dryRun
  */
-export async function runFpsTitleTagUpdate({ iniPath, spviewerDir, dryRun }: { iniPath: string; spviewerDir: string; dryRun: boolean }) {
+export async function runFpsTitleTagUpdate({
+  iniPath,
+  spviewerDir,
+  dryRun,
+}: {
+  iniPath: string;
+  spviewerDir: string;
+  dryRun: boolean;
+}) {
   const start = performance.now();
   const nameToTag = await buildFpsTitleLookup(spviewerDir);
 

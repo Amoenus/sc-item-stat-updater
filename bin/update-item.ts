@@ -65,7 +65,10 @@ try {
   }
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
-  logger.error(`Failed to update ${category}`, { error: error.message, cause: (err instanceof Error && 'cause' in err && err.cause instanceof Error) ? err.cause.message : undefined });
+  logger.error(`Failed to update ${category}`, {
+    error: error.message,
+    cause: err instanceof Error && 'cause' in err && err.cause instanceof Error ? err.cause.message : undefined,
+  });
   console.error(`ERROR in ${category}: ${error.message}`);
   await shutdownLogger();
   process.exit(1);

@@ -1,8 +1,11 @@
 ﻿// @ts-check
-import type { ItemConfig } from '../../lib/types.js';
 import { readJsonRelative } from '../../io/local/json-file.js';
+import type { ItemConfig } from '../../lib/types.js';
 
-const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<string, unknown>;
+const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
+  string,
+  unknown
+>;
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
 const INI_NEWLINE = String.raw`\n`;

@@ -1,10 +1,10 @@
 ﻿import path from 'node:path';
 import { inspect, parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
-import { writeArtifactFile, type Artifact } from '../src/artifact/artifact.js';
+import { type Artifact, writeArtifactFile } from '../src/artifact/artifact.js';
 import { findLatestMatchingDirectory } from '../src/io/local/discovery.js';
 import { backupIniFile } from '../src/io/local/ini-file.js';
+import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
 import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
@@ -178,7 +178,7 @@ for (let i = 0; i < categories.length; i++) {
     logger.error('Failed to update category', {
       label: config.label,
       error: error.message,
-      cause: (err instanceof Error && 'cause' in err && err.cause instanceof Error) ? err.cause.message : undefined,
+      cause: err instanceof Error && 'cause' in err && err.cause instanceof Error ? err.cause.message : undefined,
     });
   }
 }
