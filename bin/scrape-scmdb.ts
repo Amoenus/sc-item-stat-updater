@@ -49,7 +49,7 @@ Examples:
 }
 
 function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
-  const escape = (value: unknown): string => {
+  const escapeCsv = (value: unknown): string => {
     if (value === undefined || value === null) return '';
     const text = String(value);
     if (/[",\n]/.test(text)) {
@@ -58,8 +58,8 @@ function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
     return text;
   };
   const lines = [
-    headers.map(escape).join(','),
-    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(',')),
+    headers.map(escapeCsv).join(','),
+    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escapeCsv(row[col])).join(',')),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -101,88 +101,6 @@ export function isLiveVersion(version: string): boolean {
 
 export function isPtuVersion(version: string): boolean {
   return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
-}
-
-/**
- * Converts a map of { mineralName -> totalWeight } into a newline-separated list
- * sorted by descending probability, each entry formatted as "Name — XX.X%".
- * Returns an empty string if the map has no entries.
- *
- * @param {Record<string, number>} weightMap
- * @returns {string}
- */
-function toWeightedMineableList(weightMap: Record<string, number>): string {
-  const entries = Object.entries(weightMap);
-  if (entries.length === 0) return '';
-  const total = entries.reduce((sum, [, w]) => sum + w, 0);
-  return entries
-    .sort((a, b) => b[1] - a[1])
-    .map(([name, weight]) => {
-      const pct = Math.round((weight / total) * 1000) / 10;
-      return `${name} — ${pct}%`;
-    })
-    .join('\n');
-}
-
-/**
- * Scans qualityDistribution.shipmineables for location-specific quality floor overrides.
- * Returns a Map<locationName, string[]> where each string is a human-readable note about
- * an elevated quality floor at that location (only recorded when min > the rarity default).
- *
- * @param {object} qualityDistribution
- * @returns {Map<string, string[]>}
- */
-function buildLocationQualityNotes(
-  qualityDistribution:
-    | {
-        shipmineables?: Record<
-          string,
-          {
-            default?: { min?: number };
-            locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>>;
-          }
-        >;
-      }
-    | undefined,
-): Map<string, string[]> {
-  const notes: Map<string, string[]> = new Map();
-
-  const sm = qualityDistribution?.shipmineables;
-  if (!sm) return notes;
-
-  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-
-  for (const rarity of RARITY_ORDER) {
-    const rarityData = sm[rarity];
-    if (!rarityData) continue;
-
-    const defaultMin = rarityData.default?.min ?? null;
-    if (defaultMin === null) continue;
-
-    const locationOverrides = rarityData.locationOverrides;
-    if (!locationOverrides) continue;
-
-    for (const groupEntries of Object.values(locationOverrides)) {
-      for (const entry of groupEntries) {
-        const overrideMin = entry.distribution?.min;
-        if (overrideMin === undefined || overrideMin <= defaultMin) continue;
-
-        // This location group has an elevated quality floor
-        const floorPct = (overrideMin / 10).toFixed(1);
-        const defaultPct = (defaultMin / 10).toFixed(1);
-        const label = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-        const note = `${label} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
-
-        for (const locName of entry.locations ?? []) {
-          const existing = notes.get(locName) ?? [];
-          if (!existing.includes(note)) existing.push(note);
-          notes.set(locName, existing);
-        }
-      }
-    }
-  }
-
-  return notes;
 }
 
 async function main() {
@@ -383,68 +301,7 @@ async function main() {
       writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
     }
 
-    // Map compositionGuid -> composition name (the primary mineral label for that deposit type)
-    const compNameCache: Record<string, string | null> = {};
-    for (const [id, comp] of Object.entries(miningData.compositions || {})) {
-      compNameCache[id] = comp.name || null;
-    }
-
-    // Build per-location quality override notes.
-    // Scans qualityDistribution.shipmineables.{rarity}.locationOverrides for any location
-    // where the quality floor (min) is elevated above the rarity's default floor.
-    const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
-
-    // Build per-location weighted deposit maps.
-    // Weight = groupProbability * relativeProbability, then normalised to % within each mining type.
-    const locationData: Record<
-      string,
-      { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }
-    > = {};
-    for (const loc of miningData.locations || []) {
-      const name = loc.locationName;
-      if (!locationData[name]) {
-        locationData[name] = { ship: {}, hand: {}, ground: {} };
-      }
-      for (const group of loc.groups || []) {
-        const isHand = group.groupName.includes('FPS');
-        const isGround = group.groupName.includes('GroundVehicle');
-        const isShip =
-          !isHand && !isGround && (group.groupName.includes('SpaceShip') || group.groupName.includes('Ship'));
-        if (!isHand && !isGround && !isShip) continue;
-
-        const target = isHand
-          ? locationData[name].hand
-          : isGround
-            ? locationData[name].ground
-            : locationData[name].ship;
-
-        const gp = group.groupProbability ?? 1;
-        for (const dep of group.deposits || []) {
-          if (!dep.compositionGuid) continue;
-          const compName = compNameCache[dep.compositionGuid];
-          if (!compName) continue;
-          const weight = gp * (dep.relativeProbability ?? 1);
-          target[compName] = (target[compName] ?? 0) + weight;
-        }
-      }
-    }
-
-    const locRows = [];
-    for (const [name, dat] of Object.entries(locationData)) {
-      const shipList = toWeightedMineableList(dat.ship);
-      const handList = toWeightedMineableList(dat.hand);
-      const groundList = toWeightedMineableList(dat.ground);
-      if (shipList || handList || groundList) {
-        locRows.push({
-          'Location Name': name,
-          'Ship Mineables': shipList,
-          'Hand Mineables': handList,
-          'Ground Vehicle Mineables': groundList,
-          'Quality Note': (qualityNotesByLocation.get(name) ?? []).join('\n'),
-        });
-      }
-    }
-    locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
+    const locRows = buildMiningLocationRows(miningData);
     if (locRows.length) {
       writeOutput(
         'mining-locations.csv',
