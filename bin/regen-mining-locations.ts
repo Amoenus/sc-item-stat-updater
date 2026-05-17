@@ -12,6 +12,9 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { buildLocationQualityNotes, buildMiningLocationRows } from '../src/extractor/mining-parser.js';
+import { ScmdbMiningDataSchema } from '../src/schema/scmdb.schemas.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
 
@@ -22,91 +25,17 @@ function defaultLogger(message: string): void {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
-  const escape = (value: unknown): string => {
+  const escapeCsv = (value: unknown): string => {
     if (value === undefined || value === null) return '';
     const text = String(value);
     if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
     return text;
   };
   const lines = [
-    headers.map(escape).join(','),
-    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escape(row[col])).join(',')),
+    headers.map(escapeCsv).join(','),
+    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escapeCsv(row[col])).join(',')),
   ];
   return `${lines.join('\n')}\n`;
-}
-
-/**
- * @param {Record<string, number>} weightMap
- * @returns {string}
- */
-function toWeightedMineableList(weightMap: Record<string, number>): string {
-  const entries = Object.entries(weightMap);
-  if (entries.length === 0) return '';
-  const total = entries.reduce((sum, [, w]) => sum + w, 0);
-  const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
-  return sortedEntries
-    .map(([name, weight]) => {
-      const pct = Math.round((weight / total) * 1000) / 10;
-      return `${name} — ${pct}%`;
-    })
-    .join('\n');
-}
-
-/**
- * @param {object} qualityDistribution
- * @returns {Map<string, string[]>}
- */
-function buildLocationQualityNotes(
-  qualityDistribution:
-    | {
-        shipmineables?: Record<
-          string,
-          {
-            default?: { min?: number };
-            locationOverrides?: Record<string, Array<{ distribution?: { min?: number }; locations?: string[] }>>;
-          }
-        >;
-      }
-    | undefined,
-): Map<string, string[]> {
-  /** @type {Map<string, string[]>} */
-  const notes = new Map();
-
-  const sm = qualityDistribution?.shipmineables;
-  if (!sm) return notes;
-
-  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-
-  for (const rarity of RARITY_ORDER) {
-    const rarityData = sm[rarity];
-    if (!rarityData) continue;
-
-    const defaultMin = rarityData.default?.min ?? null;
-    if (defaultMin === null) continue;
-
-    const locationOverrides = rarityData.locationOverrides;
-    if (!locationOverrides) continue;
-
-    for (const groupEntries of Object.values(locationOverrides)) {
-      for (const entry of groupEntries) {
-        const overrideMin = entry.distribution?.min;
-        if (overrideMin === undefined || overrideMin <= defaultMin) continue;
-
-        const floorPct = (overrideMin / 10).toFixed(1);
-        const defaultPct = (defaultMin / 10).toFixed(1);
-        const label = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-        const note = `${label} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
-
-        for (const locName of entry.locations ?? []) {
-          const existing = notes.get(locName) ?? [];
-          if (!existing.includes(note)) existing.push(note);
-          notes.set(locName, existing);
-        }
-      }
-    }
-  }
-
-  return notes;
 }
 
 function resolveTargetDir(scmdbDir: string | undefined): string {
@@ -135,70 +64,15 @@ export function regenMiningLocations(options: { scmdbDir?: string; log?: (messag
 
   // Read the cached mining data JSON
   const miningJsonPath = join(outDir, 'mining_data.json');
-  const miningData = JSON.parse(readFileSync(miningJsonPath, 'utf-8'));
+  const rawMiningData = JSON.parse(readFileSync(miningJsonPath, 'utf-8'));
+  const miningData = ScmdbMiningDataSchema.parse(rawMiningData);
   log(`Loaded mining data from: ${miningJsonPath}`);
   log(`  ${Object.keys(miningData.mineableElements || {}).length} elements`);
   log(`  ${Object.keys(miningData.compositions || {}).length} compositions`);
   log(`  ${(miningData.locations || []).length} locations`);
 
-  // Map compositionGuid -> composition name
-  const compNameCache: Record<string, string | null> = {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const [id, comp] of Object.entries(miningData.compositions || {}) as [string, any][]) {
-    compNameCache[id] = comp.name || null;
-  }
-
-  // Build quality notes
-  const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
-
-  // Build per-location weighted deposit maps
-  const locationData: Record<
-    string,
-    { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }
-  > = {};
-  for (const loc of miningData.locations || []) {
-    const name = loc.locationName;
-    if (!locationData[name]) {
-      locationData[name] = { ship: {}, hand: {}, ground: {} };
-    }
-    for (const group of loc.groups || []) {
-      const isHand = group.groupName.includes('FPS');
-      const isGround = group.groupName.includes('GroundVehicle');
-      const isShip =
-        !isHand && !isGround && (group.groupName.includes('SpaceShip') || group.groupName.includes('Ship'));
-      if (!isHand && !isGround && !isShip) continue;
-
-      let target;
-      if (isHand) target = locationData[name].hand;
-      else if (isGround) target = locationData[name].ground;
-      else target = locationData[name].ship;
-
-      const gp = group.groupProbability ?? 1;
-      for (const dep of group.deposits || []) {
-        const compName = compNameCache[dep.compositionGuid];
-        if (!compName) continue;
-        const weight = gp * (dep.relativeProbability ?? 1);
-        target[compName] = (target[compName] ?? 0) + weight;
-      }
-    }
-  }
-
-  const locRows = [];
-  for (const [name, dat] of Object.entries(locationData)) {
-    const shipList = toWeightedMineableList(dat.ship);
-    const handList = toWeightedMineableList(dat.hand);
-    const groundList = toWeightedMineableList(dat.ground);
-    if (shipList || handList || groundList) {
-      locRows.push({
-        'Location Name': name,
-        'Ship Mineables': shipList,
-        'Hand Mineables': handList,
-        'Ground Vehicle Mineables': groundList,
-        'Quality Note': (qualityNotesByLocation.get(name) ?? []).join('\n'),
-      });
-    }
-  }
-  locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
+  // Build rows using encapsulated extraction engine logic
+  const locRows = buildMiningLocationRows(miningData);
 
   const csvContent = toCsv(locRows, [
     'Location Name',
@@ -218,22 +92,35 @@ export function regenMiningLocations(options: { scmdbDir?: string; log?: (messag
     log(`\n[${row['Location Name']}]`);
     if (row['Ship Mineables']) {
       log('  Ship Mineables:');
-      row['Ship Mineables'].split('\n').forEach((l) => log('    ' + l));
+      String(row['Ship Mineables'])
+        .split('\n')
+        .forEach((l: string) => {
+          log(`    ${l}`);
+        });
     }
     if (row['Hand Mineables']) {
       log('  Hand Mineables:');
-      row['Hand Mineables'].split('\n').forEach((l) => log('    ' + l));
+      String(row['Hand Mineables'])
+        .split('\n')
+        .forEach((l: string) => {
+          log(`    ${l}`);
+        });
     }
     if (row['Ground Vehicle Mineables']) {
       log('  Ground Vehicle Mineables:');
-      row['Ground Vehicle Mineables'].split('\n').forEach((l) => log('    ' + l));
+      String(row['Ground Vehicle Mineables'])
+        .split('\n')
+        .forEach((l: string) => {
+          log(`    ${l}`);
+        });
     }
     if (row['Quality Note']) {
-      log('  Quality Note: ' + row['Quality Note']);
+      log(`  Quality Note: ${row['Quality Note']}`);
     }
   }
 
   // Show any quality overrides found
+  const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
   if (qualityNotesByLocation.size > 0) {
     log('\n-- Elevated quality floors detected --');
     for (const [loc, notes] of qualityNotesByLocation) {
