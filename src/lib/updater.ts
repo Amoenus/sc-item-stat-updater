@@ -419,7 +419,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
 
     validateIntegrity(originalLineCount, lines);
 
-    if (!opts.dryRun && (context.updatedCount > 0 || context.newCount > 0 || (opts.force && context.foundCount > 0))) {
+    if (shouldWriteIni(opts, context)) {
       await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
     }
 
