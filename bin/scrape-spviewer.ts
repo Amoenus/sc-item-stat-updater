@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { extractVersions, parseTable } from '../src/extractor/spviewer-html-parser.js';
 import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -48,26 +49,6 @@ const ITEM_TYPES = [
 
 const BASE_URL = 'https://www.spviewer.eu/items';
 
-/**
- * Extracts the LIVE and PTU version strings from the SPViewer page header.
- * The header contains:
- *   <span class="text-danger ...">4.7.2.11715810</span>   <- LIVE (active when no opacity-5)
- *   <span class="text-warning ... opacity-5">4.8.0.11768487</span>  <- PTU (inactive when opacity-5)
- * Active channel = the version span without the opacity-5 class.
- *
- * @param {import('puppeteer').Page} page
- * @returns {Promise<{ live: string | null, ptu: string | null }>}
- */
-async function extractVersions(page: import('puppeteer').Page): Promise<{ live: string | null; ptu: string | null }> {
-  return page.evaluate(() => {
-    const liveSpan = document.querySelector('h6.logo-version span.text-danger');
-    const ptuSpan = document.querySelector('h6.logo-version span.text-warning');
-    const live = liveSpan ? liveSpan.textContent.trim() : null;
-    const ptu = ptuSpan ? ptuSpan.textContent.trim() : null;
-    return { live, ptu };
-  });
-}
-
 // Try to show all entries (click "All" in page-size dropdown if present).
 // Best-effort: errors are silently swallowed so scraping still continues.
 async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<void> {
@@ -90,63 +71,6 @@ async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<voi
   }
 }
 
-// Reads the rendered table from the current page and returns headers + rows.
-// Note: __name must be pre-defined in the page context before calling this
-// (see the page.evaluate string injection in scrapeItems).
-async function scrapeTableData(page: import('puppeteer').Page): Promise<{ headers: string[]; rows: string[][] }> {
-  return page.evaluate(() => {
-    const cleanHeader = (th: Element) => {
-      const clone = th.cloneNode(true) as Element;
-      for (const el of clone.querySelectorAll(
-        'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
-      )) {
-        el.remove();
-      }
-      let text = (clone.textContent ?? '').trim();
-      text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-      return text;
-    };
-
-    // Handles merged/grouped header rows (e.g. "Damage { Physical | Energy }").
-    const buildMultiRowHeaders = (theadRows: Element[]): string[] => {
-      const groupCells = [...theadRows[0].querySelectorAll('th')];
-      const leafCells = [...(theadRows.at(-1)?.querySelectorAll('th') ?? [])];
-      const expanded: { name: string; span: number }[] = [];
-      for (const th of groupCells) {
-        const name = cleanHeader(th);
-        const span = th.colSpan || 1;
-        for (let i = 0; i < span; i++) expanded.push({ name, span });
-      }
-      const headers: string[] = [];
-      let leafIdx = 0;
-      for (const cell of expanded) {
-        if (cell.span === 1) {
-          headers.push(cell.name);
-        } else {
-          const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
-          headers.push(leafName ? `${cell.name} ${leafName}` : cell.name);
-          leafIdx++;
-        }
-      }
-      return headers;
-    };
-
-    const theadRows = [...document.querySelectorAll('table thead tr')];
-    let headers: string[] = [];
-    if (theadRows.length >= 2) {
-      headers = buildMultiRowHeaders(theadRows);
-    } else if (theadRows.length === 1) {
-      headers = [...theadRows[0].querySelectorAll('th')].map(cleanHeader);
-    }
-
-    const rows = [...document.querySelectorAll('table tbody tr')]
-      .filter((tr) => !tr.textContent.includes('No data available'))
-      .map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()));
-
-    return { headers, rows };
-  });
-}
-
 /**
  * Scrapes item data for a given item type from SPViewer.
  */
@@ -164,15 +88,6 @@ async function scrapeItems(
       timeout: PAGE_LOAD_TIMEOUT_MS,
     });
 
-    // tsx compiles with esbuild keepNames:true, which transforms named inner functions
-    // (e.g. `const cleanHeader = (th) => ...`) into `__name((th) => ..., "cleanHeader")`.
-    // Puppeteer serialises page.evaluate callbacks by .toString(), so the __name call
-    // ends up in the browser context where it is not defined. Defining the helper here
-    // (as a string so tsx never touches it) makes all subsequent page.evaluate calls work.
-    await page.evaluate(
-      'var __name=(t,v)=>Object.defineProperty(t,"name",{value:v,configurable:!0})',
-    );
-
     // Wait for the DataTable to load rows (up to 90s for DB init)
     await page.waitForFunction(
       () => {
@@ -185,7 +100,8 @@ async function scrapeItems(
     await expandPaginatorToAll(page);
     await sleep(POST_PAGINATION_SETTLE_MS);
 
-    const data = await scrapeTableData(page);
+    const html = await page.content();
+    const data = parseTable(html);
 
     const result = SpviewerScrapedDataSchema.safeParse(data);
     if (!result.success) {
@@ -269,7 +185,8 @@ await versionPage.goto(`${BASE_URL}?item=${types[0]}`, {
   timeout: PAGE_LOAD_TIMEOUT_MS,
 });
 
-const versions = await extractVersions(versionPage);
+const versionHtml = await versionPage.content();
+const versions = extractVersions(versionHtml);
 await versionPage.close();
 
 const versionRaw = usePtu ? versions.ptu : versions.live;
