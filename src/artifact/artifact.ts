@@ -118,14 +118,14 @@ export async function writeArtifactFile(artifactPath: string, artifact: Artifact
  * @returns {Promise<object>} The parsed artifact object
  */
 export async function readArtifactFile(artifactPath: string): Promise<Artifact> {
-  let raw;
+  let raw: string;
   try {
     raw = await fs.readFile(artifactPath, 'utf8');
   } catch (err) {
     throw new Error(`Cannot read artifact file: ${artifactPath}`, { cause: err });
   }
 
-  let artifact;
+  let artifact: Artifact;
   try {
     artifact = JSON.parse(raw);
   } catch (err) {

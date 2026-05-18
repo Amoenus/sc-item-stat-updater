@@ -4,3 +4,4 @@ node_modules/
 *.gfx
 *.swf
 global.ini.*
+dist/

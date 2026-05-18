@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noMisleadingCharacterClass: Not an emoji sequence
 const UNICODE_SPACE_PATTERN = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\u200B\u200C\u200D\u2060]/g;
 
 export function fmtNum(val: unknown): string {

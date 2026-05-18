@@ -18,7 +18,7 @@ function toSlug(filename: string, prefix = ''): string {
  * Loads all item configs from a directory via dynamic import.
  */
 async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<string, ItemConfig>> {
-  let entries;
+  let entries: string[];
   try {
     entries = await fs.readdir(dir);
   } catch {
@@ -55,7 +55,7 @@ export async function loadAllConfigs(): Promise<Map<string, ItemConfig>> {
  * Loads a single config by its slug name.
  */
 export async function loadConfig(slug: string): Promise<ItemConfig> {
-  let filePath;
+  let filePath: string;
   if (slug.startsWith('sp-')) {
     filePath = path.join(spviewerDir, `${slug.slice(3)}.ts`);
   } else if (slug.startsWith('mission-')) {
