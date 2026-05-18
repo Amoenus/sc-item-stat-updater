@@ -152,6 +152,14 @@ if (!options.dryRun) {
 }
 const sharedOptions = { ...options, skipBackup: true };
 
+const fixedExtraSteps = [
+  'Component Titles',
+  'FPS title tags',
+  'Missile title tags',
+  'Raw commodity labels',
+  'Missing strings',
+] as const;
+const extraSteps = fixedExtraSteps.length + (values['include-mining-journal'] ? 1 : 0);
 const bar = new cliProgress.SingleBar({
   format: '{bar} {percentage}% | {value}/{total} | {category}',
   barCompleteChar: '\u2588',
@@ -162,7 +170,7 @@ const bar = new cliProgress.SingleBar({
 const results = [];
 const errors = [];
 
-bar.start(categories.length, 0, { category: '' });
+bar.start(categories.length + extraSteps, 0, { category: '' });
 
 for (let i = 0; i < categories.length; i++) {
   const { config, csvDir: entryCsvDir } = categories[i];
@@ -180,8 +188,8 @@ for (let i = 0; i < categories.length; i++) {
   }
 }
 
-bar.update(categories.length, { category: 'Done' });
-bar.stop();
+let barStep = categories.length;
+bar.update(barStep, { category: 'Component Titles' });
 
 try {
   logger.info('Starting component title update');
@@ -203,6 +211,9 @@ try {
   errors.push({ label: 'Component Titles', message: error.message });
 }
 
+barStep++;
+bar.update(barStep, { category: 'FPS title tags' });
+
 try {
   logger.info('Starting FPS title tag update');
   const fpsTagResult = await runFpsTitleTagUpdate({
@@ -222,6 +233,9 @@ try {
   logger.error('Failed to update FPS title tags', { error: error.message });
   errors.push({ label: 'FPS title tags', message: error.message });
 }
+
+barStep++;
+bar.update(barStep, { category: 'Missile title tags' });
 
 try {
   logger.info('Starting missile title tag update');
@@ -244,7 +258,10 @@ try {
   errors.push({ label: 'Missile title tags', message: error.message });
 }
 
+barStep++;
+
 if (values['include-mining-journal']) {
+  bar.update(barStep, { category: 'Mining journal' });
   try {
     const { runMiningJournalUpdate } = await import('../src/lib/updates/mining-journal-update.js');
     const miningJournalResult = await runMiningJournalUpdate({
@@ -260,7 +277,10 @@ if (values['include-mining-journal']) {
     logger.error('Failed to update Mining journal', { error: error.message });
     errors.push({ label: 'Mining journal', message: error.message });
   }
+  barStep++;
 }
+
+bar.update(barStep, { category: 'Raw commodity labels' });
 
 try {
   const rawCommodityLabelResult = await runRawCommodityLabelFixUpdate({
@@ -274,6 +294,9 @@ try {
   errors.push({ label: 'Raw commodity labels', message: error.message });
 }
 
+barStep++;
+bar.update(barStep, { category: 'Missing strings' });
+
 try {
   const missingStringsResult = await runMissingStringsUpdate({
     iniPath,
@@ -286,6 +309,10 @@ try {
   logger.error('Failed to insert missing strings', { error: error.message });
   errors.push({ label: 'Missing strings', message: error.message });
 }
+
+barStep++;
+bar.update(barStep, { category: 'Done' });
+bar.stop();
 
 const totalDuration = Math.round(performance.now() - totalStart);
 
