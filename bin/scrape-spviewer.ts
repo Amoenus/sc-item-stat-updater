@@ -83,6 +83,15 @@ async function scrapeItems(
       timeout: 60_000,
     });
 
+    // tsx compiles with esbuild keepNames:true, which transforms named inner functions
+    // (e.g. `const cleanHeader = (th) => ...`) into `__name((th) => ..., "cleanHeader")`.
+    // Puppeteer serialises page.evaluate callbacks by .toString(), so the __name call
+    // ends up in the browser context where it is not defined. Defining the helper here
+    // (as a string so tsx never touches it) makes all subsequent page.evaluate calls work.
+    await page.evaluate(
+      'var __name=(t,v)=>Object.defineProperty(t,"name",{value:v,configurable:!0})',
+    );
+
     // Wait for the DataTable to load rows (up to 90s for DB init)
     await page.waitForFunction(
       () => {
