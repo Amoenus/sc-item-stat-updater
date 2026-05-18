@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { extractVersions, parseTable } from '../src/extractor/spviewer-html-parser.js';
 import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -41,26 +42,6 @@ const ITEM_TYPES = [
 ];
 
 const BASE_URL = 'https://www.spviewer.eu/items';
-
-/**
- * Extracts the LIVE and PTU version strings from the SPViewer page header.
- * The header contains:
- *   <span class="text-danger ...">4.7.2.11715810</span>   <- LIVE (active when no opacity-5)
- *   <span class="text-warning ... opacity-5">4.8.0.11768487</span>  <- PTU (inactive when opacity-5)
- * Active channel = the version span without the opacity-5 class.
- *
- * @param {import('puppeteer').Page} page
- * @returns {Promise<{ live: string | null, ptu: string | null }>}
- */
-async function extractVersions(page: import('puppeteer').Page): Promise<{ live: string | null; ptu: string | null }> {
-  return page.evaluate(() => {
-    const liveSpan = document.querySelector('h6.logo-version span.text-danger');
-    const ptuSpan = document.querySelector('h6.logo-version span.text-warning');
-    const live = liveSpan ? liveSpan.textContent.trim() : null;
-    const ptu = ptuSpan ? ptuSpan.textContent.trim() : null;
-    return { live, ptu };
-  });
-}
 
 /**
  * Scrapes item data for a given item type from SPViewer.
@@ -114,51 +95,8 @@ async function scrapeItems(
 
     await new Promise((r) => setTimeout(r, 2000));
 
-    const data = await page.evaluate(() => {
-      const cleanHeader = (th: Element) => {
-        const clone = th.cloneNode(true) as Element;
-        for (const el of clone.querySelectorAll(
-          'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
-        )) {
-          el.remove();
-        }
-        let text = (clone.textContent ?? '').trim();
-        text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-        return text;
-      };
-
-      const theadRows = [...document.querySelectorAll('table thead tr')];
-      let headers: string[] = [];
-
-      if (theadRows.length >= 2) {
-        const groupCells = [...theadRows[0].querySelectorAll('th')];
-        const leafCells = [...theadRows[theadRows.length - 1].querySelectorAll('th')];
-        const expanded: { name: string; span: number }[] = [];
-        for (const th of groupCells) {
-          const name = cleanHeader(th);
-          const span = th.colSpan || 1;
-          for (let i = 0; i < span; i++) expanded.push({ name, span });
-        }
-        let leafIdx = 0;
-        for (let i = 0; i < expanded.length; i++) {
-          if (expanded[i].span === 1) {
-            headers.push(expanded[i].name);
-          } else {
-            const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
-            headers.push(leafName ? `${expanded[i].name} ${leafName}` : expanded[i].name);
-            leafIdx++;
-          }
-        }
-      } else if (theadRows.length === 1) {
-        headers = [...theadRows[0].querySelectorAll('th')].map(cleanHeader);
-      }
-
-      const rows = [...document.querySelectorAll('table tbody tr')]
-        .filter((tr) => !tr.textContent.includes('No data available'))
-        .map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()));
-
-      return { headers, rows };
-    });
+    const html = await page.content();
+    const data = parseTable(html);
 
     const result = SpviewerScrapedDataSchema.safeParse(data);
     if (!result.success) {
@@ -242,7 +180,8 @@ await versionPage.goto(`${BASE_URL}?item=${types[0]}`, {
   timeout: 60_000,
 });
 
-const versions = await extractVersions(versionPage);
+const versionHtml = await versionPage.content();
+const versions = extractVersions(versionHtml);
 await versionPage.close();
 
 const versionRaw = usePtu ? versions.ptu : versions.live;
