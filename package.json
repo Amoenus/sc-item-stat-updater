@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "update": "node --import tsx/esm bin/update-all.ts",
     "scrape:scmdb": "node --import tsx/esm bin/scrape-scmdb.ts",
-    "scrape:spviewer": "node --import tsx/esm bin/scrape-spviewer.ts",
+    "scrape:spviewer": "node --import tsx/esm bin/scrape-spviewer.ts --all",
     "regen:mining-locations": "node --import tsx/esm bin/regen-mining-locations.ts",
     "lint": "biome lint .",
     "format": "biome format --write .",
