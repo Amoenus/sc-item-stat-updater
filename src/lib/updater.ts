@@ -357,6 +357,18 @@ class UpdateContext {
 }
 
 /**
+ * Returns true when the INI file should be written to disk.
+ * - Never writes during a dry run.
+ * - Always writes when `force` is set (even if no values changed).
+ * - Otherwise writes only when at least one line was updated or added.
+ */
+function shouldWriteIni(opts: ResolvedOptions, context: UpdateContext): boolean {
+  if (opts.dryRun) return false;
+  if (opts.force) return true;
+  return context.updatedCount > 0 || context.newCount > 0;
+}
+
+/**
  * Runs a source-based update against global.ini.
  *
  * @param {import('./types.js').ItemConfig} config
