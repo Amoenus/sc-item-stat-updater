@@ -154,12 +154,12 @@ async function scrapeItems(
           for (let i = 0; i < span; i++) expanded.push({ name, span });
         }
         let leafIdx = 0;
-        for (let i = 0; i < expanded.length; i++) {
-          if (expanded[i].span === 1) {
-            headers.push(expanded[i].name);
+        for (const element of expanded) {
+          if (element.span === 1) {
+            headers.push(element.name);
           } else {
             const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
-            headers.push(leafName ? `${expanded[i].name} ${leafName}` : expanded[i].name);
+            headers.push(leafName ? `${element.name} ${leafName}` : element.name);
             leafIdx++;
           }
         }
@@ -192,7 +192,7 @@ async function scrapeItems(
 function toCsv({ headers, rows }: { headers: string[]; rows: string[][] }): string {
   const escapeVal = (v: string): string => {
     if (v.includes(',') || v.includes('"') || v.includes('\n')) {
-      return `"${v.replace(/"/g, '""')}"`;
+      return `"${v.replaceAll('"', '""')}"`;
     }
     return v;
   };

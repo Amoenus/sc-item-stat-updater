@@ -31,7 +31,7 @@ export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string
   }
   const journal = [];
   for (const [cat, list] of Object.entries(rarityMap)) {
-    list.sort();
+    list.sort((a, b) => a.localeCompare(b));
     journal.push({
       'Rarity Category': cat,
       'Element List': list.join('\n'),
@@ -60,7 +60,7 @@ function toWeightedMineableList(weightMap: Record<string, number>): string {
   if (entries.length === 0) return '';
   const total = entries.reduce((sum, [, w]) => sum + w, 0);
   return entries
-    .sort((a, b) => b[1] - a[1])
+    .toSorted((a, b) => b[1] - a[1])
     .map(([name, weight]) => {
       const pct = Math.round((weight / total) * WEIGHT_TO_PCT_FACTOR) / PCT_DECIMAL_SHIFT;
       return `${name} — ${pct}%`;
@@ -119,56 +119,72 @@ export function buildLocationQualityNotes(
   return notes;
 }
 
+type MiningType = 'ship' | 'hand' | 'ground';
+type LocationWeights = Record<MiningType, Record<string, number>>;
+
+function buildCompNameCache(compositions: MiningDataDTO['compositions']): Record<string, string | null> {
+  const cache: Record<string, string | null> = {};
+  for (const [id, comp] of Object.entries(compositions || {})) {
+    cache[id] = comp.name || null;
+  }
+  return cache;
+}
+
+function classifyMiningGroup(groupName: string): MiningType | null {
+  if (groupName.includes('FPS')) return 'hand';
+  if (groupName.includes('GroundVehicle')) return 'ground';
+  if (groupName.includes('SpaceShip') || groupName.includes('Ship')) return 'ship';
+  return null;
+}
+
+function accumulateDeposits(
+  weights: Record<string, number>,
+  deposits: { compositionGuid?: string; relativeProbability?: number }[],
+  compNameCache: Record<string, string | null>,
+  groupProbability: number,
+): void {
+  for (const dep of deposits) {
+    if (!dep.compositionGuid) continue;
+    const compName = compNameCache[dep.compositionGuid];
+    if (!compName) continue;
+    weights[compName] = (weights[compName] ?? 0) + groupProbability * (dep.relativeProbability ?? 1);
+  }
+}
+
+// Builds per-location weighted deposit maps.
+// Weight = groupProbability * relativeProbability, normalised to % within each mining type.
+function buildLocationWeightMaps(
+  locations: MiningDataDTO['locations'],
+  compNameCache: Record<string, string | null>,
+): Record<string, LocationWeights> {
+  const weightMaps: Record<string, LocationWeights> = {};
+  for (const loc of locations || []) {
+    const { locationName: name, groups = [] } = loc;
+    if (!weightMaps[name]) {
+      weightMaps[name] = { ship: {}, hand: {}, ground: {} };
+    }
+    for (const group of groups) {
+      const miningType = classifyMiningGroup(group.groupName);
+      if (!miningType) continue;
+      accumulateDeposits(weightMaps[name][miningType], group.deposits ?? [], compNameCache, group.groupProbability ?? 1);
+    }
+  }
+  return weightMaps;
+}
+
 /**
  * Builds rows for the mining locations CSV.
  */
 export function buildMiningLocationRows(miningData: MiningDataDTO): Record<string, unknown>[] {
-  // Map compositionGuid -> composition name (the primary mineral label for that deposit type)
-  const compNameCache: Record<string, string | null> = {};
-  for (const [id, comp] of Object.entries(miningData.compositions || {})) {
-    compNameCache[id] = comp.name || null;
-  }
-
-  // Build per-location quality override notes.
+  const compNameCache = buildCompNameCache(miningData.compositions);
   const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
-
-  // Build per-location weighted deposit maps.
-  // Weight = groupProbability * relativeProbability, then normalised to % within each mining type.
-  const locationData: Record<
-    string,
-    { ship: Record<string, number>; hand: Record<string, number>; ground: Record<string, number> }
-  > = {};
-
-  for (const loc of miningData.locations || []) {
-    const name = loc.locationName;
-    if (!locationData[name]) {
-      locationData[name] = { ship: {}, hand: {}, ground: {} };
-    }
-    for (const group of loc.groups || []) {
-      const isHand = group.groupName.includes('FPS');
-      const isGround = group.groupName.includes('GroundVehicle');
-      const isShip =
-        !isHand && !isGround && (group.groupName.includes('SpaceShip') || group.groupName.includes('Ship'));
-      if (!isHand && !isGround && !isShip) continue;
-
-      const target = isHand ? locationData[name].hand : isGround ? locationData[name].ground : locationData[name].ship;
-
-      const gp = group.groupProbability ?? 1;
-      for (const dep of group.deposits || []) {
-        if (!dep.compositionGuid) continue;
-        const compName = compNameCache[dep.compositionGuid];
-        if (!compName) continue;
-        const weight = gp * (dep.relativeProbability ?? 1);
-        target[compName] = (target[compName] ?? 0) + weight;
-      }
-    }
-  }
+  const locationWeightMaps = buildLocationWeightMaps(miningData.locations, compNameCache);
 
   const locRows = [];
-  for (const [name, dat] of Object.entries(locationData)) {
-    const shipList = toWeightedMineableList(dat.ship);
-    const handList = toWeightedMineableList(dat.hand);
-    const groundList = toWeightedMineableList(dat.ground);
+  for (const [name, weights] of Object.entries(locationWeightMaps)) {
+    const shipList = toWeightedMineableList(weights.ship);
+    const handList = toWeightedMineableList(weights.hand);
+    const groundList = toWeightedMineableList(weights.ground);
     if (shipList || handList || groundList) {
       locRows.push({
         'Location Name': name,
