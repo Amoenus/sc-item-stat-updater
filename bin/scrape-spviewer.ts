@@ -8,6 +8,11 @@ import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootDir = join(__dirname, '..');
 
+const PAGE_LOAD_TIMEOUT_MS = 60_000;
+const TABLE_LOAD_TIMEOUT_MS = 90_000;
+const PAGINATION_SETTLE_MS = 500;
+const POST_PAGINATION_SETTLE_MS = 2000;
+
 const ITEM_TYPES = [
   // OP. MODES
   'Bomb',
@@ -80,7 +85,7 @@ async function scrapeItems(
   try {
     await page.goto(`${BASE_URL}?item=${itemType}`, {
       waitUntil: 'networkidle2',
-      timeout: 60_000,
+      timeout: PAGE_LOAD_TIMEOUT_MS,
     });
 
     // tsx compiles with esbuild keepNames:true, which transforms named inner functions
@@ -98,7 +103,7 @@ async function scrapeItems(
         const rows = document.querySelectorAll('table tbody tr');
         return rows.length > 0 && !rows[0].textContent.includes('No data available');
       },
-      { timeout: 90_000 },
+      { timeout: TABLE_LOAD_TIMEOUT_MS },
     );
 
     // Try to show all entries (click "All" in page-size dropdown if present)
@@ -106,7 +111,7 @@ async function scrapeItems(
       const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
       if (paginator) {
         await paginator.click();
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, PAGINATION_SETTLE_MS));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allOption = await (page as any).$x("//li[contains(text(),'All') or contains(text(),'all')]");
         if (allOption.length) {
@@ -115,13 +120,13 @@ async function scrapeItems(
           const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
           if (options.length) await options.at(-1)?.click();
         }
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
       }
     } catch {
       /* pagination handling is best-effort */
     }
 
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
 
     const data = await page.evaluate(() => {
       const cleanHeader = (th: Element) => {
@@ -248,7 +253,7 @@ const browser = await puppeteer.launch({ headless: true });
 const versionPage = await browser.newPage();
 await versionPage.goto(`${BASE_URL}?item=${types[0]}`, {
   waitUntil: 'networkidle2',
-  timeout: 60_000,
+  timeout: PAGE_LOAD_TIMEOUT_MS,
 });
 
 const versions = await extractVersions(versionPage);

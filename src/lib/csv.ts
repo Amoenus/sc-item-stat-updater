@@ -1,7 +1,7 @@
 export function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
   const escapeCsv = (value: unknown): string => {
     if (value === undefined || value === null) return '';
-    const text = String(value);
+    const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
     if (/[",\n]/.test(text)) {
       return `"${text.replaceAll('"', '""')}"`;
     }

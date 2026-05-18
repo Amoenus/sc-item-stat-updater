@@ -24,7 +24,7 @@ describe('updater: validateRow', () => {
 
   it('should return "invalid" and log a debug message for invalid keys', () => {
     const logger = getLogger('updater');
-    const _debugMock = mock.method(logger, 'debug', () => {});
+    mock.method(logger, 'debug', () => {});
 
     const row = { 'Localization Key': 'invalid key!' };
     const result = validateRow(row, 'test-label');

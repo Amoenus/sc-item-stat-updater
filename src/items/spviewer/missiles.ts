@@ -21,7 +21,8 @@ export default {
   ],
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
   buildValue(r, flavorText) {
-    const isTorpedo = parseInt(r['Size'], 10) >= 7;
+    const TORPEDO_MIN_SIZE = 7;
+    const isTorpedo = Number.parseInt(r['Size'], 10) >= TORPEDO_MIN_SIZE;
 
     return stat(r)
       .line('Item Type', isTorpedo ? 'Torpedo' : 'Missile')

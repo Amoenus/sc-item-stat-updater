@@ -40,6 +40,13 @@ export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string
   return journal;
 }
 
+/** Multiplier used to convert a weight fraction to a one-decimal-place percentage (e.g. 0.123 → 12.3). */
+const WEIGHT_TO_PCT_FACTOR = 1000;
+/** Divisor that shifts the rounded integer back to one decimal place. */
+const PCT_DECIMAL_SHIFT = 10;
+/** Divisor to convert a raw quality integer (0–1000) to a percentage with one decimal. */
+const QUALITY_PCT_DIVISOR = 10;
+
 /**
  * Converts a map of { mineralName -> totalWeight } into a newline-separated list
  * sorted by descending probability, each entry formatted as "Name — XX.X%".
@@ -55,7 +62,7 @@ function toWeightedMineableList(weightMap: Record<string, number>): string {
   return entries
     .sort((a, b) => b[1] - a[1])
     .map(([name, weight]) => {
-      const pct = Math.round((weight / total) * 1000) / 10;
+      const pct = Math.round((weight / total) * WEIGHT_TO_PCT_FACTOR) / PCT_DECIMAL_SHIFT;
       return `${name} — ${pct}%`;
     })
     .join('\n');
@@ -95,8 +102,8 @@ export function buildLocationQualityNotes(
         if (overrideMin === undefined || overrideMin <= defaultMin) continue;
 
         // This location group has an elevated quality floor
-        const floorPct = (overrideMin / 10).toFixed(1);
-        const defaultPct = (defaultMin / 10).toFixed(1);
+        const floorPct = (overrideMin / QUALITY_PCT_DIVISOR).toFixed(1);
+        const defaultPct = (defaultMin / QUALITY_PCT_DIVISOR).toFixed(1);
         const label = rarity.charAt(0).toUpperCase() + rarity.slice(1);
         const note = `${label} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
 

@@ -21,11 +21,9 @@ export interface BaseItemConfig {
   /** Identifies existing description keys in the INI file */
   descKeyMatch: (keyLower: string) => boolean;
   /** Transforms a row into an INI value */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   buildValue?: (row: Record<string, string>, flavorText: string, oldValue: string, targetKey: string) => string;
   /** Returns the INI keys to update for a row, defaulting to the description key */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getTargetKeys?: (row: any, deriveDescKey: (nameKey: string) => string) => string[];
+  getTargetKeys?: (row: Record<string, string>, deriveDescKey: (nameKey: string) => string) => string[];
   /** Override default name-to-desc key derivation */
   nameKeyToDescKey?: (nameKey: string) => string;
   /** Extra keys to check for existing entries */

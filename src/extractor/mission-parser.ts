@@ -11,8 +11,7 @@ interface ChainDataDTO {
 /**
  * Flattens a value into a string.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function flattenValue(value: any): string {
+export function flattenValue(value: unknown): string {
   if (value === undefined || value === null) return '';
   if (typeof value === 'string') return value;
   return JSON.stringify(value);
@@ -63,6 +62,21 @@ function seedBlueprintQueue(
   return queue;
 }
 
+function enqueuePrerequisites(
+  contractId: string,
+  depth: number,
+  contract: ContractDTO,
+  tagProviders: Map<string, string[]>,
+  queue: Array<{ contractId: string; depth: number }>,
+): void {
+  for (const tag of getRequiredTags(contract)) {
+    for (const providerId of tagProviders.get(tag) ?? []) {
+      if (providerId === contractId) continue;
+      queue.push({ contractId: providerId, depth: depth + 1 });
+    }
+  }
+}
+
 function propagateChainDepths(
   queue: Array<{ contractId: string; depth: number }>,
   contractById: Map<string, ContractDTO>,
@@ -78,12 +92,7 @@ function propagateChainDepths(
     blueprintChainDepth.set(contractId, depth);
     const contract = contractById.get(contractId);
     if (!contract) continue;
-    for (const tag of getRequiredTags(contract)) {
-      for (const providerId of tagProviders.get(tag) ?? []) {
-        if (providerId === contractId) continue;
-        queue.push({ contractId: providerId, depth: depth + 1 });
-      }
-    }
+    enqueuePrerequisites(contractId, depth, contract, tagProviders, queue);
   }
 }
 
@@ -231,20 +240,20 @@ export function buildMissionRows(
   return (contracts || [])
     .flatMap((contract) => {
       const rows: Record<string, unknown>[] = [];
-      const blueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-      const blueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
+      const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
+      const isBlueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
       const titleKey = normalizeLocalizationKey(contract.titleKey || '');
       const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
       let titleTag = '';
       let descTag = '';
-      if (blueprintReward) {
+      if (isBlueprintReward) {
         titleTag = ' <EM4>[BP]</EM4>';
         descTag = '[BP Reward]';
-      } else if (blueprintChain) {
+      } else if (isBlueprintChain) {
         titleTag = ' <EM4>[BP Chain]</EM4>';
         descTag = '[BP Chain]';
       }
-      const rewardList = blueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
+      const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
       const descriptionNote = descTag;
 
       if (titleKey && contract.title) {
