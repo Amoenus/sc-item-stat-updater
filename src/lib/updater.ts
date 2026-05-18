@@ -149,8 +149,8 @@ async function loadLookupMap(lookupCsvFile: string, csvDir: string): Promise<Map
 function findLastDescIndex(existingKeys: Record<string, number>, descKeyMatch: (key: string) => boolean): number {
   let lastDescIdx = -1;
   for (const [key, idx] of Object.entries(existingKeys)) {
-    if (descKeyMatch(key.toLowerCase()) && (idx as number) > lastDescIdx) {
-      lastDescIdx = idx as number;
+    if (descKeyMatch(key.toLowerCase()) && (idx) > lastDescIdx) {
+      lastDescIdx = idx;
     }
   }
   return lastDescIdx;
@@ -220,7 +220,7 @@ function processRow(
 /** Inserts new lines at the correct position (after last matching desc key). */
 function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: number): void {
   if (newLines.length === 0) return;
-  newLines.sort();
+  newLines.sort((a, b) => a.localeCompare(b));
   if (lastDescIdx > -1) {
     for (let i = 0; i < newLines.length; i++) lines.splice(lastDescIdx + 1 + i, 0, newLines[i]);
   } else {

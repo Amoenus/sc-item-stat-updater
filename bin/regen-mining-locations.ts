@@ -30,7 +30,7 @@ function resolveTargetDir(scmdbDir: string | undefined): string {
   const scmdbRoot = join(repoRoot, 'csv', 'scmdb');
   const versions = readdirSync(scmdbRoot).filter((d) => d.includes('live') || d.includes('ptu'));
   if (versions.length === 0) throw new Error('No scmdb version directories found');
-  versions.sort().reverse();
+  versions.toSorted((a, b) => a.localeCompare(b)).reverse();
   const latestVersion = versions[0];
   return join(scmdbRoot, latestVersion);
 }

@@ -298,7 +298,7 @@ if (values['emit-artifact']) {
   }
   const allIssues = results.flatMap((r) =>
     ((r.issues ?? []) as Array<{ key: string; reason: string; type: string }>).map((i) => ({
-      label: r.label as string,
+      label: r.label,
       ...i,
     })),
   );
@@ -331,7 +331,7 @@ for (const r of results) console.log(r.summary);
 
 const allIssues = results.flatMap((r) =>
   ((r.issues ?? []) as Array<{ key: string; reason: string; type: string }>).map((i) => ({
-    label: r.label as string,
+    label: r.label,
     ...i,
   })),
 );

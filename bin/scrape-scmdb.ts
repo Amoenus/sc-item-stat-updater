@@ -133,9 +133,7 @@ async function main() {
     }
   } else {
     selected = versions.find((entry) => isLiveVersion(entry.version));
-    if (!selected) {
-      selected = versions[0];
-    }
+    selected ??= versions[0];
   }
 
   console.log(`Using SCMDB version ${selected.version}`);

@@ -113,7 +113,7 @@ async function scrapeItems(
           await allOption[0].click();
         } else {
           const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
-          if (options.length) await options[options.length - 1].click();
+          if (options.length) await options.at(-1)?.click();
         }
         await new Promise((r) => setTimeout(r, 2000));
       }
@@ -141,7 +141,7 @@ async function scrapeItems(
 
       if (theadRows.length >= 2) {
         const groupCells = [...theadRows[0].querySelectorAll('th')];
-        const leafCells = [...theadRows[theadRows.length - 1].querySelectorAll('th')];
+        const leafCells = [...theadRows.at(-1)?.querySelectorAll('th') ?? []];
         const expanded: { name: string; span: number }[] = [];
         for (const th of groupCells) {
           const name = cleanHeader(th);

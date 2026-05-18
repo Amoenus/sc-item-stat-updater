@@ -54,7 +54,7 @@ export default {
     // Strip any previously-appended scanner block first for idempotency.
     const statsBlockMarker = '\\n\\n** Scanner Data **';
     const statsBlockIndex = oldValue.indexOf(statsBlockMarker);
-    const cleanFlavorText = statsBlockIndex !== -1 ? oldValue.substring(0, statsBlockIndex) : oldValue;
+    const cleanFlavorText = statsBlockIndex === -1 ? oldValue : oldValue.substring(0, statsBlockIndex);
 
     // Build the stats block
     const rarity = row['Rarity'] || 'N/A';
