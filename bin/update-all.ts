@@ -1,11 +1,12 @@
 ﻿import path from 'node:path';
-import { inspect, parseArgs } from 'node:util';
+import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { type Artifact, writeArtifactFile } from '../src/artifact/artifact.js';
 import { findLatestMatchingDirectory } from '../src/io/local/discovery.js';
 import { backupIniFile } from '../src/io/local/ini-file.js';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
-import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
+import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
+import { getLogger, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
@@ -16,10 +17,7 @@ import { regenMiningLocations } from './regen-mining-locations.js';
 
 const logger = getLogger('update-all');
 
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled rejection', { error: inspect(reason, { depth: 3 }) });
-  process.exit(1);
-});
+registerUnhandledRejectionHandler(logger);
 
 const { values } = parseArgs({
   options: {
@@ -53,8 +51,7 @@ if (values.help) {
   process.exit(0);
 }
 
-if (values.verbose) setLogLevel('debug');
-if (values['json-logs']) setJsonOutput(true);
+applyLogFlags(values);
 
 /**
  * Finds the latest versioned subfolder under a base directory that matches

@@ -15,6 +15,7 @@ import {
   buildMissionRows,
   collectBlueprintChainData,
 } from '../src/extractor/mission-parser.js';
+import { toCsv } from '../src/lib/csv.js';
 import {
   ScmdbCraftingBlueprintsSchema,
   ScmdbCraftingItemsSchema,
@@ -46,22 +47,6 @@ Examples:
   node scrape-scmdb.js --version 4.8.0-ptu.11759767
   node scrape-scmdb.js --list-versions
 `);
-}
-
-function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
-  const escapeCsv = (value: unknown): string => {
-    if (value === undefined || value === null) return '';
-    const text = String(value);
-    if (/[",\n]/.test(text)) {
-      return `"${text.replace(/"/g, '""')}"`;
-    }
-    return text;
-  };
-  const lines = [
-    headers.map(escapeCsv).join(','),
-    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escapeCsv(row[col])).join(',')),
-  ];
-  return `${lines.join('\n')}\n`;
 }
 
 async function fetchJson(url: string): Promise<unknown> {

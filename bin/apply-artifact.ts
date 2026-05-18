@@ -16,17 +16,15 @@
  */
 
 import path from 'node:path';
-import { inspect, parseArgs } from 'node:util';
+import { parseArgs } from 'node:util';
 import { readArtifactFile } from '../src/artifact/artifact.js';
 import { applyArtifact } from '../src/artifact/loader.js';
-import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
+import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
+import { getLogger, shutdownLogger } from '../src/lib/logger.js';
 
 const logger = getLogger('apply-artifact');
 
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled rejection', { error: inspect(reason, { depth: 3 }) });
-  process.exit(1);
-});
+registerUnhandledRejectionHandler(logger);
 
 const { values, positionals } = parseArgs({
   options: {
@@ -57,8 +55,7 @@ if (values.help || !artifactArg) {
   process.exit(values.help ? 0 : 1);
 }
 
-if (values.verbose) setLogLevel('debug');
-if (values['json-logs']) setJsonOutput(true);
+applyLogFlags(values);
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const artifactPath = path.resolve(artifactArg);
@@ -82,13 +79,7 @@ try {
 
   console.log(result.summary);
 
-  if (result.issues.length > 0) {
-    console.log('\n⚠ Issues:');
-    for (const issue of result.issues) {
-      const tag = issue.type ? `${issue.type.toUpperCase()} | ` : '';
-      console.log(`  ${tag}${issue.key} — ${issue.reason}`);
-    }
-  }
+  printIssues(result.issues);
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
   logger.error('Failed to apply artifact', {

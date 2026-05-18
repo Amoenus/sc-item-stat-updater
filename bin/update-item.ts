@@ -1,14 +1,12 @@
 import { parseArgs } from 'node:util';
 import { listCategories, loadConfig } from '../src/items/registry.js';
-import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from '../src/lib/logger.js';
+import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
+import { getLogger, shutdownLogger } from '../src/lib/logger.js';
 import { runUpdate } from '../src/lib/updater.js';
 
 const logger = getLogger('update-item');
 
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled rejection', { error: String(reason) });
-  process.exit(1);
-});
+registerUnhandledRejectionHandler(logger);
 
 const { values, positionals } = parseArgs({
   options: {
@@ -42,8 +40,7 @@ if (values.help || !category) {
   process.exit(values.help ? 0 : 1);
 }
 
-if (values.verbose) setLogLevel('debug');
-if (values['json-logs']) setJsonOutput(true);
+applyLogFlags(values);
 
 const options = {
   iniPath: values['ini-path'],
@@ -56,13 +53,7 @@ try {
   const config = await loadConfig(category);
   const result = await runUpdate(config, options);
   console.log(result.summary);
-  if (result.issues.length > 0) {
-    console.log('\n⚠ Problem rows:');
-    for (const issue of result.issues) {
-      const tag = issue.type ? `${issue.type.toUpperCase()} | ` : '';
-      console.log(`  ${tag}${issue.key} — ${issue.reason}`);
-    }
-  }
+  printIssues(result.issues, '\n⚠ Problem rows:')
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
   logger.error(`Failed to update ${category}`, {

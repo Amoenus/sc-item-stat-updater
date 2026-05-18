@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Regenerates mining-locations.csv from the locally cached mining_data.json,
  * without fetching anything from the network.
  *
@@ -13,6 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { buildLocationQualityNotes, buildMiningLocationRows } from '../src/extractor/mining-parser.js';
+import { toCsv } from '../src/lib/csv.js';
 import { ScmdbMiningDataSchema } from '../src/schema/scmdb.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -23,20 +24,6 @@ function defaultLogger(message: string): void {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-function toCsv(rows: Record<string, unknown>[], headers: string[]): string {
-  const escapeCsv = (value: unknown): string => {
-    if (value === undefined || value === null) return '';
-    const text = String(value);
-    if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
-    return text;
-  };
-  const lines = [
-    headers.map(escapeCsv).join(','),
-    ...rows.map((row: Record<string, unknown>) => headers.map((col: string) => escapeCsv(row[col])).join(',')),
-  ];
-  return `${lines.join('\n')}\n`;
-}
 
 function resolveTargetDir(scmdbDir: string | undefined): string {
   if (scmdbDir) return resolve(scmdbDir);
