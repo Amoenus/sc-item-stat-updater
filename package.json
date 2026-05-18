@@ -42,6 +42,7 @@
     "@opentelemetry/sdk-logs": "^0.215.0",
     "cli-progress": "^3.12.0",
     "csv-parse": "^6.2.1",
+    "csv-stringify": "^6.7.0",
     "puppeteer": "^24.40.0",
     "zod": "^4.4.3"
   },
