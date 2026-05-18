@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas.js';
@@ -74,7 +75,7 @@ async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<voi
     const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
     if (!paginator) return;
     await paginator.click();
-    await new Promise((r) => setTimeout(r, PAGINATION_SETTLE_MS));
+    await sleep(PAGINATION_SETTLE_MS);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allOption = await (page as any).$x("//li[contains(text(),'All') or contains(text(),'all')]");
     if (allOption.length) {
@@ -83,7 +84,7 @@ async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<voi
       const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
       if (options.length) await options.at(-1)?.click();
     }
-    await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
+    await sleep(POST_PAGINATION_SETTLE_MS);
   } catch {
     /* pagination handling is best-effort */
   }
@@ -182,7 +183,7 @@ async function scrapeItems(
     );
 
     await expandPaginatorToAll(page);
-    await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
+    await sleep(POST_PAGINATION_SETTLE_MS);
 
     const data = await scrapeTableData(page);
 
