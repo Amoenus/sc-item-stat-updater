@@ -68,6 +68,32 @@ function toWeightedMineableList(weightMap: Record<string, number>): string {
     .join('\n');
 }
 
+const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+function addLocationNote(notes: Map<string, string[]>, locations: string[], note: string): void {
+  for (const locName of locations) {
+    const existing = notes.get(locName) ?? [];
+    if (!existing.includes(note)) existing.push(note);
+    notes.set(locName, existing);
+  }
+}
+
+function processOverrideEntries(
+  notes: Map<string, string[]>,
+  groupEntries: { distribution: { min?: number } | undefined; locations: string[] | undefined }[],
+  defaultMin: number,
+  rarityLabel: string,
+): void {
+  for (const entry of groupEntries) {
+    const overrideMin = entry.distribution?.min;
+    if (overrideMin === undefined || overrideMin <= defaultMin) continue;
+    const floorPct = (overrideMin / QUALITY_PCT_DIVISOR).toFixed(1);
+    const defaultPct = (defaultMin / QUALITY_PCT_DIVISOR).toFixed(1);
+    const note = `${rarityLabel} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
+    addLocationNote(notes, entry.locations ?? [], note);
+  }
+}
+
 /**
  * Scans qualityDistribution.shipmineables for location-specific quality floor overrides.
  * Returns a Map<locationName, string[]> where each string is a human-readable note about
@@ -80,39 +106,19 @@ export function buildLocationQualityNotes(
   qualityDistribution: MiningDataDTO['qualityDistribution'],
 ): Map<string, string[]> {
   const notes: Map<string, string[]> = new Map();
-
   const sm = qualityDistribution?.shipmineables;
   if (!sm) return notes;
-
-  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
   for (const rarity of RARITY_ORDER) {
     const rarityData = sm[rarity];
     if (!rarityData) continue;
-
     const defaultMin = rarityData.default?.min ?? null;
     if (defaultMin === null) continue;
-
     const locationOverrides = rarityData.locationOverrides;
     if (!locationOverrides) continue;
-
+    const rarityLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1);
     for (const groupEntries of Object.values(locationOverrides)) {
-      for (const entry of groupEntries) {
-        const overrideMin = entry.distribution?.min;
-        if (overrideMin === undefined || overrideMin <= defaultMin) continue;
-
-        // This location group has an elevated quality floor
-        const floorPct = (overrideMin / QUALITY_PCT_DIVISOR).toFixed(1);
-        const defaultPct = (defaultMin / QUALITY_PCT_DIVISOR).toFixed(1);
-        const label = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-        const note = `${label} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
-
-        for (const locName of entry.locations ?? []) {
-          const existing = notes.get(locName) ?? [];
-          if (!existing.includes(note)) existing.push(note);
-          notes.set(locName, existing);
-        }
-      }
+      processOverrideEntries(notes, groupEntries, defaultMin, rarityLabel);
     }
   }
 

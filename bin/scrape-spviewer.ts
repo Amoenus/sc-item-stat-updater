@@ -67,12 +67,87 @@ async function extractVersions(page: import('puppeteer').Page): Promise<{ live: 
   });
 }
 
+// Try to show all entries (click "All" in page-size dropdown if present).
+// Best-effort: errors are silently swallowed so scraping still continues.
+async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<void> {
+  try {
+    const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
+    if (!paginator) return;
+    await paginator.click();
+    await new Promise((r) => setTimeout(r, PAGINATION_SETTLE_MS));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allOption = await (page as any).$x("//li[contains(text(),'All') or contains(text(),'all')]");
+    if (allOption.length) {
+      await allOption[0].click();
+    } else {
+      const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
+      if (options.length) await options.at(-1)?.click();
+    }
+    await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
+  } catch {
+    /* pagination handling is best-effort */
+  }
+}
+
+// Reads the rendered table from the current page and returns headers + rows.
+// Note: __name must be pre-defined in the page context before calling this
+// (see the page.evaluate string injection in scrapeItems).
+async function scrapeTableData(page: import('puppeteer').Page): Promise<{ headers: string[]; rows: string[][] }> {
+  return page.evaluate(() => {
+    const cleanHeader = (th: Element) => {
+      const clone = th.cloneNode(true) as Element;
+      for (const el of clone.querySelectorAll(
+        'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
+      )) {
+        el.remove();
+      }
+      let text = (clone.textContent ?? '').trim();
+      text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
+      return text;
+    };
+
+    // Handles merged/grouped header rows (e.g. "Damage { Physical | Energy }").
+    const buildMultiRowHeaders = (theadRows: Element[]): string[] => {
+      const groupCells = [...theadRows[0].querySelectorAll('th')];
+      const leafCells = [...(theadRows.at(-1)?.querySelectorAll('th') ?? [])];
+      const expanded: { name: string; span: number }[] = [];
+      for (const th of groupCells) {
+        const name = cleanHeader(th);
+        const span = th.colSpan || 1;
+        for (let i = 0; i < span; i++) expanded.push({ name, span });
+      }
+      const headers: string[] = [];
+      let leafIdx = 0;
+      for (const cell of expanded) {
+        if (cell.span === 1) {
+          headers.push(cell.name);
+        } else {
+          const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
+          headers.push(leafName ? `${cell.name} ${leafName}` : cell.name);
+          leafIdx++;
+        }
+      }
+      return headers;
+    };
+
+    const theadRows = [...document.querySelectorAll('table thead tr')];
+    let headers: string[] = [];
+    if (theadRows.length >= 2) {
+      headers = buildMultiRowHeaders(theadRows);
+    } else if (theadRows.length === 1) {
+      headers = [...theadRows[0].querySelectorAll('th')].map(cleanHeader);
+    }
+
+    const rows = [...document.querySelectorAll('table tbody tr')]
+      .filter((tr) => !tr.textContent.includes('No data available'))
+      .map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()));
+
+    return { headers, rows };
+  });
+}
+
 /**
  * Scrapes item data for a given item type from SPViewer.
- *
- * @param {import('puppeteer').Browser} browser
- * @param {string} itemType
- * @returns {Promise<{ headers: string[], rows: string[][] }>}
  */
 async function scrapeItems(
   browser: import('puppeteer').Browser,
@@ -106,73 +181,10 @@ async function scrapeItems(
       { timeout: TABLE_LOAD_TIMEOUT_MS },
     );
 
-    // Try to show all entries (click "All" in page-size dropdown if present)
-    try {
-      const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
-      if (paginator) {
-        await paginator.click();
-        await new Promise((r) => setTimeout(r, PAGINATION_SETTLE_MS));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const allOption = await (page as any).$x("//li[contains(text(),'All') or contains(text(),'all')]");
-        if (allOption.length) {
-          await allOption[0].click();
-        } else {
-          const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
-          if (options.length) await options.at(-1)?.click();
-        }
-        await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
-      }
-    } catch {
-      /* pagination handling is best-effort */
-    }
-
+    await expandPaginatorToAll(page);
     await new Promise((r) => setTimeout(r, POST_PAGINATION_SETTLE_MS));
 
-    const data = await page.evaluate(() => {
-      const cleanHeader = (th: Element) => {
-        const clone = th.cloneNode(true) as Element;
-        for (const el of clone.querySelectorAll(
-          'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
-        )) {
-          el.remove();
-        }
-        let text = (clone.textContent ?? '').trim();
-        text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-        return text;
-      };
-
-      const theadRows = [...document.querySelectorAll('table thead tr')];
-      let headers: string[] = [];
-
-      if (theadRows.length >= 2) {
-        const groupCells = [...theadRows[0].querySelectorAll('th')];
-        const leafCells = [...theadRows.at(-1)?.querySelectorAll('th') ?? []];
-        const expanded: { name: string; span: number }[] = [];
-        for (const th of groupCells) {
-          const name = cleanHeader(th);
-          const span = th.colSpan || 1;
-          for (let i = 0; i < span; i++) expanded.push({ name, span });
-        }
-        let leafIdx = 0;
-        for (const element of expanded) {
-          if (element.span === 1) {
-            headers.push(element.name);
-          } else {
-            const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
-            headers.push(leafName ? `${element.name} ${leafName}` : element.name);
-            leafIdx++;
-          }
-        }
-      } else if (theadRows.length === 1) {
-        headers = [...theadRows[0].querySelectorAll('th')].map(cleanHeader);
-      }
-
-      const rows = [...document.querySelectorAll('table tbody tr')]
-        .filter((tr) => !tr.textContent.includes('No data available'))
-        .map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()));
-
-      return { headers, rows };
-    });
+    const data = await scrapeTableData(page);
 
     const result = SpviewerScrapedDataSchema.safeParse(data);
     if (!result.success) {
