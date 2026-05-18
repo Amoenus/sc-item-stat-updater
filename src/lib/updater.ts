@@ -322,7 +322,7 @@ class UpdateContext {
   }
 
   markMissing(key: string): void {
-    logger.info('Missing key in target INI file, skipping', { label: this.config.label, key });
+    logger.debug('Missing key in target INI file, skipping', { label: this.config.label, key });
     this.issues.push({ key, reason: 'Key missing from global.ini', type: 'missing' });
     this.skippedCount++;
   }
