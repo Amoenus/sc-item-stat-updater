@@ -216,12 +216,6 @@ function processRow(
   context.markMissing(targetKeys[0] ?? '');
 }
 
-function shouldWriteIni(
-  opts: ResolvedOptions,
-  stats: { updatedCount: number; newCount: number; foundCount: number },
-): boolean {
-  return !opts.dryRun && (stats.updatedCount > 0 || stats.newCount > 0 || (opts.force && stats.foundCount > 0));
-}
 
 /** Inserts new lines at the correct position (after last matching desc key). */
 function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: number): void {

@@ -17,7 +17,7 @@ export default {
    * @param {(nameKey: string) => string} deriveDescKey - helper to create desc key from name
    * @returns {string[]} array with the target key if found in INI, otherwise empty
    */
-  getTargetKeys(row, deriveDescKey) {
+  getTargetKeys(row, _deriveDescKey) {
     const elementName = row['Element Name'];
     if (!elementName) return [];
 
@@ -48,7 +48,7 @@ export default {
    * @param {string} targetKey - the INI key being updated
    * @returns {string} new INI value with appended stats
    */
-  buildValue(row, flavorText, oldValue, targetKey) {
+  buildValue(row, _flavorText, oldValue, _targetKey) {
     // Use the full existing INI value as the base — for _ore_desc/_raw_desc keys the entire
     // value is flavor text (no \n\n separator before a stats block like other items use).
     // Strip any previously-appended scanner block first for idempotency.

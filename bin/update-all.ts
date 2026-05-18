@@ -86,7 +86,7 @@ async function resolveLatestVersionDir(base: string, ptu: boolean, source: strin
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
 // Resolve versioned SCMDB directory (or use --csv-dir override for SCMDB).
-let csvDir;
+let csvDir: string;
 let scmdbVersion = '(custom)';
 
 if (values['csv-dir']) {

@@ -46,7 +46,7 @@ export async function readIniFile(
         if (!duplicates.has(key)) {
           duplicates.set(key, [index[key]]);
         }
-        duplicates.get(key)!.push(lineNum);
+        duplicates.get(key)?.push(lineNum);
         logger.warn('Duplicate key detected in INI file', { key, lineNum });
       }
       index[key] = lineNum;

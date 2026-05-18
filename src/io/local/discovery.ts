@@ -33,7 +33,7 @@ export async function listMatchingFiles(
 ): Promise<string[]> {
   const { label = 'Directory', notFoundMessage } = options;
 
-  let entries;
+  let entries: import('node:fs').Dirent[];
   try {
     entries = await fs.readdir(dirPath, { withFileTypes: true });
   } catch (err) {
@@ -92,7 +92,7 @@ export async function findLatestMatchingDirectory(
 ): Promise<string> {
   const { label = 'Directory', notFoundMessage, noMatchMessage } = options;
 
-  let entries;
+  let entries: import('node:fs').Dirent[];
   try {
     entries = await fs.readdir(dirPath, { withFileTypes: true });
   } catch (err) {

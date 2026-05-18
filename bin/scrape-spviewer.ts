@@ -1,4 +1,5 @@
-﻿import { mkdirSync, writeFileSync } from 'node:fs';
+#!/usr/bin/env node
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
@@ -114,8 +115,17 @@ async function scrapeItems(
     await new Promise((r) => setTimeout(r, 2000));
 
     const data = await page.evaluate(() => {
-      const STRIP_SELECTOR =
-        'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)';
+      const cleanHeader = (th: Element) => {
+        const clone = th.cloneNode(true) as Element;
+        for (const el of clone.querySelectorAll(
+          'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
+        )) {
+          el.remove();
+        }
+        let text = (clone.textContent ?? '').trim();
+        text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
+        return text;
+      };
 
       const theadRows = [...document.querySelectorAll('table thead tr')];
       let headers: string[] = [];
@@ -125,10 +135,7 @@ async function scrapeItems(
         const leafCells = [...theadRows[theadRows.length - 1].querySelectorAll('th')];
         const expanded: { name: string; span: number }[] = [];
         for (const th of groupCells) {
-          const clone = th.cloneNode(true) as Element;
-          for (const el of clone.querySelectorAll(STRIP_SELECTOR)) el.remove();
-          const text = (clone.textContent ?? '').trim();
-          const name = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
+          const name = cleanHeader(th);
           const span = th.colSpan || 1;
           for (let i = 0; i < span; i++) expanded.push({ name, span });
         }
@@ -137,24 +144,13 @@ async function scrapeItems(
           if (expanded[i].span === 1) {
             headers.push(expanded[i].name);
           } else {
-            let leafName = '';
-            if (leafIdx < leafCells.length) {
-              const clone = leafCells[leafIdx].cloneNode(true) as Element;
-              for (const el of clone.querySelectorAll(STRIP_SELECTOR)) el.remove();
-              const text = (clone.textContent ?? '').trim();
-              leafName = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-            }
+            const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
             headers.push(leafName ? `${expanded[i].name} ${leafName}` : expanded[i].name);
             leafIdx++;
           }
         }
       } else if (theadRows.length === 1) {
-        headers = [...theadRows[0].querySelectorAll('th')].map((th) => {
-          const clone = th.cloneNode(true) as Element;
-          for (const el of clone.querySelectorAll(STRIP_SELECTOR)) el.remove();
-          const text = (clone.textContent ?? '').trim();
-          return text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-        });
+        headers = [...theadRows[0].querySelectorAll('th')].map(cleanHeader);
       }
 
       const rows = [...document.querySelectorAll('table tbody tr')]
@@ -180,13 +176,13 @@ async function scrapeItems(
  * @returns {string}
  */
 function toCsv({ headers, rows }: { headers: string[]; rows: string[][] }): string {
-  const escape = (v: string): string => {
+  const escapeVal = (v: string): string => {
     if (v.includes(',') || v.includes('"') || v.includes('\n')) {
       return `"${v.replace(/"/g, '""')}"`;
     }
     return v;
   };
-  const lines = [headers.map(escape).join(','), ...rows.map((row) => row.map(escape).join(','))];
+  const lines = [headers.map(escapeVal).join(','), ...rows.map((row) => row.map(escapeVal).join(','))];
   return `${lines.join('\n')}\n`;
 }
 
