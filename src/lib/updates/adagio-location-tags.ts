@@ -8,6 +8,7 @@
  * ~mission(Destination|Address). This is unverified behaviour.
  */
 import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { IniTag } from '../ini-tags';
 import { getLogger } from '../logger';
 import { buildScannedUpdateResult } from './update-result';
 
@@ -23,9 +24,9 @@ const TARGET_KEYS = [
   'Adagio_LocateSalvage_Desc_01',
 ] as const;
 
-/** Matches ~mission(location) not already inside an <EM4> tag. */
-const BARE_LOCATION_RE = /(?<!<EM4>)(~mission\(location\))(?!<\/EM4>)/gi;
-const TAGGED_REPLACEMENT = '<EM4>$1</EM4>';
+/** Matches ~mission(location) not already inside an EM4 tag. */
+const BARE_LOCATION_RE = new RegExp(String.raw`(?<!${IniTag.EM4.open})(~mission\(location\))(?!${IniTag.EM4.close})`, 'gi');
+const TAGGED_REPLACEMENT = IniTag.EM4.wrap('$1');
 
 export async function runAdagioLocationTagUpdate({ iniPath, dryRun }: { iniPath: string; dryRun: boolean }) {
   const start = performance.now();

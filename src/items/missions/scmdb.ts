@@ -5,6 +5,7 @@
  * into `global.ini`. This module allows mission updates to be processed
  * through the existing updater engine.
  */
+import { IniTag } from '../../lib/ini-tags';
 import type { ItemConfig } from '../../lib/types';
 
 function formatMissionNote(noteText: string, isTitle: boolean): string {
@@ -37,7 +38,10 @@ export default {
 
     if (oldValue) {
       if (isTitle) {
-        const normalizedOldValue = oldValue.replace(/\s*(?:<EM4>\[BP(?: Chain)?\]<\/EM4>|\[BP(?: Chain)?\])\s*$/, '');
+        const normalizedOldValue = oldValue.replace(
+          new RegExp(String.raw`\s*(?:${IniTag.EM4.open}\[BP(?: Chain)?\]${IniTag.EM4.close}|\[BP(?: Chain)?\])\s*$`),
+          '',
+        );
         if (!noteText) {
           return normalizedOldValue;
         }

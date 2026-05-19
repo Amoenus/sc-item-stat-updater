@@ -1,4 +1,5 @@
 ﻿import { findLatestMatchingFile } from '../../io/local/discovery';
+import { IniTag } from '../../lib/ini-tags';
 import type { ItemConfig } from '../../lib/types';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(
@@ -40,8 +41,8 @@ export default {
   },
   buildValue(row, _flavorText, oldValue, targetKey) {
     const isIllegal = ILLEGAL_COMMODITY_KEYS.has(targetKey.toLowerCase());
-    const prefix = isIllegal ? '<EM3>[!]</EM3> ' : '';
-    const displayName = row['Name'] || oldValue.replace('<EM3>[!]</EM3> ', '');
+    const prefix = isIllegal ? `${IniTag.EM3.wrap('[!]')} ` : '';
+    const displayName = row['Name'] || oldValue.replace(`${IniTag.EM3.wrap('[!]')} `, '');
     return `${prefix}${displayName}`;
   },
   parseJson(data: unknown) {

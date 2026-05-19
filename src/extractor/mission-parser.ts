@@ -1,3 +1,4 @@
+import { IniTag } from '../lib/ini-tags';
 import type {
   ScmdbBlueprintPoolDTO as BlueprintPoolDTO,
   ScmdbContractDTO as ContractDTO,
@@ -247,10 +248,10 @@ export function buildMissionRows(
       let titleTag = '';
       let descTag = '';
       if (isBlueprintReward) {
-        titleTag = ' <EM4>[BP]</EM4>';
+        titleTag = ` ${IniTag.EM4.wrap('[BP]')}`;
         descTag = '[BP Reward]';
       } else if (isBlueprintChain) {
-        titleTag = ' <EM4>[BP Chain]</EM4>';
+        titleTag = ` ${IniTag.EM4.wrap('[BP Chain]')}`;
         descTag = '[BP Chain]';
       }
       const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
