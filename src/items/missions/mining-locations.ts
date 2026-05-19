@@ -1,6 +1,6 @@
 ﻿// @ts-check
-import { readJsonRelative } from '../../io/local/json-file.js';
-import type { ItemConfig } from '../../lib/types.js';
+import { readJsonRelative } from '../../io/local/json-file';
+import type { ItemConfig } from '../../lib/types';
 
 const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
   string,

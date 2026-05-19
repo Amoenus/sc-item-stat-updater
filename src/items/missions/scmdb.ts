@@ -5,7 +5,7 @@
  * into `global.ini`. This module allows mission updates to be processed
  * through the existing updater engine.
  */
-import type { ItemConfig } from '../../lib/types.js';
+import type { ItemConfig } from '../../lib/types';
 
 function formatMissionNote(noteText: string, isTitle: boolean): string {
   if (!noteText) {

@@ -1,7 +1,7 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser.js';
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
-import { getLogger } from '../logger.js';
-import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils.js';
+﻿import { readCsvFile } from '../../io/local/csv-parser';
+import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { getLogger } from '../logger';
+import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -9,8 +9,8 @@ import {
   parseNameLine,
   resolveBaseFromCurrentValue,
   toVariantFamilyKey,
-} from './title-tag-utils.js';
-import { buildScannedUpdateResult } from './update-result.js';
+} from './title-tag-utils';
+import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('component-titles-update');
 

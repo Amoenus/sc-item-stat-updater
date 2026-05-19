@@ -12,9 +12,9 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { buildLocationQualityNotes, buildMiningLocationRows } from '../src/extractor/mining-parser.js';
-import { toCsv } from '../src/lib/csv.js';
-import { ScmdbMiningDataSchema } from '../src/schema/scmdb.schemas.js';
+import { buildLocationQualityNotes, buildMiningLocationRows } from '../src/extractor/mining-parser';
+import { toCsv } from '../src/lib/csv';
+import { ScmdbMiningDataSchema } from '../src/schema/scmdb.schemas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');

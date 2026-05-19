@@ -24,8 +24,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { ItemConfig } from '../lib/types.js';
-import { buildPatchData } from '../lib/updater.js';
+import type { ItemConfig } from '../lib/types';
+import { buildPatchData } from '../lib/updater';
 
 export interface Artifact {
   generatedAt: string;

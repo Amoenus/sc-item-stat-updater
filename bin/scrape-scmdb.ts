@@ -6,7 +6,7 @@ import {
   buildMiningElementRows,
   buildMiningJournalRows,
   buildMiningLocationRows,
-} from '../src/extractor/mining-parser.js';
+} from '../src/extractor/mining-parser';
 
 import {
   buildBlueprintPoolRows,
@@ -14,15 +14,15 @@ import {
   buildContractRow,
   buildMissionRows,
   collectBlueprintChainData,
-} from '../src/extractor/mission-parser.js';
-import { toCsv } from '../src/lib/csv.js';
+} from '../src/extractor/mission-parser';
+import { toCsv } from '../src/lib/csv';
 import {
   ScmdbCraftingBlueprintsSchema,
   ScmdbCraftingItemsSchema,
   ScmdbMergedDataSchema,
   ScmdbMiningDataSchema,
   ScmdbVersionsSchema,
-} from '../src/schema/scmdb.schemas.js';
+} from '../src/schema/scmdb.schemas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');

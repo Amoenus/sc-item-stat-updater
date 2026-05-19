@@ -1,5 +1,5 @@
-﻿import { listMatchingFiles } from '../../io/local/discovery.js';
-import { resolveChildPath } from '../../io/local/path-conventions.js';
+﻿import { listMatchingFiles } from '../../io/local/discovery';
+import { resolveChildPath } from '../../io/local/path-conventions';
 
 /**
  * Returns sorted SPViewer CSV filenames from a directory.

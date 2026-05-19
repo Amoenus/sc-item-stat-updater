@@ -4,8 +4,8 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
-import { extractVersions, parseTable } from '../src/extractor/spviewer-html-parser.js';
-import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas.js';
+import { extractVersions, parseTable } from '../src/extractor/spviewer-html-parser';
+import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootDir = join(__dirname, '..');

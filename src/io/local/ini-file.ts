@@ -1,7 +1,7 @@
 ﻿import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
-import { getLogger } from '../../lib/logger.js';
+import { getLogger } from '../../lib/logger';
 
 const logger = getLogger('ini-file');
 

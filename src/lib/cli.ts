@@ -1,6 +1,6 @@
 import { inspect } from 'node:util';
-import type { LogAttributes } from './logger.js';
-import { setJsonOutput, setLogLevel } from './logger.js';
+import type { LogAttributes } from './logger';
+import { setJsonOutput, setLogLevel } from './logger';
 
 export interface IssueEntry {
   type?: string;

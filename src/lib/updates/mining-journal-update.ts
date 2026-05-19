@@ -1,10 +1,10 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser.js';
-import { pathExists } from '../../io/local/discovery.js';
-import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
-import { resolveMissionCsvPath } from '../../io/local/path-conventions.js';
-import { buildJournalValue } from '../../items/missions/mining-journal.js';
-import { getLogger } from '../logger.js';
-import { buildScannedUpdateResult } from './update-result.js';
+﻿import { readCsvFile } from '../../io/local/csv-parser';
+import { pathExists } from '../../io/local/discovery';
+import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { resolveMissionCsvPath } from '../../io/local/path-conventions';
+import { buildJournalValue } from '../../items/missions/mining-journal';
+import { getLogger } from '../logger';
+import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('mining-journal-update');
 const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';

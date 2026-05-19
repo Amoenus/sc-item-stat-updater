@@ -1,7 +1,7 @@
 import type {
   ScmdbBlueprintPoolDTO as BlueprintPoolDTO,
   ScmdbContractDTO as ContractDTO,
-} from '../schema/scmdb.schemas.js';
+} from '../schema/scmdb.schemas';
 
 interface ChainDataDTO {
   isBlueprintReward: Map<string, boolean>;

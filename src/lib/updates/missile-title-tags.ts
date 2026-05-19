@@ -1,11 +1,11 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser.js';
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
-import { readJsonFile } from '../../io/local/json-file.js';
-import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions.js';
-import { getLogger } from '../logger.js';
-import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils.js';
-import { normalizeSpaces } from './title-tag-utils.js';
-import { buildScannedUpdateResult } from './update-result.js';
+﻿import { readCsvFile } from '../../io/local/csv-parser';
+import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { readJsonFile } from '../../io/local/json-file';
+import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
+import { getLogger } from '../logger';
+import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils';
+import { normalizeSpaces } from './title-tag-utils';
+import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('missile-title-tags-update');
 

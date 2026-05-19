@@ -1,15 +1,15 @@
 ﻿import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readCsvFile } from '../io/local/csv-parser.js';
-import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file.js';
-import { readJsonFile } from '../io/local/json-file.js';
-import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store.js';
-import { resolveChildPath } from '../io/local/path-conventions.js';
-import { sanitizeIniValue } from './format/formatter.js';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils.js';
-import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver.js';
-import { getLogger } from './logger.js';
-import type { ItemConfig } from './types.js';
+import { readCsvFile } from '../io/local/csv-parser';
+import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
+import { readJsonFile } from '../io/local/json-file';
+import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
+import { resolveChildPath } from '../io/local/path-conventions';
+import { sanitizeIniValue } from './format/formatter';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
+import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
+import { getLogger } from './logger';
+import type { ItemConfig } from './types';
 
 const logger = getLogger('updater');
 

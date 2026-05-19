@@ -1,6 +1,6 @@
-﻿import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file.js';
-import { getLogger } from '../logger.js';
-import { buildScannedUpdateResult } from './update-result.js';
+﻿import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { getLogger } from '../logger';
+import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('raw-commodity-label-fixes-update');
 

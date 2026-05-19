@@ -1,4 +1,4 @@
-import { getLogger } from './logger.js';
+import { getLogger } from './logger';
 
 const logger = getLogger('key-resolver');
 

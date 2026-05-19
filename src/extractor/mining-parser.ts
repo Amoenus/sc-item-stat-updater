@@ -1,4 +1,4 @@
-import type { ScmdbMiningDataDTO as MiningDataDTO } from '../schema/scmdb.schemas.js';
+import type { ScmdbMiningDataDTO as MiningDataDTO } from '../schema/scmdb.schemas';
 
 /**
  * Builds rows for the mining elements CSV.

@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
-import { listCategories, loadConfig } from '../src/items/registry.js';
-import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
-import { getLogger, shutdownLogger } from '../src/lib/logger.js';
-import { runUpdate } from '../src/lib/updater.js';
+import { listCategories, loadConfig } from '../src/items/registry';
+import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli';
+import { getLogger, shutdownLogger } from '../src/lib/logger';
+import { runUpdate } from '../src/lib/updater';
 
 const logger = getLogger('update-item');
 

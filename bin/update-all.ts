@@ -1,19 +1,19 @@
 ﻿import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { type Artifact, writeArtifactFile } from '../src/artifact/artifact.js';
-import { findLatestMatchingDirectory } from '../src/io/local/discovery.js';
-import { backupIniFile } from '../src/io/local/ini-file.js';
-import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry.js';
-import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
-import { getLogger, shutdownLogger } from '../src/lib/logger.js';
-import { runUpdate } from '../src/lib/updater.js';
-import { runComponentTitleUpdate } from '../src/lib/updates/component-titles.js';
-import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags.js';
-import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags.js';
-import { runMissingStringsUpdate } from '../src/lib/updates/missing-strings.js';
-import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes.js';
-import { regenMiningLocations } from './regen-mining-locations.js';
+import { type Artifact, writeArtifactFile } from '../src/artifact/artifact';
+import { findLatestMatchingDirectory } from '../src/io/local/discovery';
+import { backupIniFile } from '../src/io/local/ini-file';
+import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
+import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
+import { getLogger, shutdownLogger } from '../src/lib/logger';
+import { runUpdate } from '../src/lib/updater';
+import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
+import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
+import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags';
+import { runMissingStringsUpdate } from '../src/lib/updates/missing-strings';
+import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes';
+import { regenMiningLocations } from './regen-mining-locations';
 
 const logger = getLogger('update-all');
 

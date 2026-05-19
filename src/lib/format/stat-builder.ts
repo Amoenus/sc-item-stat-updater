@@ -1,4 +1,4 @@
-import { fmtNum } from './formatter.js';
+import { fmtNum } from './formatter';
 
 /**
  * Creates a fluent stat-line builder for constructing INI description values.

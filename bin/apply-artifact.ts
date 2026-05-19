@@ -17,10 +17,10 @@
 
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { readArtifactFile } from '../src/artifact/artifact.js';
-import { applyArtifact } from '../src/artifact/loader.js';
-import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli.js';
-import { getLogger, shutdownLogger } from '../src/lib/logger.js';
+import { readArtifactFile } from '../src/artifact/artifact';
+import { applyArtifact } from '../src/artifact/loader';
+import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli';
+import { getLogger, shutdownLogger } from '../src/lib/logger';
 
 const logger = getLogger('apply-artifact');
 

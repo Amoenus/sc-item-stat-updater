@@ -10,9 +10,9 @@
  * API instead of Node fs — the interface is intentionally kept generic.
  */
 
-import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file.js';
-import { getLogger } from '../lib/logger.js';
-import { validateIntegrity } from '../lib/updater.js';
+import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
+import { getLogger } from '../lib/logger';
+import { validateIntegrity } from '../lib/updater';
 
 const logger = getLogger('loader');
 

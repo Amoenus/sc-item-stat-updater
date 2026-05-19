@@ -3,7 +3,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import cliProgress from 'cli-progress';
-import { extractGlobalIni } from './extract-global-ini.js';
+import { extractGlobalIni } from './extract-global-ini';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');

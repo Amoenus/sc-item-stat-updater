@@ -1,5 +1,5 @@
-﻿import { findLatestMatchingFile } from '../../io/local/discovery.js';
-import type { ItemConfig } from '../../lib/types.js';
+﻿import { findLatestMatchingFile } from '../../io/local/discovery';
+import type { ItemConfig } from '../../lib/types';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(
   [

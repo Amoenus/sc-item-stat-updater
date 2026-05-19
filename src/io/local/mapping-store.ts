@@ -1,7 +1,7 @@
 ﻿import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getLogger } from '../../lib/logger.js';
-import { parseCSV } from './csv-parser.js';
+import { getLogger } from '../../lib/logger';
+import { parseCSV } from './csv-parser';
 
 const logger = getLogger('mapping-store');
 

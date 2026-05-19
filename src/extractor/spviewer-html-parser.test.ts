@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { extractVersions, parseTable } from './spviewer-html-parser.js';
+import { extractVersions, parseTable } from './spviewer-html-parser';
 
 test('extractVersions', async (t) => {
   await t.test('extracts LIVE and PTU versions', () => {

@@ -1,6 +1,6 @@
 ﻿// @ts-check
-import { stat } from '../../lib/format/stat-builder.js';
-import type { ItemConfig } from '../../lib/types.js';
+import { stat } from '../../lib/format/stat-builder';
+import type { ItemConfig } from '../../lib/types';
 
 export default {
   csvFile: 'jumpdrive.spviewer.csv',

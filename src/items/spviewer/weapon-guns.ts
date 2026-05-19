@@ -1,7 +1,7 @@
 ﻿// @ts-check
-import { stat } from '../../lib/format/stat-builder.js';
-import type { ItemConfig } from '../../lib/types.js';
-import { isWeaponDescKey } from '../shared/weapon-matchers.js';
+import { stat } from '../../lib/format/stat-builder';
+import type { ItemConfig } from '../../lib/types';
+import { isWeaponDescKey } from '../shared/weapon-matchers';
 
 export default {
   csvFile: 'weapongun.spviewer.csv',
