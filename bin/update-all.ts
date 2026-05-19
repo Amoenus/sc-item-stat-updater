@@ -12,7 +12,6 @@ import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags';
 import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
-import { runMissingStringsUpdate } from '../src/lib/updates/missing-strings';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes';
 import { regenMiningLocations } from './regen-mining-locations';
 
@@ -199,7 +198,6 @@ const fixedExtraSteps = [
   'FPS title tags',
   'Missile title tags',
   'Raw commodity labels',
-  'Missing strings',
   'Adagio location tags (experimental)',
 ] as const;
 const extraSteps = fixedExtraSteps.length + (values['include-mining-journal'] ? 1 : 0);
@@ -300,12 +298,6 @@ if (values['include-mining-journal']) {
 bar.update(barStep, { category: 'Raw commodity labels' });
 await runStep('Raw commodity labels', results, errors, () =>
   runRawCommodityLabelFixUpdate({ iniPath, dryRun: options.dryRun }),
-);
-
-barStep++;
-bar.update(barStep, { category: 'Missing strings' });
-await runStep('Missing strings', results, errors, () =>
-  runMissingStringsUpdate({ iniPath, patchPath: path.join(repoRoot, 'missing-strings.ini'), dryRun: options.dryRun }),
 );
 
 barStep++;

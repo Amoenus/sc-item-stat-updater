@@ -1,6 +1,7 @@
 ﻿import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
+import { IniKeySuffix } from '../../lib/ini-tags';
 import { getLogger } from '../../lib/logger';
 
 const logger = getLogger('ini-file');
@@ -37,7 +38,7 @@ export async function readIniFile(
     const eqIdx = line.indexOf('=');
     if (eqIdx > -1) {
       const key = line.substring(0, eqIdx);
-      if (key.endsWith(',P') || key.endsWith(',G')) {
+      if (key.endsWith(IniKeySuffix.Plural) || key.endsWith(IniKeySuffix.Gendered)) {
         lineNum++;
         continue;
       }

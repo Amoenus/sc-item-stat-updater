@@ -82,6 +82,59 @@ function makeTag(name: string): IniTagDescriptor {
 }
 
 /**
+ * Localization key variant suffixes used in global.ini.
+ *
+ * Star Citizen's localization engine supports variant forms of the same key,
+ * indicated by a `,SUFFIX` appended to the base key name. No public spec
+ * exists; meanings are inferred from cross-locale analysis of global.ini.
+ *
+ * ## Evidence
+ *
+ * The community German translation (Dymerz/StarCitizen-Localization) contains
+ * the base/`,P` pair that illuminates the true meaning:
+ *
+ * - `PU_GENNPC1_CV_Friendly_Farewell_IG_001_IllCatchYou`
+ *   → `"Ich sehe dich später."` (singular *dich* — talking to one person)
+ * - `PU_GENNPC1_CV_Friendly_Farewell_IG_001_IllCatchYou,P`
+ *   → `"Wir sehen uns später."` (plural *wir/uns* — talking to a group)
+ *
+ * **`,P` = Plural** — the form used when a line is spoken to or about multiple
+ * people. English inflects far less than German, so most English `,P` strings
+ * are identical to their base counterpart; when they are identical the base key
+ * is simply omitted and only the `,P` form is kept.
+ *
+ * `,G` has zero occurrences in every locale examined, including languages with
+ * grammatical gender. It is likely reserved but currently unused.
+ *
+ * ## Updater behaviour
+ *
+ * The updater indexes only base keys. `,P` plural-form keys are skipped during
+ * indexing and are never directly updated. Mission descriptions that exist
+ * exclusively as `,P` keys (e.g. most Adagio salvage contracts) are therefore
+ * not reachable by the current updater.
+ */
+export const IniKeySuffix = {
+  /**
+   * Plural-form variant. Appended as `,P` — e.g. `My_Key,P=value`.
+   *
+   * Used when a line is addressed to or about multiple people. In English,
+   * where pluralisation rarely changes the string, only the `,P` key is often
+   * present (the singular base key is omitted).
+   */
+  Plural: ',P',
+  /**
+   * Reserved variant suffix. Appended as `,G` — e.g. `My_Key,G=value`.
+   *
+   * Zero occurrences in any observed locale. Possibly reserved for gendered
+   * forms in languages with grammatical gender, but currently unused.
+   */
+  Gendered: ',G',
+} as const;
+
+/** Union of all key variant suffix strings. */
+export type IniKeySuffixValue = (typeof IniKeySuffix)[keyof typeof IniKeySuffix];
+
+/**
  * Text-formatting tags used in global.ini localization strings.
  *
  * Inferred from analysis of global.ini — no public spec exists.
