@@ -11,6 +11,7 @@ import { runUpdate } from '../src/lib/updater';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags';
+import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
 import { runMissingStringsUpdate } from '../src/lib/updates/missing-strings';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes';
 import { regenMiningLocations } from './regen-mining-locations';
@@ -18,6 +19,47 @@ import { regenMiningLocations } from './regen-mining-locations';
 const logger = getLogger('update-all');
 
 registerUnhandledRejectionHandler(logger);
+
+type StepError = { label: string; message: string };
+type AnyUpdateResult = { label: string; summary: string; patches?: Record<string, string>; issues?: unknown[] };
+
+async function runStep(
+  label: string,
+  results: AnyUpdateResult[],
+  errors: StepError[],
+  fn: () => Promise<AnyUpdateResult | null | undefined>,
+): Promise<void> {
+  try {
+    const result = await fn();
+    if (result != null) results.push(result);
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    errors.push({ label, message: error.message });
+    logger.error(`Failed: ${label}`, { error: error.message });
+  }
+}
+
+function printSummary(results: AnyUpdateResult[], errors: StepError[], totalDuration: number): void {
+  console.log();
+  for (const r of results) console.log(r.summary);
+
+  const allIssues = results.flatMap((r) =>
+    ((r.issues ?? []) as Array<{ key: string; reason: string; type: string }>).map((i) => ({
+      label: r.label,
+      ...i,
+    })),
+  );
+  if (allIssues.length > 0) {
+    console.log('\n⚠ Problem rows:');
+    for (const issue of allIssues) {
+      const tag = issue.type ? `${issue.type.toUpperCase()} | ` : '';
+      console.log(`  ${issue.label} | ${tag}${issue.key} — ${issue.reason}`);
+    }
+  }
+
+  for (const e of errors) console.error(`ERROR in ${e.label}: ${e.message}`);
+  console.log(`\n=== All updates complete [${totalDuration}ms] ===`);
+}
 
 const { values } = parseArgs({
   options: {
@@ -158,6 +200,7 @@ const fixedExtraSteps = [
   'Missile title tags',
   'Raw commodity labels',
   'Missing strings',
+  'Adagio location tags (experimental)',
 ] as const;
 const extraSteps = fixedExtraSteps.length + (values['include-mining-journal'] ? 1 : 0);
 const bar = new cliProgress.SingleBar({
@@ -167,8 +210,8 @@ const bar = new cliProgress.SingleBar({
   hideCursor: true,
 });
 
-const results = [];
-const errors = [];
+const results: AnyUpdateResult[] = [];
+const errors: StepError[] = [];
 
 bar.start(categories.length + extraSteps, 0, { category: '' });
 
@@ -190,125 +233,93 @@ for (let i = 0; i < categories.length; i++) {
 
 let barStep = categories.length;
 bar.update(barStep, { category: 'Component Titles' });
-
-try {
+await runStep('Component Titles', results, errors, async () => {
   logger.info('Starting component title update');
-  const miningResult = await runComponentTitleUpdate({
+  const result = await runComponentTitleUpdate({
     iniPath,
     spviewerDir: spviewerVersionDir,
     dryRun: options.dryRun,
   });
-  results.push(miningResult);
   logger.info('Component title update complete', {
-    updatedCount: miningResult.updatedCount,
-    matchedCount: miningResult.matchedCount,
-    scannedCount: miningResult.scannedCount,
+    updatedCount: result.updatedCount,
+    matchedCount: result.matchedCount,
+    scannedCount: result.scannedCount,
     dryRun: options.dryRun,
   });
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to update component titles', { error: error.message });
-  errors.push({ label: 'Component Titles', message: error.message });
-}
+  return result;
+});
 
 barStep++;
 bar.update(barStep, { category: 'FPS title tags' });
-
-try {
+await runStep('FPS title tags', results, errors, async () => {
   logger.info('Starting FPS title tag update');
-  const fpsTagResult = await runFpsTitleTagUpdate({
+  const result = await runFpsTitleTagUpdate({
     iniPath,
     spviewerDir: spviewerVersionDir,
     dryRun: options.dryRun,
   });
-  results.push(fpsTagResult);
   logger.info('FPS title tag update complete', {
-    updatedCount: fpsTagResult.updatedCount,
-    matchedCount: fpsTagResult.matchedCount,
-    scannedCount: fpsTagResult.scannedCount,
+    updatedCount: result.updatedCount,
+    matchedCount: result.matchedCount,
+    scannedCount: result.scannedCount,
     dryRun: options.dryRun,
   });
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to update FPS title tags', { error: error.message });
-  errors.push({ label: 'FPS title tags', message: error.message });
-}
+  return result;
+});
 
 barStep++;
 bar.update(barStep, { category: 'Missile title tags' });
-
-try {
+await runStep('Missile title tags', results, errors, async () => {
   logger.info('Starting missile title tag update');
-  const missileTagResult = await runMissileTitleTagUpdate({
+  const result = await runMissileTitleTagUpdate({
     iniPath,
     spviewerDir: spviewerVersionDir,
     repoRoot,
     dryRun: options.dryRun,
   });
-  results.push(missileTagResult);
   logger.info('Missile title tag update complete', {
-    updatedCount: missileTagResult.updatedCount,
-    matchedCount: missileTagResult.matchedCount,
-    scannedCount: missileTagResult.scannedCount,
+    updatedCount: result.updatedCount,
+    matchedCount: result.matchedCount,
+    scannedCount: result.scannedCount,
     dryRun: options.dryRun,
   });
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to update missile title tags', { error: error.message });
-  errors.push({ label: 'Missile title tags', message: error.message });
-}
+  return result;
+});
 
 barStep++;
 
 if (values['include-mining-journal']) {
   bar.update(barStep, { category: 'Mining journal' });
-  try {
+  await runStep('Mining journal', results, errors, async () => {
     const { runMiningJournalUpdate } = await import('../src/lib/updates/mining-journal-update.js');
-    const miningJournalResult = await runMiningJournalUpdate({
-      iniPath,
-      missionCsvDir,
-      dryRun: options.dryRun,
-    });
-    if (miningJournalResult) {
-      results.push(miningJournalResult);
-    }
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    logger.error('Failed to update Mining journal', { error: error.message });
-    errors.push({ label: 'Mining journal', message: error.message });
-  }
+    return runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun: options.dryRun });
+  });
   barStep++;
 }
 
 bar.update(barStep, { category: 'Raw commodity labels' });
-
-try {
-  const rawCommodityLabelResult = await runRawCommodityLabelFixUpdate({
-    iniPath,
-    dryRun: options.dryRun,
-  });
-  results.push(rawCommodityLabelResult);
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to apply raw commodity label fixes', { error: error.message });
-  errors.push({ label: 'Raw commodity labels', message: error.message });
-}
+await runStep('Raw commodity labels', results, errors, () =>
+  runRawCommodityLabelFixUpdate({ iniPath, dryRun: options.dryRun }),
+);
 
 barStep++;
 bar.update(barStep, { category: 'Missing strings' });
+await runStep('Missing strings', results, errors, () =>
+  runMissingStringsUpdate({ iniPath, patchPath: path.join(repoRoot, 'missing-strings.ini'), dryRun: options.dryRun }),
+);
 
-try {
-  const missingStringsResult = await runMissingStringsUpdate({
-    iniPath,
-    patchPath: path.join(repoRoot, 'missing-strings.ini'),
+barStep++;
+bar.update(barStep, { category: 'Adagio location tags (experimental)' });
+await runStep('Adagio location tags (experimental)', results, errors, async () => {
+  logger.info('Starting Adagio location tag update (experimental)');
+  const result = await runAdagioLocationTagUpdate({ iniPath, dryRun: options.dryRun });
+  logger.info('Adagio location tag update complete', {
+    updatedCount: result.updatedCount,
+    matchedCount: result.matchedCount,
     dryRun: options.dryRun,
   });
-  results.push(missingStringsResult);
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err));
-  logger.error('Failed to insert missing strings', { error: error.message });
-  errors.push({ label: 'Missing strings', message: error.message });
-}
+  return result;
+});
 
 barStep++;
 bar.update(barStep, { category: 'Done' });
@@ -353,25 +364,7 @@ if (values['emit-artifact']) {
   }
 }
 
-console.log();
-for (const r of results) console.log(r.summary);
-
-const allIssues = results.flatMap((r) =>
-  ((r.issues ?? []) as Array<{ key: string; reason: string; type: string }>).map((i) => ({
-    label: r.label,
-    ...i,
-  })),
-);
-if (allIssues.length > 0) {
-  console.log('\n⚠ Problem rows:');
-  for (const issue of allIssues) {
-    const tag = issue.type ? `${issue.type.toUpperCase()} | ` : '';
-    console.log(`  ${issue.label} | ${tag}${issue.key} — ${issue.reason}`);
-  }
-}
-
-for (const e of errors) console.error(`ERROR in ${e.label}: ${e.message}`);
-console.log(`\n=== All updates complete [${totalDuration}ms] ===`);
+printSummary(results, errors, totalDuration);
 
 logger.debug('Batch update complete', {
   totalDuration,
