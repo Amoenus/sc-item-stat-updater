@@ -1,12 +1,118 @@
 import { IniTag } from '../lib/ini-tags';
 import type {
-  ScmdbBlueprintPoolDTO as BlueprintPoolDTO,
+  ScmdbBlueprintPoolsDTO as BlueprintPoolsDTO,
   ScmdbContractDTO as ContractDTO,
+  ScmdbFactionDTO as FactionDTO,
+  ScmdbFactionRewardsDTO as FactionRewardsDTO,
+  ScmdbLegacyContractDTO as LegacyContractDTO,
 } from '../schema/scmdb.schemas';
+
+/**
+ * Normalized shape that buildContractRow requires.
+ * Both Contract and LegacyContract are adapted to this interface via
+ * toContractRowSource / toLegacyContractRowSource before row building.
+ */
+export interface ContractRowSource {
+  id: string;
+  debugName: string | null | undefined;
+  category: string | null | undefined;
+  missionType: string | null | undefined;
+  missionTypeKey: string | null | undefined;
+  title: string | null | undefined;
+  titleKey: string | null | undefined;
+  description: string | null | undefined;
+  descriptionKey: string | null | undefined;
+  descriptionLocKey: string | null | undefined;
+  rewardUEC: number | null | undefined;
+  timeToComplete: number | null | undefined;
+  canBeShared: boolean | null | undefined;
+  illegal: boolean | null | undefined;
+  factionGuid: string | null | undefined;
+  locations: unknown;
+  destinations: unknown;
+  prerequisites: unknown;
+  tokenSubstitutions: unknown;
+  minStanding: unknown;
+  maxStanding: unknown;
+  blueprintRewards: unknown;
+  personalCooldownTime: number | null | undefined;
+  rewardRepCalculated: number | null | undefined;
+  factionRewardsIndex: number | null | undefined;
+  shipEncounters: unknown;
+}
+
+/** Adapts a quicktype Contract to ContractRowSource. */
+export function toContractRowSource(contract: ContractDTO): ContractRowSource {
+  return {
+    id: contract.id,
+    debugName: contract.debugName,
+    category: contract.category,
+    missionType: contract.missionType,
+    missionTypeKey: contract.missionTypeKey,
+    title: contract.title,
+    titleKey: contract.titleKey,
+    description: contract.description,
+    descriptionKey: contract.descriptionKey,
+    descriptionLocKey: contract.descriptionLocKey,
+    rewardUEC: contract.rewardUEC,
+    timeToComplete: contract.timeToComplete,
+    canBeShared: contract.canBeShared,
+    illegal: contract.illegal,
+    factionGuid: contract.factionGuid,
+    locations: contract.locations,
+    destinations: contract.destinations,
+    prerequisites: contract.prerequisites,
+    tokenSubstitutions: contract.tokenSubstitutions,
+    minStanding: contract.minStanding,
+    maxStanding: contract.maxStanding,
+    blueprintRewards: contract.blueprintRewards,
+    personalCooldownTime: contract.personalCooldownTime,
+    rewardRepCalculated: contract.rewardRepCalculated,
+    factionRewardsIndex: contract.factionRewardsIndex,
+    shipEncounters: contract.shipEncounters,
+  };
+}
+
+/** Adapts a quicktype LegacyContract to ContractRowSource. */
+export function toLegacyContractRowSource(contract: LegacyContractDTO): ContractRowSource {
+  return {
+    id: contract.id,
+    debugName: contract.debugName,
+    category: undefined,
+    missionType: contract.missionType,
+    missionTypeKey: undefined,
+    title: contract.title,
+    titleKey: contract.titleKey,
+    description: contract.description,
+    descriptionKey: contract.descriptionKey,
+    descriptionLocKey: contract.descriptionLocKey,
+    rewardUEC: contract.rewardUEC,
+    timeToComplete: undefined,
+    canBeShared: contract.canBeShared,
+    illegal: contract.illegal,
+    factionGuid: contract.factionGuid,
+    locations: contract.locations,
+    destinations: contract.destinations,
+    prerequisites: contract.prerequisites,
+    tokenSubstitutions: contract.tokenSubstitutions,
+    minStanding: contract.minStanding,
+    maxStanding: undefined,
+    blueprintRewards: undefined,
+    personalCooldownTime: contract.personalCooldownTime,
+    rewardRepCalculated: undefined,
+    factionRewardsIndex: contract.factionRewardsIndex,
+    shipEncounters: undefined,
+  };
+}
 
 interface ChainDataDTO {
   isBlueprintReward: Map<string, boolean>;
   blueprintChainDepth: Map<string, number>;
+}
+
+export interface FactionRewardsContext {
+  factionRewards: Map<string, string>;
+  factionRewardsRaw: Map<string, string>;
 }
 
 /**
@@ -21,10 +127,9 @@ export function flattenValue(value: unknown): string {
 function buildTagProviders(contracts: ContractDTO[]): Map<string, string[]> {
   const tagProviders = new Map<string, string[]>();
   for (const contract of contracts) {
-    if (!Array.isArray(contract.completionTags)) continue;
+    if (!contract.completionTags) continue;
     for (const completionTag of contract.completionTags) {
-      const tag = completionTag?.tag;
-      if (typeof tag !== 'string') continue;
+      const tag = completionTag.tag;
       const list = tagProviders.get(tag) ?? [];
       list.push(contract.id);
       tagProviders.set(tag, list);
@@ -34,13 +139,7 @@ function buildTagProviders(contracts: ContractDTO[]): Map<string, string[]> {
 }
 
 function getRequiredTags(contract: ContractDTO): string[] {
-  const prerequisites = contract.prerequisites;
-  if (!prerequisites || typeof prerequisites !== 'object') return [];
-  const completedTags = prerequisites.completedContractTags;
-  if (!completedTags || typeof completedTags !== 'object') return [];
-  return Array.isArray(completedTags.tags)
-    ? completedTags.tags.filter((tag): tag is string => typeof tag === 'string')
-    : [];
+  return contract.prerequisites.completedContractTags?.tags ?? [];
 }
 
 function seedBlueprintQueue(
@@ -51,7 +150,7 @@ function seedBlueprintQueue(
 ): Array<{ contractId: string; depth: number }> {
   const queue: Array<{ contractId: string; depth: number }> = [];
   for (const contract of contracts) {
-    if (!Array.isArray(contract.blueprintRewards) || contract.blueprintRewards.length === 0) continue;
+    if (!contract.blueprintRewards || contract.blueprintRewards.length === 0) continue;
     isBlueprintReward.set(contract.id, true);
     blueprintChainDepth.set(contract.id, 0);
     for (const tag of getRequiredTags(contract)) {
@@ -97,6 +196,50 @@ function propagateChainDepths(
   }
 }
 
+function buildFactionRewardsString(
+  pool: FactionRewardsDTO[],
+  factionNames: Map<string, string>,
+): string {
+  return pool
+    .map(({ factionGuid, amount }) => {
+      const name = factionNames.get(factionGuid) ?? factionGuid;
+      const sign = amount >= 0 ? '+' : '';
+      return `${name}: ${sign}${amount}`;
+    })
+    .join(String.raw`\n`);
+}
+
+/**
+ * Pre-computes faction reputation reward strings for all contracts.
+ */
+export function buildFactionRewardsContext(
+  factionRewardsPools: FactionRewardsDTO[][],
+  factions: Record<string, FactionDTO>,
+  contracts: ContractDTO[],
+): FactionRewardsContext {
+  const factionNames = new Map<string, string>();
+  for (const [guid, faction] of Object.entries(factions)) {
+    if (faction.name) factionNames.set(guid, faction.name);
+  }
+
+  const factionRewards = new Map<string, string>();
+  const factionRewardsRaw = new Map<string, string>();
+
+  for (const contract of contracts) {
+    const index = contract.factionRewardsIndex;
+    if (index == null || index === 0) continue;
+    const pool = factionRewardsPools[index];
+    if (!pool || pool.length === 0) continue;
+    factionRewards.set(contract.id, buildFactionRewardsString(pool, factionNames));
+    factionRewardsRaw.set(
+      contract.id,
+      JSON.stringify(pool.map(({ factionGuid, amount }) => ({ factionGuid, amount }))),
+    );
+  }
+
+  return { factionRewards, factionRewardsRaw };
+}
+
 /**
  * Collects chain data for blueprint missions.
  */
@@ -113,7 +256,11 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
 /**
  * Builds a contract row.
  */
-export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO): Record<string, unknown> {
+export function buildContractRow(
+  contract: ContractRowSource,
+  chainData: ChainDataDTO,
+  factionRewardsContext: FactionRewardsContext,
+): Record<string, unknown> {
   const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
   const depth = chainData.blueprintChainDepth.get(contract.id);
   return {
@@ -142,6 +289,11 @@ export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO)
     isBlueprintReward: isBlueprintReward ? 'true' : 'false',
     isBlueprintChainPrerequisite: depth !== undefined && depth > 0 ? 'true' : 'false',
     blueprintChainDepth: depth === undefined ? '' : String(depth),
+    personalCooldownTime: contract.personalCooldownTime,
+    rewardRepCalculated: contract.rewardRepCalculated,
+    factionRewards: factionRewardsContext.factionRewards.get(contract.id) ?? '',
+    factionRewardsRaw: factionRewardsContext.factionRewardsRaw.get(contract.id) ?? '',
+    shipEncounters: flattenValue(contract.shipEncounters),
   };
 }
 
@@ -149,9 +301,9 @@ export function buildContractRow(contract: ContractDTO, chainData: ChainDataDTO)
  * Builds blueprint pool rows.
  */
 export function buildBlueprintPoolRows(
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  blueprintPools: BlueprintPoolsDTO,
 ): Record<string, unknown>[] {
-  return Object.entries(blueprintPools || {}).map(([id, pool]) => ({
+  return Object.entries(blueprintPools).map(([id, pool]) => ({
     id,
     name: pool.name,
     source: pool.source,
@@ -164,10 +316,10 @@ export function buildBlueprintPoolRows(
  */
 export function buildContractBlueprintRows(
   contracts: ContractDTO[],
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  blueprintPools: BlueprintPoolsDTO,
 ): Record<string, unknown>[] {
-  return (contracts || []).flatMap((contract) => {
-    if (!Array.isArray(contract.blueprintRewards)) return [];
+  return contracts.flatMap((contract) => {
+    if (!contract.blueprintRewards) return [];
     return contract.blueprintRewards.map((entry) => ({
       contractId: contract.id,
       debugName: contract.debugName,
@@ -176,8 +328,8 @@ export function buildContractBlueprintRows(
       poolName: entry.poolName,
       chance: entry.chance,
       trigger: entry.trigger,
-      blueprintSource: entry.blueprintPool ? blueprintPools?.[entry.blueprintPool]?.source : undefined,
-      blueprintItems: entry.blueprintPool ? flattenValue(blueprintPools?.[entry.blueprintPool]?.blueprints) : '',
+      blueprintSource: blueprintPools[entry.blueprintPool]?.source,
+      blueprintItems: flattenValue(blueprintPools[entry.blueprintPool]?.blueprints),
     }));
   });
 }
@@ -187,35 +339,30 @@ export function buildContractBlueprintRows(
  */
 export function buildBlueprintRewardList(
   contract: ContractDTO,
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  blueprintPools: BlueprintPoolsDTO,
 ): string {
-  if (!Array.isArray(contract.blueprintRewards)) return '';
+  if (!contract.blueprintRewards) return '';
 
-  const formatChance = (chance: number | undefined): string | null => {
-    const numericChance = Number(chance);
-    if (!Number.isFinite(numericChance)) {
-      return null;
-    }
-    return `${Math.round(numericChance * 100)}% chance`;
+  const formatChance = (chance: number): string | null => {
+    if (!Number.isFinite(chance)) return null;
+    return `${Math.round(chance * 100)}% chance`;
   };
 
   const sections = [];
   for (const entry of contract.blueprintRewards) {
-    const pool = entry.blueprintPool ? blueprintPools?.[entry.blueprintPool] : undefined;
-    if (!pool || !Array.isArray(pool.blueprints)) continue;
+    const pool = blueprintPools[entry.blueprintPool];
+    if (!pool) continue;
 
     const itemNames = pool.blueprints
-      .map((blueprint) => (blueprint && typeof blueprint.name === 'string' ? blueprint.name : null))
-      .filter((n: string | null): n is string => Boolean(n));
+      .map((blueprint) => blueprint.name ?? null)
+      .filter((n): n is string => Boolean(n));
 
-    if (itemNames.length === 0) {
-      continue;
-    }
+    if (itemNames.length === 0) continue;
 
-    const chanceText = formatChance(entry.chance ?? undefined);
+    const chanceText = formatChance(entry.chance);
     const oneOfText = `1 of ${itemNames.length}`;
     const details = chanceText ? `${chanceText} — ${oneOfText}` : oneOfText;
-    const itemLines = itemNames.map((name: string) => `- ${name}`).join(String.raw`\n`);
+    const itemLines = itemNames.map((name) => `- ${name}`).join(String.raw`\n`);
     sections.push([details, itemLines].join(String.raw`\n`));
   }
 
@@ -236,9 +383,9 @@ export function normalizeLocalizationKey(key: string): string {
 export function buildMissionRows(
   contracts: ContractDTO[],
   chainData: ChainDataDTO,
-  blueprintPools: Record<string, BlueprintPoolDTO> | null | undefined,
+  blueprintPools: BlueprintPoolsDTO,
 ): Record<string, unknown>[] {
-  return (contracts || [])
+  return contracts
     .flatMap((contract) => {
       const rows: Record<string, unknown>[] = [];
       const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;

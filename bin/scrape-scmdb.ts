@@ -12,14 +12,17 @@ import {
   buildBlueprintPoolRows,
   buildContractBlueprintRows,
   buildContractRow,
+  buildFactionRewardsContext,
   buildMissionRows,
   collectBlueprintChainData,
+  toContractRowSource,
+  toLegacyContractRowSource,
 } from '../src/extractor/mission-parser';
 import { toCsv } from '../src/lib/csv';
 import {
   ScmdbCraftingBlueprintsSchema,
   ScmdbCraftingItemsSchema,
-  ScmdbMergedDataSchema,
+  ScmdbMergedSchema,
   ScmdbMiningDataSchema,
   ScmdbVersionsSchema,
 } from '../src/schema/scmdb.schemas';
@@ -174,18 +177,23 @@ async function main() {
 
   // Validate at the integration boundary before data enters the transformation pipeline.
   // Fail fast with a descriptive error if the upstream API shape has changed.
-  const mergedData = ScmdbMergedDataSchema.parse(mergedRaw);
+  const mergedData = ScmdbMergedSchema.parse(mergedRaw);
   const miningData = miningRaw ? ScmdbMiningDataSchema.parse(miningRaw) : null;
   if (craftingItemsRaw) ScmdbCraftingItemsSchema.parse(craftingItemsRaw);
   if (craftingBlueprintsRaw) ScmdbCraftingBlueprintsSchema.parse(craftingBlueprintsRaw);
 
-  const chainData = collectBlueprintChainData(Array.isArray(mergedData.contracts) ? mergedData.contracts : []);
-  const contractRows = Array.isArray(mergedData.contracts)
-    ? mergedData.contracts.map((contract) => buildContractRow(contract, chainData))
-    : [];
-  const legacyRows = Array.isArray(mergedData.legacyContracts)
-    ? mergedData.legacyContracts.map((contract) => buildContractRow(contract, chainData))
-    : [];
+  const chainData = collectBlueprintChainData(mergedData.contracts);
+  const factionRewardsContext = buildFactionRewardsContext(
+    mergedData.factionRewardsPools,
+    mergedData.factions,
+    mergedData.contracts,
+  );
+  const contractRows = mergedData.contracts.map((c) =>
+    buildContractRow(toContractRowSource(c), chainData, factionRewardsContext),
+  );
+  const legacyRows = mergedData.legacyContracts.map((c) =>
+    buildContractRow(toLegacyContractRowSource(c), chainData, factionRewardsContext),
+  );
   const missionRows = buildMissionRows(mergedData.contracts, chainData, mergedData.blueprintPools);
   const blueprintPoolRows = buildBlueprintPoolRows(mergedData.blueprintPools);
   const contractBlueprintRows = buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools);
@@ -224,6 +232,11 @@ async function main() {
       'isBlueprintReward',
       'isBlueprintChainPrerequisite',
       'blueprintChainDepth',
+      'personalCooldownTime',
+      'rewardRepCalculated',
+      'factionRewards',
+      'factionRewardsRaw',
+      'shipEncounters',
     ];
     writeOutput('contracts.csv', toCsv(contractRows, headers));
   }
@@ -255,6 +268,11 @@ async function main() {
       'isBlueprintReward',
       'isBlueprintChainPrerequisite',
       'blueprintChainDepth',
+      'personalCooldownTime',
+      'rewardRepCalculated',
+      'factionRewards',
+      'factionRewardsRaw',
+      'shipEncounters',
     ];
     writeOutput('legacy-contracts.csv', toCsv(legacyRows, headers));
   }

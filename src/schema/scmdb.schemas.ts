@@ -1,173 +1,64 @@
-// @ts-check
-import { z } from 'zod';
-
 // ---------------------------------------------------------------------------
 // versions.json
 // ---------------------------------------------------------------------------
 
-export const ScmdbVersionEntrySchema = z.object({
-  version: z.string(),
-  file: z.string(),
-});
+export {
+  VersionEntrySchema as ScmdbVersionEntrySchema,
+  VersionsSchema as ScmdbVersionsSchema,
+} from './scmdb/versions.schema.js';
 
-export const ScmdbVersionsSchema = z.array(ScmdbVersionEntrySchema).min(1);
-
-// ---------------------------------------------------------------------------
-// Merged data (contracts, legacyContracts, blueprintPools)
-// ---------------------------------------------------------------------------
-
-const ScmdbStandingSchema = z.object({
-  guid: z.string(),
-  name: z.string(),
-  minReputation: z.number(),
-  nameKey: z.string(),
-  scopeName: z.string().optional(),
-  scopeGuid: z.string().optional(),
-});
-
-/**
- * prerequisites is intentionally loose: its shape varies across contract types
- * (location prerequisites, faction prerequisites, completedContractTags, etc.).
- * Only the one field accessed structurally by the transformation pipeline is
- * typed concretely; everything else passes through for serialisation.
- */
-export const ScmdbPrerequisitesSchema = z.looseObject({
-  completedContractTags: z.object({ tags: z.array(z.string()).optional() }).nullish(),
-});
-
-export const ScmdbBlueprintRewardEntrySchema = z.object({
-  blueprintPool: z.string().optional(),
-  poolName: z.string().nullish(),
-  chance: z.number().nullish(),
-  trigger: z.string().nullish(),
-});
-
-export const ScmdbCompletionTagSchema = z.object({
-  tag: z.string().optional(),
-});
-
-export const ScmdbContractSchema = z.object({
-  id: z.string(),
-  debugName: z.string().nullish(),
-  category: z.string().nullish(),
-  missionType: z.string().nullish(),
-  missionTypeKey: z.string().nullish(),
-  title: z.string().nullish(),
-  titleKey: z.string().nullish(),
-  description: z.string().nullish(),
-  descriptionKey: z.string().nullish(),
-  descriptionLocKey: z.string().nullish(),
-  rewardUEC: z.number().nullish(),
-  timeToComplete: z.number().nullish(),
-  canBeShared: z.boolean().nullish(),
-  illegal: z.boolean().nullish(),
-  factionGuid: z.string().nullish(),
-  locations: z.array(z.string()).nullish(),
-  destinations: z.array(z.string()).nullish(),
-  prerequisites: ScmdbPrerequisitesSchema.nullish(),
-  tokenSubstitutions: z.record(z.string(), z.string()).nullish(),
-  minStanding: ScmdbStandingSchema.nullish(),
-  maxStanding: ScmdbStandingSchema.nullish(),
-  blueprintRewards: z.array(ScmdbBlueprintRewardEntrySchema).nullish(),
-  completionTags: z.array(ScmdbCompletionTagSchema).nullish(),
-});
-
-export const ScmdbBlueprintPoolSchema = z.object({
-  name: z.string().nullish(),
-  source: z.string().nullish(),
-  blueprints: z.array(z.object({ name: z.string().nullish() })).nullish(),
-});
-
-export const ScmdbMergedDataSchema = z.object({
-  contracts: z.array(ScmdbContractSchema).optional().default([]),
-  legacyContracts: z.array(ScmdbContractSchema).optional().default([]),
-  blueprintPools: z.record(z.string(), ScmdbBlueprintPoolSchema).nullish(),
-});
+export type {
+  VersionEntry as ScmdbVersionEntryDTO,
+  Versions as ScmdbVersionsDTO,
+} from './scmdb/versions.schema.js';
 
 // ---------------------------------------------------------------------------
-// Mining data
+// merged-*.json  (quicktype-generated strict schema)
 // ---------------------------------------------------------------------------
 
-const ScmdbMineableElementSchema = z.object({
-  name: z.string(),
-  rarity: z.string().optional(),
-  groundScanSignature: z.number().optional(),
-  scanSignature: z.number().optional(),
-  resistance: z.number().optional(),
-  instability: z.number().optional(),
-});
+export {
+  MergedSchema as ScmdbMergedSchema,
+  ContractSchema as ScmdbContractSchema,
+  LegacyContractSchema as ScmdbLegacyContractSchema,
+  FactionSchema as ScmdbFactionSchema,
+  BlueprintPoolsSchema as ScmdbBlueprintPoolsSchema,
+  BlueprintPoolEntrySchema as ScmdbBlueprintPoolEntrySchema,
+  FactionRewardsSchema as ScmdbFactionRewardsSchema,
+} from './scmdb/merged.schema.js';
 
-const ScmdbCompositionPartSchema = z.object({
-  elementName: z.string().optional(),
-});
-
-const ScmdbCompositionSchema = z.object({
-  name: z.string().optional(),
-  parts: z.array(ScmdbCompositionPartSchema).optional(),
-});
-
-const ScmdbDepositSchema = z.object({
-  compositionGuid: z.string().optional(),
-  relativeProbability: z.number().optional(),
-});
-
-const ScmdbMiningGroupSchema = z.object({
-  groupName: z.string(),
-  groupProbability: z.number().optional(),
-  deposits: z.array(ScmdbDepositSchema).optional(),
-});
-
-const ScmdbMiningLocationSchema = z.object({
-  locationName: z.string(),
-  groups: z.array(ScmdbMiningGroupSchema).optional(),
-});
-
-const ScmdbQualityDistributionEntrySchema = z.object({
-  min: z.number().optional(),
-  max: z.number().optional(),
-});
-
-const ScmdbLocationOverrideEntrySchema = z.object({
-  distribution: ScmdbQualityDistributionEntrySchema.optional(),
-  locations: z.array(z.string()).optional(),
-});
-
-const ScmdbRarityDataSchema = z.object({
-  default: ScmdbQualityDistributionEntrySchema.optional(),
-  locationOverrides: z.record(z.string(), z.array(ScmdbLocationOverrideEntrySchema)).optional(),
-});
-
-const ScmdbQualityDistributionSchema = z.object({
-  shipmineables: z.record(z.string(), ScmdbRarityDataSchema).optional(),
-});
-
-export const ScmdbMiningDataSchema = z.object({
-  mineableElements: z.record(z.string(), ScmdbMineableElementSchema).optional(),
-  compositions: z.record(z.string(), ScmdbCompositionSchema).optional(),
-  locations: z.array(ScmdbMiningLocationSchema).optional(),
-  qualityDistribution: ScmdbQualityDistributionSchema.optional(),
-});
+export type {
+  Merged as ScmdbMergedDTO,
+  Contract as ScmdbContractDTO,
+  LegacyContract as ScmdbLegacyContractDTO,
+  Faction as ScmdbFactionDTO,
+  FactionRewards as ScmdbFactionRewardsDTO,
+  BlueprintPools as ScmdbBlueprintPoolsDTO,
+  BlueprintPoolEntry as ScmdbBlueprintPoolEntryDTO,
+} from './scmdb/merged.schema.js';
 
 // ---------------------------------------------------------------------------
-// Crafting data (stored raw; top-level structure validated)
+// mining_data-*.json
 // ---------------------------------------------------------------------------
 
-export const ScmdbCraftingItemsSchema = z.object({
-  version: z.string(),
-});
+export { MiningDataSchema as ScmdbMiningDataSchema } from './scmdb/mining-data.schema.js';
 
-export const ScmdbCraftingBlueprintsSchema = z.object({
-  version: z.string(),
-});
+export type {
+  MiningData as ScmdbMiningDataDTO,
+  LocationOverrideEntry as ScmdbLocationOverrideEntryDTO,
+} from './scmdb/mining-data.schema.js';
 
 // ---------------------------------------------------------------------------
-// Derived Types
+// crafting_items-*.json
 // ---------------------------------------------------------------------------
 
-export type ScmdbContractDTO = z.infer<typeof ScmdbContractSchema>;
-export type ScmdbBlueprintPoolDTO = z.infer<typeof ScmdbBlueprintPoolSchema>;
-export type ScmdbPrerequisitesDTO = z.infer<typeof ScmdbPrerequisitesSchema>;
-export type ScmdbBlueprintRewardDTO = z.infer<typeof ScmdbBlueprintRewardEntrySchema>;
-export type ScmdbCompletionTagDTO = z.infer<typeof ScmdbCompletionTagSchema>;
-export type ScmdbMiningDataDTO = z.infer<typeof ScmdbMiningDataSchema>;
-export type ScmdbLocationOverrideEntryDTO = z.infer<typeof ScmdbLocationOverrideEntrySchema>;
+export { CraftingItemsSchema as ScmdbCraftingItemsSchema } from './scmdb/crafting_items.schema.js';
+
+export type { CraftingItems as ScmdbCraftingItemsDTO } from './scmdb/crafting_items.schema.js';
+
+// ---------------------------------------------------------------------------
+// crafting_blueprints-*.json
+// ---------------------------------------------------------------------------
+
+export { CraftingBlueprintsSchema as ScmdbCraftingBlueprintsSchema } from './scmdb/crafting_blueprints.schema.js';
+
+export type { CraftingBlueprints as ScmdbCraftingBlueprintsDTO } from './scmdb/crafting_blueprints.schema.js';
