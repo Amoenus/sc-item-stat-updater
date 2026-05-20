@@ -81,6 +81,32 @@ export function resolveLocalizationKeys(
         }
       }
     }
+    // 3. Strip trailing parenthetical qualifier, e.g. " (Ground)" or " (Cutlass Steel)", and retry
+    if (!locKey) {
+      const stripped = name.replace(/\s+\([^)]+\)$/, '');
+      if (stripped !== name) {
+        locKey = lookupMap?.get(stripped) ?? reverseIndex.get(stripped);
+        if (!locKey) {
+          const strippedSuffix = ` ${stripped}`;
+          if (lookupMap) {
+            for (const [mapName, key] of lookupMap) {
+              if (mapName.endsWith(strippedSuffix)) {
+                locKey = key;
+                break;
+              }
+            }
+          }
+          if (!locKey) {
+            for (const [value, key] of reverseIndex) {
+              if (value.endsWith(strippedSuffix)) {
+                locKey = key;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
     if (locKey) {
       rows[i]['Localization Key'] = locKey;
       mapping.set(name, locKey);

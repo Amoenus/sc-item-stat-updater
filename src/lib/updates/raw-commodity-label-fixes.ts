@@ -5,9 +5,9 @@ import { buildScannedUpdateResult } from './update-result';
 const logger = getLogger('raw-commodity-label-fixes-update');
 
 const RAW_COMMODITY_LABEL_FIXES = {
-  'items_commodities_raw_ice,p': 'Ice (Raw)',
+  items_commodities_raw_ice: 'Ice (Raw)',
   items_commodities_raw_ouratite: 'Ouratite (Raw)',
-  'items_commodities_raw_silicon,p': 'Silicon (Raw)',
+  items_commodities_raw_silicon: 'Silicon (Raw)',
   items_commodities_hephaestanite_raw: 'Heph (Raw)',
 };
 
