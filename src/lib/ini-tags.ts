@@ -108,10 +108,13 @@ function makeTag(name: string): IniTagDescriptor {
  *
  * ## Updater behaviour
  *
- * The updater indexes only base keys. `,P` plural-form keys are skipped during
- * indexing and are never directly updated. Mission descriptions that exist
- * exclusively as `,P` keys (e.g. most Adagio salvage contracts) are therefore
- * not reachable by the current updater.
+ * All line occurrences for a given base key are updated together:
+ * - **Base + `,P` pair** — both lines are patched independently (each with its
+ *   own existing value, so different surrounding text is handled correctly).
+ * - **`,P`-only key** — indexed under the base name so the updater can reach it.
+ * - **True duplicates** — every duplicate line for the same key is updated.
+ *
+ * The `,P` suffix is always preserved when writing a line back to the file.
  */
 export const IniKeySuffix = {
   /**

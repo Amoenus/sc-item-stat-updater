@@ -44,7 +44,8 @@ export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }: { iniPa
       continue;
     }
 
-    lines[lineIndex] = `${matchKey}=${targetValue}`;
+    const lineKey = eqIdx > -1 ? currentLine.substring(0, eqIdx) : matchKey;
+    lines[lineIndex] = `${lineKey}=${targetValue}`;
     updatedCount++;
   }
 

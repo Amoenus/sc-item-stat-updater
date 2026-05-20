@@ -71,10 +71,12 @@ export async function applyArtifact(
       const lineIndex = existingKeys[foundKey];
       const oldLine = lines[lineIndex];
       const eqIdx = oldLine.indexOf('=');
-      const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
+      if (eqIdx === -1) continue;
+      const lineKey = oldLine.substring(0, eqIdx);
+      const oldValue = oldLine.substring(eqIdx + 1);
 
       if (newValue !== oldValue) {
-        lines[lineIndex] = `${foundKey}=${newValue}`;
+        lines[lineIndex] = `${lineKey}=${newValue}`;
         updatedCount++;
         logger.debug('Applied patch', { key: foundKey });
       }

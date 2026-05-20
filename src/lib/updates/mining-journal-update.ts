@@ -56,7 +56,8 @@ export async function runMiningJournalUpdate({
   const updated = newValue !== oldValue;
 
   if (updated) {
-    journalLines[journalIdx[matchKey]] = `${matchKey}=${newValue}`;
+    const lineKey = eqIdx > -1 ? oldLine.substring(0, eqIdx) : matchKey;
+    journalLines[journalIdx[matchKey]] = `${lineKey}=${newValue}`;
   }
 
   await writeIniFileIfChanged(iniPath, journalLines, { dryRun, updatedCount: updated ? 1 : 0, skipBackup: true });

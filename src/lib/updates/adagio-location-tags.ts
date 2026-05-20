@@ -62,7 +62,8 @@ export async function runAdagioLocationTagUpdate({ iniPath, dryRun }: { iniPath:
       continue;
     }
 
-    lines[lineIndex] = `${matchKey}=${newValue}`;
+    const lineKey = currentLine.substring(0, eqIdx);
+    lines[lineIndex] = `${lineKey}=${newValue}`;
     updatedCount++;
     logger.info('Tagged ~mission(location) with EM4', { key: matchKey });
   }

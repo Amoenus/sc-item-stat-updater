@@ -6,6 +6,44 @@ import { getLogger } from '../../lib/logger';
 
 const logger = getLogger('ini-file');
 
+/** Appends lineNum to the allOccurrences entry for baseKey, creating the entry on first use. */
+function recordOccurrence(baseKey: string, lineNum: number, allOccurrences: Map<string, number[]>): void {
+  const existing = allOccurrences.get(baseKey);
+  if (existing) {
+    existing.push(lineNum);
+  } else {
+    allOccurrences.set(baseKey, [lineNum]);
+  }
+}
+
+/**
+ * Indexes a variant-suffix key (,P or ,G) under its base name.
+ * Always records the line in allOccurrences so all forms are updated together.
+ * Only sets index[baseKey] when no base key has been registered yet, keeping
+ * the original base form as the canonical lookup entry.
+ */
+function indexVariantKey(
+  key: string,
+  lineNum: number,
+  index: Record<string, number>,
+  allOccurrences: Map<string, number[]>,
+): void {
+  const baseKey = key.slice(0, key.lastIndexOf(','));
+  recordOccurrence(baseKey, lineNum, allOccurrences);
+  if (!(baseKey in index)) {
+    index[baseKey] = lineNum;
+  }
+}
+
+/** Records a duplicate key and emits a warning. */
+function recordDuplicate(key: string, lineNum: number, index: Record<string, number>, duplicates: Map<string, number[]>): void {
+  if (!duplicates.has(key)) {
+    duplicates.set(key, [index[key]]);
+  }
+  duplicates.get(key)?.push(lineNum);
+  logger.warn('Duplicate key detected in INI file', { key, lineNum });
+}
+
 /**
  * Reads an INI file using streaming I/O and builds a key index in a single pass.
  * Handles UTF-8 BOM stripping.
@@ -14,10 +52,16 @@ const logger = getLogger('ini-file');
  */
 export async function readIniFile(
   filePath: string,
-): Promise<{ lines: string[]; index: Record<string, number>; duplicates: Map<string, number[]> }> {
+): Promise<{
+  lines: string[];
+  index: Record<string, number>;
+  duplicates: Map<string, number[]>;
+  allOccurrences: Map<string, number[]>;
+}> {
   const lines: string[] = [];
   const index: Record<string, number> = {};
   const duplicates = new Map<string, number[]>();
+  const allOccurrences = new Map<string, number[]>();
 
   const rl = createInterface({
     input: createReadStream(filePath, { encoding: 'utf-8' }),
@@ -39,23 +83,21 @@ export async function readIniFile(
     if (eqIdx > -1) {
       const key = line.substring(0, eqIdx);
       if (key.endsWith(IniKeySuffix.Plural) || key.endsWith(IniKeySuffix.Gendered)) {
+        indexVariantKey(key, lineNum, index, allOccurrences);
         lineNum++;
         continue;
       }
 
       if (key in index) {
-        if (!duplicates.has(key)) {
-          duplicates.set(key, [index[key]]);
-        }
-        duplicates.get(key)?.push(lineNum);
-        logger.warn('Duplicate key detected in INI file', { key, lineNum });
+        recordDuplicate(key, lineNum, index, duplicates);
       }
+      recordOccurrence(key, lineNum, allOccurrences);
       index[key] = lineNum;
     }
     lineNum++;
   }
 
-  return { lines, index, duplicates };
+  return { lines, index, duplicates, allOccurrences };
 }
 
 /**

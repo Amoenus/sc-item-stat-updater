@@ -171,6 +171,53 @@ function getTargetKeys(
   return [descKey, ...altKeys];
 }
 
+/**
+ * Applies one updated value to the lines array, preserving any variant suffix
+ * (e.g. `,P`) that may be present on the actual line key.
+ */
+function applyLinePatch(
+  lines: string[],
+  lineIndex: number,
+  oldLine: string,
+  foundKey: string,
+  newValue: string,
+  patches: Record<string, string>,
+): void {
+  const eqIdx = oldLine.indexOf('=');
+  const lineKey = eqIdx > -1 ? oldLine.substring(0, eqIdx) : foundKey;
+  lines[lineIndex] = `${lineKey}=${newValue}`;
+  patches[foundKey] = newValue;
+}
+
+type KeyUpdateResult = 'notFound' | 'found' | 'updated';
+
+/**
+ * Attempts to find and patch all occurrences of a target key (base form,
+ * plural/gendered variants, and true duplicates). Each line is patched
+ * independently using its own existing value, so variant strings with
+ * different surrounding text are handled correctly.
+ */
+function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<string, string>): KeyUpdateResult {
+  const foundKey = findIniKey(context.existingKeys, targetKey);
+  if (!foundKey) return 'notFound';
+
+  const lineIndices = context.allOccurrences.get(foundKey) ?? [context.existingKeys[foundKey]];
+  let anyUpdated = false;
+
+  for (const lineIndex of lineIndices) {
+    const oldLine = context.lines[lineIndex];
+    const eqIdx = oldLine.indexOf('=');
+    const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
+    const newValue = sanitizeIniValue(context.config.buildValue!(row, extractFlavorText(oldValue), oldValue, foundKey));
+    if (newValue !== oldValue) {
+      applyLinePatch(context.lines, lineIndex, oldLine, foundKey, newValue, context.patches);
+      anyUpdated = true;
+    }
+  }
+
+  return anyUpdated ? 'updated' : 'found';
+}
+
 function processRow(
   row: Record<string, string>,
   context: UpdateContext,
@@ -187,22 +234,13 @@ function processRow(
   let anyFound = false;
 
   for (const targetKey of targetKeys) {
-    const foundKey = findIniKey(context.existingKeys, targetKey);
-    if (foundKey) {
+    const result = tryUpdateKey(targetKey, context, row);
+    if (result !== 'notFound') {
       anyFound = true;
-      const lineIndex = context.existingKeys[foundKey];
-      const oldLine = context.lines[lineIndex];
-      const eqIdx = oldLine.indexOf('=');
-      const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-      const flavor = extractFlavorText(oldValue);
-      const newValue = sanitizeIniValue(context.config.buildValue!(row, flavor, oldValue, foundKey));
-      if (newValue !== oldValue) {
-        context.lines[lineIndex] = `${foundKey}=${newValue}`;
-        context.patches[foundKey] = newValue;
-        anyUpdated = true;
-      }
+      if (result === 'updated') anyUpdated = true;
     }
   }
+
   if (anyFound) {
     for (const k of targetKeys) context.updatedKeys.add(k.toLowerCase());
     if (anyUpdated) {
@@ -252,6 +290,7 @@ class UpdateContext {
   config: ItemConfig;
   lines: string[];
   existingKeys: Record<string, number>;
+  allOccurrences: Map<string, number[]>;
   dryRun: boolean;
   updatedKeys: Set<string>;
   newLines: string[];
@@ -268,12 +307,14 @@ class UpdateContext {
     config: ItemConfig,
     lines: string[],
     existingKeys: Record<string, number>,
+    allOccurrences: Map<string, number[]>,
     unresolvedNames: string[],
     dryRun: boolean,
   ) {
     this.config = config;
     this.lines = lines;
     this.existingKeys = existingKeys;
+    this.allOccurrences = allOccurrences;
     this.dryRun = dryRun;
 
     this.updatedKeys = new Set();
@@ -391,7 +432,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
 
   try {
     const rows = await loadSourceData(config, opts.csvDir);
-    const { lines, index: existingKeys } = await readIniFile(opts.iniPath);
+    const { lines, index: existingKeys, allOccurrences } = await readIniFile(opts.iniPath);
     const originalLineCount = lines.length;
 
     const unresolvedNames = config.nameColumn
@@ -401,7 +442,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
 
-    const context = new UpdateContext(config, lines, existingKeys, unresolvedNames, opts.dryRun);
+    const context = new UpdateContext(config, lines, existingKeys, allOccurrences, unresolvedNames, opts.dryRun);
 
     for (const row of rows) {
       const validation = config.getTargetKeys && !row['Localization Key'] ? 'valid' : validateRow(row, config.label);
