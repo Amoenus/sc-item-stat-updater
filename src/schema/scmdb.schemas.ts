@@ -24,7 +24,7 @@ export {
   BlueprintPoolsSchema as ScmdbBlueprintPoolsSchema,
   BlueprintPoolEntrySchema as ScmdbBlueprintPoolEntrySchema,
   FactionRewardsSchema as ScmdbFactionRewardsSchema,
-} from './scmdb/merged.schema.js';
+} from './scmdb/merged/index.js';
 
 export type {
   Merged as ScmdbMergedDTO,
@@ -34,7 +34,7 @@ export type {
   FactionRewards as ScmdbFactionRewardsDTO,
   BlueprintPools as ScmdbBlueprintPoolsDTO,
   BlueprintPoolEntry as ScmdbBlueprintPoolEntryDTO,
-} from './scmdb/merged.schema.js';
+} from './scmdb/merged/index.js';
 
 // ---------------------------------------------------------------------------
 // mining_data-*.json
@@ -51,14 +51,14 @@ export type {
 // crafting_items-*.json
 // ---------------------------------------------------------------------------
 
-export { CraftingItemsSchema as ScmdbCraftingItemsSchema } from './scmdb/crafting_items.schema.js';
+export { CraftingItemsSchema as ScmdbCraftingItemsSchema } from './scmdb/crafting-items/index.js';
 
-export type { CraftingItems as ScmdbCraftingItemsDTO } from './scmdb/crafting_items.schema.js';
+export type { CraftingItems as ScmdbCraftingItemsDTO } from './scmdb/crafting-items/index.js';
 
 // ---------------------------------------------------------------------------
 // crafting_blueprints-*.json
 // ---------------------------------------------------------------------------
 
-export { CraftingBlueprintsSchema as ScmdbCraftingBlueprintsSchema } from './scmdb/crafting_blueprints.schema.js';
+export { CraftingBlueprintsSchema as ScmdbCraftingBlueprintsSchema } from './scmdb/crafting-blueprints/index.js';
 
-export type { CraftingBlueprints as ScmdbCraftingBlueprintsDTO } from './scmdb/crafting_blueprints.schema.js';
+export type { CraftingBlueprints as ScmdbCraftingBlueprintsDTO } from './scmdb/crafting-blueprints/index.js';
