@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Artifact generator and reader (ADR 002).
  *
  * The artifact is an intermediary JSON manifest that decouples the
@@ -26,38 +26,20 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ItemConfig } from '../lib/types';
 import { buildPatchData } from '../lib/updater';
+import { ArtifactSchema } from '../schema/artifact.schema';
 
-export interface Artifact {
-  generatedAt: string;
-  scmdbVersion: string | null;
-  spviewerVersion: string | null;
-  entries: Record<string, string>;
-  stats: {
-    categoryCount: number;
-    totalEntries: number;
-    totalSkipped: number;
-    totalErrors: number;
-  };
-  issues: Array<{ label: string; key: string; reason: string; type: string }>;
-}
+export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
 
 /**
  * Generates a patch artifact by running the Extract+Transform phase for every
  * supplied config and merging the resulting patches into a single manifest.
- *
- * @param {Array<{ config: import('./types.js').ItemConfig, csvDir: string }>} categories
- * @param {object} opts
- * @param {string} opts.iniPath - Path to global.ini (needed for flavor-text extraction)
- * @param {string} [opts.scmdbVersion]
- * @param {string} [opts.spviewerVersion]
- * @returns {Promise<object>} The in-memory artifact object
  */
 export async function generateArtifact(
   categories: Array<{ config: ItemConfig; csvDir: string }>,
   opts: { iniPath: string; scmdbVersion?: string; spviewerVersion?: string },
-): Promise<object> {
+): Promise<import('../schema/artifact.schema').ArtifactDTO> {
   const entries: Record<string, string> = {};
-  const issues = [];
+  const issues: Array<{ label: string; key: string; reason: string; type: string }> = [];
   let totalSkipped = 0;
   let totalErrors = 0;
 
@@ -85,7 +67,7 @@ export async function generateArtifact(
     }
   }
 
-  return {
+  return ArtifactSchema.parse({
     generatedAt: new Date().toISOString(),
     scmdbVersion: opts.scmdbVersion ?? null,
     spviewerVersion: opts.spviewerVersion ?? null,
@@ -97,27 +79,34 @@ export async function generateArtifact(
       totalErrors,
     },
     issues,
-  };
+  });
 }
 
 /**
  * Writes a patch artifact to disk as JSON.
  *
- * @param {string} artifactPath - Absolute path to write (e.g. patch-data.json)
- * @param {object} artifact - Artifact object returned by {@link generateArtifact}
+ * @param artifactPath - Absolute path to write (e.g. patch-data.json)
+ * @param artifact - Artifact object returned by {@link generateArtifact}
  */
-export async function writeArtifactFile(artifactPath: string, artifact: Artifact): Promise<void> {
+export async function writeArtifactFile(
+  artifactPath: string,
+  artifact: import('../schema/artifact.schema').ArtifactDTO,
+): Promise<void> {
   await fs.mkdir(path.dirname(artifactPath), { recursive: true });
   await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf8');
 }
 
 /**
- * Reads and performs basic validation of a patch artifact from disk.
+ * Reads and validates a patch artifact from disk against the canonical
+ * `ArtifactSchema`.  A `ZodError` is thrown if the file does not conform —
+ * this is the system boundary where untyped JSON becomes a fully typed DTO.
  *
- * @param {string} artifactPath - Absolute path to the JSON artifact
- * @returns {Promise<object>} The parsed artifact object
+ * @param artifactPath - Absolute path to the JSON artifact
+ * @returns The parsed and validated artifact DTO
  */
-export async function readArtifactFile(artifactPath: string): Promise<Artifact> {
+export async function readArtifactFile(
+  artifactPath: string,
+): Promise<import('../schema/artifact.schema').ArtifactDTO> {
   let raw: string;
   try {
     raw = await fs.readFile(artifactPath, 'utf8');
@@ -125,16 +114,19 @@ export async function readArtifactFile(artifactPath: string): Promise<Artifact> 
     throw new Error(`Cannot read artifact file: ${artifactPath}`, { cause: err });
   }
 
-  let artifact: Artifact;
+  let parsed: unknown;
   try {
-    artifact = JSON.parse(raw);
+    parsed = JSON.parse(raw);
   } catch (err) {
     throw new Error(`Artifact file is not valid JSON: ${artifactPath}`, { cause: err });
   }
 
-  if (!artifact || typeof artifact.entries !== 'object' || Array.isArray(artifact.entries)) {
-    throw new Error(`Artifact file has unexpected structure (missing "entries" object): ${artifactPath}`);
+  const result = ArtifactSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(
+      `Artifact file has unexpected structure: ${artifactPath}\n${result.error.message}`,
+    );
   }
 
-  return artifact;
+  return result.data;
 }
