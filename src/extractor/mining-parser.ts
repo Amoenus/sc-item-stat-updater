@@ -1,4 +1,4 @@
-import type { ScmdbMiningDataDTO as MiningDataDTO } from '../schema/scmdb.schemas';
+import type { ScmdbMiningDataDTO as MiningDataDTO, ScmdbLocationOverrideEntryDTO } from '../schema/scmdb.schemas';
 
 /**
  * Builds rows for the mining elements CSV.
@@ -80,7 +80,7 @@ function addLocationNote(notes: Map<string, string[]>, locations: string[], note
 
 function processOverrideEntries(
   notes: Map<string, string[]>,
-  groupEntries: { distribution: { min?: number } | undefined; locations: string[] | undefined }[],
+  groupEntries: ScmdbLocationOverrideEntryDTO[],
   defaultMin: number,
   rarityLabel: string,
 ): void {
@@ -172,7 +172,12 @@ function buildLocationWeightMaps(
     for (const group of groups) {
       const miningType = classifyMiningGroup(group.groupName);
       if (!miningType) continue;
-      accumulateDeposits(weightMaps[name][miningType], group.deposits ?? [], compNameCache, group.groupProbability ?? 1);
+      accumulateDeposits(
+        weightMaps[name][miningType],
+        group.deposits ?? [],
+        compNameCache,
+        group.groupProbability ?? 1,
+      );
     }
   }
   return weightMaps;

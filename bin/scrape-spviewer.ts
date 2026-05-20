@@ -57,10 +57,9 @@ async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<voi
     if (!paginator) return;
     await paginator.click();
     await sleep(PAGINATION_SETTLE_MS);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allOption = await (page as any).$x("//li[contains(text(),'All') or contains(text(),'all')]");
-    if (allOption.length) {
-      await allOption[0].click();
+    const allOption = await page.$('::-p-xpath(//li[contains(text(),"All") or contains(text(),"all")])');
+    if (allOption) {
+      await allOption.click();
     } else {
       const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
       if (options.length) await options.at(-1)?.click();
