@@ -201,7 +201,7 @@ async function main() {
   if (missionRows.length) {
     writeMissionOutput(
       'scmdb-missions.csv',
-      toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList']),
+      toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList', 'ItemRewardList']),
     );
   }
 
@@ -237,6 +237,28 @@ async function main() {
       'factionRewards',
       'factionRewardsRaw',
       'shipEncounters',
+      'haulingOrders',
+      'itemRewards',
+      'completionTags',
+      'pyroRegion',
+      'buyIn',
+      'onceOnly',
+      'maxPlayersPerInstance',
+      'availableInPrison',
+      'canReacceptAfterAbandoning',
+      'canReacceptAfterFailing',
+      'hasPersonalCooldown',
+      'abandonedCooldownTime',
+      'hideInMobiGlas',
+      'systems',
+      'factionRewards_fail',
+      'requiredScenarios',
+      'isIntro',
+      'requiredIntros',
+      'linkedIntros',
+      'pickupCount',
+      'deliveryCount',
+      'propertyValues',
     ];
     writeOutput('contracts.csv', toCsv(contractRows, headers));
   }
@@ -273,6 +295,28 @@ async function main() {
       'factionRewards',
       'factionRewardsRaw',
       'shipEncounters',
+      'haulingOrders',
+      'itemRewards',
+      'completionTags',
+      'pyroRegion',
+      'buyIn',
+      'onceOnly',
+      'maxPlayersPerInstance',
+      'availableInPrison',
+      'canReacceptAfterAbandoning',
+      'canReacceptAfterFailing',
+      'hasPersonalCooldown',
+      'abandonedCooldownTime',
+      'hideInMobiGlas',
+      'systems',
+      'factionRewards_fail',
+      'requiredScenarios',
+      'isIntro',
+      'requiredIntros',
+      'linkedIntros',
+      'pickupCount',
+      'deliveryCount',
+      'propertyValues',
     ];
     writeOutput('legacy-contracts.csv', toCsv(legacyRows, headers));
   }

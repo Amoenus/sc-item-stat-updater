@@ -39,6 +39,29 @@ export interface ContractRowSource {
   rewardRepCalculated: number | null | undefined;
   factionRewardsIndex: number | null | undefined;
   shipEncounters: unknown;
+  // Extended fields
+  haulingOrders: unknown;
+  itemRewards: unknown;
+  completionTags: unknown;
+  pyroRegion: unknown;
+  buyIn: number | null | undefined;
+  onceOnly: boolean | null | undefined;
+  maxPlayersPerInstance: number | null | undefined;
+  availableInPrison: boolean | null | undefined;
+  canReacceptAfterAbandoning: boolean | null | undefined;
+  canReacceptAfterFailing: boolean | null | undefined;
+  hasPersonalCooldown: boolean | null | undefined;
+  abandonedCooldownTime: number | null | undefined;
+  hideInMobiGlas: boolean | null | undefined;
+  systems: unknown;
+  factionRewards_fail: unknown;
+  requiredScenarios: unknown;
+  isIntro: boolean | null | undefined;
+  requiredIntros: unknown;
+  linkedIntros: unknown;
+  pickupCount: number | null | undefined;
+  deliveryCount: number | null | undefined;
+  propertyValues: unknown;
 }
 
 /** Adapts a quicktype Contract to ContractRowSource. */
@@ -70,6 +93,28 @@ export function toContractRowSource(contract: ContractDTO): ContractRowSource {
     rewardRepCalculated: contract.rewardRepCalculated,
     factionRewardsIndex: contract.factionRewardsIndex,
     shipEncounters: contract.shipEncounters,
+    haulingOrders: contract.haulingOrders,
+    itemRewards: contract.itemRewards,
+    completionTags: contract.completionTags,
+    pyroRegion: contract.pyroRegion,
+    buyIn: contract.buyIn,
+    onceOnly: contract.onceOnly,
+    maxPlayersPerInstance: contract.maxPlayersPerInstance,
+    availableInPrison: contract.availableInPrison,
+    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning,
+    canReacceptAfterFailing: contract.canReacceptAfterFailing,
+    hasPersonalCooldown: contract.hasPersonalCooldown,
+    abandonedCooldownTime: contract.abandonedCooldownTime,
+    hideInMobiGlas: contract.hideInMobiGlas,
+    systems: contract.systems,
+    factionRewards_fail: contract.factionRewards_fail,
+    requiredScenarios: contract.requiredScenarios,
+    isIntro: contract.isIntro,
+    requiredIntros: contract.requiredIntros,
+    linkedIntros: contract.linkedIntros,
+    pickupCount: contract.pickupCount,
+    deliveryCount: contract.deliveryCount,
+    propertyValues: contract.propertyValues,
   };
 }
 
@@ -102,6 +147,28 @@ export function toLegacyContractRowSource(contract: LegacyContractDTO): Contract
     rewardRepCalculated: undefined,
     factionRewardsIndex: contract.factionRewardsIndex,
     shipEncounters: undefined,
+    haulingOrders: contract.haulingOrders,
+    itemRewards: undefined,
+    completionTags: undefined,
+    pyroRegion: undefined,
+    buyIn: undefined,
+    onceOnly: contract.onceOnly,
+    maxPlayersPerInstance: contract.maxPlayersPerInstance,
+    availableInPrison: undefined,
+    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning,
+    canReacceptAfterFailing: contract.canReacceptAfterFailing,
+    hasPersonalCooldown: undefined,
+    abandonedCooldownTime: undefined,
+    hideInMobiGlas: undefined,
+    systems: contract.systems,
+    factionRewards_fail: undefined,
+    requiredScenarios: undefined,
+    isIntro: undefined,
+    requiredIntros: undefined,
+    linkedIntros: undefined,
+    pickupCount: contract.pickupCount,
+    deliveryCount: contract.deliveryCount,
+    propertyValues: undefined,
   };
 }
 
@@ -294,7 +361,64 @@ export function buildContractRow(
     factionRewards: factionRewardsContext.factionRewards.get(contract.id) ?? '',
     factionRewardsRaw: factionRewardsContext.factionRewardsRaw.get(contract.id) ?? '',
     shipEncounters: flattenValue(contract.shipEncounters),
+    haulingOrders: flattenValue(contract.haulingOrders),
+    itemRewards: flattenValue(contract.itemRewards),
+    completionTags: flattenValue(contract.completionTags),
+    pyroRegion: flattenValue(contract.pyroRegion),
+    buyIn: contract.buyIn ?? '',
+    onceOnly: contract.onceOnly,
+    maxPlayersPerInstance: contract.maxPlayersPerInstance,
+    availableInPrison: contract.availableInPrison,
+    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning,
+    canReacceptAfterFailing: contract.canReacceptAfterFailing,
+    hasPersonalCooldown: contract.hasPersonalCooldown,
+    abandonedCooldownTime: contract.abandonedCooldownTime,
+    hideInMobiGlas: contract.hideInMobiGlas,
+    systems: flattenValue(contract.systems),
+    factionRewards_fail: flattenValue(contract.factionRewards_fail),
+    requiredScenarios: flattenValue(contract.requiredScenarios),
+    isIntro: contract.isIntro ?? '',
+    requiredIntros: flattenValue(contract.requiredIntros),
+    linkedIntros: flattenValue(contract.linkedIntros),
+    pickupCount: contract.pickupCount ?? '',
+    deliveryCount: contract.deliveryCount ?? '',
+    propertyValues: flattenValue(contract.propertyValues),
   };
+}
+
+function formatDirectRewardLine(reward: NonNullable<ContractDTO['itemRewards']>[number]): string {
+  const qty = reward.amount && reward.amount > 1 ? ` x${reward.amount}` : '';
+  return `- ${reward.name}${qty}`;
+}
+
+function formatGroupRewardLines(reward: NonNullable<ContractDTO['itemRewards']>[number]): string[] {
+  const lines: string[] = [];
+  for (const group of reward.groups ?? []) {
+    if (Number.isFinite(group.probability) && group.probability < 1) {
+      lines.push(`${Math.round(group.probability * 100)}% chance \u2014 1 of ${group.items.length}:`);
+    }
+    for (const item of group.items) {
+      const qty = item.amount > 1 ? ` x${item.amount}` : '';
+      lines.push(`- ${item.name}${qty}`);
+    }
+  }
+  return lines;
+}
+
+/**
+ * Builds a formatted item reward list string for use in mission descriptions.
+ */
+export function buildItemRewardList(contract: ContractDTO): string {
+  if (!contract.itemRewards?.length) return '';
+  const lines: string[] = [];
+  for (const reward of contract.itemRewards) {
+    if (reward.name) {
+      lines.push(formatDirectRewardLine(reward));
+    } else {
+      lines.push(...formatGroupRewardLines(reward));
+    }
+  }
+  return lines.join(String.raw`\n`);
 }
 
 /**
@@ -402,6 +526,7 @@ export function buildMissionRows(
         descTag = '[BP Chain]';
       }
       const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
+      const itemRewardList = buildItemRewardList(contract);
       const descriptionNote = descTag;
 
       if (titleKey && contract.title) {
@@ -411,6 +536,7 @@ export function buildMissionRows(
           TitleNote: titleTag,
           Note: '',
           RewardList: '',
+          ItemRewardList: '',
         });
       }
 
@@ -421,6 +547,7 @@ export function buildMissionRows(
           Note: descriptionNote,
           TitleNote: '',
           RewardList: rewardList,
+          ItemRewardList: itemRewardList,
         });
       }
 

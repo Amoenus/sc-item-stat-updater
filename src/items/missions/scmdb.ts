@@ -20,6 +20,21 @@ function formatMissionNote(noteText: string, isTitle: boolean): string {
   return /^\s/.test(noteText) ? noteText : ` ${noteText}`;
 }
 
+function rebuildDescValue(
+  oldValue: string,
+  note: string,
+  rewardList: string,
+  itemRewardList: string,
+  noteText: string,
+): string {
+  const normalized = oldValue.replace(
+    /(?:\\n\\n(?:\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/,
+    '',
+  );
+  if (!noteText && !rewardList && !itemRewardList) return normalized;
+  return `${normalized}${note}${rewardList}${itemRewardList}`;
+}
+
 export default {
   label: 'SCMDB mission descriptions',
   csvFile: 'missions/scmdb-missions.csv',
@@ -32,9 +47,13 @@ export default {
     const noteText = isTitle ? row['TitleNote'] : row['Note'];
     const note = formatMissionNote(noteText, isTitle);
     const rewardListValue = !isTitle && row['RewardList'] ? row['RewardList'] : '';
+    const itemRewardListValue = !isTitle && row['ItemRewardList'] ? row['ItemRewardList'] : '';
     const noteContainsRewardList =
       !isTitle && typeof noteText === 'string' && rewardListValue && noteText.includes(rewardListValue);
     const rewardList = rewardListValue && !noteContainsRewardList ? String.raw`\n\n${rewardListValue}` : '';
+    const itemRewardList = itemRewardListValue
+      ? String.raw`\n\n[Item Reward]\n\n${itemRewardListValue}`
+      : '';
 
     if (oldValue) {
       if (isTitle) {
@@ -48,13 +67,9 @@ export default {
         return `${normalizedOldValue}${note}`;
       }
 
-      const normalizedOldValue = oldValue.replace(/(?:\\n\\n(?:\[BP Reward\]|\[BP Chain\]))(?:\\n\\n.*)?$/, '');
-      if (!noteText && !rewardList) {
-        return normalizedOldValue;
-      }
-      return `${normalizedOldValue}${note}${rewardList}`;
+      return rebuildDescValue(oldValue, note, rewardList, itemRewardList, noteText ?? '');
     }
 
-    return description + note + rewardList;
+    return description + note + rewardList + itemRewardList;
   },
 } satisfies ItemConfig;
