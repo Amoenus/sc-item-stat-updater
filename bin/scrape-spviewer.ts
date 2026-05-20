@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
-import { extractVersions, parseTable } from '../src/extractor/spviewer-html-parser';
+import { extractVersions, findDropdownOptionSelector, findPaginatorSelector, hasAllOption, parseTable } from '../src/extractor/spviewer-html-parser';
 import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,18 +51,33 @@ const BASE_URL = 'https://www.spviewer.eu/items';
 
 // Try to show all entries (click "All" in page-size dropdown if present).
 // Best-effort: errors are silently swallowed so scraping still continues.
+// HTML detection uses cheerio; only interactions (click) use Puppeteer.
 async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<void> {
   try {
-    const paginator = await page.$('.p-paginator-rpp-options, [class*="paginator"] select, .p-select');
-    if (!paginator) return;
-    await paginator.click();
+    const initialHtml = await page.content();
+    const paginatorSelector = findPaginatorSelector(initialHtml);
+    if (!paginatorSelector) return;
+
+    await page.click(paginatorSelector);
     await sleep(PAGINATION_SETTLE_MS);
-    const allOption = await page.$('::-p-xpath(//li[contains(text(),"All") or contains(text(),"all")])');
-    if (allOption) {
-      await allOption.click();
+
+    const expandedHtml = await page.content();
+    if (hasAllOption(expandedHtml)) {
+      await page.evaluate(() => {
+        const items = document.querySelectorAll('li');
+        for (const item of items) {
+          if (/^all$/i.test(item.textContent?.trim() ?? '')) {
+            (item as HTMLElement).click();
+            return;
+          }
+        }
+      });
     } else {
-      const options = await page.$$('.p-select-option, .p-dropdown-item, .p-select-list li');
-      if (options.length) await options.at(-1)?.click();
+      const optionSelector = findDropdownOptionSelector(expandedHtml);
+      if (optionSelector) {
+        const options = await page.$$(optionSelector);
+        if (options.length) await options.at(-1)?.click();
+      }
     }
     await sleep(POST_PAGINATION_SETTLE_MS);
   } catch {

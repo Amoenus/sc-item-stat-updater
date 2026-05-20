@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { extractVersions, parseTable } from './spviewer-html-parser';
+import {
+  extractVersions,
+  findDropdownOptionSelector,
+  findPaginatorSelector,
+  hasAllOption,
+  parseTable,
+} from './spviewer-html-parser';
 
 test('extractVersions', async (t) => {
   await t.test('extracts LIVE and PTU versions', () => {
@@ -162,5 +168,90 @@ test('parseTable', async (t) => {
       'Range Power Min',
     ]);
     assert.deepEqual(parsed.rows, [['1', 'Arbor MH1', 'MISC', '1890', '94.5', '60', '180']]);
+  });
+});
+
+test('findPaginatorSelector', async (t) => {
+  await t.test('returns selector when .p-paginator-rpp-options is present', () => {
+    const html = '<div class="p-paginator-rpp-options"></div>';
+    assert.equal(findPaginatorSelector(html), '.p-paginator-rpp-options');
+  });
+
+  await t.test('returns selector when .p-select is present', () => {
+    const html = '<div class="p-select"></div>';
+    assert.equal(findPaginatorSelector(html), '.p-select');
+  });
+
+  await t.test('returns selector when paginator select is present', () => {
+    const html = '<div class="p-paginator"><select></select></div>';
+    assert.equal(findPaginatorSelector(html), '[class*="paginator"] select');
+  });
+
+  await t.test('returns null when no paginator is present', () => {
+    const html = '<div class="content"><table></table></div>';
+    assert.equal(findPaginatorSelector(html), null);
+  });
+
+  await t.test('prefers .p-paginator-rpp-options over .p-select when both present', () => {
+    const html = '<div class="p-paginator-rpp-options"></div><div class="p-select"></div>';
+    assert.equal(findPaginatorSelector(html), '.p-paginator-rpp-options');
+  });
+});
+
+test('hasAllOption', async (t) => {
+  await t.test('returns true when "All" option is present (exact match)', () => {
+    const html = '<ul><li>10</li><li>25</li><li>All</li></ul>';
+    assert.equal(hasAllOption(html), true);
+  });
+
+  await t.test('returns true for case-insensitive "all"', () => {
+    const html = '<ul><li>10</li><li>all</li></ul>';
+    assert.equal(hasAllOption(html), true);
+  });
+
+  await t.test('returns true for case-insensitive "ALL"', () => {
+    const html = '<ul><li>ALL</li></ul>';
+    assert.equal(hasAllOption(html), true);
+  });
+
+  await t.test('returns false when no "All" option is present', () => {
+    const html = '<ul><li>10</li><li>25</li><li>50</li></ul>';
+    assert.equal(hasAllOption(html), false);
+  });
+
+  await t.test('returns false when "All" is a substring but not the whole text', () => {
+    const html = '<ul><li>Allow all</li></ul>';
+    assert.equal(hasAllOption(html), false);
+  });
+
+  await t.test('returns false on empty HTML', () => {
+    assert.equal(hasAllOption('<div></div>'), false);
+  });
+});
+
+test('findDropdownOptionSelector', async (t) => {
+  await t.test('returns .p-select-option when present', () => {
+    const html = '<ul><li class="p-select-option">10</li></ul>';
+    assert.equal(findDropdownOptionSelector(html), '.p-select-option');
+  });
+
+  await t.test('returns .p-dropdown-item when present', () => {
+    const html = '<ul><li class="p-dropdown-item">10</li></ul>';
+    assert.equal(findDropdownOptionSelector(html), '.p-dropdown-item');
+  });
+
+  await t.test('returns .p-select-list li when present', () => {
+    const html = '<ul class="p-select-list"><li>10</li></ul>';
+    assert.equal(findDropdownOptionSelector(html), '.p-select-list li');
+  });
+
+  await t.test('returns null when no known dropdown selectors match', () => {
+    const html = '<ul><li>10</li></ul>';
+    assert.equal(findDropdownOptionSelector(html), null);
+  });
+
+  await t.test('prefers .p-select-option over .p-dropdown-item when both present', () => {
+    const html = '<li class="p-select-option">A</li><li class="p-dropdown-item">B</li>';
+    assert.equal(findDropdownOptionSelector(html), '.p-select-option');
   });
 });

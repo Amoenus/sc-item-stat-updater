@@ -101,3 +101,61 @@ export function parseTable(html: string): { headers: string[]; rows: string[][] 
 
   return { headers, rows };
 }
+
+const PAGINATOR_SELECTORS = [
+  '.p-paginator-rpp-options',
+  '[class*="paginator"] select',
+  '.p-select',
+] as const;
+
+const DROPDOWN_OPTION_SELECTORS = [
+  '.p-select-option',
+  '.p-dropdown-item',
+  '.p-select-list li',
+] as const;
+
+/**
+ * Detects whether a paginator / page-size control is present in the page HTML
+ * and returns the first matching CSS selector, or null if none is found.
+ *
+ * @param html - The HTML content of the page
+ * @returns The matching CSS selector string, or null
+ */
+export function findPaginatorSelector(html: string): string | null {
+  const $ = cheerio.load(html);
+  for (const selector of PAGINATOR_SELECTORS) {
+    if ($(selector).length > 0) return selector;
+  }
+  return null;
+}
+
+/**
+ * Returns true when a dropdown option with the text "All" (case-insensitive)
+ * is present in the parsed HTML — i.e. the paginator dropdown is already open
+ * and the "All" option is visible.
+ *
+ * @param html - The HTML content of the page after the dropdown has been opened
+ */
+export function hasAllOption(html: string): boolean {
+  const $ = cheerio.load(html);
+  return (
+    $('li')
+      .toArray()
+      .some((el) => /^all$/i.test($(el).text().trim()))
+  );
+}
+
+/**
+ * Finds the CSS selector used to query individual dropdown option items
+ * (the list that appears after opening a paginator / page-size dropdown).
+ * Returns the first selector that matches at least one element, or null.
+ *
+ * @param html - The HTML content of the page after the dropdown has been opened
+ */
+export function findDropdownOptionSelector(html: string): string | null {
+  const $ = cheerio.load(html);
+  for (const selector of DROPDOWN_OPTION_SELECTORS) {
+    if ($(selector).length > 0) return selector;
+  }
+  return null;
+}
