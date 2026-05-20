@@ -494,6 +494,16 @@ export function buildBlueprintRewardList(
 }
 
 /**
+ * Formats a cooldown duration (in minutes) as a human-readable string.
+ */
+export function formatCooldownMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h} h ${m} min` : `${h} h`;
+}
+
+/**
  * Normalizes a localization key.
  */
 export function normalizeLocalizationKey(key: string): string {
@@ -529,6 +539,11 @@ export function buildMissionRows(
       const itemRewardList = buildItemRewardList(contract);
       const descriptionNote = descTag;
 
+      const cooldown =
+        contract.hasPersonalCooldown && contract.personalCooldownTime > 0
+          ? formatCooldownMinutes(contract.personalCooldownTime)
+          : '';
+
       if (titleKey && contract.title) {
         rows.push({
           'Localization Key': titleKey,
@@ -537,6 +552,7 @@ export function buildMissionRows(
           Note: '',
           RewardList: '',
           ItemRewardList: '',
+          Cooldown: '',
         });
       }
 
@@ -548,6 +564,7 @@ export function buildMissionRows(
           TitleNote: '',
           RewardList: rewardList,
           ItemRewardList: itemRewardList,
+          Cooldown: cooldown,
         });
       }
 

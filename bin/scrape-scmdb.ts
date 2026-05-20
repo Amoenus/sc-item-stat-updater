@@ -201,7 +201,7 @@ async function main() {
   if (missionRows.length) {
     writeMissionOutput(
       'scmdb-missions.csv',
-      toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList', 'ItemRewardList']),
+      toCsv(missionRows, ['Localization Key', 'Description', 'TitleNote', 'Note', 'RewardList', 'ItemRewardList', 'Cooldown']),
     );
   }
 

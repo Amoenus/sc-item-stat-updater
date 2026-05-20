@@ -20,19 +20,28 @@ function formatMissionNote(noteText: string, isTitle: boolean): string {
   return /^\s/.test(noteText) ? noteText : ` ${noteText}`;
 }
 
+function rebuildTitleValue(oldValue: string, noteText: string | undefined, note: string): string {
+  const normalizedOldValue = oldValue.replace(
+    new RegExp(String.raw`\s*(?:${IniTag.EM4.open}\[BP(?: Chain)?\]${IniTag.EM4.close}|\[BP(?: Chain)?\])\s*$`),
+    '',
+  );
+  return noteText ? `${normalizedOldValue}${note}` : normalizedOldValue;
+}
+
 function rebuildDescValue(
   oldValue: string,
+  cooldown: string,
   note: string,
   rewardList: string,
   itemRewardList: string,
   noteText: string,
 ): string {
   const normalized = oldValue.replace(
-    /(?:\\n\\n(?:\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/,
+    /(?:\\n\\n(?:Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/,
     '',
   );
-  if (!noteText && !rewardList && !itemRewardList) return normalized;
-  return `${normalized}${note}${rewardList}${itemRewardList}`;
+  if (!noteText && !rewardList && !itemRewardList && !cooldown) return normalized;
+  return `${normalized}${cooldown}${note}${rewardList}${itemRewardList}`;
 }
 
 export default {
@@ -46,6 +55,8 @@ export default {
     const isTitle = /_title/i.test(targetKey);
     const noteText = isTitle ? row['TitleNote'] : row['Note'];
     const note = formatMissionNote(noteText, isTitle);
+    const cooldownValue = row['Cooldown'] ?? '';
+    const cooldown = !isTitle && cooldownValue ? String.raw`\n\n` + `Cooldown: ${cooldownValue}` : '';
     const rewardListValue = !isTitle && row['RewardList'] ? row['RewardList'] : '';
     const itemRewardListValue = !isTitle && row['ItemRewardList'] ? row['ItemRewardList'] : '';
     const noteContainsRewardList =
@@ -57,19 +68,12 @@ export default {
 
     if (oldValue) {
       if (isTitle) {
-        const normalizedOldValue = oldValue.replace(
-          new RegExp(String.raw`\s*(?:${IniTag.EM4.open}\[BP(?: Chain)?\]${IniTag.EM4.close}|\[BP(?: Chain)?\])\s*$`),
-          '',
-        );
-        if (!noteText) {
-          return normalizedOldValue;
-        }
-        return `${normalizedOldValue}${note}`;
+        return rebuildTitleValue(oldValue, noteText, note);
       }
 
-      return rebuildDescValue(oldValue, note, rewardList, itemRewardList, noteText ?? '');
+      return rebuildDescValue(oldValue, cooldown, note, rewardList, itemRewardList, noteText ?? '');
     }
 
-    return description + note + rewardList + itemRewardList;
+    return description + cooldown + note + rewardList + itemRewardList;
   },
 } satisfies ItemConfig;
