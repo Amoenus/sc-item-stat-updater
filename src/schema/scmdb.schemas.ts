@@ -170,3 +170,4 @@ export type ScmdbPrerequisitesDTO = z.infer<typeof ScmdbPrerequisitesSchema>;
 export type ScmdbBlueprintRewardDTO = z.infer<typeof ScmdbBlueprintRewardEntrySchema>;
 export type ScmdbCompletionTagDTO = z.infer<typeof ScmdbCompletionTagSchema>;
 export type ScmdbMiningDataDTO = z.infer<typeof ScmdbMiningDataSchema>;
+export type ScmdbLocationOverrideEntryDTO = z.infer<typeof ScmdbLocationOverrideEntrySchema>;
