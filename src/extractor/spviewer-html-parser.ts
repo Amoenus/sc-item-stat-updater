@@ -110,17 +110,9 @@ export function parseTable(html: string): { headers: string[]; rows: string[][] 
   return { headers, rows: extractTableRows($) };
 }
 
-const PAGINATOR_SELECTORS = [
-  '.p-paginator-rpp-options',
-  '[class*="paginator"] select',
-  '.p-select',
-] as const;
+const PAGINATOR_SELECTORS = ['.p-paginator-rpp-options', '[class*="paginator"] select', '.p-select'] as const;
 
-const DROPDOWN_OPTION_SELECTORS = [
-  '.p-select-option',
-  '.p-dropdown-item',
-  '.p-select-list li',
-] as const;
+const DROPDOWN_OPTION_SELECTORS = ['.p-select-option', '.p-dropdown-item', '.p-select-list li'] as const;
 
 /**
  * Detects whether a paginator / page-size control is present in the page HTML
@@ -146,11 +138,9 @@ export function findPaginatorSelector(html: string): string | null {
  */
 export function hasAllOption(html: string): boolean {
   const $ = cheerio.load(html);
-  return (
-    $('li')
-      .toArray()
-      .some((el) => /^all$/i.test($(el).text().trim()))
-  );
+  return $('li')
+    .toArray()
+    .some((el) => /^all$/i.test($(el).text().trim()));
 }
 
 /**

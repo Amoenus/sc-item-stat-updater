@@ -1,14 +1,13 @@
 // @ts-check
 import { z } from 'zod';
-
+import { DamageDropoffSchema, DamageSchema } from './damage.schema.js';
 import {
-  NameSchema,
   DelayUnitSchema,
+  HitTypeSchema,
+  NameSchema,
   SequenceEntryTypeSchema,
   SequenceModeSchema,
-  HitTypeSchema,
 } from './enums.schema.js';
-import { DamageSchema, DamageDropoffSchema } from './damage.schema.js';
 
 // ---------------------------------------------------------------------------
 // Weapon fire-mode, ammo, and magazine schemas for the crafting-items domain.

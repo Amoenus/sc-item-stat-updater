@@ -1,12 +1,7 @@
 // @ts-check
 import { z } from 'zod';
 
-import {
-  NavIconEnumSchema,
-  PlanetEnumSchema,
-  SystemSchema,
-  PlanetSchema,
-} from './enums.schema.js';
+import { NavIconEnumSchema, PlanetEnumSchema, PlanetSchema, SystemSchema } from './enums.schema.js';
 
 // ---------------------------------------------------------------------------
 // Location and navigation schemas for the merged data domain.

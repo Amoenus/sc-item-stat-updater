@@ -1,43 +1,38 @@
 // @ts-check
 import { z } from 'zod';
-
+import { ShipEncountersSchema } from './encounter.schema.js';
 import {
-  TriggerSchema,
-  HaulingOrdersTypeSchema,
-  ItemTypeSchema,
-  ItemRewardTypeSchema,
-  ArmorSlotSchema,
   ArmorClassSchema,
-  MissionTypeSchema,
-  MissionTypeKeySchema,
+  ArmorSlotSchema,
+  CargoGradeTokenSchema,
+  CargoRouteTokenSchema,
   CategorySchema,
+  HaulingOrdersTypeSchema,
+  ItemEnumSchema,
+  ItemRewardTypeSchema,
+  ItemTypeSchema,
+  MissionMaxScuSizeSchema,
+  MissionTypeKeySchema,
+  MissionTypeSchema,
+  MultiToSingleTokenSchema,
   PyroRegionSchema,
+  ReputationRankSchema,
   RequiredScenarioNameSchema,
+  SingleToMultiTokenSchema,
   SystemSchema,
   TitleKeySchema,
   TitleLocKeySchema,
-  CargoRouteTokenSchema,
-  CargoGradeTokenSchema,
-  ReputationRankSchema,
-  MissionMaxScuSizeSchema,
-  ItemEnumSchema,
-  MultiToSingleTokenSchema,
-  SingleToMultiTokenSchema,
+  TriggerSchema,
 } from './enums.schema.js';
 import {
+  LocationPropertySchema,
+  LocationSetSchema,
   ResolvedLocationElementSchema,
   StarElementSchema,
   SubLocationVariantSchema,
   TagSearchLocationSchema,
-  LocationPropertySchema,
-  LocationSetSchema,
 } from './location.schema.js';
-import {
-  StandingSchema,
-  MinStandingSchema,
-  FactionRewardsSchema,
-} from './reputation.schema.js';
-import { ShipEncountersSchema } from './encounter.schema.js';
+import { FactionRewardsSchema, MinStandingSchema, StandingSchema } from './reputation.schema.js';
 
 // ---------------------------------------------------------------------------
 // Contract, hauling, and reward schemas for the merged data domain.

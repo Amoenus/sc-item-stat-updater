@@ -19,13 +19,13 @@ const logger = getLogger('adagio-location-tags-update');
  * in <EM4> tags. Only exact-case keys are listed; the lookup is case-insensitive
  * via the INI index.
  */
-const TARGET_KEYS = [
-  'Adagio_BasicSalvage_Desc_01',
-  'Adagio_LocateSalvage_Desc_01',
-] as const;
+const TARGET_KEYS = ['Adagio_BasicSalvage_Desc_01', 'Adagio_LocateSalvage_Desc_01'] as const;
 
 /** Matches ~mission(location) not already inside an EM4 tag. */
-const BARE_LOCATION_RE = new RegExp(String.raw`(?<!${IniTag.EM4.open})(~mission\(location\))(?!${IniTag.EM4.close})`, 'gi');
+const BARE_LOCATION_RE = new RegExp(
+  String.raw`(?<!${IniTag.EM4.open})(~mission\(location\))(?!${IniTag.EM4.close})`,
+  'gi',
+);
 const TAGGED_REPLACEMENT = IniTag.EM4.wrap('$1');
 
 export async function runAdagioLocationTagUpdate({ iniPath, dryRun }: { iniPath: string; dryRun: boolean }) {

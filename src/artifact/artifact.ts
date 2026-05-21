@@ -104,9 +104,7 @@ export async function writeArtifactFile(
  * @param artifactPath - Absolute path to the JSON artifact
  * @returns The parsed and validated artifact DTO
  */
-export async function readArtifactFile(
-  artifactPath: string,
-): Promise<import('../schema/artifact.schema').ArtifactDTO> {
+export async function readArtifactFile(artifactPath: string): Promise<import('../schema/artifact.schema').ArtifactDTO> {
   let raw: string;
   try {
     raw = await fs.readFile(artifactPath, 'utf8');
@@ -123,9 +121,7 @@ export async function readArtifactFile(
 
   const result = ArtifactSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error(
-      `Artifact file has unexpected structure: ${artifactPath}\n${result.error.message}`,
-    );
+    throw new Error(`Artifact file has unexpected structure: ${artifactPath}\n${result.error.message}`);
   }
 
   return result.data;

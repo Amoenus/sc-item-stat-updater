@@ -53,7 +53,7 @@ try {
   const config = await loadConfig(category);
   const result = await runUpdate(config, options);
   console.log(result.summary);
-  printIssues(result.issues, '\n⚠ Problem rows:')
+  printIssues(result.issues, '\n⚠ Problem rows:');
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
   logger.error(`Failed to update ${category}`, {

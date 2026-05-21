@@ -46,9 +46,7 @@ export default {
     const noteContainsRewardList =
       typeof noteText === 'string' && rewardListValue !== '' && noteText.includes(rewardListValue);
     const rewardList = rewardListValue && !noteContainsRewardList ? String.raw`\n\n${rewardListValue}` : '';
-    const itemRewardList = itemRewardListValue
-      ? String.raw`\n\n[Item Reward]\n\n${itemRewardListValue}`
-      : '';
+    const itemRewardList = itemRewardListValue ? String.raw`\n\n[Item Reward]\n\n${itemRewardListValue}` : '';
 
     if (oldValue) {
       return rebuildDescValue(oldValue, cooldown, note, rewardList, itemRewardList, noteText ?? '');

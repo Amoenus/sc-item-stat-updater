@@ -8,10 +8,10 @@ import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { runUpdate } from '../src/lib/updater';
+import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
 import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags';
-import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
 import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes';
 import { regenMiningLocations } from './regen-mining-locations';
 

@@ -1,11 +1,7 @@
 // @ts-check
 import { z } from 'zod';
 
-import {
-  CareerSchema,
-  ClassificationSchema,
-  CargoManifestElementSchema,
-} from './enums.schema.js';
+import { CareerSchema, CargoManifestElementSchema, ClassificationSchema } from './enums.schema.js';
 
 // ---------------------------------------------------------------------------
 // Ship encounter, spawn config, and wave schemas for the merged data domain.

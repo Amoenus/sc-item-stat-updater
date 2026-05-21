@@ -6,12 +6,7 @@ import { z } from 'zod';
 // All other merged schemas import from here — no reverse dependencies.
 // ---------------------------------------------------------------------------
 
-export const SourceSchema = z.enum([
-  'blueprintmissionpools',
-  'collectorwikelo',
-  '48blueprints',
-  'xenothreat2rewards',
-]);
+export const SourceSchema = z.enum(['blueprintmissionpools', 'collectorwikelo', '48blueprints', 'xenothreat2rewards']);
 export type Source = z.infer<typeof SourceSchema>;
 
 export const FillTypeSchema = z.enum(['even', 'random']);
@@ -29,23 +24,10 @@ export type HaulingOrdersType = z.infer<typeof HaulingOrdersTypeSchema>;
 export const ArmorClassSchema = z.enum(['heavy', 'helmet', 'light', 'medium']);
 export type ArmorClass = z.infer<typeof ArmorClassSchema>;
 
-export const ArmorSlotSchema = z.enum([
-  'arms',
-  'backpack',
-  'chest',
-  'helmet',
-  'legs',
-  'undersuit',
-]);
+export const ArmorSlotSchema = z.enum(['arms', 'backpack', 'chest', 'helmet', 'legs', 'undersuit']);
 export type ArmorSlot = z.infer<typeof ArmorSlotSchema>;
 
-export const ItemTypeSchema = z.enum([
-  'armor',
-  'clothing',
-  'vehicle',
-  'weapon',
-  'weapon_attachment',
-]);
+export const ItemTypeSchema = z.enum(['armor', 'clothing', 'vehicle', 'weapon', 'weapon_attachment']);
 export type ItemType = z.infer<typeof ItemTypeSchema>;
 
 export const ItemRewardTypeSchema = z.enum(['weighted_choice']);

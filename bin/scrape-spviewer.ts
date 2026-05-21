@@ -4,7 +4,13 @@ import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
-import { extractVersions, findDropdownOptionSelector, findPaginatorSelector, hasAllOption, parseTable } from '../src/extractor/spviewer-html-parser';
+import {
+  extractVersions,
+  findDropdownOptionSelector,
+  findPaginatorSelector,
+  hasAllOption,
+  parseTable,
+} from '../src/extractor/spviewer-html-parser';
 import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

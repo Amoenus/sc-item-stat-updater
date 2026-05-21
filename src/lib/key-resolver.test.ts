@@ -29,10 +29,7 @@ describe('buildReverseNameIndex', () => {
   });
 
   it('first key wins for duplicate display names', () => {
-    const lines = [
-      'item_Name_first=Duplicate Name',
-      'item_Name_second=Duplicate Name',
-    ];
+    const lines = ['item_Name_first=Duplicate Name', 'item_Name_second=Duplicate Name'];
     const index = buildReverseNameIndex(lines);
     assert.strictEqual(index.get('Duplicate Name'), 'item_Name_first');
   });

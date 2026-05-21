@@ -2,15 +2,15 @@
 import { z } from 'zod';
 
 import {
-  GearSchema,
-  SubtypeSchema,
-  PropertyKeySchema,
-  NameSchema,
-  ItemSchema,
-  ResourceSchema,
-  OptionTypeSchema,
   BlueprintTypeSchema,
   CategorySchema,
+  GearSchema,
+  ItemSchema,
+  NameSchema,
+  OptionTypeSchema,
+  PropertyKeySchema,
+  ResourceSchema,
+  SubtypeSchema,
 } from './enums.schema.js';
 
 // ---------------------------------------------------------------------------

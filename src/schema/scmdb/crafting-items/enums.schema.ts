@@ -5,28 +5,13 @@ import { z } from 'zod';
 // Simple enum schemas for the crafting-items data domain.
 // ---------------------------------------------------------------------------
 
-export const NameSchema = z.enum([
-  'Burst',
-  'Charge',
-  'Damage Beam',
-  'Rapid',
-  'Sequence',
-  'Shotgun',
-  'Single',
-]);
+export const NameSchema = z.enum(['Burst', 'Charge', 'Damage Beam', 'Rapid', 'Sequence', 'Shotgun', 'Single']);
 export type Name = z.infer<typeof NameSchema>;
 
 export const DelayUnitSchema = z.enum(['RPM', 'Seconds']);
 export type DelayUnit = z.infer<typeof DelayUnitSchema>;
 
-export const SequenceEntryTypeSchema = z.enum([
-  'beam',
-  'burst',
-  'charged',
-  'rapid',
-  'sequence',
-  'single',
-]);
+export const SequenceEntryTypeSchema = z.enum(['beam', 'burst', 'charged', 'rapid', 'sequence', 'single']);
 export type SequenceEntryType = z.infer<typeof SequenceEntryTypeSchema>;
 
 export const SequenceModeSchema = z.enum(['Automatically', 'Individually', 'Looping']);

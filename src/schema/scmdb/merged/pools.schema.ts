@@ -1,7 +1,7 @@
 // @ts-check
 import { z } from 'zod';
 
-import { SourceSchema, FillTypeSchema } from './enums.schema.js';
+import { FillTypeSchema, SourceSchema } from './enums.schema.js';
 import { ReputationMultiplierSchema } from './reputation.schema.js';
 
 // ---------------------------------------------------------------------------

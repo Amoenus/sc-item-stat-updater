@@ -1,19 +1,32 @@
-import type { ScmdbMiningDataDTO as MiningDataDTO, ScmdbLocationOverrideEntryDTO } from '../schema/scmdb.schemas';
+import type {
+  ScmdbMiningDataDTO as MiningDataDTO,
+  ScmdbMiningElementRowDTO as MiningElementRowDTO,
+  ScmdbMiningJournalRowDTO as MiningJournalRowDTO,
+  ScmdbMiningLocationRowDTO as MiningLocationRowDTO,
+  ScmdbLocationOverrideEntryDTO,
+} from '../schema/scmdb.schemas';
+import {
+  ScmdbMiningElementRowSchema,
+  ScmdbMiningJournalRowSchema,
+  ScmdbMiningLocationRowSchema,
+} from '../schema/scmdb.schemas';
 
 /**
  * Builds rows for the mining elements CSV.
  */
-export function buildMiningElementRows(miningData: MiningDataDTO): Record<string, unknown>[] {
-  const elements = [];
+export function buildMiningElementRows(miningData: MiningDataDTO): MiningElementRowDTO[] {
+  const elements: MiningElementRowDTO[] = [];
   for (const [_id, el] of Object.entries(miningData.mineableElements || {})) {
-    elements.push({
-      'Element Name': el.name,
-      Rarity: el.rarity,
-      'Ground Scan Signature': el.groundScanSignature,
-      'Scan Signature': el.scanSignature,
-      Resistance: el.resistance,
-      Instability: el.instability,
-    });
+    elements.push(
+      ScmdbMiningElementRowSchema.parse({
+        'Element Name': el.name,
+        Rarity: el.rarity,
+        'Ground Scan Signature': el.groundScanSignature,
+        'Scan Signature': el.scanSignature,
+        Resistance: el.resistance,
+        Instability: el.instability,
+      }),
+    );
   }
   return elements;
 }
@@ -21,7 +34,7 @@ export function buildMiningElementRows(miningData: MiningDataDTO): Record<string
 /**
  * Builds rows for the mining journal CSV.
  */
-export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string, unknown>[] {
+export function buildMiningJournalRows(miningData: MiningDataDTO): MiningJournalRowDTO[] {
   const rarityMap: Record<string, string[]> = {};
   for (const el of Object.values(miningData.mineableElements || {})) {
     const rarity = (el.rarity || 'Unknown').toLowerCase();
@@ -29,13 +42,15 @@ export function buildMiningJournalRows(miningData: MiningDataDTO): Record<string
     if (!rarityMap[cat]) rarityMap[cat] = [];
     rarityMap[cat].push(el.name);
   }
-  const journal = [];
+  const journal: MiningJournalRowDTO[] = [];
   for (const [cat, list] of Object.entries(rarityMap)) {
     list.sort((a, b) => a.localeCompare(b));
-    journal.push({
-      'Rarity Category': cat,
-      'Element List': list.join('\n'),
-    });
+    journal.push(
+      ScmdbMiningJournalRowSchema.parse({
+        'Rarity Category': cat,
+        'Element List': list.join('\n'),
+      }),
+    );
   }
   return journal;
 }
@@ -186,26 +201,28 @@ function buildLocationWeightMaps(
 /**
  * Builds rows for the mining locations CSV.
  */
-export function buildMiningLocationRows(miningData: MiningDataDTO): Record<string, unknown>[] {
+export function buildMiningLocationRows(miningData: MiningDataDTO): MiningLocationRowDTO[] {
   const compNameCache = buildCompNameCache(miningData.compositions);
   const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
   const locationWeightMaps = buildLocationWeightMaps(miningData.locations, compNameCache);
 
-  const locRows = [];
+  const locRows: MiningLocationRowDTO[] = [];
   for (const [name, weights] of Object.entries(locationWeightMaps)) {
     const shipList = toWeightedMineableList(weights.ship);
     const handList = toWeightedMineableList(weights.hand);
     const groundList = toWeightedMineableList(weights.ground);
     if (shipList || handList || groundList) {
-      locRows.push({
-        'Location Name': name,
-        'Ship Mineables': shipList,
-        'Hand Mineables': handList,
-        'Ground Vehicle Mineables': groundList,
-        'Quality Note': (qualityNotesByLocation.get(name) ?? []).join('\n'),
-      });
+      locRows.push(
+        ScmdbMiningLocationRowSchema.parse({
+          'Location Name': name,
+          'Ship Mineables': shipList,
+          'Hand Mineables': handList,
+          'Ground Vehicle Mineables': groundList,
+          'Quality Note': (qualityNotesByLocation.get(name) ?? []).join('\n'),
+        }),
+      );
     }
   }
-  locRows.sort((a, b) => String(a['Location Name']).localeCompare(String(b['Location Name'])));
+  locRows.sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
   return locRows;
 }

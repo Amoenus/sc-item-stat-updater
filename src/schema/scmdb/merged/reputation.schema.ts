@@ -1,11 +1,7 @@
 // @ts-check
 import { z } from 'zod';
 
-import {
-  ScopeNameSchema,
-  MinStandingNameSchema,
-  NameKeySchema,
-} from './enums.schema.js';
+import { MinStandingNameSchema, NameKeySchema, ScopeNameSchema } from './enums.schema.js';
 
 // ---------------------------------------------------------------------------
 // Reputation, faction, and standing schemas for the merged data domain.

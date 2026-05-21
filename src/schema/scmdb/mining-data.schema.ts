@@ -75,3 +75,32 @@ export const MiningDataSchema = z.object({
   qualityDistribution: QualityDistributionSchema.optional(),
 });
 export type MiningData = z.infer<typeof MiningDataSchema>;
+
+// ---------------------------------------------------------------------------
+// CSV Row Output Schemas
+// ---------------------------------------------------------------------------
+
+export const MiningElementRowSchema = z.object({
+  'Element Name': z.string(),
+  Rarity: z.string().optional(),
+  'Ground Scan Signature': z.number().optional(),
+  'Scan Signature': z.number().optional(),
+  Resistance: z.number().optional(),
+  Instability: z.number().optional(),
+});
+export type MiningElementRowDTO = z.infer<typeof MiningElementRowSchema>;
+
+export const MiningJournalRowSchema = z.object({
+  'Rarity Category': z.string(),
+  'Element List': z.string(),
+});
+export type MiningJournalRowDTO = z.infer<typeof MiningJournalRowSchema>;
+
+export const MiningLocationRowSchema = z.object({
+  'Location Name': z.string(),
+  'Ship Mineables': z.string(),
+  'Hand Mineables': z.string(),
+  'Ground Vehicle Mineables': z.string(),
+  'Quality Note': z.string(),
+});
+export type MiningLocationRowDTO = z.infer<typeof MiningLocationRowSchema>;

@@ -36,7 +36,12 @@ function indexVariantKey(
 }
 
 /** Records a duplicate key and emits a warning. */
-function recordDuplicate(key: string, lineNum: number, index: Record<string, number>, duplicates: Map<string, number[]>): void {
+function recordDuplicate(
+  key: string,
+  lineNum: number,
+  index: Record<string, number>,
+  duplicates: Map<string, number[]>,
+): void {
   if (!duplicates.has(key)) {
     duplicates.set(key, [index[key]]);
   }
@@ -50,9 +55,7 @@ function recordDuplicate(key: string, lineNum: number, index: Record<string, num
  * @param {string} filePath
  * @returns {Promise<{ lines: string[], index: Record<string, number> }>}
  */
-export async function readIniFile(
-  filePath: string,
-): Promise<{
+export async function readIniFile(filePath: string): Promise<{
   lines: string[];
   index: Record<string, number>;
   duplicates: Map<string, number[]>;

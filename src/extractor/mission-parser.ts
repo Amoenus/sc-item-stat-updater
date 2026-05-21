@@ -263,10 +263,7 @@ function propagateChainDepths(
   }
 }
 
-function buildFactionRewardsString(
-  pool: FactionRewardsDTO[],
-  factionNames: Map<string, string>,
-): string {
+function buildFactionRewardsString(pool: FactionRewardsDTO[], factionNames: Map<string, string>): string {
   return pool
     .map(({ factionGuid, amount }) => {
       const name = factionNames.get(factionGuid) ?? factionGuid;
@@ -424,9 +421,7 @@ export function buildItemRewardList(contract: ContractDTO): string {
 /**
  * Builds blueprint pool rows.
  */
-export function buildBlueprintPoolRows(
-  blueprintPools: BlueprintPoolsDTO,
-): Record<string, unknown>[] {
+export function buildBlueprintPoolRows(blueprintPools: BlueprintPoolsDTO): Record<string, unknown>[] {
   return Object.entries(blueprintPools).map(([id, pool]) => ({
     id,
     name: pool.name,
@@ -461,10 +456,7 @@ export function buildContractBlueprintRows(
 /**
  * Builds a blueprint reward list.
  */
-export function buildBlueprintRewardList(
-  contract: ContractDTO,
-  blueprintPools: BlueprintPoolsDTO,
-): string {
+export function buildBlueprintRewardList(contract: ContractDTO, blueprintPools: BlueprintPoolsDTO): string {
   if (!contract.blueprintRewards) return '';
 
   const formatChance = (chance: number): string | null => {
@@ -477,9 +469,7 @@ export function buildBlueprintRewardList(
     const pool = blueprintPools[entry.blueprintPool];
     if (!pool) continue;
 
-    const itemNames = pool.blueprints
-      .map((blueprint) => blueprint.name ?? null)
-      .filter((n): n is string => Boolean(n));
+    const itemNames = pool.blueprints.map((blueprint) => blueprint.name ?? null).filter((n): n is string => Boolean(n));
 
     if (itemNames.length === 0) continue;
 

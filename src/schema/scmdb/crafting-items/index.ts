@@ -1,16 +1,15 @@
 // @ts-check
 import { z } from 'zod';
-
+import { DamageResistancePoolSchema } from './damage.schema.js';
 import {
-  TypeSchema,
+  AttachSubTypeSchema,
   CategorySchema,
   ComponentClassSchema,
   ItemTypeSchema,
-  AttachSubTypeSchema,
   SignaturesPoolTypeSchema,
+  TypeSchema,
 } from './enums.schema.js';
-import { DamageResistancePoolSchema } from './damage.schema.js';
-import { BeamSchema, FireModesPoolSchema, AmmoPoolSchema, MagazinePoolSchema } from './weapon.schema.js';
+import { AmmoPoolSchema, BeamSchema, FireModesPoolSchema, MagazinePoolSchema } from './weapon.schema.js';
 
 // ---------------------------------------------------------------------------
 // Item, physical-property, and top-level schemas for the crafting-items domain.
@@ -145,7 +144,7 @@ export const CraftingItemsSchema = z.object({
 });
 export type CraftingItems = z.infer<typeof CraftingItemsSchema>;
 
+export * from './damage.schema.js';
 // Re-export all domain schemas so consumers can import from this single entry point.
 export * from './enums.schema.js';
-export * from './damage.schema.js';
 export * from './weapon.schema.js';

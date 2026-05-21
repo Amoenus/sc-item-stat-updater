@@ -1,17 +1,16 @@
 // @ts-check
 import { z } from 'zod';
-
-import { ScopeSchema, EventScopeSchema, FactionSchema, FactionRewardsSchema } from './reputation.schema.js';
+import { ContractSchema, LegacyContractSchema } from './contract.schema.js';
+import { ShipSchema } from './encounter.schema.js';
 import { LocationPoolSchema, PyroRegionsSchema } from './location.schema.js';
 import {
-  ResourcePoolsSchema,
+  AvailabilityPoolSchema,
   BlueprintPoolsSchema,
   CargoManifestPoolSchema,
   PartialRewardPayoutPoolSchema,
-  AvailabilityPoolSchema,
+  ResourcePoolsSchema,
 } from './pools.schema.js';
-import { ShipSchema } from './encounter.schema.js';
-import { ContractSchema, LegacyContractSchema } from './contract.schema.js';
+import { EventScopeSchema, FactionRewardsSchema, FactionSchema, ScopeSchema } from './reputation.schema.js';
 
 // ---------------------------------------------------------------------------
 // Top-level schema for merged-*.json. Composes all domain schemas.
@@ -37,10 +36,10 @@ export const MergedSchema = z.object({
 });
 export type Merged = z.infer<typeof MergedSchema>;
 
+export * from './contract.schema.js';
+export * from './encounter.schema.js';
 // Re-export all domain schemas so consumers can import from this single entry point.
 export * from './enums.schema.js';
 export * from './location.schema.js';
-export * from './reputation.schema.js';
 export * from './pools.schema.js';
-export * from './encounter.schema.js';
-export * from './contract.schema.js';
+export * from './reputation.schema.js';
