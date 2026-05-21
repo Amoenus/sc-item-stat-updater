@@ -19,6 +19,73 @@ export function extractVersions(html: string): { live: string | null; ptu: strin
   return { live, ptu };
 }
 
+type ExpandedCell = { name: string; span: number; originalSpan: number; isLeaf: boolean };
+type CheerioRoot = ReturnType<typeof cheerio.load>;
+type HeaderCleaner = (th: AnyNode) => string;
+
+function makeHeaderCleaner($: CheerioRoot): HeaderCleaner {
+  return (th: AnyNode) => {
+    const $clone = $(th).clone();
+    $clone
+      .find(
+        'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
+      )
+      .remove();
+    const text = $clone.text().trim();
+    return text.replace(/All[\s\S]*$/, '').trim() || text;
+  };
+}
+
+function expandGroupCells(groupCells: AnyNode[], $: CheerioRoot, cleanHeader: HeaderCleaner): ExpandedCell[] {
+  const expanded: ExpandedCell[] = [];
+  for (const th of groupCells) {
+    const name = cleanHeader(th);
+    const span = Number.parseInt($(th).attr('colspan') ?? '1', 10);
+    // SPViewer rowspan structure can mean some headers in the first row don't have children in the second
+    const rowspan = Number.parseInt($(th).attr('rowspan') ?? '1', 10);
+    for (let i = 0; i < span; i++) {
+      expanded.push({ name, span, originalSpan: span, isLeaf: rowspan > 1 });
+    }
+  }
+  return expanded;
+}
+
+function resolveMultiRowHeaders(
+  expanded: ExpandedCell[],
+  leafCells: AnyNode[],
+  theadRowCount: number,
+  cleanHeader: HeaderCleaner,
+): string[] {
+  const headers: string[] = [];
+  let leafIdx = 0;
+  for (const element of expanded) {
+    if (element.isLeaf) {
+      headers.push(element.name);
+    } else if (element.originalSpan === 1 && theadRowCount <= 2 && leafIdx >= leafCells.length) {
+      // some cases top row has no subheader, span 1
+      headers.push(element.name);
+    } else {
+      const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
+      headers.push(leafName ? `${element.name} ${leafName}` : element.name);
+      leafIdx++;
+    }
+  }
+  return headers;
+}
+
+function extractTableRows($: CheerioRoot): string[][] {
+  const rows: string[][] = [];
+  $('table tbody tr').each((_, tr) => {
+    if ($(tr).text().includes('No data available')) return;
+    const rowData = $(tr)
+      .find('td')
+      .toArray()
+      .map((td) => $(td).text().trim());
+    if (rowData.length > 0) rows.push(rowData);
+  });
+  return rows;
+}
+
 /**
  * Parses the item data table from the SPViewer HTML.
  *
@@ -27,79 +94,20 @@ export function extractVersions(html: string): { live: string | null; ptu: strin
  */
 export function parseTable(html: string): { headers: string[]; rows: string[][] } {
   const $ = cheerio.load(html);
-
-  const cleanHeader = (th: AnyNode) => {
-    const $clone = $(th).clone();
-    $clone
-      .find(
-        'select, .p-select, .p-dropdown, .p-column-filter, [class*="filter"], .p-column-header-content > :not(span:first-child)',
-      )
-      .remove();
-    let text = $clone.text().trim();
-    text = text.replace(/All[\s\S]*$/, '').trim() || text.trim();
-    return text;
-  };
-
+  const cleanHeader = makeHeaderCleaner($);
   const theadRows = $('table thead tr').toArray();
   let headers: string[] = [];
 
   if (theadRows.length >= 2) {
     const groupCells = $(theadRows[0]).find('th').toArray();
-    const leafCells = $(theadRows[theadRows.length - 1])
-      .find('th')
-      .toArray();
-    const expanded: { name: string; span: number; originalSpan: number; isLeaf: boolean }[] = [];
-
-    for (const th of groupCells) {
-      const name = cleanHeader(th);
-      const colspanAttr = $(th).attr('colspan');
-      const span = colspanAttr ? Number.parseInt(colspanAttr, 10) : 1;
-      // SPViewer rowspan structure can mean some headers in the first row don't have children in the second
-      const rowspanAttr = $(th).attr('rowspan');
-      const rowspan = rowspanAttr ? Number.parseInt(rowspanAttr, 10) : 1;
-
-      for (let i = 0; i < span; i++) {
-        expanded.push({ name, span, originalSpan: span, isLeaf: rowspan > 1 });
-      }
-    }
-
-    let leafIdx = 0;
-    for (let i = 0; i < expanded.length; i++) {
-      if (expanded[i].isLeaf) {
-        headers.push(expanded[i].name);
-      } else if (
-        expanded[i].span === 1 &&
-        theadRows.length <= 2 &&
-        expanded[i].originalSpan === 1 &&
-        leafIdx >= leafCells.length
-      ) {
-        // some cases top row has no subheader, span 1
-        headers.push(expanded[i].name);
-      } else {
-        const leafName = leafIdx < leafCells.length ? cleanHeader(leafCells[leafIdx]) : '';
-        headers.push(leafName ? `${expanded[i].name} ${leafName}` : expanded[i].name);
-        leafIdx++;
-      }
-    }
+    const leafCells = $(theadRows.at(-1)).find('th').toArray();
+    const expanded = expandGroupCells(groupCells, $, cleanHeader);
+    headers = resolveMultiRowHeaders(expanded, leafCells, theadRows.length, cleanHeader);
   } else if (theadRows.length === 1) {
     headers = $(theadRows[0]).find('th').toArray().map(cleanHeader);
   }
 
-  const rows: string[][] = [];
-  $('table tbody tr').each((_, tr) => {
-    const text = $(tr).text();
-    if (!text.includes('No data available')) {
-      const rowData = $(tr)
-        .find('td')
-        .toArray()
-        .map((td) => $(td).text().trim());
-      if (rowData.length > 0) {
-        rows.push(rowData);
-      }
-    }
-  });
-
-  return { headers, rows };
+  return { headers, rows: extractTableRows($) };
 }
 
 const PAGINATOR_SELECTORS = [
