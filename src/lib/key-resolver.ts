@@ -29,17 +29,20 @@ export function buildReverseNameIndex(lines: string[]): Map<string, string> {
   return index;
 }
 
+export type ResolvedRow = Record<string, string> & { 'Localization Key': string };
+
 /**
  * Resolves Localization Key for spviewer CSV rows that only have display names.
- * Mutates rows in-place, adding a 'Localization Key' property.
- * Returns an object with unresolved names and the full resolved mapping.
+ * Does NOT mutate the input array. Returns a new array of resolved rows (with
+ * 'Localization Key' added as a new property on a shallow copy of each row),
+ * the list of unresolved names, and the full resolved mapping.
  *
- * @param {Record<string,string>[]} rows - Parsed spviewer CSV rows
+ * @param {Record<string,string>[]} rows - Parsed spviewer CSV rows (not mutated)
  * @param {string} nameColumn - CSV column containing the display name
  * @param {Map<string,string>} reverseIndex - INI value → key index
  * @param {Map<string,string>} [lookupMap] - Optional lookup CSV name → key map
  * @param {Map<string,string>} [savedMapping] - Previously saved name → key mapping
- * @returns {{ unresolved: string[], mapping: Map<string, string> }}
+ * @returns {{ resolved: ResolvedRow[], unresolved: string[], mapping: Map<string, string> }}
  */
 export function resolveLocalizationKeys(
   rows: Record<string, string>[],
@@ -47,13 +50,13 @@ export function resolveLocalizationKeys(
   reverseIndex: Map<string, string>,
   lookupMap?: Map<string, string>,
   savedMapping?: Map<string, string>,
-): { unresolved: string[]; mapping: Map<string, string> } {
+): { resolved: ResolvedRow[]; unresolved: string[]; mapping: Map<string, string> } {
+  const resolved: ResolvedRow[] = [];
   const unresolved: string[] = [];
   const mapping = new Map<string, string>(savedMapping);
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const name = rows[i][nameColumn];
+  for (const row of rows) {
+    const name = row[nameColumn];
     if (!name) {
-      rows.splice(i, 1);
       unresolved.push('(empty)');
       continue;
     }
@@ -108,10 +111,9 @@ export function resolveLocalizationKeys(
       }
     }
     if (locKey) {
-      rows[i]['Localization Key'] = locKey;
+      resolved.push({ ...row, 'Localization Key': locKey });
       mapping.set(name, locKey);
     } else {
-      rows.splice(i, 1);
       unresolved.push(name);
     }
   }
@@ -121,5 +123,5 @@ export function resolveLocalizationKeys(
       sample: unresolved.slice(0, 5).join(', '),
     });
   }
-  return { unresolved, mapping };
+  return { resolved, unresolved, mapping };
 }

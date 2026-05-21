@@ -113,14 +113,14 @@ async function resolveSpviewerKeys(
   csvDir: string,
   baseDir: string,
   dryRun: boolean,
-): Promise<string[]> {
+): Promise<{ resolvedRows: Record<string, string>[]; unresolved: string[] }> {
   const reverseIndex = buildReverseNameIndex(lines);
   const lookupMap = config.lookupCsvFile ? await loadLookupMap(config.lookupCsvFile, csvDir) : null;
   const mappingsDir = path.resolve(baseDir, 'mappings');
   const mappingBasename = path.basename(config.csvFile ?? 'unknown.csv').replace(/\.csv$/i, '.json');
   const mappingFile = path.join(mappingsDir, mappingBasename);
   const savedMapping = await loadMappingFile(mappingFile);
-  const { unresolved, mapping } = resolveLocalizationKeys(
+  const { resolved, unresolved, mapping } = resolveLocalizationKeys(
     rows,
     config.nameColumn!,
     reverseIndex,
@@ -133,11 +133,11 @@ async function resolveSpviewerKeys(
   if (unresolved.length > 0) {
     logger.debug('Key resolution summary', {
       label: config.label,
-      resolved: rows.length,
+      resolved: resolved.length,
       unresolved: unresolved.length,
     });
   }
-  return unresolved;
+  return { resolvedRows: resolved, unresolved };
 }
 
 async function loadLookupMap(lookupCsvFile: string, csvDir: string): Promise<Map<string, string>> {
@@ -435,16 +435,20 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     const { lines, index: existingKeys, allOccurrences } = await readIniFile(opts.iniPath);
     const originalLineCount = lines.length;
 
-    const unresolvedNames = config.nameColumn
-      ? await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun)
-      : [];
+    let resolvedRows = rows;
+    let unresolvedNames: string[] = [];
+    if (config.nameColumn) {
+      const result = await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun);
+      resolvedRows = result.resolvedRows;
+      unresolvedNames = result.unresolved;
+    }
 
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
 
     const context = new UpdateContext(config, lines, existingKeys, allOccurrences, unresolvedNames, opts.dryRun);
 
-    for (const row of rows) {
+    for (const row of resolvedRows) {
       const validation = config.getTargetKeys && !row['Localization Key'] ? 'valid' : validateRow(row, config.label);
       if (validation === 'skip') {
         context.markSkipped();
