@@ -208,7 +208,9 @@ function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<str
     const oldLine = context.lines[lineIndex];
     const eqIdx = oldLine.indexOf('=');
     const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-    const newValue = sanitizeIniValue(context.config.buildValue!(row, extractFlavorText(oldValue), oldValue, foundKey));
+    const newValue = sanitizeIniValue(
+      context.config.buildValue?.(row, extractFlavorText(oldValue), oldValue, foundKey),
+    );
     if (newValue !== oldValue) {
       applyLinePatch(context.lines, lineIndex, oldLine, foundKey, newValue, context.patches);
       anyUpdated = true;
