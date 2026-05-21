@@ -78,9 +78,14 @@ export async function buildLookupFromCsvFiles<V>(
   loadEntries: (filePath: string, filename: string) => Promise<Iterable<readonly [string, V]>>,
 ): Promise<Map<string, V>> {
   const lookup = new Map();
-  for (const filename of filenames) {
-    const filePath = resolveChildPath(baseDir, filename, 'SPViewer lookup CSV filename');
-    const entries = await loadEntries(filePath, filename);
+  const allEntries = await Promise.all(
+    filenames.map((filename) => {
+      const filePath = resolveChildPath(baseDir, filename, 'SPViewer lookup CSV filename');
+      return loadEntries(filePath, filename);
+    }),
+  );
+
+  for (const entries of allEntries) {
     for (const [key, value] of entries) {
       lookup.set(key, value);
     }
