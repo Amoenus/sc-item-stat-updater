@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/Amoenus/sc-item-stat-updater#readme",
   "volta": {
-    "node": "24.15.0"
+    "node": "24.16.0"
   },
   "dependencies": {
     "@opentelemetry/api-logs": "^0.218.0",
