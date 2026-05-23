@@ -114,6 +114,7 @@ async function resolveSpviewerKeys(
   baseDir: string,
   dryRun: boolean,
 ): Promise<{ resolvedRows: Record<string, string>[]; unresolved: string[] }> {
+  if (!config.nameColumn) throw new Error('config.nameColumn is required');
   const reverseIndex = buildReverseNameIndex(lines);
   const lookupMap = config.lookupCsvFile ? await loadLookupMap(config.lookupCsvFile, csvDir) : null;
   const mappingsDir = path.resolve(baseDir, 'mappings');
@@ -122,7 +123,7 @@ async function resolveSpviewerKeys(
   const savedMapping = await loadMappingFile(mappingFile);
   const { resolved, unresolved, mapping } = resolveLocalizationKeys(
     rows,
-    config.nameColumn!,
+    config.nameColumn,
     reverseIndex,
     lookupMap ?? undefined,
     savedMapping,
@@ -208,7 +209,9 @@ function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<str
     const oldLine = context.lines[lineIndex];
     const eqIdx = oldLine.indexOf('=');
     const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-    const newValue = sanitizeIniValue(context.config.buildValue!(row, extractFlavorText(oldValue), oldValue, foundKey));
+    const newValue = sanitizeIniValue(
+      context.config.buildValue?.(row, extractFlavorText(oldValue), oldValue, foundKey) ?? '',
+    );
     if (newValue !== oldValue) {
       applyLinePatch(context.lines, lineIndex, oldLine, foundKey, newValue, context.patches);
       anyUpdated = true;
