@@ -1,4 +1,3 @@
-// @ts-check
 import { z } from 'zod';
 
 import { MinStandingNameSchema, NameKeySchema, ScopeNameSchema } from './enums.schema.js';

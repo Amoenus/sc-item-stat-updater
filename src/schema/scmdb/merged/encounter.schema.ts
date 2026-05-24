@@ -1,4 +1,3 @@
-// @ts-check
 import { z } from 'zod';
 
 import { CareerSchema, CargoManifestElementSchema, ClassificationSchema } from './enums.schema.js';
