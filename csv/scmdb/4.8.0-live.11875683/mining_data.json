@@ -5,8 +5,8 @@
     "totalElements": 39,
     "totalCompositions": 63,
     "totalClusteringPresets": 23,
-    "totalRefineries": 19,
-    "totalRefineryProfiles": 9,
+    "totalRefineries": 20,
+    "totalRefineryProfiles": 10,
     "totalQuantizationElements": 38,
     "totalMaterialNames": 27
   },
@@ -11446,6 +11446,16 @@
       "Aluminum (Ore)": -4,
       "Agricium (Ore)": -8
     },
+    "85714bf9a92f": {
+      "Corundum (Raw)": 1,
+      "Quantainium (Raw)": 2,
+      "Gold (Ore)": 1,
+      "Laranite (Raw)": -1,
+      "Taranite (Raw)": -3,
+      "Copper (Ore)": -3,
+      "Beryl (Raw)": 1,
+      "Agricium (Ore)": -2
+    },
     "754d4c6080c2": {
       "Corundum (Raw)": 2,
       "Gold (Ore)": 1,
@@ -11530,6 +11540,11 @@
       "name": "HUR-L1 Green Glade Station",
       "system": "Stanton",
       "profileId": "3c47572dd971"
+    },
+    {
+      "name": "HUR-L2 Faithful Dream Station",
+      "system": "Stanton",
+      "profileId": "85714bf9a92f"
     },
     {
       "name": "MIC-L1 Shallow Frontier Station",
