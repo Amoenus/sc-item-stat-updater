@@ -9,7 +9,7 @@ import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
 import { getLogger } from './logger';
-import type { ItemConfig } from './types';
+import type { ItemConfig, IssueRecord } from './types';
 
 const logger = getLogger('updater');
 
@@ -198,7 +198,7 @@ type KeyUpdateResult = 'notFound' | 'found' | 'updated';
  * different surrounding text are handled correctly.
  */
 function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<string, string>): KeyUpdateResult {
-  const foundKey = findIniKey(context.existingKeys, targetKey);
+  const foundKey = findIniKey(context.existingKeys, context.lowerCaseIndex, targetKey);
   if (!foundKey) return 'notFound';
 
   const lineIndices = context.allOccurrences.get(foundKey) ?? [context.existingKeys[foundKey]];
@@ -283,12 +283,11 @@ export function validateIntegrity(originalLineCount: number, lines: string[]): v
   }
 }
 
-type IssueRecord = { key: string; reason: string; type: string };
-
 class UpdateContext {
   config: ItemConfig;
   lines: string[];
   existingKeys: Record<string, number>;
+  lowerCaseIndex: Map<string, string>;
   allOccurrences: Map<string, number[]>;
   dryRun: boolean;
   updatedKeys: Set<string>;
@@ -306,6 +305,7 @@ class UpdateContext {
     config: ItemConfig,
     lines: string[],
     existingKeys: Record<string, number>,
+    lowerCaseIndex: Map<string, string>,
     allOccurrences: Map<string, number[]>,
     unresolvedNames: string[],
     dryRun: boolean,
@@ -313,6 +313,7 @@ class UpdateContext {
     this.config = config;
     this.lines = lines;
     this.existingKeys = existingKeys;
+    this.lowerCaseIndex = lowerCaseIndex;
     this.allOccurrences = allOccurrences;
     this.dryRun = dryRun;
 
@@ -431,7 +432,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
 
   try {
     const rows = await loadSourceData(config, opts.csvDir);
-    const { lines, index: existingKeys, allOccurrences } = await readIniFile(opts.iniPath);
+    const { lines, index: existingKeys, lowerCaseIndex, allOccurrences } = await readIniFile(opts.iniPath);
     const originalLineCount = lines.length;
 
     let resolvedRows = rows;
@@ -445,7 +446,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
 
-    const context = new UpdateContext(config, lines, existingKeys, allOccurrences, unresolvedNames, opts.dryRun);
+    const context = new UpdateContext(config, lines, existingKeys, lowerCaseIndex, allOccurrences, unresolvedNames, opts.dryRun);
 
     for (const row of resolvedRows) {
       const validation = config.getTargetKeys && !row['Localization Key'] ? 'valid' : validateRow(row, config.label);

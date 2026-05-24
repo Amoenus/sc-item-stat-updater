@@ -41,8 +41,8 @@ export async function runMiningJournalUpdate({
   const start = performance.now();
   const journalRows = await readCsvFile(journalCsvPath);
   const iniData = await readIniFile(iniPath);
-  const { lines: journalLines, index: journalIdx } = iniData;
-  const matchKey = findIniKey(journalIdx, JOURNAL_KEY);
+  const { lines: journalLines, index: journalIdx, lowerCaseIndex: journalLowerIdx } = iniData;
+  const matchKey = findIniKey(journalIdx, journalLowerIdx, JOURNAL_KEY);
 
   if (matchKey === undefined) {
     logger.warn('Mining journal: key not found in INI', { key: JOURNAL_KEY });
