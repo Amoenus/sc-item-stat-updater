@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ItemConfig } from '../lib/types';
 import { buildPatchData } from '../lib/updater';
-import { ArtifactSchema } from '../schema/artifact.schema';
+import { ArtifactSchema, type ArtifactIssueDTO } from '../schema/artifact.schema';
 
 export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
 
@@ -39,7 +39,7 @@ export async function generateArtifact(
   opts: { iniPath: string; scmdbVersion?: string; spviewerVersion?: string },
 ): Promise<import('../schema/artifact.schema').ArtifactDTO> {
   const entries: Record<string, string> = {};
-  const issues: Array<{ label: string; key: string; reason: string; type: string }> = [];
+  const issues: ArtifactIssueDTO[] = [];
   let totalSkipped = 0;
   let totalErrors = 0;
 

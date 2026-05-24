@@ -34,3 +34,14 @@ export interface ItemConfig extends BaseItemConfig {
   nameColumn?: string;
   lookupCsvFile?: string;
 }
+
+/**
+ * A per-category issue record produced during the Extract+Transform phase.
+ * The `label` field is added by the artifact generator when issues from
+ * multiple categories are merged, producing an {@link ArtifactIssueDTO}.
+ */
+export interface IssueRecord {
+  key: string;
+  reason: string;
+  type: string;
+}
