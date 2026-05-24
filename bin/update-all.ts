@@ -7,7 +7,7 @@ import { backupIniFile } from '../src/io/local/ini-file';
 import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
-import { runUpdate } from '../src/lib/updater';
+import { preflightCheckConfigs, runUpdate } from '../src/lib/updater';
 import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
@@ -181,6 +181,17 @@ const categories = [
   ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: spviewerVersionDir })),
   ...missionConfigs.map((cfg) => ({ config: cfg, csvDir: missionCsvDir })),
 ];
+
+// Preflight: verify every declared static source file exists before touching anything.
+try {
+  await preflightCheckConfigs(categories);
+} catch (err) {
+  const error = err instanceof Error ? err : new Error(String(err));
+  logger.error('Preflight check failed', { error: error.message });
+  console.error(`\nERROR: ${error.message}\n`);
+  await shutdownLogger();
+  process.exit(1);
+}
 
 const totalStart = performance.now();
 logger.debug('Starting batch update', { categoryCount: categories.length, dryRun: options.dryRun });

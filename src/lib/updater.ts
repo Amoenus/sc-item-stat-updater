@@ -265,6 +265,51 @@ function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: numb
   }
 }
 
+/**
+ * Preflight check: verifies that every static CSV / JSON source file declared
+ * in a config actually exists on disk before any update logic runs.
+ *
+ * Configs that use `resolveJsonFile` are intentionally skipped — they locate
+ * their source dynamically (e.g. globbing for the latest merged-*.json) and
+ * already emit clear "not found" errors at read time.
+ *
+ * All missing paths are collected before throwing so users see every problem
+ * at once rather than discovering them one run at a time.
+ *
+ * @param categories - Array of `{ config, csvDir }` pairs as built by the batch runner
+ * @throws {Error} if any declared source file is absent from disk
+ */
+export async function preflightCheckConfigs(
+  categories: Array<{ config: ItemConfig; csvDir: string }>,
+): Promise<void> {
+  const perConfig = await Promise.all(
+    categories.map(async ({ config, csvDir }) => {
+      // Skip configs whose file is resolved dynamically at runtime.
+      if (config.resolveJsonFile) return [];
+      const filenames = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(
+        (f): f is string => typeof f === 'string',
+      );
+      const missing: string[] = [];
+      for (const filename of filenames) {
+        const filePath = resolveChildPath(csvDir, filename, 'source file');
+        try {
+          await fs.access(filePath);
+        } catch {
+          missing.push(`  [${config.label}] ${filename}`);
+        }
+      }
+      return missing;
+    }),
+  );
+
+  const missing = perConfig.flat();
+  if (missing.length > 0) {
+    throw new Error(
+      `Preflight check failed — ${missing.length} source file(s) not found:\n${missing.join('\n')}\n\nRun the scrapers first to populate the missing files.`,
+    );
+  }
+}
+
 export function validateIntegrity(originalLineCount: number, lines: string[]): void {
   if (originalLineCount - lines.length > 10) {
     throw new Error(
