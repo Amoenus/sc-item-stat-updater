@@ -20,7 +20,7 @@ const RAW_COMMODITY_LABEL_FIXES = {
 export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }: { iniPath: string; dryRun: boolean }) {
   const start = performance.now();
   const iniData = await readIniFile(iniPath);
-  const { lines, index } = iniData;
+  const { lines, index, lowerCaseIndex } = iniData;
 
   const issues: Array<{ key: string; reason: string; type: string }> = [];
   let matchedCount = 0;
@@ -28,7 +28,7 @@ export async function runRawCommodityLabelFixUpdate({ iniPath, dryRun }: { iniPa
   const scannedCount = Object.keys(RAW_COMMODITY_LABEL_FIXES).length;
 
   for (const [targetKey, targetValue] of Object.entries(RAW_COMMODITY_LABEL_FIXES)) {
-    const matchKey = findIniKey(index, targetKey);
+    const matchKey = findIniKey(index, lowerCaseIndex, targetKey);
     if (matchKey === undefined) {
       issues.push({ key: targetKey, reason: 'Localization key not found', type: 'unresolved' });
       continue;

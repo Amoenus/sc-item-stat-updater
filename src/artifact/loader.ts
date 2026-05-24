@@ -55,7 +55,7 @@ export async function applyArtifact(
   const { dryRun = false, skipBackup = false, skipMissing = true } = options;
   const start = performance.now();
 
-  const { lines, index: existingKeys } = await readIniFile(iniPath);
+  const { lines, index: existingKeys, lowerCaseIndex } = await readIniFile(iniPath);
   const originalLineCount = lines.length;
 
   let updatedCount = 0;
@@ -65,7 +65,7 @@ export async function applyArtifact(
   const newLines = [];
 
   for (const [artifactKey, newValue] of Object.entries(artifact.entries)) {
-    const foundKey = findIniKey(existingKeys, artifactKey);
+    const foundKey = findIniKey(existingKeys, lowerCaseIndex, artifactKey);
 
     if (foundKey) {
       const lineIndex = existingKeys[foundKey];

@@ -52,12 +52,18 @@ function recordDuplicate(
 /**
  * Reads an INI file using streaming I/O and builds a key index in a single pass.
  * Handles UTF-8 BOM stripping.
+ *
+ * Also produces a `lowerCaseIndex` — a Map from lowercased key to its canonical
+ * form — so that {@link findIniKey} can perform case-insensitive lookups in O(1)
+ * instead of iterating over all keys on every miss.
+ *
  * @param {string} filePath
- * @returns {Promise<{ lines: string[], index: Record<string, number> }>}
+ * @returns {Promise<{ lines: string[], index: Record<string, number>, lowerCaseIndex: Map<string, string>, duplicates: Map<string, number[]>, allOccurrences: Map<string, number[]> }>}
  */
 export async function readIniFile(filePath: string): Promise<{
   lines: string[];
   index: Record<string, number>;
+  lowerCaseIndex: Map<string, string>;
   duplicates: Map<string, number[]>;
   allOccurrences: Map<string, number[]>;
 }> {
@@ -100,29 +106,36 @@ export async function readIniFile(filePath: string): Promise<{
     lineNum++;
   }
 
-  return { lines, index, duplicates, allOccurrences };
+  // Build a lowercase → canonical key map in one pass so findIniKey can do
+  // case-insensitive lookups in O(1) instead of scanning all keys on every miss.
+  const lowerCaseIndex = new Map<string, string>(Object.keys(index).map((k) => [k.toLowerCase(), k]));
+
+  return { lines, index, lowerCaseIndex, duplicates, allOccurrences };
 }
 
 /**
  * Finds a localization key in an INI index using case-insensitive matching.
  *
+ * Uses the pre-built `lowerCaseIndex` (lowercase key → canonical key) produced
+ * by {@link readIniFile} to perform both lookups in O(1) — first an exact-match
+ * check, then a single map lookup on the lowercased target — eliminating the
+ * O(n) linear scan that was previously needed for case-insensitive misses.
+ *
  * @param {Record<string, number>} index
+ * @param {Map<string, string>} lowerCaseIndex - Map of `key.toLowerCase()` → canonical key
  * @param {string} targetKey
  * @returns {string | undefined}
  */
-export function findIniKey(index: Record<string, number>, targetKey: string): string | undefined {
+export function findIniKey(
+  index: Record<string, number>,
+  lowerCaseIndex: Map<string, string>,
+  targetKey: string,
+): string | undefined {
   if (targetKey in index) {
     return targetKey;
   }
 
-  const targetLower = targetKey.toLowerCase();
-  for (const key of Object.keys(index)) {
-    if (key.toLowerCase() === targetLower) {
-      return key;
-    }
-  }
-
-  return undefined;
+  return lowerCaseIndex.get(targetKey.toLowerCase());
 }
 
 const MAX_BACKUPS = 3;
