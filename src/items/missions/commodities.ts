@@ -1,6 +1,7 @@
 ﻿import { findLatestMatchingFile } from '../../io/local/discovery';
 import { IniTag } from '../../lib/ini-tags';
 import type { ItemConfig } from '../../lib/types';
+import { CommodityInputSchema, CommodityResourcePoolEntrySchema } from '../../schema/scmdb/merged/pools.schema';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(
   [
@@ -46,29 +47,14 @@ export default {
     return `${prefix}${displayName}`;
   },
   parseJson(data: unknown) {
-    if (
-      !data ||
-      typeof data !== 'object' ||
-      !('resourcePools' in data) ||
-      !data.resourcePools ||
-      typeof data.resourcePools !== 'object'
-    ) {
+    const input = CommodityInputSchema.safeParse(data);
+    if (!input.success) {
       return [...ILLEGAL_COMMODITY_KEYS].map((key) => ({ 'Localization Key': key, Name: '' }));
     }
-    const rows = Object.values(data.resourcePools as Record<string, unknown>)
-      .filter(
-        (entry): entry is { nameKey: string; name: string } =>
-          !!entry &&
-          typeof entry === 'object' &&
-          'nameKey' in entry &&
-          'name' in entry &&
-          typeof (entry as { nameKey: unknown }).nameKey === 'string' &&
-          typeof (entry as { name: unknown }).name === 'string',
-      )
-      .map((entry) => ({
-        'Localization Key': entry.nameKey,
-        Name: entry.name,
-      }));
+    const rows = Object.values(input.data.resourcePools).flatMap((entry) => {
+      const parsed = CommodityResourcePoolEntrySchema.safeParse(entry);
+      return parsed.success ? [{ 'Localization Key': parsed.data.nameKey, Name: parsed.data.name }] : [];
+    });
     const presentKeys = new Set(rows.map((r) => r['Localization Key'].toLowerCase()));
     for (const key of ILLEGAL_COMMODITY_KEYS) {
       if (!presentKeys.has(key)) {
