@@ -1,4 +1,3 @@
-// @ts-check
 import { z } from 'zod';
 import { ContractSchema, LegacyContractSchema } from './contract.schema.js';
 import { ShipSchema } from './encounter.schema.js';

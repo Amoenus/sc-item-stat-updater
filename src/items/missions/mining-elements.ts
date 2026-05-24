@@ -1,4 +1,3 @@
-// @ts-check
 import type { ItemConfig } from '../../lib/types';
 export default {
   csvFile: 'mining-elements.csv',

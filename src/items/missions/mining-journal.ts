@@ -1,4 +1,3 @@
-// @ts-check
 import type { ItemConfig } from '../../lib/types';
 /**
  * Builds the journal value from CSV rows.

@@ -1,5 +1,4 @@
-﻿// @ts-check
-import { stat } from '../../lib/format/stat-builder';
+﻿import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
 
 export default {

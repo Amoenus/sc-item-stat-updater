@@ -1,4 +1,3 @@
-// @ts-check
 import { z } from 'zod';
 import { DamageResistancePoolSchema } from './damage.schema.js';
 import {
