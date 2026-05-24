@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(npx tsc *)",
+      "Bash(npm test *)",
+      "Bash(git checkout *)",
+      "Bash(npm run *)",
+      "Bash(git stash *)",
+      "Bash(git add *)",
+      "Bash(npm ci *)",
+      "Bash(PUPPETEER_SKIP_DOWNLOAD=true npm ci)",
+      "Bash(git commit -m 'perf: O\\(1\\) case-insensitive key lookup via lowerCaseIndex \\(#47\\) *)",
+      "Bash(git push *)"
+    ]
+  }
+}
