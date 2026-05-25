@@ -37,10 +37,17 @@ export interface ItemConfig extends BaseItemConfig {
 
 /**
  * A per-category issue record produced during the Extract+Transform phase.
- * The `label` field is added by the artifact generator when issues from
- * multiple categories are merged, producing an {@link ArtifactIssueDTO}.
+ *
+ * `label` identifies the item-config category that produced the issue.
+ * It is populated at construction time (from `ItemConfig.label`) so the
+ * shape is consistent whether issues are read from a single-category run or
+ * merged across multiple categories by the artifact generator.
+ *
+ * {@link ArtifactIssueDTO} in `artifact.schema.ts` mirrors this shape via
+ * Zod — if you add a field here, add it there too.
  */
 export interface IssueRecord {
+  label: string;
   key: string;
   reason: string;
   type: string;

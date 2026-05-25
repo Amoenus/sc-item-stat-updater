@@ -9,7 +9,7 @@ import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
 import { getLogger } from './logger';
-import type { ItemConfig, IssueRecord } from './types';
+import type { IssueRecord, ItemConfig } from './types';
 
 const logger = getLogger('updater');
 
@@ -283,9 +283,7 @@ function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: numb
  * @param categories - Array of `{ config, csvDir }` pairs as built by the batch runner
  * @throws {Error} if any declared source file is absent from disk
  */
-export async function preflightCheckConfigs(
-  categories: Array<{ config: ItemConfig; csvDir: string }>,
-): Promise<void> {
+export async function preflightCheckConfigs(categories: Array<{ config: ItemConfig; csvDir: string }>): Promise<void> {
   const perConfig = await Promise.all(
     categories.map(async ({ config, csvDir }) => {
       // Skip configs whose file is resolved dynamically at runtime.
@@ -370,6 +368,7 @@ class UpdateContext {
     this.newLines = [];
     this.patches = {};
     this.issues = unresolvedNames.map((name) => ({
+      label: config.label,
       key: name,
       reason: 'No localization key found',
       type: 'unresolved',
@@ -388,13 +387,13 @@ class UpdateContext {
   }
 
   markInvalid(key: string, reason = 'Invalid localization key'): void {
-    this.issues.push({ key, reason, type: 'error' });
+    this.issues.push({ label: this.config.label, key, reason, type: 'error' });
     this.errorCount++;
   }
 
   markError(key: string, error: Error): void {
     logger.debug('Failed to process row, skipping', { label: this.config.label, key, error: error.message });
-    this.issues.push({ key, reason: `Build failed: ${error.message}`, type: 'error' });
+    this.issues.push({ label: this.config.label, key, reason: `Build failed: ${error.message}`, type: 'error' });
     this.errorCount++;
   }
 
@@ -413,7 +412,7 @@ class UpdateContext {
 
   markMissing(key: string): void {
     logger.debug('Missing key in target INI file, skipping', { label: this.config.label, key });
-    this.issues.push({ key, reason: 'Key missing from global.ini', type: 'missing' });
+    this.issues.push({ label: this.config.label, key, reason: 'Key missing from global.ini', type: 'missing' });
     this.skippedCount++;
   }
 
@@ -501,7 +500,15 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
 
-    const context = new UpdateContext(config, lines, existingKeys, lowerCaseIndex, allOccurrences, unresolvedNames, opts.dryRun);
+    const context = new UpdateContext(
+      config,
+      lines,
+      existingKeys,
+      lowerCaseIndex,
+      allOccurrences,
+      unresolvedNames,
+      opts.dryRun,
+    );
 
     for (const row of resolvedRows) {
       const validation = getRowValidation(config, row);
