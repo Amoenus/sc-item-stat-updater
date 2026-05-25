@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { extractGlobalIni } from './extract-global-ini';
+import { extractGlobalIni } from '../src/pipeline/extract.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
