@@ -16,7 +16,7 @@ elif command -v cygpath &>/dev/null; then
     ENV_TYPE="gitbash"
     to_win() { cygpath -w "$1"; }
 else
-    echo "ERROR: Neither wslpath (WSL) nor cygpath (Git Bash) found. Cannot convert paths."
+    echo "ERROR: Neither wslpath (WSL) nor cygpath (Git Bash) found. Cannot convert paths." >&2
     exit 1
 fi
 
@@ -73,7 +73,7 @@ if [[ -z "$EXISTING_EXE" || "$CURRENT_TAG" != "$LATEST_TAG" ]]; then
     # The exe may be nested in a subdirectory inside the zip; find it
     TOOL_EXE=$(find "$TOOL_DIR" -name "unp4k.exe" | head -1)
     if [[ -z "$TOOL_EXE" ]]; then
-        echo "ERROR: unp4k.exe not found after extraction in $TOOL_DIR"
+        echo "ERROR: unp4k.exe not found after extraction in $TOOL_DIR" >&2
         exit 1
     fi
     echo "$LATEST_TAG" > "$VERSION_FILE"
@@ -82,7 +82,7 @@ else
     log "unp4k is already up-to-date ($CURRENT_TAG), skipping download."
     TOOL_EXE=$(find "$TOOL_DIR" -name "unp4k.exe" | head -1)
     if [[ -z "$TOOL_EXE" ]]; then
-        echo "ERROR: unp4k.exe not found in $TOOL_DIR — delete version.txt to force re-download"
+        echo "ERROR: unp4k.exe not found in $TOOL_DIR — delete version.txt to force re-download" >&2
         exit 1
     fi
 fi
