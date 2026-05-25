@@ -178,12 +178,13 @@ extracted values match known item stats. For example:
 
 ### 6c. Manufacturer resolution
 
-`AttachDef Manufacturer` is a UUID in Game2.dcb XMLs. The human-readable name is NOT in the XML.
-1. Leave as UUID — the pipeline can cross-reference later
-2. Parse manufacturer code from the entity class name prefix (e.g. `cool_acom_*` → ACOM)
-3. Build a UUID→name lookup from another DataCore record type
+`AttachDef Manufacturer` is a UUID in Game2.dcb XMLs. Human-readable name is NOT in the XML.
+Options:
+1. Leave as UUID — pipeline can cross-reference later
+2. Parse from entity class name prefix (e.g. `cool_acom_*` → ACOM)
+3. Build UUID→name lookup from another DataCore record type
 
-Currently the field is extracted as UUID. Decision pending.
+Currently extracted as UUID. Decision pending.
 
 ---
 
@@ -194,9 +195,9 @@ bin/scrape-datacore.ts                  ← main entrypoint; handles unforge, ca
 src/extractor/datacore-xml-parser.ts    ← extractEntityClass, extractHealth, extractAttachDef
 src/io/local/unp4k-tool.ts             ← toWinPath(), runTool(), ensureToolsInstalled(), resolveLiveDir()
 src/items/datacore/types.ts             ← DataCoreItemTypeConfig interface
-src/items/datacore/shields.ts           ← confirmed working config
-src/items/datacore/coolers.ts           ← needs fieldSelectors fix
-src/items/datacore/*.ts                 ← 22 type configs total; recordFilter may need verification
+src/items/datacore/shields.ts           ← confirmed working (72 rows)
+src/items/datacore/coolers.ts           ← working (80 rows); spot-check cooling rate values
+src/items/datacore/*.ts                 ← all 22 types confirmed producing rows
 ```
 
 ---
