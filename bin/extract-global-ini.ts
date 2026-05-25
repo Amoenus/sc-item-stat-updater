@@ -20,10 +20,10 @@ function normalizeGamePath(rawPath: string): string {
   if (rawPath.startsWith('/')) return rawPath;
 
   // Windows absolute path: drive letter + colon + separator
-  const winMatch = rawPath.match(/^([A-Za-z]):[/\\](.*)/s);
+  const winMatch = /^([A-Za-z]):[/\\](.*)/s.exec(rawPath);
   if (winMatch) {
     const drive = winMatch[1];
-    const rest = winMatch[2].replace(/\\/g, '/');
+    const rest = winMatch[2].replaceAll('\\', '/');
     if (process.platform === 'win32') {
       return `${drive}:/${rest}`;
     }
@@ -160,8 +160,10 @@ export async function extractGlobalIni(p4kFile?: string): Promise<string> {
 
 // Run when invoked directly
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
-  extractGlobalIni(process.argv[2]).catch((err: Error) => {
-    console.error(`[extract-global-ini] ERROR: ${err.message}`);
+  try {
+    await extractGlobalIni(process.argv[2]);
+  } catch (err) {
+    console.error(`[extract-global-ini] ERROR: ${(err as Error).message}`);
     process.exit(1);
-  });
+  }
 }
