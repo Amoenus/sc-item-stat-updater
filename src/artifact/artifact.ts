@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ItemConfig } from '../lib/types';
 import { buildPatchData } from '../lib/updater';
-import { ArtifactSchema, type ArtifactIssueDTO } from '../schema/artifact.schema';
+import { type ArtifactIssueDTO, ArtifactSchema } from '../schema/artifact.schema';
 
 export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
 
@@ -63,7 +63,7 @@ export async function generateArtifact(
     totalErrors += result.stats.errorCount ?? 0;
 
     for (const issue of result.issues) {
-      issues.push({ label: config.label, ...issue });
+      issues.push(issue);
     }
   }
 
