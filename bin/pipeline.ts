@@ -51,6 +51,7 @@ const updateArgs: string[] = ['bin/update-all.ts'];
 if (values['dry-run']) updateArgs.push('--dry-run');
 if (values.ptu) updateArgs.push('--ptu');
 if (values.verbose) updateArgs.push('--verbose');
+if (values.datacore) updateArgs.push('--provider', 'datacore');
 
 // Subprocesses use stdio:'inherit', so a persistent bar would conflict with their output.
 // Instead, render a snapshot bar after each step completes (start → stop immediately).
