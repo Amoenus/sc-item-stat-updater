@@ -10,7 +10,7 @@ const KNOWN_VARIANT_SUFFIX_BASES = new Set([
 
 function isKnownVariantSuffix(suffix: string): boolean {
   const lower = suffix.toLowerCase();
-  return KNOWN_VARIANT_SUFFIX_BASES.has(lower) || KNOWN_VARIANT_SUFFIX_BASES.has(lower.replace(/\d+[a-z]*$/, ''));
+  return KNOWN_VARIANT_SUFFIX_BASES.has(lower) || KNOWN_VARIANT_SUFFIX_BASES.has(lower.replace(/[0-9]+[a-z]{0,10}$/, ''));
 }
 
 const BRACKET_TAG_PATTERN = /^\[[A-Z0-9| ]+\]\s+/i;
