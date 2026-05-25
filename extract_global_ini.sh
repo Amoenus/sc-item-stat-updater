@@ -41,7 +41,7 @@ log() { echo "[extract_global_ini] $*"; }
 
 # --- Sanity check ---
 if [[ ! -f "$P4K_FILE" ]]; then
-    echo "ERROR: Data.p4k not found at: $P4K_FILE"
+    echo "ERROR: Data.p4k not found at: $P4K_FILE" >&2
     exit 1
 fi
 
@@ -113,7 +113,7 @@ if [[ -f "$RESULT" ]]; then
     log "SUCCESS: global.ini extracted (${SIZE} bytes)"
     log "  Path: $RESULT"
 else
-    echo "ERROR: Extraction completed but global.ini not found at expected path:"
-    echo "  $RESULT"
+    echo "ERROR: Extraction completed but global.ini not found at expected path:" >&2
+    echo "  $RESULT" >&2
     exit 1
 fi
