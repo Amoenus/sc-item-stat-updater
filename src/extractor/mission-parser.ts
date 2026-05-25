@@ -1,4 +1,14 @@
 import { IniTag } from '../lib/ini-tags';
+import {
+  type BlueprintPoolRowDTO,
+  BlueprintPoolRowSchema,
+  type ContractBlueprintRowDTO,
+  ContractBlueprintRowSchema,
+  type ContractRowDTO,
+  ContractRowSchema,
+  type MissionRowDTO,
+  MissionRowSchema,
+} from '../schema/mission/mission-rows.schema.js';
 import type {
   ScmdbBlueprintPoolsDTO as BlueprintPoolsDTO,
   ScmdbContractDTO as ContractDTO,
@@ -324,10 +334,10 @@ export function buildContractRow(
   contract: ContractRowSource,
   chainData: ChainDataDTO,
   factionRewardsContext: FactionRewardsContext,
-): Record<string, unknown> {
+): ContractRowDTO {
   const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
   const depth = chainData.blueprintChainDepth.get(contract.id);
-  return {
+  return ContractRowSchema.parse({
     id: contract.id,
     debugName: contract.debugName,
     category: contract.category,
@@ -353,8 +363,8 @@ export function buildContractRow(
     isBlueprintReward: isBlueprintReward ? 'true' : 'false',
     isBlueprintChainPrerequisite: depth !== undefined && depth > 0 ? 'true' : 'false',
     blueprintChainDepth: depth === undefined ? '' : String(depth),
-    personalCooldownTime: contract.personalCooldownTime,
-    rewardRepCalculated: contract.rewardRepCalculated,
+    personalCooldownTime: contract.personalCooldownTime ?? undefined,
+    rewardRepCalculated: contract.rewardRepCalculated ?? undefined,
     factionRewards: factionRewardsContext.factionRewards.get(contract.id) ?? '',
     factionRewardsRaw: factionRewardsContext.factionRewardsRaw.get(contract.id) ?? '',
     shipEncounters: flattenValue(contract.shipEncounters),
@@ -363,14 +373,14 @@ export function buildContractRow(
     completionTags: flattenValue(contract.completionTags),
     pyroRegion: flattenValue(contract.pyroRegion),
     buyIn: contract.buyIn ?? '',
-    onceOnly: contract.onceOnly,
-    maxPlayersPerInstance: contract.maxPlayersPerInstance,
-    availableInPrison: contract.availableInPrison,
-    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning,
-    canReacceptAfterFailing: contract.canReacceptAfterFailing,
-    hasPersonalCooldown: contract.hasPersonalCooldown,
-    abandonedCooldownTime: contract.abandonedCooldownTime,
-    hideInMobiGlas: contract.hideInMobiGlas,
+    onceOnly: contract.onceOnly ?? undefined,
+    maxPlayersPerInstance: contract.maxPlayersPerInstance ?? undefined,
+    availableInPrison: contract.availableInPrison ?? undefined,
+    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning ?? undefined,
+    canReacceptAfterFailing: contract.canReacceptAfterFailing ?? undefined,
+    hasPersonalCooldown: contract.hasPersonalCooldown ?? undefined,
+    abandonedCooldownTime: contract.abandonedCooldownTime ?? undefined,
+    hideInMobiGlas: contract.hideInMobiGlas ?? undefined,
     systems: flattenValue(contract.systems),
     factionRewards_fail: flattenValue(contract.factionRewards_fail),
     requiredScenarios: flattenValue(contract.requiredScenarios),
@@ -380,7 +390,7 @@ export function buildContractRow(
     pickupCount: contract.pickupCount ?? '',
     deliveryCount: contract.deliveryCount ?? '',
     propertyValues: flattenValue(contract.propertyValues),
-  };
+  });
 }
 
 function formatDirectRewardLine(reward: NonNullable<ContractDTO['itemRewards']>[number]): string {
@@ -421,13 +431,15 @@ export function buildItemRewardList(contract: ContractDTO): string {
 /**
  * Builds blueprint pool rows.
  */
-export function buildBlueprintPoolRows(blueprintPools: BlueprintPoolsDTO): Record<string, unknown>[] {
-  return Object.entries(blueprintPools).map(([id, pool]) => ({
-    id,
-    name: pool.name,
-    source: pool.source,
-    blueprints: flattenValue(pool.blueprints),
-  }));
+export function buildBlueprintPoolRows(blueprintPools: BlueprintPoolsDTO): BlueprintPoolRowDTO[] {
+  return Object.entries(blueprintPools).map(([id, pool]) =>
+    BlueprintPoolRowSchema.parse({
+      id,
+      name: pool.name,
+      source: pool.source,
+      blueprints: flattenValue(pool.blueprints),
+    }),
+  );
 }
 
 /**
@@ -436,20 +448,22 @@ export function buildBlueprintPoolRows(blueprintPools: BlueprintPoolsDTO): Recor
 export function buildContractBlueprintRows(
   contracts: ContractDTO[],
   blueprintPools: BlueprintPoolsDTO,
-): Record<string, unknown>[] {
+): ContractBlueprintRowDTO[] {
   return contracts.flatMap((contract) => {
     if (!contract.blueprintRewards) return [];
-    return contract.blueprintRewards.map((entry) => ({
-      contractId: contract.id,
-      debugName: contract.debugName,
-      title: contract.title,
-      blueprintPoolId: entry.blueprintPool,
-      poolName: entry.poolName,
-      chance: entry.chance,
-      trigger: entry.trigger,
-      blueprintSource: blueprintPools[entry.blueprintPool]?.source,
-      blueprintItems: flattenValue(blueprintPools[entry.blueprintPool]?.blueprints),
-    }));
+    return contract.blueprintRewards.map((entry) =>
+      ContractBlueprintRowSchema.parse({
+        contractId: contract.id,
+        debugName: contract.debugName,
+        title: contract.title,
+        blueprintPoolId: entry.blueprintPool,
+        poolName: entry.poolName,
+        chance: entry.chance,
+        trigger: entry.trigger,
+        blueprintSource: blueprintPools[entry.blueprintPool]?.source,
+        blueprintItems: flattenValue(blueprintPools[entry.blueprintPool]?.blueprints),
+      }),
+    );
   });
 }
 
@@ -508,10 +522,10 @@ export function buildMissionRows(
   contracts: ContractDTO[],
   chainData: ChainDataDTO,
   blueprintPools: BlueprintPoolsDTO,
-): Record<string, unknown>[] {
+): MissionRowDTO[] {
   return contracts
     .flatMap((contract) => {
-      const rows: Record<string, unknown>[] = [];
+      const rows: MissionRowDTO[] = [];
       const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
       const isBlueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
       const titleKey = normalizeLocalizationKey(contract.titleKey || '');
@@ -535,27 +549,31 @@ export function buildMissionRows(
           : '';
 
       if (titleKey && contract.title) {
-        rows.push({
-          'Localization Key': titleKey,
-          Description: contract.title,
-          TitleNote: titleTag,
-          Note: '',
-          RewardList: '',
-          ItemRewardList: '',
-          Cooldown: '',
-        });
+        rows.push(
+          MissionRowSchema.parse({
+            'Localization Key': titleKey,
+            Description: contract.title,
+            TitleNote: titleTag,
+            Note: '',
+            RewardList: '',
+            ItemRewardList: '',
+            Cooldown: '',
+          }),
+        );
       }
 
       if (descKey && contract.description) {
-        rows.push({
-          'Localization Key': descKey,
-          Description: contract.description,
-          Note: descriptionNote,
-          TitleNote: '',
-          RewardList: rewardList,
-          ItemRewardList: itemRewardList,
-          Cooldown: cooldown,
-        });
+        rows.push(
+          MissionRowSchema.parse({
+            'Localization Key': descKey,
+            Description: contract.description,
+            Note: descriptionNote,
+            TitleNote: '',
+            RewardList: rewardList,
+            ItemRewardList: itemRewardList,
+            Cooldown: cooldown,
+          }),
+        );
       }
 
       return rows;
