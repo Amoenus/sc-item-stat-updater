@@ -29,7 +29,7 @@ for arg in "$@"; do
             exit 0
             ;;
         *)
-            echo "ERROR: Unknown option: $arg"
+            echo "ERROR: Unknown option: $arg" >&2
             exit 1
             ;;
     esac
