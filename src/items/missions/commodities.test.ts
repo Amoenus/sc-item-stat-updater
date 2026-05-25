@@ -19,7 +19,7 @@ assert.ok(parseJson, 'parseJson must be defined on the commodities config');
 
 describe('commodities parseJson', () => {
   it('returns only illegal-key stubs when data is null', () => {
-    const rows = parseJson!(null);
+    const rows = parseJson(null);
     assert.strictEqual(rows.length, ILLEGAL_KEYS.length);
     for (const row of rows) {
       assert.strictEqual(row.Name, '');
@@ -28,12 +28,12 @@ describe('commodities parseJson', () => {
   });
 
   it('returns only illegal-key stubs when data has no resourcePools', () => {
-    const rows = parseJson!({});
+    const rows = parseJson({});
     assert.strictEqual(rows.length, ILLEGAL_KEYS.length);
   });
 
   it('returns only illegal-key stubs when resourcePools is not an object', () => {
-    const rows = parseJson!({ resourcePools: 'bad' });
+    const rows = parseJson({ resourcePools: 'bad' });
     assert.strictEqual(rows.length, ILLEGAL_KEYS.length);
   });
 
@@ -44,10 +44,10 @@ describe('commodities parseJson', () => {
         pool2: { nameKey: 'items_commodities_silver', name: 'Silver' },
       },
     };
-    const rows = parseJson!(data);
-    const keys = rows.map((r) => r['Localization Key']);
-    assert.ok(keys.includes('items_commodities_gold'));
-    assert.ok(keys.includes('items_commodities_silver'));
+    const rows = parseJson(data);
+    const keys = new Set(rows.map((r) => r['Localization Key']));
+    assert.ok(keys.has('items_commodities_gold'));
+    assert.ok(keys.has('items_commodities_silver'));
     const gold = rows.find((r) => r['Localization Key'] === 'items_commodities_gold');
     assert.strictEqual(gold?.Name, 'Gold');
   });
@@ -59,10 +59,10 @@ describe('commodities parseJson', () => {
         bad: { name: 'No Key' }, // no nameKey
       },
     };
-    const rows = parseJson!(data);
-    const keys = rows.map((r) => r['Localization Key']);
-    assert.ok(keys.includes('items_commodities_gold'));
-    assert.ok(!keys.includes('No Key'));
+    const rows = parseJson(data);
+    const keys = new Set(rows.map((r) => r['Localization Key']));
+    assert.ok(keys.has('items_commodities_gold'));
+    assert.ok(!keys.has('No Key'));
   });
 
   it('skips entries where nameKey is empty', () => {
@@ -72,10 +72,10 @@ describe('commodities parseJson', () => {
         good: { nameKey: 'items_commodities_gold', name: 'Gold' },
       },
     };
-    const rows = parseJson!(data);
-    const keys = rows.map((r) => r['Localization Key']);
-    assert.ok(!keys.includes(''));
-    assert.ok(keys.includes('items_commodities_gold'));
+    const rows = parseJson(data);
+    const keys = new Set(rows.map((r) => r['Localization Key']));
+    assert.ok(!keys.has(''));
+    assert.ok(keys.has('items_commodities_gold'));
   });
 
   it('skips entries where nameKey contains invalid characters', () => {
@@ -85,10 +85,10 @@ describe('commodities parseJson', () => {
         valid: { nameKey: 'items_commodities_gold', name: 'Gold' },
       },
     };
-    const rows = parseJson!(data);
-    const keys = rows.map((r) => r['Localization Key']);
-    assert.ok(!keys.includes('bad key!'));
-    assert.ok(keys.includes('items_commodities_gold'));
+    const rows = parseJson(data);
+    const keys = new Set(rows.map((r) => r['Localization Key']));
+    assert.ok(!keys.has('bad key!'));
+    assert.ok(keys.has('items_commodities_gold'));
   });
 
   it('always injects illegal commodity keys even when absent from JSON', () => {
@@ -97,10 +97,10 @@ describe('commodities parseJson', () => {
         pool1: { nameKey: 'items_commodities_gold', name: 'Gold' },
       },
     };
-    const rows = parseJson!(data);
-    const keys = rows.map((r) => r['Localization Key'].toLowerCase());
+    const rows = parseJson(data);
+    const keys = new Set(rows.map((r) => r['Localization Key'].toLowerCase()));
     for (const illegalKey of ILLEGAL_KEYS) {
-      assert.ok(keys.includes(illegalKey.toLowerCase()), `Expected illegal key ${illegalKey} to be present`);
+      assert.ok(keys.has(illegalKey.toLowerCase()), `Expected illegal key ${illegalKey} to be present`);
     }
   });
 
@@ -110,7 +110,7 @@ describe('commodities parseJson', () => {
         widow: { nameKey: 'items_commodities_widow', name: 'Widow' },
       },
     };
-    const rows = parseJson!(data);
+    const rows = parseJson(data);
     const widowRows = rows.filter((r) => r['Localization Key'].toLowerCase() === 'items_commodities_widow');
     assert.strictEqual(widowRows.length, 1, 'Illegal key should appear exactly once');
   });

@@ -40,7 +40,7 @@ export default {
     const noteText = row['Note'];
     const note = formatDescNote(noteText ?? '');
     const cooldownValue = row['Cooldown'] ?? '';
-    const cooldown = cooldownValue ? String.raw`\n\n` + `Cooldown: ${cooldownValue}` : '';
+    const cooldown = cooldownValue ? String.raw`\n\nCooldown: ${cooldownValue}` : '';
     const rewardListValue = row['RewardList'] ?? '';
     const itemRewardListValue = row['ItemRewardList'] ?? '';
     const noteContainsRewardList =

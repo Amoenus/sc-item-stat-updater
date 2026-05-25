@@ -120,9 +120,11 @@ async function resolveSpviewerKeys(
   const mappingBasename = path.basename(config.csvFile ?? 'unknown.csv').replace(/\.csv$/i, '.json');
   const mappingFile = path.join(mappingsDir, mappingBasename);
   const savedMapping = await loadMappingFile(mappingFile);
+  const nameColumn = config.nameColumn;
+  if (!nameColumn) throw new Error(`resolveSpviewerKeys requires nameColumn on config "${config.label}"`);
   const { resolved, unresolved, mapping } = resolveLocalizationKeys(
     rows,
-    config.nameColumn!,
+    nameColumn,
     reverseIndex,
     lookupMap ?? undefined,
     savedMapping,
@@ -208,7 +210,9 @@ function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<str
     const oldLine = context.lines[lineIndex];
     const eqIdx = oldLine.indexOf('=');
     const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
-    const newValue = sanitizeIniValue(context.config.buildValue!(row, extractFlavorText(oldValue), oldValue, foundKey));
+    const buildValue = context.config.buildValue;
+    if (!buildValue) throw new Error(`buildValue is required for config "${context.config.label}"`);
+    const newValue = sanitizeIniValue(buildValue(row, extractFlavorText(oldValue), oldValue, foundKey));
     if (newValue !== oldValue) {
       applyLinePatch(context.lines, lineIndex, oldLine, foundKey, newValue, context.patches);
       anyUpdated = true;
@@ -409,6 +413,12 @@ function shouldWriteIni(opts: ResolvedOptions, context: UpdateContext): boolean 
   return context.updatedCount > 0 || context.newCount > 0;
 }
 
+/** Determines the validation result for a row, bypassing column validation for configs with custom target key logic. */
+function getRowValidation(config: ItemConfig, row: Record<string, string>): 'valid' | 'skip' | 'invalid' {
+  if (config.getTargetKeys && !row['Localization Key']) return 'valid';
+  return validateRow(row, config.label);
+}
+
 /**
  * Runs a source-based update against global.ini.
  *
@@ -449,7 +459,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     const context = new UpdateContext(config, lines, existingKeys, lowerCaseIndex, allOccurrences, unresolvedNames, opts.dryRun);
 
     for (const row of resolvedRows) {
-      const validation = config.getTargetKeys && !row['Localization Key'] ? 'valid' : validateRow(row, config.label);
+      const validation = getRowValidation(config, row);
       if (validation === 'skip') {
         context.markSkipped();
         continue;
