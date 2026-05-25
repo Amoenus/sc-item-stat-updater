@@ -7,16 +7,46 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * Normalises a raw path from SC_LIVE_DIR so the same value works on both
+ * native Windows and WSL.
+ *
+ * - Unix path (/mnt/c/…)  → returned as-is.
+ * - Windows path (C:\… or C:/…):
+ *     • on win32  → forward-slash normalisation only
+ *     • on WSL    → converted to /mnt/<drive>/…
+ */
+function normalizeGamePath(rawPath: string): string {
+  // Already a Unix absolute path — use as-is.
+  if (rawPath.startsWith('/')) return rawPath;
+
+  // Windows absolute path: drive letter + colon + separator
+  const winMatch = rawPath.match(/^([A-Za-z]):[/\\](.*)/s);
+  if (winMatch) {
+    const drive = winMatch[1];
+    const rest = winMatch[2].replace(/\\/g, '/');
+    if (process.platform === 'win32') {
+      return `${drive}:/${rest}`;
+    }
+    // WSL / Linux — convert to /mnt/<drive>/…
+    return `/mnt/${drive.toLowerCase()}/${rest}`;
+  }
+
+  // Relative or unrecognised — let path.resolve sort it out.
+  return rawPath;
+}
+
+/**
  * Resolve the Star Citizen LIVE directory.
  *
  * Priority order:
- *  1. SC_LIVE_DIR environment variable (set via .env.local or shell profile)
+ *  1. SC_LIVE_DIR environment variable (set via .env.local or shell profile).
+ *     Accepts both Windows paths (C:\…) and Unix/WSL paths (/mnt/c/…).
  *  2. Legacy fallback: walk 4 levels up from bin/ — only works when the repo
  *     lives inside the game tree at LIVE/Data/Localization/english/
  */
 function resolveLiveDir(): string {
   if (process.env.SC_LIVE_DIR) {
-    return path.resolve(process.env.SC_LIVE_DIR);
+    return path.resolve(normalizeGamePath(process.env.SC_LIVE_DIR));
   }
   // Legacy: bin/ -> english/ -> Localization/ -> Data/ -> LIVE/
   return path.resolve(__dirname, '..', '..', '..', '..');
