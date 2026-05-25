@@ -1,11 +1,18 @@
-// biome-ignore lint/suspicious/noMisleadingCharacterClass: Not an emoji sequence
-const UNICODE_SPACE_PATTERN = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\u200B\u200C\u200D\u2060]/g;
+const UNICODE_SPACE_PATTERN = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]|\u200B|\u200C|\u200D|\u2060/g;
 
 export function fmtNum(val: unknown): string {
   if (!val && val !== 0) return '0';
-  const normalizedForParse = String(val).replace(UNICODE_SPACE_PATTERN, '').replace(/,/g, '').trim();
-  const num = parseFloat(normalizedForParse);
-  if (Number.isNaN(num)) return String(val).replace(UNICODE_SPACE_PATTERN, ' ').trim();
+  let raw: string;
+  if (val == null) {
+    raw = '';
+  } else if (typeof val === 'string') {
+    raw = val;
+  } else {
+    raw = JSON.stringify(val);
+  }
+  const normalizedForParse = raw.replace(UNICODE_SPACE_PATTERN, '').replaceAll(',', '').trim();
+  const num = Number.parseFloat(normalizedForParse);
+  if (Number.isNaN(num)) return raw.replace(UNICODE_SPACE_PATTERN, ' ').trim();
   return num.toLocaleString('en-US');
 }
 

@@ -91,10 +91,67 @@ export function isPtuVersion(version: string): boolean {
   return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+type VersionEntry = { version: string; file: string };
+
+function selectVersion(args: string[], versions: VersionEntry[]): VersionEntry {
   const versionArgIndex = args.indexOf('--version');
   const ptu = args.includes('--ptu');
+
+  if (versionArgIndex !== -1) {
+    const requested = args[versionArgIndex + 1];
+    if (!requested) throw new Error('--version requires a value');
+    const found = versions.find((entry) => entry.version === requested);
+    if (!found) throw new Error(`Version not found: ${requested}`);
+    return found;
+  }
+
+  if (ptu) {
+    const found = versions.find((entry) => isPtuVersion(entry.version));
+    if (!found) throw new Error('No PTU SCMDB version available');
+    return found;
+  }
+
+  const liveVersion = versions.find((entry) => isLiveVersion(entry.version)) ?? versions[0];
+  if (!liveVersion) throw new Error('No SCMDB versions available');
+  return liveVersion;
+}
+
+function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.parse>): void {
+  const elements = buildMiningElementRows(miningData);
+  if (elements.length) {
+    writeOutput(
+      'mining-elements.csv',
+      toCsv(elements, ['Element Name', 'Rarity', 'Ground Scan Signature', 'Scan Signature', 'Resistance', 'Instability']),
+    );
+  }
+
+  const journal = buildMiningJournalRows(miningData);
+  if (journal.length) {
+    writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
+  }
+
+  const locRows = buildMiningLocationRows(miningData);
+  if (locRows.length) {
+    writeOutput(
+      'mining-locations.csv',
+      toCsv(locRows, ['Location Name', 'Ship Mineables', 'Hand Mineables', 'Ground Vehicle Mineables', 'Quality Note']),
+    );
+  }
+}
+
+function printVersions(versions: VersionEntry[]): void {
+  console.log('Available SCMDB versions:');
+  for (const entry of versions) {
+    console.log(`  ${entry.version} -> ${entry.file}`);
+  }
+  console.log('');
+  console.log(
+    'By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.',
+  );
+}
+
+async function main() {
+  const args = process.argv.slice(2);
   const listVersions = args.includes('--list-versions');
   const rawOnly = args.includes('--raw');
   const help = args.includes('--help') || args.includes('-h');
@@ -108,36 +165,11 @@ async function main() {
   const versions = await fetchAndValidate(versionsUrl, ScmdbVersionsSchema);
 
   if (listVersions) {
-    console.log('Available SCMDB versions:');
-    for (const entry of versions) {
-      console.log(`  ${entry.version} -> ${entry.file}`);
-    }
-    console.log('');
-    console.log(
-      'By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.',
-    );
+    printVersions(versions);
     process.exit(0);
   }
 
-  let selected = null;
-  if (versionArgIndex !== -1) {
-    const requested = args[versionArgIndex + 1];
-    if (!requested) {
-      throw new Error('--version requires a value');
-    }
-    selected = versions.find((entry) => entry.version === requested);
-    if (!selected) {
-      throw new Error(`Version not found: ${requested}`);
-    }
-  } else if (ptu) {
-    selected = versions.find((entry) => isPtuVersion(entry.version));
-    if (!selected) {
-      throw new Error('No PTU SCMDB version available');
-    }
-  } else {
-    selected = versions.find((entry) => isLiveVersion(entry.version));
-    selected ??= versions[0];
-  }
+  const selected = selectVersion(args, versions);
 
   console.log(`Using SCMDB version ${selected.version}`);
 
@@ -334,39 +366,7 @@ async function main() {
   }
 
   if (miningData) {
-    const elements = buildMiningElementRows(miningData);
-    if (elements.length) {
-      writeOutput(
-        'mining-elements.csv',
-        toCsv(elements, [
-          'Element Name',
-          'Rarity',
-          'Ground Scan Signature',
-          'Scan Signature',
-          'Resistance',
-          'Instability',
-        ]),
-      );
-    }
-
-    const journal = buildMiningJournalRows(miningData);
-    if (journal.length) {
-      writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
-    }
-
-    const locRows = buildMiningLocationRows(miningData);
-    if (locRows.length) {
-      writeOutput(
-        'mining-locations.csv',
-        toCsv(locRows, [
-          'Location Name',
-          'Ship Mineables',
-          'Hand Mineables',
-          'Ground Vehicle Mineables',
-          'Quality Note',
-        ]),
-      );
-    }
+    writeMiningData(miningData);
   }
 
   if (contractBlueprintRows.length) {

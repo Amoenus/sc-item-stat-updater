@@ -27,7 +27,7 @@ export function stat(row: Record<string, string>) {
     },
     /** Adds a section header (preceded by a blank line in the INI output). */
     section(title: string) {
-      parts.push(`\\n${title}`);
+      parts.push(String.raw`\n${title}`);
       return builder;
     },
     /** Adds a stat line only if value is truthy. */
@@ -51,8 +51,8 @@ export function stat(row: Record<string, string>) {
     },
     /** Finalizes the stat block, appending flavor text if present. */
     build(flavorText: string) {
-      let val = parts.join('\\n');
-      if (flavorText) val += `\\n\\n${flavorText}`;
+      let val = parts.join(String.raw`\n`);
+      if (flavorText) val += String.raw`\n\n${flavorText}`;
       return val;
     },
   };

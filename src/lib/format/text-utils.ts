@@ -7,9 +7,9 @@ export function nameKeyToDescKey(nameKey: string): string {
 }
 
 export function extractFlavorText(value: string): string {
-  const parts = value.split('\\n\\n');
+  const parts = value.split(String.raw`\n\n`);
   if (parts.length > 1) {
-    const lastPart = parts[parts.length - 1].trim();
+    const lastPart = parts.at(-1)!.trim();
     if (!lastPart.startsWith('--')) return lastPart;
   }
   return '';

@@ -17,19 +17,56 @@ export function buildReverseNameIndex(lines: string[]): Map<string, string> {
   for (const line of lines) {
     const eqIdx = line.indexOf('=');
     if (eqIdx < 0) continue;
-    const key = line.substring(0, eqIdx);
-    if (!NAME_KEY_RE.test(key)) continue;
-    if (SKIP_SUFFIX_RE.test(key)) continue;
-    const value = line.substring(eqIdx + 1).trim();
-    if (!value) continue;
-    if (!index.has(value)) {
-      index.set(value, key);
+    const iniKey = line.substring(0, eqIdx);
+    if (!NAME_KEY_RE.test(iniKey)) continue;
+    if (SKIP_SUFFIX_RE.test(iniKey)) continue;
+    const displayName = line.substring(eqIdx + 1).trim();
+    if (!displayName) continue;
+    if (!index.has(displayName)) {
+      index.set(displayName, iniKey);
     }
   }
   return index;
 }
 
 export type ResolvedRow = Record<string, string> & { 'Localization Key': string };
+
+function findBySuffix(
+  suffix: string,
+  lookupMap: Map<string, string> | undefined,
+  reverseIndex: Map<string, string>,
+): string | undefined {
+  if (lookupMap) {
+    for (const [mapName, key] of lookupMap) {
+      if (mapName.endsWith(suffix)) return key;
+    }
+  }
+  for (const [value, key] of reverseIndex) {
+    if (value.endsWith(suffix)) return key;
+  }
+  return undefined;
+}
+
+function resolveName(
+  name: string,
+  lookupMap: Map<string, string> | undefined,
+  reverseIndex: Map<string, string>,
+): string | undefined {
+  const exact = lookupMap?.get(name) ?? reverseIndex.get(name);
+  if (exact) return exact;
+
+  const bySuffix = findBySuffix(` ${name}`, lookupMap, reverseIndex);
+  if (bySuffix) return bySuffix;
+
+  const stripped = name.replace(/\s+\([^)]+\)$/, '');
+  if (stripped !== name) {
+    const strippedExact = lookupMap?.get(stripped) ?? reverseIndex.get(stripped);
+    if (strippedExact) return strippedExact;
+    return findBySuffix(` ${stripped}`, lookupMap, reverseIndex);
+  }
+
+  return undefined;
+}
 
 /**
  * Resolves Localization Key for spviewer CSV rows that only have display names.
@@ -60,56 +97,7 @@ export function resolveLocalizationKeys(
       unresolved.push('(empty)');
       continue;
     }
-    // 0. Saved mapping takes first priority
-    let locKey = savedMapping?.get(name);
-    // 1. Exact match from lookup CSV or INI reverse index
-    if (!locKey) locKey = lookupMap?.get(name) ?? reverseIndex.get(name);
-    // 2. Suffix match: find INI values that end with " <name>"
-    if (!locKey) {
-      const suffix = ` ${name}`;
-      if (lookupMap) {
-        for (const [mapName, key] of lookupMap) {
-          if (mapName.endsWith(suffix)) {
-            locKey = key;
-            break;
-          }
-        }
-      }
-      if (!locKey) {
-        for (const [value, key] of reverseIndex) {
-          if (value.endsWith(suffix)) {
-            locKey = key;
-            break;
-          }
-        }
-      }
-    }
-    // 3. Strip trailing parenthetical qualifier, e.g. " (Ground)" or " (Cutlass Steel)", and retry
-    if (!locKey) {
-      const stripped = name.replace(/\s+\([^)]+\)$/, '');
-      if (stripped !== name) {
-        locKey = lookupMap?.get(stripped) ?? reverseIndex.get(stripped);
-        if (!locKey) {
-          const strippedSuffix = ` ${stripped}`;
-          if (lookupMap) {
-            for (const [mapName, key] of lookupMap) {
-              if (mapName.endsWith(strippedSuffix)) {
-                locKey = key;
-                break;
-              }
-            }
-          }
-          if (!locKey) {
-            for (const [value, key] of reverseIndex) {
-              if (value.endsWith(strippedSuffix)) {
-                locKey = key;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
+    const locKey = savedMapping?.get(name) ?? resolveName(name, lookupMap, reverseIndex);
     if (locKey) {
       resolved.push({ ...row, 'Localization Key': locKey });
       mapping.set(name, locKey);

@@ -1,17 +1,31 @@
 ﻿const NAME_LINE_PATTERN = /^(item_name_?.*?)=(.*)$/i;
 const AUX_NAME_KEY_SUFFIX_PATTERN = /_(short|mag|ammo)$/i;
 
-const KNOWN_VARIANT_SUFFIX_PATTERN =
-  /^(?:tint\d*|store\d*|collector\d*|iae\d*|cc\d*[a-z]*|lumi(?:nalia)?[a-z0-9]*|firerats\d*|acid\d*|chromic\d*|sunset\d*|cen\d*|imp\d*|uee\d*|black\d*|blue\d*|green\d*|red\d*|white\d*|yellow\d*|orange\d*|purple\d*|pink\d*|tan\d*|gold\d*|silver\d*|grey\d*|gray\d*|teal\d*|cyan\d*|brown\d*|camo\d*|urban\d*|arctic\d*|fallout\d*)$/i;
+const KNOWN_VARIANT_SUFFIX_BASES = new Set([
+  'acid', 'arctic', 'black', 'blue', 'brown', 'camo', 'cc', 'cen', 'chromic', 'collector',
+  'cyan', 'fallout', 'firerats', 'gold', 'gray', 'green', 'grey', 'iae', 'imp', 'lumi',
+  'luminalia', 'orange', 'pink', 'purple', 'red', 'silver', 'store', 'sunset', 'tan', 'teal',
+  'tint', 'uee', 'urban', 'white', 'yellow',
+]);
+
+function isKnownVariantSuffix(suffix: string): boolean {
+  const lower = suffix.toLowerCase();
+  return KNOWN_VARIANT_SUFFIX_BASES.has(lower) || KNOWN_VARIANT_SUFFIX_BASES.has(lower.replace(/\d+[a-z]*$/, ''));
+}
 
 const BRACKET_TAG_PATTERN = /^\[[A-Z0-9| ]+\]\s+/i;
 const COMPONENT_PREFIX_PATTERN = /^[^/\s]+\/[^/\s]*\/[^ ]*\s+/u;
 
 export function normalizeSpaces(value: unknown): string {
-  return String(value || '')
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
+  let str: string;
+  if (value == null) {
+    str = '';
+  } else if (typeof value === 'string') {
+    str = value;
+  } else {
+    str = JSON.stringify(value);
+  }
+  return str.replaceAll(/[\u00a0\u202f]/g, ' ').replaceAll(/\s+/g, ' ').trim();
 }
 
 export function parseNameLine(line: string): { key: string; value: string } | null {
@@ -36,8 +50,8 @@ export function toVariantFamilyKey(key: string): string {
     return keyLower;
   }
 
-  const last = parts[parts.length - 1];
-  if (KNOWN_VARIANT_SUFFIX_PATTERN.test(last)) {
+  const last = parts.at(-1)!;
+  if (isKnownVariantSuffix(last)) {
     return parts.slice(0, -1).join('_');
   }
 
@@ -70,7 +84,15 @@ export function buildVariantFamilyIndex(lines: string[]): Map<string, number[]> 
 }
 
 export function stripLeadingTitleTag(value: unknown): string {
-  let clean = String(value || '').trimStart();
+  let clean: string;
+  if (value == null) {
+    clean = '';
+  } else if (typeof value === 'string') {
+    clean = value;
+  } else {
+    clean = JSON.stringify(value);
+  }
+  clean = clean.trimStart();
   for (let i = 0; i < 2; i++) {
     const withoutBracket = clean.replace(BRACKET_TAG_PATTERN, '');
     const withoutPrefix = withoutBracket.replace(COMPONENT_PREFIX_PATTERN, '');
@@ -94,7 +116,7 @@ export function resolveBaseFromCurrentValue<V>(currentValue: unknown, lookupMap:
   }
 
   const clean = normalizeSpaces(stripLeadingTitleTag(currentValue));
-  return lookupMap.get(clean.toLowerCase()) || null;
+  return lookupMap.get(clean.toLowerCase()) ?? null;
 }
 
 export function applyTagToFamily(

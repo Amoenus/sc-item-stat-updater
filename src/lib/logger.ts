@@ -16,6 +16,21 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 const RESET = '\x1b[0m';
 
+function formatRecord(record: ReadableLogRecord): string {
+  const color = LEVEL_COLORS[record.severityText ?? ''] ?? '';
+  const time = new Date().toLocaleTimeString();
+  const attrs = record.attributes;
+  let detail = '';
+  if (attrs) {
+    const parts: string[] = [];
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v != null && v !== '') parts.push(`${k}=${typeof v === 'object' ? JSON.stringify(v) : String(v)}`);
+    }
+    if (parts.length) detail = ` (${parts.join(', ')})`;
+  }
+  return `${color}${time} [${record.severityText}]${RESET} ${typeof record.body === 'object' ? JSON.stringify(record.body) : String(record.body)}${detail}\n`;
+}
+
 class ConsoleStderrExporter {
   export(records: ReadableLogRecord[], resultCallback: (result: { code: number }) => void): void {
     for (const record of records) {
@@ -29,18 +44,7 @@ class ConsoleStderrExporter {
         };
         process.stderr.write(`${JSON.stringify(entry)}\n`);
       } else {
-        const color = LEVEL_COLORS[record.severityText ?? ''] ?? '';
-        const time = new Date().toLocaleTimeString();
-        const attrs = record.attributes;
-        let detail = '';
-        if (attrs) {
-          const parts: string[] = [];
-          for (const [k, v] of Object.entries(attrs)) {
-            if (v !== undefined && v !== null && v !== '') parts.push(`${k}=${v}`);
-          }
-          if (parts.length) detail = ` (${parts.join(', ')})`;
-        }
-        process.stderr.write(`${color}${time} [${record.severityText}]${RESET} ${record.body}${detail}\n`);
+        process.stderr.write(formatRecord(record));
       }
     }
     resultCallback({ code: ExportResultCode.SUCCESS });

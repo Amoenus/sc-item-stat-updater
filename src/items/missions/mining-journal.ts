@@ -8,8 +8,8 @@ import type { ItemConfig } from '../../lib/types';
  */
 export function buildJournalValue(rows: Array<Record<string, string>>, oldValue: string): string {
   // Extract intro block - everything before first "\\n\\n**" (start of first rarity section)
-  const introEndIndex = oldValue.indexOf('\\n\\n**');
-  const introBlock = introEndIndex !== -1 ? oldValue.substring(0, introEndIndex) : oldValue;
+  const introEndIndex = oldValue.indexOf(String.raw`\n\n**`);
+  const introBlock = introEndIndex === -1 ? oldValue : oldValue.substring(0, introEndIndex);
 
   // Define rarity order (skip Unknown)
   const rarityOrder = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'];
@@ -35,12 +35,13 @@ export function buildJournalValue(rows: Array<Record<string, string>>, oldValue:
 
   // Build sections in correct order
   let result = introBlock;
+  const nlSep = String.raw`\n`;
 
   // Add each rarity section if it has elements
   for (const rarity of rarityOrder) {
     const elements = rarityGroups[rarity];
     if (elements && elements.length > 0) {
-      result += `\\n\\n** ${rarity} **\\n${elements.join('\\n')}`;
+      result += String.raw`\n\n** ${rarity} **\n${elements.join(nlSep)}`;
     }
   }
 

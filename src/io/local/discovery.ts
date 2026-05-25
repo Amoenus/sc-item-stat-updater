@@ -45,7 +45,7 @@ export async function listMatchingFiles(
   return entries
     .filter((entry) => entry.isFile() && isMatch(entry.name))
     .map((entry) => entry.name)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -104,7 +104,7 @@ export async function findLatestMatchingDirectory(
   const names = entries
     .filter((entry) => entry.isDirectory() && isMatch(entry.name))
     .map((entry) => entry.name)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
 
   if (names.length === 0) {
     throw new Error(noMatchMessage || `No matching directories found in ${label}: ${dirPath}`);

@@ -22,7 +22,7 @@ export default {
 
     // Match suffix: "Agricium (Ore)" -> base="Agricium", type="ore"
     //               "Aphorite (Raw)" -> base="Aphorite",  type="raw"
-    const suffixMatch = elementName.match(/^(.+?)\s*\((\w+)\)\s*$/);
+    const suffixMatch = /^(.+?)\s*\((\w+)\)\s*$/.exec(elementName);
 
     if (suffixMatch) {
       const baseName = suffixMatch[1];
@@ -51,7 +51,7 @@ export default {
     // Use the full existing INI value as the base — for _ore_desc/_raw_desc keys the entire
     // value is flavor text (no \n\n separator before a stats block like other items use).
     // Strip any previously-appended scanner block first for idempotency.
-    const statsBlockMarker = '\\n\\n** Scanner Data **';
+    const statsBlockMarker = String.raw`\n\n** Scanner Data **`;
     const statsBlockIndex = oldValue.indexOf(statsBlockMarker);
     const cleanFlavorText = statsBlockIndex === -1 ? oldValue : oldValue.substring(0, statsBlockIndex);
 
@@ -64,12 +64,13 @@ export default {
     // Capitalize rarity (Title Case)
     const formattedRarity = rarity === 'N/A' ? 'N/A' : rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
 
-    let statsBlock = `\\n\\n** Scanner Data **\\nRarity: ${formattedRarity}\\nScan Signature: ${scanSignature}\\nResistance: ${resistance}\\nInstability: ${instability}`;
+    let statsBlock = String.raw`\n\n** Scanner Data **\nRarity: ${formattedRarity}\nScan Signature: ${scanSignature}\nResistance: ${resistance}\nInstability: ${instability}`;
 
     // Add Ground Scan Signature if present
     const groundScanSignature = row['Ground Scan Signature'];
     if (groundScanSignature && groundScanSignature.trim() !== '') {
-      statsBlock = statsBlock.replace(/(Scan Signature: [^\\]*)/, `$1\\nGround Scan Signature: ${groundScanSignature}`);
+      statsBlock = statsBlock.replace(/(Scan Signature: [^\\]*)/, String.raw`$1\nGround Scan Signature: ${groundScanSignature}`);
+
     }
 
     return cleanFlavorText + statsBlock;

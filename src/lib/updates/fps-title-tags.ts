@@ -18,8 +18,8 @@ const logger = getLogger('fps-title-tags-update');
 const PERSONAL_CSV = 'weaponpersonal.spviewer.csv';
 const ATTACHMENT_CSV = 'weaponattachment.spviewer.csv';
 
-function normalizeTypeCode(value: unknown): string {
-  const type = String(value || '').toLowerCase();
+function normalizeTypeCode(value: string | undefined): string {
+  const type = (value ?? '').toLowerCase();
   if (type.includes('sniper')) return 'SNP';
   if (type.includes('shotgun')) return 'SG';
   if (type.includes('smg')) return 'SMG';
@@ -48,9 +48,9 @@ function normalizeDamageCode(row: Record<string, string>): string | null {
   return null;
 }
 
-function normalizeSlotCode(value: unknown, type: unknown): string {
-  const slot = String(value || '').toLowerCase();
-  const lowerType = String(type || '').toLowerCase();
+function normalizeSlotCode(value: string | undefined, type: string | undefined): string {
+  const slot = (value ?? '').toLowerCase();
+  const lowerType = (type ?? '').toLowerCase();
 
   if (slot.includes('optic') || slot.includes('scope')) return 'OPT';
   if (slot.includes('barrel') && slot.includes('under')) return 'UBR';
