@@ -26,7 +26,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIVE_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # P4K_FILE: accept as first argument, env var, or default to Data.p4k in the LIVE directory
-P4K_FILE="${1:-${P4K_FILE:-$LIVE_DIR/Data.p4k}}"
+ARG_P4K_FILE="${1:-}"
+P4K_FILE="${ARG_P4K_FILE:-${P4K_FILE:-$LIVE_DIR/Data.p4k}}"
 OUTPUT_DIR="$(dirname "$P4K_FILE")"
 TOOL_DIR="$OUTPUT_DIR/unp4k"
 TOOL_EXE=""   # resolved after download/find below
