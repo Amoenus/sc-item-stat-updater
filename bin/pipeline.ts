@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -51,7 +52,7 @@ if (values.verbose) updateArgs.push('--verbose');
 
 // Subprocesses use stdio:'inherit', so a persistent bar would conflict with their output.
 // Instead, render a snapshot bar after each step completes (start → stop immediately).
-const totalSteps = 2 + (values.scrape ? 2 : 0);
+const totalSteps = 3 + (values.scrape ? 2 : 0);
 let completedSteps = 0;
 const pipelineBar = new cliProgress.SingleBar({
   format: 'Pipeline {bar} {percentage}% | {value}/{total} | {step}',
@@ -67,10 +68,14 @@ function completeStep(summary: string): void {
   pipelineBar.stop();
 }
 
+const REPO_INI = path.join(ROOT_DIR, 'global.ini');
+
 // Step 1: Extract
-log('=== Step 1: Extracting global.ini ===');
-await extractGlobalIni();
-completeStep('global.ini extracted');
+log('=== Step 1: Extracting global.ini from Data.p4k ===');
+const extractedGamePath = await extractGlobalIni();
+log(`Copying extracted global.ini → repo: ${REPO_INI}`);
+fs.copyFileSync(extractedGamePath, REPO_INI);
+completeStep('global.ini extracted & synced to repo');
 
 // Step 2: Scrape (optional)
 if (values.scrape) {
@@ -89,5 +94,11 @@ if (values.scrape) {
 log('=== Step 3: Applying stat updates ===');
 runScript(updateArgs);
 completeStep('Stat updates applied');
+
+// Step 4: Deploy updated global.ini back to game directory
+log('=== Step 4: Deploying updated global.ini → game directory ===');
+fs.copyFileSync(REPO_INI, extractedGamePath);
+log(`Deployed: ${extractedGamePath}`);
+completeStep('global.ini deployed to game directory');
 
 log('=== Done ===');

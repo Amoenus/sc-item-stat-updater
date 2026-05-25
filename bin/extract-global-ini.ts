@@ -97,7 +97,7 @@ function run(cmd: string, args: string[], opts: { cwd?: string } = {}): void {
   if (result.status !== 0) throw new Error(`${path.basename(cmd)} exited with code ${result.status}`);
 }
 
-export async function extractGlobalIni(p4kFile?: string): Promise<void> {
+export async function extractGlobalIni(p4kFile?: string): Promise<string> {
   const resolvedP4k = p4kFile ?? path.join(LIVE_DIR, 'Data.p4k');
   const outputDir = path.dirname(resolvedP4k);
   const toolDir = path.join(outputDir, 'unp4k');
@@ -155,6 +155,7 @@ export async function extractGlobalIni(p4kFile?: string): Promise<void> {
   const { size } = fs.statSync(resultPath);
   log(`SUCCESS: global.ini extracted (${size} bytes)`);
   log(`  Path: ${resultPath}`);
+  return resultPath;
 }
 
 // Run when invoked directly
