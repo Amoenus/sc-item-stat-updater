@@ -5,8 +5,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// bin/ -> english/ -> Localization/ -> Data/ -> LIVE/
-const LIVE_DIR = path.resolve(__dirname, '..', '..', '..', '..');
+
+/**
+ * Resolve the Star Citizen LIVE directory.
+ *
+ * Priority order:
+ *  1. SC_LIVE_DIR environment variable (set via .env.local or shell profile)
+ *  2. Legacy fallback: walk 4 levels up from bin/ — only works when the repo
+ *     lives inside the game tree at LIVE/Data/Localization/english/
+ */
+function resolveLiveDir(): string {
+  if (process.env.SC_LIVE_DIR) {
+    return path.resolve(process.env.SC_LIVE_DIR);
+  }
+  // Legacy: bin/ -> english/ -> Localization/ -> Data/ -> LIVE/
+  return path.resolve(__dirname, '..', '..', '..', '..');
+}
+
+const LIVE_DIR = resolveLiveDir();
 
 const FILTER = 'global.ini';
 

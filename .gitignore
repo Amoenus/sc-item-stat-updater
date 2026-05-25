@@ -5,3 +5,6 @@ node_modules/
 *.swf
 global.ini.*
 dist/
+
+# Local environment overrides — not committed
+.env.local
