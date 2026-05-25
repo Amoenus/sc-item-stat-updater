@@ -6,6 +6,7 @@ import type { ItemConfig } from '../lib/types';
 const itemsDir = path.resolve(import.meta.dirname);
 const spviewerDir = path.join(itemsDir, 'spviewer');
 const missionsDir = path.join(itemsDir, 'missions');
+const datacoreDir = path.join(itemsDir, 'datacore');
 
 /**
  * Derives a CLI-friendly slug from a config filename.
@@ -26,7 +27,7 @@ async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<stri
   }
   const configs = new Map<string, ItemConfig>();
   for (const entry of entries) {
-    if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry === 'registry.ts') continue;
+    if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry === 'registry.ts' || entry === 'types.ts') continue;
     const slug = toSlug(entry, prefix);
     const fullPath = path.join(dir, entry);
     const { default: config } = await import(pathToFileURL(fullPath).href);
@@ -37,6 +38,10 @@ async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<stri
 
 export async function loadSpviewerConfigs(): Promise<Map<string, ItemConfig>> {
   return loadConfigsFromDir(spviewerDir, 'sp-');
+}
+
+export async function loadDatacoreConfigs(): Promise<Map<string, ItemConfig>> {
+  return loadConfigsFromDir(datacoreDir, 'dc-');
 }
 
 export async function loadMissionConfigs(): Promise<Map<string, ItemConfig>> {
@@ -60,6 +65,8 @@ export async function loadConfig(slug: string): Promise<ItemConfig> {
     filePath = path.join(spviewerDir, `${slug.slice(3)}.ts`);
   } else if (slug.startsWith('mission-')) {
     filePath = path.join(missionsDir, `${slug.slice(8)}.ts`);
+  } else if (slug.startsWith('dc-')) {
+    filePath = path.join(datacoreDir, `${slug.slice(3)}.ts`);
   } else {
     throw new Error(`Unknown category: ${slug}`);
   }
@@ -75,15 +82,19 @@ export async function loadConfig(slug: string): Promise<ItemConfig> {
 /**
  * Lists all available category slugs without loading the modules.
  */
-export async function listCategories(): Promise<{ spviewer: string[]; missions: string[] }> {
+export async function listCategories(): Promise<{ spviewer: string[]; missions: string[]; datacore: string[] }> {
   const readSlugs = async (dir: string, prefix: string): Promise<string[]> => {
     try {
       const entries = await fs.readdir(dir);
-      return entries.filter((e) => e.endsWith('.ts') && !e.endsWith('.test.ts') && e !== 'registry.ts').map((e) => toSlug(e, prefix));
+      return entries.filter((e) => e.endsWith('.ts') && !e.endsWith('.test.ts') && e !== 'registry.ts' && e !== 'types.ts').map((e) => toSlug(e, prefix));
     } catch {
       return [];
     }
   };
-  const [spviewer, missions] = await Promise.all([readSlugs(spviewerDir, 'sp-'), readSlugs(missionsDir, 'mission-')]);
-  return { spviewer, missions };
+  const [spviewer, missions, datacore] = await Promise.all([
+    readSlugs(spviewerDir, 'sp-'),
+    readSlugs(missionsDir, 'mission-'),
+    readSlugs(datacoreDir, 'dc-'),
+  ]);
+  return { spviewer, missions, datacore };
 }

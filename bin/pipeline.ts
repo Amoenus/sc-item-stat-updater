@@ -25,6 +25,7 @@ function runScript(scriptArgs: string[]): void {
 const { values } = parseArgs({
   options: {
     scrape: { type: 'boolean', default: false },
+    datacore: { type: 'boolean', default: false },
     'dry-run': { type: 'boolean', default: false },
     ptu: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
@@ -38,6 +39,7 @@ if (values.help) {
 
 Options:
   --scrape      Run scrape:scmdb and scrape:spviewer before updating
+  --datacore    Run scrape:scmdb and scrape:datacore before updating (replaces --scrape)
   --dry-run     Preview changes without writing
   --ptu         Use PTU scraped data
   -v, --verbose Enable verbose logging
@@ -52,7 +54,7 @@ if (values.verbose) updateArgs.push('--verbose');
 
 // Subprocesses use stdio:'inherit', so a persistent bar would conflict with their output.
 // Instead, render a snapshot bar after each step completes (start → stop immediately).
-const totalSteps = 3 + (values.scrape ? 2 : 0);
+const totalSteps = 3 + (values.scrape || values.datacore ? 2 : 0);
 let completedSteps = 0;
 const pipelineBar = new cliProgress.SingleBar({
   format: 'Pipeline {bar} {percentage}% | {value}/{total} | {step}',
@@ -78,7 +80,15 @@ fs.copyFileSync(extractedGamePath, REPO_INI);
 completeStep('global.ini extracted & synced to repo');
 
 // Step 2: Scrape (optional)
-if (values.scrape) {
+if (values.datacore) {
+  log('=== Step 2: Scraping SCMDB ===');
+  runScript(['bin/scrape-scmdb.ts']);
+  completeStep('SCMDB scraped');
+
+  log('=== Step 2b: Scraping Datacore ===');
+  runScript(['bin/scrape-datacore.ts', '--all']);
+  completeStep('Datacore scraped');
+} else if (values.scrape) {
   log('=== Step 2: Scraping SCMDB ===');
   runScript(['bin/scrape-scmdb.ts']);
   completeStep('SCMDB scraped');
@@ -87,7 +97,7 @@ if (values.scrape) {
   runScript(['bin/scrape-spviewer.ts', '--all']);
   completeStep('SPViewer scraped');
 } else {
-  log('=== Step 2: Skipping scrape (pass --scrape to enable) ===');
+  log('=== Step 2: Skipping scrape (pass --scrape or --datacore to enable) ===');
 }
 
 // Step 3: Apply updates

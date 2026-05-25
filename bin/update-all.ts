@@ -4,7 +4,7 @@ import cliProgress from 'cli-progress';
 import { type Artifact, writeArtifactFile } from '../src/artifact/artifact';
 import { findLatestMatchingDirectory } from '../src/io/local/discovery';
 import { backupIniFile } from '../src/io/local/ini-file';
-import { loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
+import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { runUpdate } from '../src/lib/updater';
@@ -68,6 +68,7 @@ const { values } = parseArgs({
     'emit-artifact': { type: 'string' },
     ptu: { type: 'boolean', default: false },
     'include-mining-journal': { type: 'boolean', default: false },
+    provider: { type: 'string', default: 'spviewer' },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -86,6 +87,7 @@ if (values.help) {
   console.log('      --emit-artifact <path>  Write a patch artifact JSON to the given path (ADR 002)');
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
   console.log('      --include-mining-journal  Also update mining compendium journal entry');
+  console.log('      --provider <name>  Data provider: "spviewer" (default) or "datacore"');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
@@ -123,6 +125,12 @@ async function resolveLatestVersionDir(base: string, ptu: boolean, source: strin
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
+const provider = values.provider ?? 'spviewer';
+if (provider !== 'spviewer' && provider !== 'datacore') {
+  console.error(`Unknown --provider "${provider}". Valid values: spviewer, datacore`);
+  process.exit(1);
+}
+
 // Resolve versioned SCMDB directory (or use --csv-dir override for SCMDB).
 let csvDir: string;
 let scmdbVersion = '(custom)';
@@ -136,10 +144,24 @@ if (values['csv-dir']) {
   scmdbVersion = path.basename(versionDir);
 }
 
-// Resolve versioned SPViewer directory (always auto-detected — no override flag for now).
-const spviewerBase = path.join(repoRoot, 'csv', 'spviewer');
-const spviewerVersionDir = await resolveLatestVersionDir(spviewerBase, values.ptu, 'SPViewer', 'scrape-spviewer.js');
-const spviewerVersion = path.basename(spviewerVersionDir);
+// Resolve versioned SPViewer or DataCore directory (always auto-detected).
+let itemVersionDir: string;
+let itemVersion: string;
+
+if (provider === 'datacore') {
+  const datacoreBase = path.join(repoRoot, 'csv', 'datacore');
+  const versionDir = await resolveLatestVersionDir(datacoreBase, values.ptu, 'DataCore', 'scrape-datacore.js');
+  itemVersionDir = versionDir;
+  itemVersion = path.basename(versionDir);
+} else {
+  const spviewerBase = path.join(repoRoot, 'csv', 'spviewer');
+  const versionDir = await resolveLatestVersionDir(spviewerBase, values.ptu, 'SPViewer', 'scrape-spviewer.js');
+  itemVersionDir = versionDir;
+  itemVersion = path.basename(versionDir);
+}
+
+// Keep backward-compatible alias for steps that reference SPViewer dir directly.
+const spviewerVersionDir = provider === 'spviewer' ? itemVersionDir : undefined;
 
 const options = {
   iniPath: values['ini-path'],
@@ -148,10 +170,10 @@ const options = {
 };
 
 const channel = values.ptu ? 'PTU' : 'LIVE';
-logger.info('Starting batch update', { scmdbVersion, spviewerVersion, channel, dryRun: options.dryRun });
-console.log(`=== Starting update (${channel}) ===`);
+logger.info('Starting batch update', { scmdbVersion, itemVersion, provider, channel, dryRun: options.dryRun });
+console.log(`=== Starting update (${channel}, provider: ${provider}) ===`);
 console.log(`  SCMDB:    ${scmdbVersion}`);
-console.log(`  SPViewer: ${spviewerVersion}\n`);
+console.log(`  ${provider === 'datacore' ? 'DataCore' : 'SPViewer'}: ${itemVersion}\n`);
 
 // SPViewer configs: use the versioned spviewer directory.
 // Mission configs: use the versioned SCMDB root directory. Individual configs
@@ -173,12 +195,14 @@ try {
   process.exit(1);
 }
 
-const spviewerConfigs = [...(await loadSpviewerConfigs()).values()];
+const spviewerConfigs = provider === 'spviewer' ? [...(await loadSpviewerConfigs()).values()] : [];
+const datacoreConfigs = provider === 'datacore' ? [...(await loadDatacoreConfigs()).values()] : [];
 const missionConfigs = [...(await loadMissionConfigs()).values()].filter((c) => !c.skip);
 
 // Tag each config with the csvDir it should use.
 const categories = [
-  ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: spviewerVersionDir })),
+  ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: itemVersionDir })),
+  ...datacoreConfigs.map((cfg) => ({ config: cfg, csvDir: itemVersionDir })),
   ...missionConfigs.map((cfg) => ({ config: cfg, csvDir: missionCsvDir })),
 ];
 
@@ -232,6 +256,7 @@ for (let i = 0; i < categories.length; i++) {
 let barStep = categories.length;
 bar.update(barStep, { category: 'Component Titles' });
 await runStep('Component Titles', results, errors, async () => {
+  if (!spviewerVersionDir) return null; // requires SPViewer data
   logger.info('Starting component title update');
   const result = await runComponentTitleUpdate({
     iniPath,
@@ -250,6 +275,7 @@ await runStep('Component Titles', results, errors, async () => {
 barStep++;
 bar.update(barStep, { category: 'FPS title tags' });
 await runStep('FPS title tags', results, errors, async () => {
+  if (!spviewerVersionDir) return null; // requires SPViewer data
   logger.info('Starting FPS title tag update');
   const result = await runFpsTitleTagUpdate({
     iniPath,
@@ -268,6 +294,7 @@ await runStep('FPS title tags', results, errors, async () => {
 barStep++;
 bar.update(barStep, { category: 'Missile title tags' });
 await runStep('Missile title tags', results, errors, async () => {
+  if (!spviewerVersionDir) return null; // requires SPViewer data
   logger.info('Starting missile title tag update');
   const result = await runMissileTitleTagUpdate({
     iniPath,
@@ -335,7 +362,7 @@ if (values['emit-artifact']) {
   const artifact: Artifact = {
     generatedAt: new Date().toISOString(),
     scmdbVersion: scmdbVersion ?? null,
-    spviewerVersion: spviewerVersion ?? null,
+    spviewerVersion: spviewerVersionDir ? itemVersion : null,
     entries: mergedEntries,
     stats: {
       categoryCount: categories.length,

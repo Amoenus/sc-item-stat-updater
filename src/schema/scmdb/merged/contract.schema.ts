@@ -217,7 +217,7 @@ export const ContractSchema = z.object({
   prerequisites: ContractPrerequisitesSchema,
   pyroRegion: z.union([z.array(PyroRegionSchema), z.null()]),
   rewardUEC: z.union([z.number(), z.null()]),
-  rewardRepCalculated: z.union([z.number(), z.null()]),
+  rewardRepCalculated: z.union([z.number(), z.null()]).optional(),
   buyIn: z.union([z.number(), z.null()]),
   minStanding: z.union([MinStandingSchema, z.null()]),
   maxStanding: z.union([StandingSchema, z.null()]),

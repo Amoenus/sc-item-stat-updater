@@ -1,0 +1,5 @@
+Entity Class,Manufacturer,Size,Grade,Class,Health,Force,Range,Full Strength Distance,Max Angle,Max Volume,Tow Force,Tow Max Distance
+argo_srv_maintractorbeamarm,,,,,20000,,,,,,,
+espr_prowler_utility_tractor_beam_arm,,,,,4000,,,,,,,
+rsi_hermes_utility_tractor_beam_arm,,,,,4000,,,,,,,
+rsi_zeus_tractor_beam_arm,,,,,4000,,,,,,,

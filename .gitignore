@@ -1,3 +1,6 @@
+# Raw extracted game data — large, not committed
+Data/
+
 node_modules/
 *.backup
 
@@ -6,5 +9,9 @@ node_modules/
 global.ini.*
 dist/
 
+# DataCore XML cache — large extracted files, not committed
+csv/datacore/.xmlcache/
+
 # Local environment overrides — not committed
 .env.local
+Engine/*

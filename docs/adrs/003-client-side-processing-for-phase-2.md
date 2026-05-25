@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-In Phase 2, the application will transition to a web-based portal. We need a mechanism for merging the intermediary JSON artifacts (from ADR 002) with the user's local `global.ini` file. A traditional approach might involve uploading the `global.ini` to a backend server, processing it, and returning the updated file.
+In Phase 2, the application will transition to a web-based portal. We need a mechanism for merging the intermediary JSON artifacts (from ADR 002) with the user's local `global.ini` file. A traditional approach might involve uploading the `global.ini` to a backend server, processing it, and returning the updated file. The same sentiment will apply to `Data.p4k`, where users will point to the file on their computer or use our default one.
 
 ## Decision
 The Phase 2 Web App will **not** use a backend server to process the `global.ini` file. Instead, it will use the HTML5 File API and process the text entirely within the user's browser via client-side JavaScript.
