@@ -291,16 +291,18 @@ export async function preflightCheckConfigs(categories: Array<{ config: ItemConf
       const filenames = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(
         (f): f is string => typeof f === 'string',
       );
-      const missing: string[] = [];
-      for (const filename of filenames) {
-        const filePath = resolveChildPath(csvDir, filename, 'source file');
-        try {
-          await fs.access(filePath);
-        } catch {
-          missing.push(`  [${config.label}] ${filename}`);
-        }
-      }
-      return missing;
+      const missingResults = await Promise.all(
+        filenames.map(async (filename) => {
+          const filePath = resolveChildPath(csvDir, filename, 'source file');
+          try {
+            await fs.access(filePath);
+            return null;
+          } catch {
+            return `  [${config.label}] ${filename}`;
+          }
+        }),
+      );
+      return missingResults.filter((m): m is string => m !== null);
     }),
   );
 
