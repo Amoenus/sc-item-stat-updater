@@ -8,7 +8,7 @@ import { z } from 'zod';
 export const SourceSchema = z.enum(['blueprintmissionpools', 'collectorwikelo', '48blueprints', 'xenothreat2rewards']);
 export type Source = z.infer<typeof SourceSchema>;
 
-export const FillTypeSchema = z.enum(['even', 'random']);
+export const FillTypeSchema = z.enum(['custom', 'even', 'random']);
 export type FillType = z.infer<typeof FillTypeSchema>;
 
 export const TriggerSchema = z.enum(['accept', 'complete']);
@@ -227,6 +227,9 @@ export const CargoManifestElementSchema = z.enum([
   'mixedcargo_generic_mediumvalue_halfcargo',
   'mixedcargo_generic_mediumvalue_minimumcargo',
   'mixedcargo_generic_mediumvalue_scrap',
+  'shipheist/shipheist_freelancer_easy',
+  'shipheist/shipheist_freelancer_hard',
+  'shipheist/shipheist_freelancer_medium',
 ]);
 export type CargoManifestElement = z.infer<typeof CargoManifestElementSchema>;
 
