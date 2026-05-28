@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
 // against real unforged game files. Launchers may live under

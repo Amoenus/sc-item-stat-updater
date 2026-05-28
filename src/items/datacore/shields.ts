@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 /**
  * DataForge XML field selectors for shield generator stats.
@@ -17,10 +17,10 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'shld_',
   nameKeyInfix: 'SHLD_',
   fieldSelectors: {
-    'HP Pool':       { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldHealth' },
-    'Regen Rate':    { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldRegen' },
+    'HP Pool': { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldHealth' },
+    'Regen Rate': { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldRegen' },
     'Damaged Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DamagedRegenDelay' },
-    'Downed Delay':  { selector: 'SCItemShieldGeneratorParams', attr: 'DownedRegenDelay' },
+    'Downed Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DownedRegenDelay' },
   },
 };
 

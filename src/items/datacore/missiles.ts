@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
 // against real unforged game files. Missiles may live under scitemweapon_missile
@@ -16,7 +16,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Damage Physical': 'SProjectileComponentParams BulletParams DamagePhysical',
     'Damage Energy': 'SProjectileComponentParams BulletParams DamageEnergy',
     'Damage Distortion': 'SProjectileComponentParams BulletParams DamageDistortion',
-    'Speed': 'SMissileComponentParams MissileParams MaxSpeed',
+    Speed: 'SMissileComponentParams MissileParams MaxSpeed',
     'Arm Delay': 'SMissileComponentParams MissileParams ArmTime',
     'Lock Delay': 'SMissileComponentParams MissileParams LockTime',
     'Lock Range': 'SMissileComponentParams MissileParams TrackingDistanceMax',

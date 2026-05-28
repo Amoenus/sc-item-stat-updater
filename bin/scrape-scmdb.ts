@@ -121,7 +121,14 @@ function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.par
   if (elements.length) {
     writeOutput(
       'mining-elements.csv',
-      toCsv(elements, ['Element Name', 'Rarity', 'Ground Scan Signature', 'Scan Signature', 'Resistance', 'Instability']),
+      toCsv(elements, [
+        'Element Name',
+        'Rarity',
+        'Ground Scan Signature',
+        'Scan Signature',
+        'Resistance',
+        'Instability',
+      ]),
     );
   }
 
@@ -145,9 +152,7 @@ function printVersions(versions: VersionEntry[]): void {
     console.log(`  ${entry.version} -> ${entry.file}`);
   }
   console.log('');
-  console.log(
-    'By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.',
-  );
+  console.log('By default this scraper uses the latest live SCMDB version. Use --ptu to fetch the latest PTU version.');
 }
 
 async function main() {

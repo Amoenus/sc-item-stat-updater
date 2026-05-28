@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ Self-destruct entity class prefix and DataForge component names are
 // speculative. Verify against real game files.
@@ -10,7 +10,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'sdsys_',
   nameKeyInfix: 'SDSYS_',
   fieldSelectors: {
-    'Countdown': 'SSelfDestructComponentParams SelfDestructParams Countdown',
+    Countdown: 'SSelfDestructComponentParams SelfDestructParams Countdown',
     'Explosion Damage': 'SSelfDestructComponentParams SelfDestructParams ExplosionDamage',
     'Explosion Radius': 'SSelfDestructComponentParams SelfDestructParams ExplosionRadius',
   },

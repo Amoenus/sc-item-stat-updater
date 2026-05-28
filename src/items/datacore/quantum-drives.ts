@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ p4kFilter, entityClassPrefix, nameKeyInfix and all fieldSelectors are
 // best-effort derivations from community documentation. Verify against real
@@ -16,7 +16,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Stage 2 Accel': 'SQuantumDriveComponentParams QuantumDriveParams Stage2AccelSpeed',
     'Spline Speed': 'SQuantumDriveComponentParams QuantumDriveParams SplineSpeed',
     'Spool Time': 'SQuantumDriveComponentParams QuantumDriveParams SpoolUpTime',
-    'Cooldown': 'SQuantumDriveComponentParams QuantumDriveParams CooldownTime',
+    Cooldown: 'SQuantumDriveComponentParams QuantumDriveParams CooldownTime',
     'Interdiction Delay': 'SQuantumDriveComponentParams QuantumDriveParams InterdictionDelay',
     'Fuel Rate': 'SQuantumDriveComponentParams QuantumDriveParams QuantumFuelRate',
   },

@@ -64,8 +64,8 @@ function validateColumns(
   if (!requiredColumns || rows.length === 0) {
     return;
   }
-  const columns = Object.keys(rows[0]);
-  const missing = requiredColumns.filter((col: string) => !columns.includes(col));
+  const columns = new Set(Object.keys(rows[0]));
+  const missing = requiredColumns.filter((col: string) => !columns.has(col));
   if (missing.length > 0) {
     throw new Error(`${sourceLabel} schema mismatch: missing columns: ${missing.join(', ')}`);
   }

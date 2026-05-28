@@ -2,15 +2,48 @@
 const AUX_NAME_KEY_SUFFIX_PATTERN = /_(short|mag|ammo)$/i;
 
 const KNOWN_VARIANT_SUFFIX_BASES = new Set([
-  'acid', 'arctic', 'black', 'blue', 'brown', 'camo', 'cc', 'cen', 'chromic', 'collector',
-  'cyan', 'fallout', 'firerats', 'gold', 'gray', 'green', 'grey', 'iae', 'imp', 'lumi',
-  'luminalia', 'orange', 'pink', 'purple', 'red', 'silver', 'store', 'sunset', 'tan', 'teal',
-  'tint', 'uee', 'urban', 'white', 'yellow',
+  'acid',
+  'arctic',
+  'black',
+  'blue',
+  'brown',
+  'camo',
+  'cc',
+  'cen',
+  'chromic',
+  'collector',
+  'cyan',
+  'fallout',
+  'firerats',
+  'gold',
+  'gray',
+  'green',
+  'grey',
+  'iae',
+  'imp',
+  'lumi',
+  'luminalia',
+  'orange',
+  'pink',
+  'purple',
+  'red',
+  'silver',
+  'store',
+  'sunset',
+  'tan',
+  'teal',
+  'tint',
+  'uee',
+  'urban',
+  'white',
+  'yellow',
 ]);
 
 function isKnownVariantSuffix(suffix: string): boolean {
   const lower = suffix.toLowerCase();
-  return KNOWN_VARIANT_SUFFIX_BASES.has(lower) || KNOWN_VARIANT_SUFFIX_BASES.has(lower.replace(/[0-9]+[a-z]{0,10}$/, ''));
+  return (
+    KNOWN_VARIANT_SUFFIX_BASES.has(lower) || KNOWN_VARIANT_SUFFIX_BASES.has(lower.replace(/[0-9]+[a-z]{0,10}$/, ''))
+  );
 }
 
 const BRACKET_TAG_PATTERN = /^\[[A-Z0-9| ]+\]\s+/i;
@@ -25,7 +58,10 @@ export function normalizeSpaces(value: unknown): string {
   } else {
     str = JSON.stringify(value);
   }
-  return str.replaceAll(/[\u00a0\u202f]/g, ' ').replaceAll(/\s+/g, ' ').trim();
+  return str
+    .replaceAll(/[\u00a0\u202f]/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
 }
 
 export function parseNameLine(line: string): { key: string; value: string } | null {

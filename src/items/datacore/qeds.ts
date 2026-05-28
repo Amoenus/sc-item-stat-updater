@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ QED (Quantum Enforcement Device / Quantum Interdiction Generator) entity
 // class prefix and DataForge paths are speculative. INI keys use both
@@ -15,7 +15,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Interdiction Range': 'SQuantumInterdictionGeneratorComponentParams QIGParams InterdictionRange',
     'Charge Delay': 'SQuantumInterdictionGeneratorComponentParams QIGParams ChargeTime',
     'Activation Delay': 'SQuantumInterdictionGeneratorComponentParams QIGParams ActivationDelay',
-    'Cooldown': 'SQuantumInterdictionGeneratorComponentParams QIGParams CooldownTime',
+    Cooldown: 'SQuantumInterdictionGeneratorComponentParams QIGParams CooldownTime',
   },
 };
 

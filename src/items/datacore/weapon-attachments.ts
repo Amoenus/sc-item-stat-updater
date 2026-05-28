@@ -9,11 +9,11 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: '',
   nameKeyInfix: '',
   fieldSelectors: {
-    'Slot': 'SItemPortComponentParams itemPortParams type',
+    Slot: 'SItemPortComponentParams itemPortParams type',
     'Damage Modifier': 'SWeaponAttachmentComponentParams attachmentParams damageModifier',
     'Projectile Speed Modifier': 'SWeaponAttachmentComponentParams attachmentParams projectileSpeedModifier',
     'Heat Modifier': 'SWeaponAttachmentComponentParams attachmentParams heatModifier',
-    'Magnification': 'SWeaponAttachmentComponentParams attachmentParams magnification',
+    Magnification: 'SWeaponAttachmentComponentParams attachmentParams magnification',
     'Aim Time Modifier': 'SWeaponAttachmentComponentParams attachmentParams adsAimTimeModifier',
     'Sound Radius Modifier': 'SWeaponAttachmentComponentParams attachmentParams soundRadiusModifier',
   },

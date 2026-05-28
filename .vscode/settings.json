@@ -1,6 +1,6 @@
 {
-    "sonarlint.connectedMode.project": {
-        "connectionId": "amoenus-github",
-        "projectKey": "Amoenus_sc-item-stat-updater"
-    }
+  "sonarlint.connectedMode.project": {
+    "connectionId": "amoenus-github",
+    "projectKey": "Amoenus_sc-item-stat-updater"
+  }
 }

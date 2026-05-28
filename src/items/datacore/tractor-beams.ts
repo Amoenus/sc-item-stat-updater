@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ Tractor beam entity class prefix and DataForge component names are
 // inferred from community data. Verify against real game files.
@@ -10,8 +10,8 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'trctr_',
   nameKeyInfix: 'TRCTR_',
   fieldSelectors: {
-    'Force': 'STractorBeamComponentParams TractorBeamParams MaxForce',
-    'Range': 'STractorBeamComponentParams TractorBeamParams MaxRange',
+    Force: 'STractorBeamComponentParams TractorBeamParams MaxForce',
+    Range: 'STractorBeamComponentParams TractorBeamParams MaxRange',
     'Full Strength Distance': 'STractorBeamComponentParams TractorBeamParams FullStrengthDistance',
     'Max Angle': 'STractorBeamComponentParams TractorBeamParams MaxAngle',
     'Max Volume': 'STractorBeamComponentParams TractorBeamParams MaxVolume',

@@ -14,7 +14,8 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: '',
   nameKeyInfix: '',
   fieldSelectors: {
-    'Damage Alpha': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams DamageInfo DamageEntry damage',
+    'Damage Alpha':
+      'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams DamageInfo DamageEntry damage',
     'Rate of Fire': 'SWeaponComponentParams SWeaponActionFireSingleParams fireRate',
     'Fire Mode': 'SWeaponComponentParams SWeaponActionFireSingleParams fireMode',
     'Projectile Speed': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams speed',

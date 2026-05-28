@@ -36,16 +36,10 @@
  */
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { stringify } from 'csv-stringify/sync';
-import {
-  ensureToolsInstalled,
-  readGameVersion,
-  resolveLiveDir,
-  runTool,
-} from '../src/io/local/unp4k-tool';
 import {
   extractAttachDef,
   extractEntityClass,
@@ -54,6 +48,7 @@ import {
   xmlAttr,
   xmlVal,
 } from '../src/extractor/datacore-xml-parser';
+import { ensureToolsInstalled, readGameVersion, resolveLiveDir, runTool } from '../src/io/local/unp4k-tool';
 import type { DataCoreItemTypeConfig } from '../src/items/datacore/types';
 
 // ---------------------------------------------------------------------------
@@ -83,7 +78,8 @@ const { values, positionals } = parseArgs({
 });
 
 if (values.help) {
-  console.log(`
+  console.log(
+    `
 Usage: node scrape-datacore.js [options] [type...]
 
 Scrapes item stats from the Star Citizen DataForge database and writes CSV files.
@@ -104,7 +100,8 @@ Arguments:
 
 Environment:
   SC_LIVE_DIR      Path to the Star Citizen LIVE directory (required)
-`.trim());
+`.trim(),
+  );
   process.exit(0);
 }
 
@@ -383,10 +380,7 @@ if (errors.length > 0) process.exit(1);
  * Handles both plain string selectors (using xmlVal) and
  * { selector, attr } objects (using xmlAttr).
  */
-function resolveField(
-  $: ReturnType<typeof loadXml>,
-  spec: string | { selector: string; attr: string },
-): string {
+function resolveField($: ReturnType<typeof loadXml>, spec: string | { selector: string; attr: string }): string {
   if (typeof spec === 'string') return xmlVal($, spec);
   return xmlAttr($, spec.selector, spec.attr);
 }
