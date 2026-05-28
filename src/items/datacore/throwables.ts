@@ -9,7 +9,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'gren_',
   nameKeyInfix: 'GREN_',
   fieldSelectors: {
-    'Type': 'SThrowableComponentParams ThrowableParams type',
+    Type: 'SThrowableComponentParams ThrowableParams type',
     'Damage Physical': 'SProjectileComponentParams BulletParams DamagePhysical',
     'Damage Energy': 'SProjectileComponentParams BulletParams DamageEnergy',
     'Damage Distortion': 'SProjectileComponentParams BulletParams DamageDistortion',

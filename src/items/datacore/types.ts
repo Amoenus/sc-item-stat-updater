@@ -80,7 +80,7 @@ export function makeGetTargetKeys(
   entityClassPrefix: string,
   nameKeyInfix: string,
 ): NonNullable<ItemConfig['getTargetKeys']> {
-  return function (row, deriveDescKey) {
+  return (row, deriveDescKey) => {
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     const suffix = entityClass.replace(new RegExp(`^${entityClassPrefix}`, 'i'), '').toUpperCase();

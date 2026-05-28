@@ -27,7 +27,8 @@ async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<stri
   }
   const configs = new Map<string, ItemConfig>();
   for (const entry of entries) {
-    if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry === 'registry.ts' || entry === 'types.ts') continue;
+    if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry === 'registry.ts' || entry === 'types.ts')
+      continue;
     const slug = toSlug(entry, prefix);
     const fullPath = path.join(dir, entry);
     const { default: config } = await import(pathToFileURL(fullPath).href);
@@ -86,7 +87,9 @@ export async function listCategories(): Promise<{ spviewer: string[]; missions: 
   const readSlugs = async (dir: string, prefix: string): Promise<string[]> => {
     try {
       const entries = await fs.readdir(dir);
-      return entries.filter((e) => e.endsWith('.ts') && !e.endsWith('.test.ts') && e !== 'registry.ts' && e !== 'types.ts').map((e) => toSlug(e, prefix));
+      return entries
+        .filter((e) => e.endsWith('.ts') && !e.endsWith('.test.ts') && e !== 'registry.ts' && e !== 'types.ts')
+        .map((e) => toSlug(e, prefix));
     } catch {
       return [];
     }

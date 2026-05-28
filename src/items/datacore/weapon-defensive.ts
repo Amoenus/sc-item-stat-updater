@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
 // against real unforged game files. Countermeasure entity class names vary
@@ -11,7 +11,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'wcm_',
   nameKeyInfix: 'WPCM_',
   fieldSelectors: {
-    'Type': 'SCountermeasureComponentParams CountermeasureParams type',
+    Type: 'SCountermeasureComponentParams CountermeasureParams type',
     'Ammo Quantity': 'SAmmoContainerComponentParams capacity',
     'Ammo Speed': 'SCountermeasureComponentParams CountermeasureParams speed',
     'Ammo Lifetime': 'SCountermeasureComponentParams CountermeasureParams lifetime',

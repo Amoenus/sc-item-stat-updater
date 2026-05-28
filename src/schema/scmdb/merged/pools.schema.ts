@@ -32,7 +32,10 @@ export type ResourcePools = z.infer<typeof ResourcePoolsSchema>;
  */
 export const CommodityResourcePoolEntrySchema = z.object({
   name: z.string(),
-  nameKey: z.string().min(1).regex(/^[\w\-.]+$/, 'nameKey must be a valid localization key'),
+  nameKey: z
+    .string()
+    .min(1)
+    .regex(/^[\w\-.]+$/, 'nameKey must be a valid localization key'),
 });
 export type CommodityResourcePoolEntry = z.infer<typeof CommodityResourcePoolEntrySchema>;
 

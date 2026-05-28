@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 // ⚠️ EMP entity class prefix and DataForge component structure are speculative.
 // The p4k path may be scitemweapon_emp or scitemvehicle_weaponemp.
@@ -15,7 +15,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Damage Radius': 'SEMPComponentParams EMPParams MaxRadius',
     'Charge Delay': 'SEMPComponentParams EMPParams ChargeUpTime',
     'Unleash Delay': 'SEMPComponentParams EMPParams UnleashDelay',
-    'Cooldown': 'SEMPComponentParams EMPParams CooldownTime',
+    Cooldown: 'SEMPComponentParams EMPParams CooldownTime',
   },
 };
 

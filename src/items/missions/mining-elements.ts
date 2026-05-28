@@ -69,8 +69,10 @@ export default {
     // Add Ground Scan Signature if present
     const groundScanSignature = row['Ground Scan Signature'];
     if (groundScanSignature && groundScanSignature.trim() !== '') {
-      statsBlock = statsBlock.replace(/(Scan Signature: [^\\]*)/, String.raw`$1\nGround Scan Signature: ${groundScanSignature}`);
-
+      statsBlock = statsBlock.replace(
+        /(Scan Signature: [^\\]*)/,
+        String.raw`$1\nGround Scan Signature: ${groundScanSignature}`,
+      );
     }
 
     return cleanFlavorText + statsBlock;
