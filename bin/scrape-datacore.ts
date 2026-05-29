@@ -163,7 +163,7 @@ if (positionals.length > 0) {
 // ---------------------------------------------------------------------------
 
 const LIVE_DIR = resolveLiveDir(__dirname);
-const gameVersion = readGameVersion(LIVE_DIR);
+const gameVersion = await readGameVersion(LIVE_DIR);
 const channel = values.ptu ? 'ptu' : 'live';
 const versionTag = `${gameVersion}-${channel}`;
 
