@@ -148,10 +148,15 @@ async function loadLookupMap(lookupCsvFile: string, csvDir: string): Promise<Map
 }
 
 /** Finds the last existing description key index for insertion ordering. */
-function findLastDescIndex(existingKeys: Record<string, number>, descKeyMatch: (key: string) => boolean): number {
+function findLastDescIndex(
+  existingKeys: Record<string, number>,
+  lowerCaseIndex: Map<string, string>,
+  descKeyMatch: (key: string) => boolean,
+): number {
   let lastDescIdx = -1;
-  for (const [key, idx] of Object.entries(existingKeys)) {
-    if (descKeyMatch(key.toLowerCase()) && idx > lastDescIdx) {
+  for (const [lowerKey, key] of lowerCaseIndex.entries()) {
+    const idx = existingKeys[key];
+    if (descKeyMatch(lowerKey) && idx > lastDescIdx) {
       lastDescIdx = idx;
     }
   }
@@ -500,7 +505,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
     }
 
     const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
-    const lastDescIdx = findLastDescIndex(existingKeys, config.descKeyMatch);
+    const lastDescIdx = findLastDescIndex(existingKeys, lowerCaseIndex, config.descKeyMatch);
 
     const context = new UpdateContext(
       config,
