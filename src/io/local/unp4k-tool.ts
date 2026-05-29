@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
+import type fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
@@ -137,31 +137,32 @@ export function resolveLiveDir(binDirname: string): string {
  * Attempts to read the SC build ID from a build manifest file in the LIVE directory.
  * Falls back to a timestamp string if the file is not found.
  */
-export function readGameVersion(liveDir: string): string {
+export async function readGameVersion(liveDir: string): Promise<string> {
   // build_manifest.id contains JSON — extract a clean version tag from it.
   const manifestPath = path.join(liveDir, 'build_manifest.id');
-  if (fs.existsSync(manifestPath)) {
-    try {
-      const json = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-      const data = json?.Data ?? json;
-      // Branch looks like "sc-alpha-4.8.0-hotfix" → extract "4.8.0"
-      const branch: string = data?.Branch ?? '';
-      const versionMatch = /(\d+\.\d+\.\d+)/.exec(branch);
-      const semver = versionMatch?.[1];
-      const changeNum: string = data?.RequestedP4ChangeNum ?? '';
-      if (semver && changeNum) return `${semver}.${changeNum}`;
-      if (semver) return semver;
-    } catch {
-      // fall through to plain-text candidates
-    }
+  try {
+    const manifestContent = await fsp.readFile(manifestPath, 'utf8');
+    const json = JSON.parse(manifestContent);
+    const data = json?.Data ?? json;
+    // Branch looks like "sc-alpha-4.8.0-hotfix" → extract "4.8.0"
+    const branch: string = data?.Branch ?? '';
+    const versionMatch = /(\d+\.\d+\.\d+)/.exec(branch);
+    const semver = versionMatch?.[1];
+    const changeNum: string = data?.RequestedP4ChangeNum ?? '';
+    if (semver && changeNum) return `${semver}.${changeNum}`;
+    if (semver) return semver;
+  } catch {
+    // fall through to plain-text candidates
   }
 
   // sc_version.id / version.id are plain-text version strings.
   for (const name of ['sc_version.id', 'version.id']) {
     const filePath = path.join(liveDir, name);
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf8').trim();
+    try {
+      const content = (await fsp.readFile(filePath, 'utf8')).trim();
       if (content) return content;
+    } catch {
+      // continue to next file
     }
   }
 
