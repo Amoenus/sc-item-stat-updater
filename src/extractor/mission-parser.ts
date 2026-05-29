@@ -516,6 +516,96 @@ export function normalizeLocalizationKey(key: string): string {
 }
 
 /**
+ * INI tags appended to mission title/description rows when a contract is part
+ * of a blueprint reward chain. `titleTag` is wrapped in `IniTag.EM4`; `descTag`
+ * is plain text appended by the description rebuilder.
+ */
+interface MissionBlueprintTags {
+  titleTag: string;
+  descTag: string;
+}
+
+const NO_BLUEPRINT_TAGS: MissionBlueprintTags = { titleTag: '', descTag: '' };
+
+function getBlueprintMissionTags(isBlueprintReward: boolean, isBlueprintChain: boolean): MissionBlueprintTags {
+  if (isBlueprintReward) {
+    return { titleTag: ` ${IniTag.EM4.wrap('[BP]')}`, descTag: '[BP Reward]' };
+  }
+  if (isBlueprintChain) {
+    return { titleTag: ` ${IniTag.EM4.wrap('[BP Chain]')}`, descTag: '[BP Chain]' };
+  }
+  return NO_BLUEPRINT_TAGS;
+}
+
+function getContractCooldownText(contract: ContractDTO): string {
+  if (!contract.hasPersonalCooldown || contract.personalCooldownTime <= 0) return '';
+  return formatCooldownMinutes(contract.personalCooldownTime);
+}
+
+function buildTitleMissionRow(titleKey: string, title: string, titleTag: string): MissionRowDTO | null {
+  if (!titleKey || !title) return null;
+  return MissionRowSchema.parse({
+    'Localization Key': titleKey,
+    Description: title,
+    TitleNote: titleTag,
+    Note: '',
+    RewardList: '',
+    ItemRewardList: '',
+    Cooldown: '',
+  });
+}
+
+function buildDescriptionMissionRow(
+  descKey: string,
+  description: string,
+  descTag: string,
+  rewardList: string,
+  itemRewardList: string,
+  cooldown: string,
+): MissionRowDTO | null {
+  if (!descKey || !description) return null;
+  return MissionRowSchema.parse({
+    'Localization Key': descKey,
+    Description: description,
+    Note: descTag,
+    TitleNote: '',
+    RewardList: rewardList,
+    ItemRewardList: itemRewardList,
+    Cooldown: cooldown,
+  });
+}
+
+function buildMissionRowsForContract(
+  contract: ContractDTO,
+  chainData: ChainDataDTO,
+  blueprintPools: BlueprintPoolsDTO,
+): MissionRowDTO[] {
+  const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
+  const isBlueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
+  const tags = getBlueprintMissionTags(isBlueprintReward, isBlueprintChain);
+
+  const titleKey = normalizeLocalizationKey(contract.titleKey || '');
+  const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
+  const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
+  const itemRewardList = buildItemRewardList(contract);
+  const cooldown = getContractCooldownText(contract);
+
+  const rows: MissionRowDTO[] = [];
+  const titleRow = buildTitleMissionRow(titleKey, contract.title, tags.titleTag);
+  if (titleRow) rows.push(titleRow);
+  const descRow = buildDescriptionMissionRow(
+    descKey,
+    contract.description,
+    tags.descTag,
+    rewardList,
+    itemRewardList,
+    cooldown,
+  );
+  if (descRow) rows.push(descRow);
+  return rows;
+}
+
+/**
  * Builds mission rows.
  */
 export function buildMissionRows(
@@ -523,60 +613,5 @@ export function buildMissionRows(
   chainData: ChainDataDTO,
   blueprintPools: BlueprintPoolsDTO,
 ): MissionRowDTO[] {
-  return contracts
-    .flatMap((contract) => {
-      const rows: MissionRowDTO[] = [];
-      const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-      const isBlueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
-      const titleKey = normalizeLocalizationKey(contract.titleKey || '');
-      const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
-      let titleTag = '';
-      let descTag = '';
-      if (isBlueprintReward) {
-        titleTag = ` ${IniTag.EM4.wrap('[BP]')}`;
-        descTag = '[BP Reward]';
-      } else if (isBlueprintChain) {
-        titleTag = ` ${IniTag.EM4.wrap('[BP Chain]')}`;
-        descTag = '[BP Chain]';
-      }
-      const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
-      const itemRewardList = buildItemRewardList(contract);
-      const descriptionNote = descTag;
-
-      const cooldown =
-        contract.hasPersonalCooldown && contract.personalCooldownTime > 0
-          ? formatCooldownMinutes(contract.personalCooldownTime)
-          : '';
-
-      if (titleKey && contract.title) {
-        rows.push(
-          MissionRowSchema.parse({
-            'Localization Key': titleKey,
-            Description: contract.title,
-            TitleNote: titleTag,
-            Note: '',
-            RewardList: '',
-            ItemRewardList: '',
-            Cooldown: '',
-          }),
-        );
-      }
-
-      if (descKey && contract.description) {
-        rows.push(
-          MissionRowSchema.parse({
-            'Localization Key': descKey,
-            Description: contract.description,
-            Note: descriptionNote,
-            TitleNote: '',
-            RewardList: rewardList,
-            ItemRewardList: itemRewardList,
-            Cooldown: cooldown,
-          }),
-        );
-      }
-
-      return rows;
-    })
-    .filter(Boolean);
+  return contracts.flatMap((contract) => buildMissionRowsForContract(contract, chainData, blueprintPools));
 }

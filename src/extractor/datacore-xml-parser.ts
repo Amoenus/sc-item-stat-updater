@@ -55,7 +55,7 @@ export function extractEntityClass($: CheerioDoc): string {
   // Fallback: parse from tag name "EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem"
   const tagName = (root[0] as any)?.name ?? '';
   const dot = tagName.indexOf('.');
-  return dot !== -1 ? tagName.slice(dot + 1) : tagName;
+  return dot === -1 ? tagName : tagName.slice(dot + 1);
 }
 
 /** AttachDef attributes — common to all vehicle items. */
