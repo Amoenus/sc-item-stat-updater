@@ -11,12 +11,7 @@ export function parseCSV(text: string): Record<string, string>[] {
   });
 }
 
-/**
- * Reads and parses a CSV file.
- *
- * @param {string} filePath
- * @returns {Promise<Array<Record<string, string>>>}
- */
+/** Reads and parses a CSV file. */
 export async function readCsvFile(filePath: string): Promise<Record<string, string>[]> {
   const text = await fs.readFile(filePath, 'utf-8');
   return parseCSV(text);

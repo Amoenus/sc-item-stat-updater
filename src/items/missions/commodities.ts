@@ -16,12 +16,7 @@ const ILLEGAL_COMMODITY_KEYS = new Set(
   ].map((key) => key.toLowerCase()),
 );
 
-/**
- * Finds the latest merged-*.json file inside the given SCMDB version directory.
- *
- * @param {string} csvDir - the versioned SCMDB directory (e.g. csv/scmdb/4.1.1-live.9800000)
- * @returns {Promise<string>} resolved absolute path to the json file
- */
+/** Finds the latest merged-*.json file inside the given SCMDB version directory. */
 async function resolveJsonFile(csvDir: string): Promise<string> {
   return findLatestMatchingFile(csvDir, (name) => name.startsWith('merged-') && name.endsWith('.json'), {
     label: 'Commodities SCMDB directory',
@@ -30,7 +25,6 @@ async function resolveJsonFile(csvDir: string): Promise<string> {
   });
 }
 
-/** @type {import('../../lib/types.js').ItemConfig} */
 export default {
   // jsonFile is resolved dynamically via resolveJsonFile — no static path needed.
   resolveJsonFile,

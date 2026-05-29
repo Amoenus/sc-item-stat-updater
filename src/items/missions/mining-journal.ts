@@ -1,11 +1,5 @@
 import type { ItemConfig } from '../../lib/types';
-/**
- * Builds the journal value from CSV rows.
- *
- * @param {Array<Record<string, string>>} rows - CSV rows from mining-journal.csv
- * @param {string} oldValue - current INI value for Journal_General_Mining_Compendium_Content
- * @returns {string} new INI value with rarity-grouped format
- */
+/** Builds the journal value from CSV rows. Returns new INI value with rarity-grouped format. */
 export function buildJournalValue(rows: Array<Record<string, string>>, oldValue: string): string {
   // Extract intro block - everything before first "\\n\\n**" (start of first rarity section)
   const introEndIndex = oldValue.indexOf(String.raw`\n\n**`);

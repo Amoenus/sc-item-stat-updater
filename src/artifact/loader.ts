@@ -24,22 +24,6 @@ const logger = getLogger('loader');
  *  - If the key is absent, it is appended at the end of the file (unless
  *    `skipMissing` is true, which matches the current Phase-1 behaviour where
  *    the INI is considered the source of truth for which keys exist).
- *
- * @param {object} artifact - Artifact object (as returned by readArtifactFile)
- * @param {string} iniPath  - Absolute path to global.ini
- * @param {object} [options]
- * @param {boolean} [options.dryRun=false]    - Preview mode: compute changes but do not write
- * @param {boolean} [options.skipBackup=false] - Skip backup rotation before writing
- * @param {boolean} [options.skipMissing=true] - When true, keys absent from the INI are ignored
- *                                               rather than appended. Set to false to allow
- *                                               inserting entirely new keys.
- * @returns {Promise<{
- *   updatedCount: number,
- *   skippedCount: number,
- *   insertedCount: number,
- *   issues: Array,
- *   summary: string,
- * }>}
  */
 export async function applyArtifact(
   artifact: { entries: Record<string, string> },

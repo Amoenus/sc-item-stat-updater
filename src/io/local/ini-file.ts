@@ -56,9 +56,6 @@ function recordDuplicate(
  * Also produces a `lowerCaseIndex` — a Map from lowercased key to its canonical
  * form — so that {@link findIniKey} can perform case-insensitive lookups in O(1)
  * instead of iterating over all keys on every miss.
- *
- * @param {string} filePath
- * @returns {Promise<{ lines: string[], index: Record<string, number>, lowerCaseIndex: Map<string, string>, duplicates: Map<string, number[]>, allOccurrences: Map<string, number[]> }>}
  */
 export async function readIniFile(filePath: string): Promise<{
   lines: string[];
@@ -120,11 +117,6 @@ export async function readIniFile(filePath: string): Promise<{
  * by {@link readIniFile} to perform both lookups in O(1) — first an exact-match
  * check, then a single map lookup on the lowercased target — eliminating the
  * O(n) linear scan that was previously needed for case-insensitive misses.
- *
- * @param {Record<string, number>} index
- * @param {Map<string, string>} lowerCaseIndex - Map of `key.toLowerCase()` → canonical key
- * @param {string} targetKey
- * @returns {string | undefined}
  */
 export function findIniKey(
   index: Record<string, number>,
@@ -185,17 +177,7 @@ export async function writeIniFile(
   }
 }
 
-/**
- * Writes INI lines only when there are changes to persist.
- *
- * @param {string} filePath
- * @param {string[]} lines
- * @param {object} [options]
- * @param {number} [options.updatedCount]
- * @param {boolean} [options.dryRun]
- * @param {boolean} [options.skipBackup]
- * @returns {Promise<boolean>} true when a write was performed
- */
+/** Writes INI lines only when there are changes to persist. Returns true when a write was performed. */
 export async function writeIniFileIfChanged(
   filePath: string,
   lines: string[],

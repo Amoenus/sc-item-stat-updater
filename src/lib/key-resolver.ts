@@ -8,9 +8,6 @@ const SKIP_SUFFIX_RE = /_(short|mag|barrel|ammo)$/i;
 /**
  * Builds a reverse index from INI lines: display-name value → item_Name key.
  * Skips auxiliary entries (_short, _mag, etc.) to prefer canonical keys.
- *
- * @param {string[]} lines - INI file lines
- * @returns {Map<string, string>} displayName → localizationKey
  */
 export function buildReverseNameIndex(lines: string[]): Map<string, string> {
   const index = new Map<string, string>();
@@ -73,13 +70,6 @@ function resolveName(
  * Does NOT mutate the input array. Returns a new array of resolved rows (with
  * 'Localization Key' added as a new property on a shallow copy of each row),
  * the list of unresolved names, and the full resolved mapping.
- *
- * @param {Record<string,string>[]} rows - Parsed spviewer CSV rows (not mutated)
- * @param {string} nameColumn - CSV column containing the display name
- * @param {Map<string,string>} reverseIndex - INI value → key index
- * @param {Map<string,string>} [lookupMap] - Optional lookup CSV name → key map
- * @param {Map<string,string>} [savedMapping] - Previously saved name → key mapping
- * @returns {{ resolved: ResolvedRow[], unresolved: string[], mapping: Map<string, string> }}
  */
 export function resolveLocalizationKeys(
   rows: Record<string, string>[],

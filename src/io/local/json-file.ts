@@ -2,13 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Reads and parses a JSON file.
- *
- * @param {string} filePath
- * @param {string} [label]
- * @returns {Promise<any>}
- */
+/** Reads and parses a JSON file. */
 export async function readJsonFile(filePath: string, label = 'JSON file'): Promise<unknown> {
   const content = await fs.readFile(filePath, 'utf-8');
 
@@ -20,14 +14,7 @@ export async function readJsonFile(filePath: string, label = 'JSON file'): Promi
   }
 }
 
-/**
- * Reads a JSON file relative to the calling module.
- *
- * @param {string} importMetaUrl
- * @param {string} relativePath
- * @param {string} [label]
- * @returns {Promise<any>}
- */
+/** Reads a JSON file relative to the calling module. */
 export async function readJsonRelative(
   importMetaUrl: string,
   relativePath: string,

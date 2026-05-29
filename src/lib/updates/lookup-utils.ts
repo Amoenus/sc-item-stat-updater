@@ -1,12 +1,7 @@
 ﻿import { listMatchingFiles } from '../../io/local/discovery';
 import { resolveChildPath } from '../../io/local/path-conventions';
 
-/**
- * Returns sorted SPViewer CSV filenames from a directory.
- *
- * @param {string} spviewerDir
- * @returns {Promise<string[]>}
- */
+/** Returns sorted SPViewer CSV filenames from a directory. */
 export async function listSpviewerCsvFiles(spviewerDir: string): Promise<string[]> {
   return listMatchingFiles(spviewerDir, (name) => name.endsWith('.spviewer.csv'), {
     label: 'SPViewer directory',
@@ -16,12 +11,6 @@ export async function listSpviewerCsvFiles(spviewerDir: string): Promise<string[
 /**
  * Builds a Map from row data using a row-to-entry projector.
  * Nullish projector results are skipped.
- *
- * @template T
- * @template V
- * @param {Iterable<T>} rows
- * @param {(row: T) => null | undefined | readonly [string, V]} buildEntry
- * @returns {Map<string, V>}
  */
 export function buildLookupMapFromRows<V>(
   rows: Iterable<Record<string, string>>,
@@ -38,15 +27,7 @@ export function buildLookupMapFromRows<V>(
   return lookup;
 }
 
-/**
- * Builds a Map keyed by localization key from a saved name mapping.
- *
- * @template V
- * @param {Record<string, string>} nameToLocalizationKey
- * @param {Map<string, V>} nameLookup
- * @param {(localizationKey: string) => string} [normalizeKey]
- * @returns {Map<string, V>}
- */
+/** Builds a Map keyed by localization key from a saved name mapping. */
 export function buildMappedKeyLookup<V>(
   nameToLocalizationKey: Record<string, string>,
   nameLookup: Map<string, V>,

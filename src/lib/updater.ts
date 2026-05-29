@@ -284,9 +284,6 @@ function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: numb
  *
  * All missing paths are collected before throwing so users see every problem
  * at once rather than discovering them one run at a time.
- *
- * @param categories - Array of `{ config, csvDir }` pairs as built by the batch runner
- * @throws {Error} if any declared source file is absent from disk
  */
 export async function preflightCheckConfigs(categories: Array<{ config: ItemConfig; csvDir: string }>): Promise<void> {
   const perConfig = await Promise.all(
@@ -470,17 +467,7 @@ function getRowValidation(config: ItemConfig, row: Record<string, string>): 'val
   return validateRow(row, config.label);
 }
 
-/**
- * Runs a source-based update against global.ini.
- *
- * @param {import('./types.js').ItemConfig} config
- * @param {object} [options]
- * @param {string} [options.iniPath] - Path to global.ini (default: ./global.ini relative to project root)
- * @param {string} [options.csvDir] - Directory containing CSV and JSON files (default: ./csv)
- * @param {boolean} [options.dryRun] - Preview changes without writing (default: false)
- * @param {boolean} [options.skipBackup] - Skip backup rotation (default: false)
- * @param {boolean} [options.force] - Force writing the INI file when existing rows are found (default: false)
- */
+/** Runs a source-based update against global.ini. */
 export async function runUpdate(config: ItemConfig, options: UpdateOptions = {}) {
   const start = performance.now();
   const opts = resolveOptions(options);
@@ -554,12 +541,6 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
  * Runs the Extract+Transform phase for one item config and returns a patch manifest
  * (key→value pairs) without writing to global.ini. This is the per-category primitive
  * used by the artifact generator (ADR 002).
- *
- * @param {import('./types.js').ItemConfig} config
- * @param {object} [options]
- * @param {string} [options.iniPath]
- * @param {string} [options.csvDir]
- * @returns {Promise<{ label: string, patches: Record<string, string>, newLines: string[], issues: Array, stats: object }>}
  */
 export async function buildPatchData(config: ItemConfig, options: UpdateOptions = {}) {
   const result = await runUpdate(config, { ...options, dryRun: true, skipBackup: true });

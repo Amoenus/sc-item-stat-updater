@@ -9,13 +9,7 @@ export default {
   descKeyMatch: (kl: string) =>
     kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
 
-  /**
-   * Derives the target INI key from the Element Name.
-   *
-   * @param {{'Element Name': string}} row - CSV row data
-   * @param {(nameKey: string) => string} deriveDescKey - helper to create desc key from name
-   * @returns {string[]} array with the target key if found in INI, otherwise empty
-   */
+  /** Derives the target INI key from the Element Name. */
   getTargetKeys(row, _deriveDescKey) {
     const elementName = row['Element Name'];
     if (!elementName) return [];
@@ -38,15 +32,7 @@ export default {
     return [`items_commodities_${keyBase}_raw_desc`, `items_commodities_${keyBase}_ore_desc`];
   },
 
-  /**
-   * Builds the new INI value by appending scanner data stats.
-   *
-   * @param {{'Element Name': string, 'Rarity': string, 'Scan Signature': string, 'Resistance': string, 'Instability': string, 'Ground Scan Signature'?: string}} row
-   * @param {string} flavorText - existing flavor text from INI
-   * @param {string} oldValue - current INI value
-   * @param {string} targetKey - the INI key being updated
-   * @returns {string} new INI value with appended stats
-   */
+  /** Builds the new INI value by appending scanner data stats. */
   buildValue(row, _flavorText, oldValue, _targetKey) {
     // Use the full existing INI value as the base — for _ore_desc/_raw_desc keys the entire
     // value is flavor text (no \n\n separator before a stats block like other items use).

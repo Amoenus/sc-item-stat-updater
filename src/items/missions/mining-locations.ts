@@ -16,9 +16,6 @@ const ROMAN_RE = /\b(VIII|VII|VI|IV|V|III|II|I)\b/g;
 /**
  * Normalises a Location Name to a lowercase slug for INI key matching.
  * e.g. "Pyro I" -> "pyro1", "Aaron Halo" -> "aaronhalo"
- *
- * @param {string} name
- * @returns {string}
  */
 function toLocationSlug(name: string): string {
   return name
@@ -34,21 +31,16 @@ export default {
   // Optional columns (added by enriched scraper): 'Ground Vehicle Mineables', 'Quality Note'
   // Only update keys that already exist in the INI (planet/moon descs don't get new entries)
   noInsert: true,
-  descKeyMatch: (/** @type {string} */ kl) =>
-    /_desc$/i.test(kl) && !kl.startsWith('items_') && !kl.startsWith('journal_'),
+  descKeyMatch: (kl: string) => /_desc$/i.test(kl) && !kl.startsWith('items_') && !kl.startsWith('journal_'),
 
   /**
    * Derives the target INI key(s) for a location row.
    * Priority: explicit entry in locationKeyMap.json, then slug-based derivation.
-   *
-   * @param {{'Location Name': string}} row
-   * @returns {string[]}
    */
   getTargetKeys(row) {
     const name = row['Location Name'];
     if (!name) return [];
 
-    /** @param {string[]} keys */
     const withPVariants = (keys: string[]): string[] => {
       const out = [];
       const seen = new Set();
@@ -76,15 +68,7 @@ export default {
     return withPVariants([`${slug}_desc`]);
   },
 
-  /**
-   * Builds the new INI value for a location description.
-   *
-   * @param {{'Location Name': string, 'Ship Mineables': string, 'Hand Mineables': string, 'Ground Vehicle Mineables'?: string, 'Quality Note'?: string}} row
-   * @param {string} _flavorText - existing flavor text from INI (everything before first "Potential " section)
-   * @param {string} oldValue - current INI value
-   * @param {string} targetKey - the INI key being updated
-   * @returns {string} new INI value with updated mineable sections
-   */
+  /** Builds the new INI value for a location description. */
   buildValue(row, _flavorText, oldValue, targetKey) {
     // If we don't have a target key (not in our map), skip the update
     if (!targetKey) {

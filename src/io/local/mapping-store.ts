@@ -8,9 +8,6 @@ const logger = getLogger('mapping-store');
 /**
  * Loads a saved mapping file (spviewer name → localization key).
  * Returns an empty map if the file doesn't exist.
- *
- * @param {string} mappingPath - Absolute path to the JSON mapping file
- * @returns {Promise<Map<string, string>>}
  */
 export async function loadMappingFile(mappingPath: string): Promise<Map<string, string>> {
   try {
@@ -28,9 +25,6 @@ export async function loadMappingFile(mappingPath: string): Promise<Map<string, 
 /**
  * Saves the resolved mapping (spviewer name → localization key) to a JSON file.
  * Creates the parent directory if it doesn't exist.
- *
- * @param {string} mappingPath - Absolute path to the JSON mapping file
- * @param {Map<string, string>} mapping - name → localization key
  */
 export async function saveMappingFile(mappingPath: string, mapping: Map<string, string>): Promise<void> {
   const sorted = Object.fromEntries([...mapping.entries()].sort(([a], [b]) => a.localeCompare(b)));
@@ -41,9 +35,6 @@ export async function saveMappingFile(mappingPath: string, mapping: Map<string, 
 /**
  * Loads a lookup CSV and builds a map from both its Name and Localization Display Name
  * columns to the Localization Key column.
- *
- * @param {string} csvPath - Absolute path to the lookup CSV
- * @returns {Promise<Map<string, string>>} name/displayName → localizationKey
  */
 export async function buildLookupMap(csvPath: string): Promise<Map<string, string>> {
   const content = await fs.readFile(csvPath, 'utf-8');

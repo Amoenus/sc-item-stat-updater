@@ -1,12 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-/**
- * Returns true when a file or directory exists.
- *
- * @param {string} filePath
- * @returns {Promise<boolean>}
- */
+/** Returns true when a file or directory exists. */
 export async function pathExists(filePath: string): Promise<boolean> {
   try {
     await fs.access(filePath);
@@ -16,14 +11,7 @@ export async function pathExists(filePath: string): Promise<boolean> {
   }
 }
 
-/**
- * Reads a directory and returns matching file names (sorted).
- *
- * @param {string} dirPath
- * @param {(name: string) => boolean} isMatch
- * @param {{label?: string, notFoundMessage?: string}} [options]
- * @returns {Promise<string[]>}
- */
+/** Reads a directory and returns matching file names (sorted). */
 export async function listMatchingFiles(
   dirPath: string,
   isMatch: (name: string) => boolean,
@@ -47,14 +35,7 @@ export async function listMatchingFiles(
     .sort((a, b) => a.localeCompare(b));
 }
 
-/**
- * Resolves the latest matching file under a directory.
- *
- * @param {string} dirPath
- * @param {(name: string) => boolean} isMatch
- * @param {{label?: string, notFoundMessage?: string, noMatchMessage?: string}} [options]
- * @returns {Promise<string>}
- */
+/** Resolves the latest matching file under a directory. */
 export async function findLatestMatchingFile(
   dirPath: string,
   isMatch: (name: string) => boolean,
@@ -75,14 +56,7 @@ export async function findLatestMatchingFile(
   return path.join(dirPath, latestName);
 }
 
-/**
- * Resolves the latest matching subdirectory under a directory.
- *
- * @param {string} dirPath
- * @param {(name: string) => boolean} isMatch
- * @param {{label?: string, notFoundMessage?: string, noMatchMessage?: string}} [options]
- * @returns {Promise<string>}
- */
+/** Resolves the latest matching subdirectory under a directory. */
 export async function findLatestMatchingDirectory(
   dirPath: string,
   isMatch: (name: string) => boolean,
