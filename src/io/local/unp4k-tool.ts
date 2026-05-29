@@ -35,14 +35,13 @@ export async function findFile(dir: string, name: string): Promise<string | null
     return null;
   }
   for (const entry of entries) {
-    const full = path.join(dir, entry.name);
-    if (entry.isFile() && entry.name === name) return full;
-    if (entry.isDirectory()) {
-      const found = await findFile(full, name);
-      if (found) return found;
-    }
+    if (entry.isFile() && entry.name === name) return path.join(dir, entry.name);
   }
-  return null;
+  const subdirSearches = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => findFile(path.join(dir, entry.name), name));
+  const results = await Promise.all(subdirSearches);
+  return results.find((r) => r !== null) ?? null;
 }
 
 async function downloadToFile(url: string, dest: string): Promise<void> {
@@ -87,8 +86,10 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
     // File likely doesn't exist; currentTag remains empty
   }
 
-  let unp4kExe = await findFile(toolDir, 'unp4k.exe');
-  let unforgeExe = await findFile(toolDir, 'unforge.cli.exe');
+  let [unp4kExe, unforgeExe] = await Promise.all([
+    findFile(toolDir, 'unp4k.exe'),
+    findFile(toolDir, 'unforge.cli.exe'),
+  ]);
 
   if (!unp4kExe || !unforgeExe || currentTag !== latestTag) {
     log(`Downloading unp4k ${latestTag} ...`);
@@ -99,8 +100,10 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
       '-Command',
       `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${toolDir}'`,
     ]);
-    unp4kExe = await findFile(toolDir, 'unp4k.exe');
-    unforgeExe = await findFile(toolDir, 'unforge.cli.exe');
+    [unp4kExe, unforgeExe] = await Promise.all([
+      findFile(toolDir, 'unp4k.exe'),
+      findFile(toolDir, 'unforge.cli.exe'),
+    ]);
     if (!unp4kExe) throw new Error(`unp4k.exe not found after extraction in ${toolDir}`);
     if (!unforgeExe) throw new Error(`unforge.cli.exe not found after extraction in ${toolDir}`);
     await fsp.writeFile(versionFile, latestTag);
