@@ -71,7 +71,7 @@ export function runTool(cmd: string, args: string[], opts: { cwd?: string } = {}
  * @returns Paths to unp4k.exe and unforge.exe
  */
 export async function ensureToolsInstalled(toolDir: string, log: (msg: string) => void): Promise<Unp4kTools> {
-  fs.mkdirSync(toolDir, { recursive: true });
+  await fsp.mkdir(toolDir, { recursive: true });
 
   const zipPath = path.join(toolDir, 'unp4k.zip');
   const versionFile = path.join(toolDir, 'version.txt');
@@ -80,7 +80,13 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
   const latestTag = await getLatestUnp4kTag();
   const latestUrl = `https://github.com/dolkensp/unp4k/releases/download/${latestTag}/unp4k-suite-win-x64-${latestTag}.zip`;
 
-  const currentTag = fs.existsSync(versionFile) ? fs.readFileSync(versionFile, 'utf8').trim() : '';
+  let currentTag = '';
+  try {
+    currentTag = (await fsp.readFile(versionFile, 'utf8')).trim();
+  } catch {
+    // File likely doesn't exist; currentTag remains empty
+  }
+
   let unp4kExe = await findFile(toolDir, 'unp4k.exe');
   let unforgeExe = await findFile(toolDir, 'unforge.cli.exe');
 
@@ -97,7 +103,7 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
     unforgeExe = await findFile(toolDir, 'unforge.cli.exe');
     if (!unp4kExe) throw new Error(`unp4k.exe not found after extraction in ${toolDir}`);
     if (!unforgeExe) throw new Error(`unforge.cli.exe not found after extraction in ${toolDir}`);
-    fs.writeFileSync(versionFile, latestTag);
+    await fsp.writeFile(versionFile, latestTag);
     log(`Tools installed at: ${toolDir}`);
   } else {
     log(`unp4k is already up-to-date (${currentTag}), skipping download.`);
