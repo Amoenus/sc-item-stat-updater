@@ -7,3 +7,4 @@ export const SpviewerScrapedDataSchema = z.object({
   headers: z.array(z.string()),
   rows: z.array(z.array(z.string())),
 });
+export type SpviewerScrapedDataDTO = z.infer<typeof SpviewerScrapedDataSchema>;

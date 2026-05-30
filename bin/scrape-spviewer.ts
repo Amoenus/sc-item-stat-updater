@@ -10,8 +10,8 @@ import {
   findPaginatorSelector,
   hasAllOption,
   parseTable,
-} from '../src/extractor/spviewer-html-parser';
-import { SpviewerScrapedDataSchema } from '../src/schema/spviewer.schemas';
+} from '../src/extractor/spviewer-html-parser.js';
+import type { SpviewerScrapedDataDTO } from '../src/schema/spviewer.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootDir = join(__dirname, '..');
@@ -94,10 +94,7 @@ async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<voi
 /**
  * Scrapes item data for a given item type from SPViewer.
  */
-async function scrapeItems(
-  browser: import('puppeteer').Browser,
-  itemType: string,
-): Promise<{ headers: string[]; rows: string[][] }> {
+async function scrapeItems(browser: import('puppeteer').Browser, itemType: string): Promise<SpviewerScrapedDataDTO> {
   console.log(`  Scraping ${itemType}...`);
 
   const page = await browser.newPage();
@@ -121,14 +118,12 @@ async function scrapeItems(
     await sleep(POST_PAGINATION_SETTLE_MS);
 
     const html = await page.content();
-    const data = parseTable(html);
-
-    const result = SpviewerScrapedDataSchema.safeParse(data);
-    if (!result.success) {
-      throw new Error(`SPViewer scraped data for ${itemType} failed schema validation:\n${result.error.toString()}`);
+    try {
+      return parseTable(html);
+    } catch (err) {
+      const msg = err instanceof Error ? err.toString() : String(err);
+      throw new Error(`SPViewer scraped data for ${itemType} failed schema validation:\n${msg}`);
     }
-
-    return result.data;
   } finally {
     await page.close();
   }

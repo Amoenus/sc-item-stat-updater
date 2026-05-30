@@ -100,10 +100,7 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
       '-Command',
       `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${toolDir}'`,
     ]);
-    [unp4kExe, unforgeExe] = await Promise.all([
-      findFile(toolDir, 'unp4k.exe'),
-      findFile(toolDir, 'unforge.cli.exe'),
-    ]);
+    [unp4kExe, unforgeExe] = await Promise.all([findFile(toolDir, 'unp4k.exe'), findFile(toolDir, 'unforge.cli.exe')]);
     if (!unp4kExe) throw new Error(`unp4k.exe not found after extraction in ${toolDir}`);
     if (!unforgeExe) throw new Error(`unforge.cli.exe not found after extraction in ${toolDir}`);
     await fsp.writeFile(versionFile, latestTag);

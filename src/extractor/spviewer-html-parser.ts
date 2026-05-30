@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio/slim';
 import type { AnyNode } from 'domhandler';
+import { type SpviewerScrapedDataDTO, SpviewerScrapedDataSchema } from '../schema/spviewer.schemas.js';
 
 /**
  * Extracts the LIVE and PTU version strings from the SPViewer page HTML.
@@ -92,7 +93,7 @@ function extractTableRows($: CheerioRoot): string[][] {
  * @param html - The HTML content of the page
  * @returns An object containing headers and rows
  */
-export function parseTable(html: string): { headers: string[]; rows: string[][] } {
+export function parseTable(html: string): SpviewerScrapedDataDTO {
   const $ = cheerio.load(html);
   const cleanHeader = makeHeaderCleaner($);
   const theadRows = $('table thead tr').toArray();
@@ -107,7 +108,7 @@ export function parseTable(html: string): { headers: string[]; rows: string[][] 
     headers = $(theadRows[0]).find('th').toArray().map(cleanHeader);
   }
 
-  return { headers, rows: extractTableRows($) };
+  return SpviewerScrapedDataSchema.parse({ headers, rows: extractTableRows($) });
 }
 
 const PAGINATOR_SELECTORS = ['.p-paginator-rpp-options', '[class*="paginator"] select', '.p-select'] as const;
