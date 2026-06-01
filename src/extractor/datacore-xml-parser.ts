@@ -53,7 +53,12 @@ export function extractEntityClass($: CheerioDoc): string {
     return basename.replace(/_scitem\.xml$/i, '').replace(/\.xml$/i, '');
   }
   // Fallback: parse from tag name "EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem"
-  const tagName = (root[0] as any)?.name ?? '';
+  let tagName = '';
+  const node = root[0];
+  if (node && node.type === 'tag') {
+    tagName = node.name;
+  }
+
   const dot = tagName.indexOf('.');
   return dot === -1 ? tagName : tagName.slice(dot + 1);
 }
