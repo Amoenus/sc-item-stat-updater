@@ -12,7 +12,7 @@
 
 import { z } from 'zod';
 
-export const ArtifactIssueSchema = z.object({
+const ArtifactIssueSchema = z.object({
   label: z.string(),
   key: z.string(),
   reason: z.string(),
@@ -21,7 +21,7 @@ export const ArtifactIssueSchema = z.object({
 
 export type ArtifactIssueDTO = z.infer<typeof ArtifactIssueSchema>;
 
-export const ArtifactStatsSchema = z.object({
+const ArtifactStatsSchema = z.object({
   categoryCount: z.number().int().nonnegative(),
   totalEntries: z.number().int().nonnegative(),
   totalSkipped: z.number().int().nonnegative(),
