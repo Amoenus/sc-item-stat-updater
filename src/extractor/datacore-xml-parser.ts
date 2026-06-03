@@ -63,7 +63,7 @@ export function extractEntityClass($: CheerioDoc): string {
   return dot === -1 ? tagName : tagName.slice(dot + 1);
 }
 
-/** AttachDef attributes — common to all vehicle items. */
+/** AttachDef attributes - common to all vehicle items. */
 export interface AttachDef {
   size: string;
   grade: string;
@@ -115,33 +115,4 @@ export function extractAttachDef($: CheerioDoc): AttachDef {
  */
 export function extractHealth($: CheerioDoc): string {
   return $('SHealthComponentParams').first().attr('Health') ?? '';
-}
-
-/**
- * Extracts distortion resistance shutdown damage from `SEntityComponentDistortionParams`.
- */
-function extractDistortionShutdown($: CheerioDoc): string {
-  return (
-    xmlVal($, 'SEntityComponentDistortionParams DistortionParams MaxDistortionHealth') ||
-    xmlVal($, 'SEntityComponentDistortionParams MaxDistortionHealth')
-  );
-}
-
-/**
- * Derives the INI name key for a DataCore entity class using the per-type
- * entity class prefix and INI key infix.
- *
- * Example (shield):
- *   entityClass = "shield_behr_s01_5sa"
- *   entityClassPrefix = "shield_"
- *   nameKeyInfix = "SHLD_"
- *   → "item_NameSHLD_BEHR_S01_5SA"
- *
- * NOTE: these patterns are best-effort and may need tuning against real game
- * files. They are intentionally concentrated here so fixes are one-line changes
- * per item type in each DataCore config file.
- */
-function deriveNameKey(entityClass: string, entityClassPrefix: string, nameKeyInfix: string): string {
-  const suffix = entityClass.replace(new RegExp(`^${entityClassPrefix}`, 'i'), '').toUpperCase();
-  return `item_Name${nameKeyInfix}${suffix}`;
 }

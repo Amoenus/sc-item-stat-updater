@@ -19,8 +19,34 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   fieldSelectors: {
     'HP Pool': { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldHealth' },
     'Regen Rate': { selector: 'SCItemShieldGeneratorParams', attr: 'MaxShieldRegen' },
+    'Regen Time': {
+      derive: (row) => {
+        const hpPool = Number(row['HP Pool']);
+        const regenRate = Number(row['Regen Rate']);
+        if (!Number.isFinite(hpPool) || !Number.isFinite(regenRate) || regenRate === 0) return '';
+        return Number((hpPool / regenRate).toFixed(2)).toString();
+      },
+    },
     'Damaged Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DamagedRegenDelay' },
     'Downed Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DownedRegenDelay' },
+    'Absorption Physical': {
+      selector: 'SCItemShieldGeneratorParams ShieldAbsorption SShieldAbsorption',
+      attrs: ['Max', 'Min'],
+      index: 0,
+      format: 'percent-pair',
+    },
+    'Absorption Energy': {
+      selector: 'SCItemShieldGeneratorParams ShieldAbsorption SShieldAbsorption',
+      attrs: ['Max', 'Min'],
+      index: 1,
+      format: 'percent-pair',
+    },
+    'Absorption Distortion': {
+      selector: 'SCItemShieldGeneratorParams ShieldAbsorption SShieldAbsorption',
+      attrs: ['Max', 'Min'],
+      index: 2,
+      format: 'percent-pair',
+    },
   },
 };
 

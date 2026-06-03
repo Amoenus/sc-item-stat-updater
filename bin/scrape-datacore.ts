@@ -45,11 +45,10 @@ import {
   extractEntityClass,
   extractHealth,
   loadXml,
-  xmlAttr,
   xmlVal,
 } from '../src/extractor/datacore-xml-parser';
 import { ensureToolsInstalled, readGameVersion, resolveLiveDir, runTool } from '../src/io/local/unp4k-tool';
-import type { DataCoreItemTypeConfig } from '../src/items/datacore/types';
+import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../src/items/datacore/types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -312,10 +311,24 @@ for (let i = 0; i < selectedTypes.length; i++) {
       const attachDef = extractAttachDef($);
       const health = extractHealth($);
 
+      const rowRecord: Record<string, string> = {
+        'Entity Class': entityClass,
+        Manufacturer: attachDef.manufacturer,
+        Size: attachDef.size,
+        Grade: attachDef.grade,
+        Class: attachDef.subtype,
+        Health: health,
+      };
+
       const typeFields = typeHeaders.map((col) => {
         const spec = typeConfig.fieldSelectors[col];
-        if (!spec) return '';
-        return resolveField($, spec);
+        if (!spec) {
+          rowRecord[col] = '';
+          return '';
+        }
+        const value = resolveField($, spec, rowRecord);
+        rowRecord[col] = value;
+        return value;
       });
 
       rows.push([
@@ -380,9 +393,25 @@ if (errors.length > 0) process.exit(1);
  * Handles both plain string selectors (using xmlVal) and
  * { selector, attr } objects (using xmlAttr).
  */
-function resolveField($: ReturnType<typeof loadXml>, spec: string | { selector: string; attr: string }): string {
+function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector, row: Record<string, string>): string {
+  if (typeof spec === 'object' && 'derive' in spec) return spec.derive(row);
   if (typeof spec === 'string') return xmlVal($, spec);
-  return xmlAttr($, spec.selector, spec.attr);
+
+  const element = spec.index === undefined ? $(spec.selector).first() : $(spec.selector).eq(spec.index);
+  const values = spec.attrs?.map((attr) => element.attr(attr) ?? '') ?? [
+    spec.attr ? (element.attr(spec.attr) ?? '') : '',
+  ];
+
+  if (spec.format === 'percent' && values[0]) return formatPercent(values[0]);
+  if (spec.format === 'percent-pair') return values.map(formatPercent).join(spec.separator ?? ' / ');
+
+  return values.join(spec.separator ?? ' / ');
+}
+
+function formatPercent(value: string): string {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return value;
+  return `${Number((num * 100).toFixed(2))}%`;
 }
 
 /**

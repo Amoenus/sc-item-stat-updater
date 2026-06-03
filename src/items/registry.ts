@@ -50,14 +50,6 @@ export async function loadMissionConfigs(): Promise<Map<string, ItemConfig>> {
 }
 
 /**
- * Loads all configs (spviewer + missions) into a single map.
- */
-async function loadAllConfigs(): Promise<Map<string, ItemConfig>> {
-  const [spviewer, missions] = await Promise.all([loadSpviewerConfigs(), loadMissionConfigs()]);
-  return new Map([...spviewer, ...missions]);
-}
-
-/**
  * Loads a single config by its slug name.
  */
 export async function loadConfig(slug: string): Promise<ItemConfig> {

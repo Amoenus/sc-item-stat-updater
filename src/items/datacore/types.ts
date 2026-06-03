@@ -1,5 +1,19 @@
 import type { ItemConfig } from '../../lib/types';
 
+export type DataCoreFieldSelector =
+  | string
+  | {
+      selector: string;
+      attr?: string;
+      attrs?: string[];
+      index?: number;
+      separator?: string;
+      format?: 'percent' | 'percent-pair';
+    }
+  | {
+      derive: (row: Record<string, string>) => string;
+    };
+
 /**
  * Configuration for the DataCore scraper to know how to extract data
  * for a specific item type from DataForge XML files.
@@ -55,7 +69,7 @@ export interface DataCoreItemTypeConfig {
    * ⚠️ XML paths are based on DataForge field names from community
    * documentation. Verify against actual unforged game files.
    */
-  fieldSelectors: Record<string, string | { selector: string; attr: string }>;
+  fieldSelectors: Record<string, DataCoreFieldSelector>;
 }
 
 /**
