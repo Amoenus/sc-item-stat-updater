@@ -18,49 +18,84 @@ const logger = getLogger('fps-title-tags-update');
 const PERSONAL_CSV = 'weaponpersonal.spviewer.csv';
 const ATTACHMENT_CSV = 'weaponattachment.spviewer.csv';
 
+const TYPE_CODE_RULES: Array<readonly [string, string]> = [
+  ['sniper', 'SNP'],
+  ['shotgun', 'SG'],
+  ['smg', 'SMG'],
+  ['lmg', 'LMG'],
+  ['pistol', 'PST'],
+  ['rifle', 'RFL'],
+];
+
+const DAMAGE_COLUMNS: Array<readonly [string, string]> = [
+  ['Damage DPS Physical', 'BAL'],
+  ['Damage DPS Energy', 'ENG'],
+  ['Damage DPS Distortion', 'DIS'],
+  ['Damage DPS Stun', 'STN'],
+];
+
+const PRIMARY_DAMAGE_CODES = ['BAL', 'ENG'];
+const SECONDARY_DAMAGE_CODES = ['DIS', 'STN'];
+
+const DAMAGE_TYPE_RULES: Array<readonly [string, string]> = [
+  ['ballistic', 'BAL'],
+  ['energy', 'ENG'],
+  ['laser', 'ENG'],
+  ['distortion', 'DIS'],
+];
+
+const SLOT_CODE_RULES: Array<readonly [string, string]> = [
+  ['optic', 'OPT'],
+  ['scope', 'OPT'],
+  ['muzzle', 'MZL'],
+  ['under', 'UBR'],
+  ['barrel', 'BRL'],
+];
+
+const TYPE_SLOT_CODE_RULES: Array<readonly [string, string]> = [
+  ['flashlight', 'FLS'],
+  ['laser', 'LSR'],
+];
+
+const FPS_NAME_KEY_PARTS = [
+  '_pistol',
+  '_smg',
+  '_rifle',
+  '_sniper',
+  '_shotgun',
+  '_lmg',
+  '_ubarrel',
+  '_barrel',
+  '_optics',
+  '_scope',
+  '_attachment',
+];
+
 function normalizeTypeCode(value: string | undefined): string {
   const type = (value ?? '').toLowerCase();
-  if (type.includes('sniper')) return 'SNP';
-  if (type.includes('shotgun')) return 'SG';
-  if (type.includes('smg')) return 'SMG';
-  if (type.includes('lmg')) return 'LMG';
-  if (type.includes('pistol')) return 'PST';
-  if (type.includes('rifle')) return 'RFL';
-  return 'WPN';
+  return TYPE_CODE_RULES.find(([fragment]) => type.includes(fragment))?.[1] ?? 'WPN';
 }
 
 function normalizeDamageCode(row: Record<string, string>): string | null {
-  const physical = Number(row['Damage DPS Physical'] || '0');
-  const energy = Number(row['Damage DPS Energy'] || '0');
-  const distortion = Number(row['Damage DPS Distortion'] || '0');
-  const stun = Number(row['Damage DPS Stun'] || '0');
-
-  if (physical > 0 && physical >= energy && physical >= distortion && physical >= stun) return 'BAL';
-  if (energy > 0 && energy >= physical && energy >= distortion && energy >= stun) return 'ENG';
-  if (distortion > 0) return 'DIS';
-  if (stun > 0) return 'STN';
+  const damageValues = new Map(DAMAGE_COLUMNS.map(([column, code]) => [code, Number(row[column] || '0')]));
+  const maxDamage = Math.max(...damageValues.values());
+  const primaryDamage = PRIMARY_DAMAGE_CODES.find((code) => (damageValues.get(code) ?? 0) > 0 && damageValues.get(code) === maxDamage);
+  const secondaryDamage = SECONDARY_DAMAGE_CODES.find((code) => (damageValues.get(code) ?? 0) > 0);
+  if (primaryDamage || secondaryDamage) return primaryDamage ?? secondaryDamage ?? null;
 
   const type = String(row.Type || '').toLowerCase();
-  if (type.includes('ballistic')) return 'BAL';
-  if (type.includes('energy') || type.includes('laser')) return 'ENG';
-  if (type.includes('distortion')) return 'DIS';
-
-  return null;
+  return DAMAGE_TYPE_RULES.find(([fragment]) => type.includes(fragment))?.[1] ?? null;
 }
 
 function normalizeSlotCode(value: string | undefined, type: string | undefined): string {
   const slot = (value ?? '').toLowerCase();
   const lowerType = (type ?? '').toLowerCase();
 
-  if (slot.includes('optic') || slot.includes('scope')) return 'OPT';
   if (slot.includes('barrel') && slot.includes('under')) return 'UBR';
-  if (slot.includes('barrel')) return 'BRL';
-  if (slot.includes('muzzle')) return 'MZL';
-  if (slot.includes('under')) return 'UBR';
-  if (lowerType.includes('flashlight')) return 'FLS';
-  if (lowerType.includes('laser')) return 'LSR';
+  const slotCode = SLOT_CODE_RULES.find(([fragment]) => slot.includes(fragment))?.[1];
+  if (slotCode) return slotCode;
 
-  return 'ATT';
+  return TYPE_SLOT_CODE_RULES.find(([fragment]) => lowerType.includes(fragment))?.[1] ?? 'ATT';
 }
 
 function buildPersonalTag(row: Record<string, string>): string {
@@ -103,19 +138,7 @@ async function buildFpsTitleLookup(spviewerDir: string) {
 }
 
 function isFpsNameKey(keyLower: string): boolean {
-  return (
-    keyLower.includes('_pistol') ||
-    keyLower.includes('_smg') ||
-    keyLower.includes('_rifle') ||
-    keyLower.includes('_sniper') ||
-    keyLower.includes('_shotgun') ||
-    keyLower.includes('_lmg') ||
-    keyLower.includes('_ubarrel') ||
-    keyLower.includes('_barrel') ||
-    keyLower.includes('_optics') ||
-    keyLower.includes('_scope') ||
-    keyLower.includes('_attachment')
-  );
+  return FPS_NAME_KEY_PARTS.some((part) => keyLower.includes(part));
 }
 
 function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: string; tag: string }>) {
