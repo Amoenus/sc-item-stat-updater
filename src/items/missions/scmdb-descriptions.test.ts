@@ -11,7 +11,7 @@ describe('SCMDB mission descriptions buildValue', () => {
       Description: 'Recover the package.',
       Cooldown: '15m',
       Note: 'Bring a ship.',
-      RewardList: '[BP Reward]\\n\\nReward one',
+      RewardList: String.raw`[BP Reward]\n\nReward one`,
       ItemRewardList: 'Item one',
     };
 
@@ -28,7 +28,7 @@ describe('SCMDB mission descriptions buildValue', () => {
       Description: 'unused when old value exists',
       Cooldown: '30m',
       Note: 'Updated note.',
-      RewardList: '[BP Chain]\\n\\nUpdated chain',
+      RewardList: String.raw`[BP Chain]\n\nUpdated chain`,
     };
     const oldValue = String.raw`Existing localized text.\n\nCooldown: 10m\n\n[BP Reward]\n\nOld reward`;
 
