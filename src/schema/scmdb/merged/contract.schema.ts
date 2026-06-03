@@ -37,33 +37,33 @@ import { FactionRewardsSchema, MinStandingSchema, StandingSchema } from './reput
 // Contract, hauling, and reward schemas for the merged data domain.
 // ---------------------------------------------------------------------------
 
-export const EdIntroSchema = z.object({
+const EdIntroSchema = z.object({
   debugName: z.string(),
   title: z.string().optional(),
 });
 export type EdIntro = z.infer<typeof EdIntroSchema>;
 
-export const RequiredScenarioSchema = z.object({
+const RequiredScenarioSchema = z.object({
   name: RequiredScenarioNameSchema,
   enabled: z.boolean(),
 });
 export type RequiredScenario = z.infer<typeof RequiredScenarioSchema>;
 
-export const CompletedContractTagsSchema = z.object({
+const CompletedContractTagsSchema = z.object({
   requiredCountValue: z.number().optional(),
   tags: z.array(z.string()).optional(),
   excludedTags: z.array(z.string()).optional(),
 });
 export type CompletedContractTags = z.infer<typeof CompletedContractTagsSchema>;
 
-export const CrimeStatSchema = z.object({
+const CrimeStatSchema = z.object({
   min: z.number(),
   max: z.number(),
   includeWhenSharing: z.boolean(),
 });
 export type CrimeStat = z.infer<typeof CrimeStatSchema>;
 
-export const HaulingOrderSchema = z.object({
+const HaulingOrderSchema = z.object({
   minSCU: z.number().optional(),
   maxSCU: z.number().optional(),
   maxContainerSize: z.number().optional(),
@@ -73,13 +73,13 @@ export const HaulingOrderSchema = z.object({
 });
 export type HaulingOrder = z.infer<typeof HaulingOrderSchema>;
 
-export const HaulingOrdersClassSchema = z.object({
+const HaulingOrdersClassSchema = z.object({
   type: HaulingOrdersTypeSchema,
   options: z.array(z.array(HaulingOrderSchema)),
 });
 export type HaulingOrdersClass = z.infer<typeof HaulingOrdersClassSchema>;
 
-export const TokenSubstitutionsSchema = z.object({
+const TokenSubstitutionsSchema = z.object({
   CargoRouteToken: CargoRouteTokenSchema,
   CargoGradeToken: CargoGradeTokenSchema,
   ReputationRank: ReputationRankSchema,
@@ -90,12 +90,12 @@ export const TokenSubstitutionsSchema = z.object({
 });
 export type TokenSubstitutions = z.infer<typeof TokenSubstitutionsSchema>;
 
-export const PropertyLocationSchema = z.object({
+const PropertyLocationSchema = z.object({
   star: StarElementSchema.optional(),
 });
 export type PropertyLocation = z.infer<typeof PropertyLocationSchema>;
 
-export const BlueprintRewardSchema = z.object({
+const BlueprintRewardSchema = z.object({
   blueprintPool: z.string(),
   chance: z.number(),
   poolName: z.string(),
@@ -103,14 +103,14 @@ export const BlueprintRewardSchema = z.object({
 });
 export type BlueprintReward = z.infer<typeof BlueprintRewardSchema>;
 
-export const CompletionTagSchema = z.object({
+const CompletionTagSchema = z.object({
   count: z.number(),
   tag: z.string(),
   splitPointsForParty: z.boolean(),
 });
 export type CompletionTag = z.infer<typeof CompletionTagSchema>;
 
-export const ItemSchema = z.object({
+const ItemSchema = z.object({
   name: z.string(),
   amount: z.number(),
   itemType: ItemTypeSchema.optional(),
@@ -119,14 +119,14 @@ export const ItemSchema = z.object({
 });
 export type Item = z.infer<typeof ItemSchema>;
 
-export const ItemRewardGroupSchema = z.object({
+const ItemRewardGroupSchema = z.object({
   weighting: z.number(),
   probability: z.number(),
   items: z.array(ItemSchema),
 });
 export type ItemRewardGroup = z.infer<typeof ItemRewardGroupSchema>;
 
-export const ItemRewardSchema = z.object({
+const ItemRewardSchema = z.object({
   entityClass: z.string().optional(),
   name: z.union([z.null(), z.string()]).optional(),
   amount: z.number().optional(),
@@ -136,7 +136,7 @@ export const ItemRewardSchema = z.object({
 });
 export type ItemReward = z.infer<typeof ItemRewardSchema>;
 
-export const ContractPrerequisitesSchema = z.object({
+const ContractPrerequisitesSchema = z.object({
   location: z.array(ResolvedLocationElementSchema).optional(),
   locality: z.array(z.object({ name: z.string() })).optional(),
   completedContractTags: CompletedContractTagsSchema.optional(),
@@ -148,7 +148,7 @@ export const ContractPrerequisitesSchema = z.object({
 });
 export type ContractPrerequisites = z.infer<typeof ContractPrerequisitesSchema>;
 
-export const LegacyContractHaulingOrderSchema = z.object({
+const LegacyContractHaulingOrderSchema = z.object({
   resource: z.union([z.string(), z.null()]),
   minSCU: z.number(),
   maxSCU: z.number(),
@@ -156,7 +156,7 @@ export const LegacyContractHaulingOrderSchema = z.object({
 });
 export type LegacyContractHaulingOrder = z.infer<typeof LegacyContractHaulingOrderSchema>;
 
-export const LegacyContractPrerequisitesSchema = z.object({
+const LegacyContractPrerequisitesSchema = z.object({
   location: z.union([z.array(SubLocationVariantSchema), z.null()]),
 });
 export type LegacyContractPrerequisites = z.infer<typeof LegacyContractPrerequisitesSchema>;

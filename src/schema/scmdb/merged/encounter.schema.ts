@@ -6,14 +6,14 @@ import { CareerSchema, CargoManifestElementSchema, ClassificationSchema } from '
 // Ship encounter, spawn config, and wave schemas for the merged data domain.
 // ---------------------------------------------------------------------------
 
-export const SlotSchema = z.object({
+const SlotSchema = z.object({
   poolId: z.string(),
   minCount: z.number(),
   maxCount: z.number(),
 });
 export type Slot = z.infer<typeof SlotSchema>;
 
-export const WaveSchema = z.object({
+const WaveSchema = z.object({
   name: z.union([z.null(), z.string()]),
   minShips: z.number(),
   maxShips: z.number(),
@@ -28,7 +28,7 @@ export const ShipSchema = z.object({
 });
 export type Ship = z.infer<typeof ShipSchema>;
 
-export const SpawnConfigGroupSchema = z.object({
+const SpawnConfigGroupSchema = z.object({
   role: z.string(),
   poolId: z.string(),
   waves: z.array(WaveSchema),
@@ -38,7 +38,7 @@ export const SpawnConfigGroupSchema = z.object({
 });
 export type SpawnConfigGroup = z.infer<typeof SpawnConfigGroupSchema>;
 
-export const SpawnConfigSchema = z.object({
+const SpawnConfigSchema = z.object({
   groups: z.array(SpawnConfigGroupSchema),
   waveDelay: z.union([z.number(), z.null()]),
   numberOfWaves: z.union([z.number(), z.null()]),

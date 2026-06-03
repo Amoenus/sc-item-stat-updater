@@ -195,7 +195,7 @@ export interface FactionRewardsContext {
 /**
  * Flattens a value into a string.
  */
-export function flattenValue(value: unknown): string {
+function flattenValue(value: unknown): string {
   if (value === undefined || value === null) return '';
   if (typeof value === 'string') return value;
   return JSON.stringify(value);
@@ -415,7 +415,7 @@ function formatGroupRewardLines(reward: NonNullable<ContractDTO['itemRewards']>[
 /**
  * Builds a formatted item reward list string for use in mission descriptions.
  */
-export function buildItemRewardList(contract: ContractDTO): string {
+function buildItemRewardList(contract: ContractDTO): string {
   if (!contract.itemRewards?.length) return '';
   const lines: string[] = [];
   for (const reward of contract.itemRewards) {
@@ -470,7 +470,7 @@ export function buildContractBlueprintRows(
 /**
  * Builds a blueprint reward list.
  */
-export function buildBlueprintRewardList(contract: ContractDTO, blueprintPools: BlueprintPoolsDTO): string {
+function buildBlueprintRewardList(contract: ContractDTO, blueprintPools: BlueprintPoolsDTO): string {
   if (!contract.blueprintRewards) return '';
 
   const formatChance = (chance: number): string | null => {
@@ -500,7 +500,7 @@ export function buildBlueprintRewardList(contract: ContractDTO, blueprintPools: 
 /**
  * Formats a cooldown duration (in minutes) as a human-readable string.
  */
-export function formatCooldownMinutes(minutes: number): string {
+function formatCooldownMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
@@ -510,7 +510,7 @@ export function formatCooldownMinutes(minutes: number): string {
 /**
  * Normalizes a localization key.
  */
-export function normalizeLocalizationKey(key: string): string {
+function normalizeLocalizationKey(key: string): string {
   if (!key || typeof key !== 'string') return '';
   return key.startsWith('@') ? key.slice(1) : key;
 }

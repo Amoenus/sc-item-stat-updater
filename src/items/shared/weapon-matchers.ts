@@ -3,7 +3,7 @@
  * used by both default weapon configs and SPViewer weapon configs.
  */
 
-export const WEAPON_DESC_PREFIXES = [
+const WEAPON_DESC_PREFIXES = [
   'desckbar_',
   'descbehr_',
   'deschrst_',
@@ -22,8 +22,8 @@ export const WEAPON_DESC_PREFIXES = [
   'desc_grin',
 ];
 
-export const WEAPON_TYPES = ['cannon', 'repeater', 'gatling', 'scattergun', 'massdriver', 'laser', 'distortion'];
+const WEAPON_TYPES = ['cannon', 'repeater', 'gatling', 'scattergun', 'massdriver', 'laser', 'distortion'];
 
-export function isWeaponDescKey(keyLower: string): boolean {
+function isWeaponDescKey(keyLower: string): boolean {
   return WEAPON_DESC_PREFIXES.some((p) => keyLower.includes(p)) && WEAPON_TYPES.some((t) => keyLower.includes(t));
 }

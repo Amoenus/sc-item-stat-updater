@@ -14,26 +14,26 @@ import { AmmoPoolSchema, BeamSchema, FireModesPoolSchema, MagazinePoolSchema } f
 // Item, physical-property, and top-level schemas for the crafting-items domain.
 // ---------------------------------------------------------------------------
 
-export const CombatRangeSchema = z.object({
+const CombatRangeSchema = z.object({
   ideal: z.number(),
   max: z.number(),
   category: CategorySchema,
 });
 export type CombatRange = z.infer<typeof CombatRangeSchema>;
 
-export const RadiationResistanceSchema = z.object({
+const RadiationResistanceSchema = z.object({
   capacity: z.number(),
   dissipationRate: z.number(),
 });
 export type RadiationResistance = z.infer<typeof RadiationResistanceSchema>;
 
-export const TemperatureResistanceSchema = z.object({
+const TemperatureResistanceSchema = z.object({
   min: z.number(),
   max: z.number(),
 });
 export type TemperatureResistance = z.infer<typeof TemperatureResistanceSchema>;
 
-export const ShieldSchema = z.object({
+const ShieldSchema = z.object({
   physical: TemperatureResistanceSchema,
   energy: TemperatureResistanceSchema,
   distortion: TemperatureResistanceSchema,
@@ -43,7 +43,7 @@ export const ShieldSchema = z.object({
 });
 export type Shield = z.infer<typeof ShieldSchema>;
 
-export const SignaturesPoolSchema = z.object({
+const SignaturesPoolSchema = z.object({
   type: SignaturesPoolTypeSchema,
   emission: z.number(),
   reductionWeighted: z.number(),
@@ -51,13 +51,13 @@ export const SignaturesPoolSchema = z.object({
 });
 export type SignaturesPool = z.infer<typeof SignaturesPoolSchema>;
 
-export const ManufacturerSchema = z.object({
+const ManufacturerSchema = z.object({
   name: z.string(),
   guid: z.string(),
 });
 export type Manufacturer = z.infer<typeof ManufacturerSchema>;
 
-export const MetaSchema = z.object({
+const MetaSchema = z.object({
   totalItems: z.number(),
   weapons: z.number(),
   armor: z.number(),
@@ -68,7 +68,7 @@ export const MetaSchema = z.object({
 });
 export type Meta = z.infer<typeof MetaSchema>;
 
-export const ItemSchema = z.object({
+const ItemSchema = z.object({
   entityClass: z.string(),
   itemType: ItemTypeSchema,
   attachType: TypeSchema,

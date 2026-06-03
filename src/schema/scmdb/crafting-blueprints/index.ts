@@ -16,7 +16,7 @@ import {
 // Object schemas and top-level schema for crafting-blueprints-*.json.
 // ---------------------------------------------------------------------------
 
-export const ModifierSchema = z.object({
+const ModifierSchema = z.object({
   startQuality: z.number(),
   endQuality: z.number(),
   modifierAtStart: z.number(),
@@ -27,7 +27,7 @@ export const ModifierSchema = z.object({
 });
 export type Modifier = z.infer<typeof ModifierSchema>;
 
-export const OptionSchema = z.object({
+const OptionSchema = z.object({
   type: OptionTypeSchema,
   quantity: z.number(),
   minQuality: z.number(),
@@ -37,13 +37,13 @@ export const OptionSchema = z.object({
 });
 export type Option = z.infer<typeof OptionSchema>;
 
-export const DismantleSchema = z.object({
+const DismantleSchema = z.object({
   efficiency: z.number(),
   dismantleTimeSeconds: z.number(),
 });
 export type Dismantle = z.infer<typeof DismantleSchema>;
 
-export const MetaSchema = z.object({
+const MetaSchema = z.object({
   totalBlueprints: z.number(),
   totalProducts: z.number(),
   totalResources: z.number(),
@@ -51,19 +51,19 @@ export const MetaSchema = z.object({
 });
 export type Meta = z.infer<typeof MetaSchema>;
 
-export const NameOverridesSchema = z.object({
+const NameOverridesSchema = z.object({
   WeaponMining: z.string(),
 });
 export type NameOverrides = z.infer<typeof NameOverridesSchema>;
 
-export const SlotSchema = z.object({
+const SlotSchema = z.object({
   name: z.string(),
   options: z.array(OptionSchema),
   modifiers: z.union([z.array(ModifierSchema), z.null()]),
 });
 export type Slot = z.infer<typeof SlotSchema>;
 
-export const PropertySchema = z.object({
+const PropertySchema = z.object({
   name: NameSchema,
   unit: z.union([z.null(), z.string()]),
   category: CategorySchema,
@@ -71,13 +71,13 @@ export const PropertySchema = z.object({
 });
 export type Property = z.infer<typeof PropertySchema>;
 
-export const TierSchema = z.object({
+const TierSchema = z.object({
   craftTimeSeconds: z.number(),
   slots: z.array(SlotSchema),
 });
 export type Tier = z.infer<typeof TierSchema>;
 
-export const BlueprintSchema = z.object({
+const BlueprintSchema = z.object({
   guid: z.string(),
   tag: z.string(),
   productEntityClass: z.string(),

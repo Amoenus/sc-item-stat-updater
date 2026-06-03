@@ -6,7 +6,7 @@ import { MinStandingNameSchema, NameKeySchema, ScopeNameSchema } from './enums.s
 // Reputation, faction, and standing schemas for the merged data domain.
 // ---------------------------------------------------------------------------
 
-export const RankSchema = z.object({
+const RankSchema = z.object({
   guid: z.string(),
   name: z.string(),
   nameKey: z.string(),
@@ -62,7 +62,7 @@ export const MinStandingSchema = z.object({
 });
 export type MinStanding = z.infer<typeof MinStandingSchema>;
 
-export const TierSchema = z.object({
+const TierSchema = z.object({
   minPoints: z.number(),
   badge: z.string(),
 });

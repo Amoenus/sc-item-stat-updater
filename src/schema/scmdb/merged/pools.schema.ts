@@ -10,13 +10,13 @@ import { ReputationMultiplierSchema } from './reputation.schema.js';
 export const AvailabilityPoolSchema = z.object({});
 export type AvailabilityPool = z.infer<typeof AvailabilityPoolSchema>;
 
-export const ResourceElementSchema = z.object({
+const ResourceElementSchema = z.object({
   name: z.string(),
   prob: z.number(),
 });
 export type ResourceElement = z.infer<typeof ResourceElementSchema>;
 
-export const ResourcePoolEntrySchema = z.object({
+const ResourcePoolEntrySchema = z.object({
   name: z.string(),
   nameKey: z.string().optional(),
 });
@@ -50,13 +50,13 @@ export const CommodityInputSchema = z.object({
 });
 export type CommodityInput = z.infer<typeof CommodityInputSchema>;
 
-export const BlueprintItemSchema = z.object({
+const BlueprintItemSchema = z.object({
   weight: z.number(),
   name: z.union([z.null(), z.string()]).optional(),
 });
 export type BlueprintItem = z.infer<typeof BlueprintItemSchema>;
 
-export const BlueprintPoolEntrySchema = z.object({
+const BlueprintPoolEntrySchema = z.object({
   name: z.string(),
   blueprints: z.array(BlueprintItemSchema),
   source: SourceSchema,

@@ -29,6 +29,6 @@ export function resolveMappingJsonPath(repoRoot: string, mappingFilename: string
 }
 
 /** Resolves a CSV file path under a DataCore version directory. */
-export function resolveDatacoreCsvPath(datacoreDir: string, csvFilename: string): string {
+function resolveDatacoreCsvPath(datacoreDir: string, csvFilename: string): string {
   return resolveChildPath(datacoreDir, csvFilename, 'DataCore CSV filename');
 }

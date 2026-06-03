@@ -34,7 +34,7 @@ export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
  * Generates a patch artifact by running the Extract+Transform phase for every
  * supplied config and merging the resulting patches into a single manifest.
  */
-export async function generateArtifact(
+async function generateArtifact(
   categories: Array<{ config: ItemConfig; csvDir: string }>,
   opts: { iniPath: string; scmdbVersion?: string; spviewerVersion?: string },
 ): Promise<import('../schema/artifact.schema').ArtifactDTO> {

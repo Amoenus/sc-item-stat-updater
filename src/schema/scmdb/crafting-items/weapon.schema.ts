@@ -12,7 +12,7 @@ import {
 // Weapon fire-mode, ammo, and magazine schemas for the crafting-items domain.
 // ---------------------------------------------------------------------------
 
-export const RecoilSchema = z.object({
+const RecoilSchema = z.object({
   yawMaxDeg: z.number(),
   pitchMaxDeg: z.number(),
   rollMaxDeg: z.number(),
@@ -24,7 +24,7 @@ export const RecoilSchema = z.object({
 });
 export type Recoil = z.infer<typeof RecoilSchema>;
 
-export const SpreadSchema = z.object({
+const SpreadSchema = z.object({
   min: z.union([z.number(), z.null()]),
   max: z.union([z.number(), z.null()]),
   firstAttack: z.union([z.number(), z.null()]),
@@ -56,7 +56,7 @@ export const MagazinePoolSchema = z.object({
 });
 export type MagazinePool = z.infer<typeof MagazinePoolSchema>;
 
-export const SequenceEntrySchema = z.object({
+const SequenceEntrySchema = z.object({
   name: NameSchema,
   fireRate: z.number(),
   heatPerShot: z.number(),

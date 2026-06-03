@@ -25,7 +25,7 @@ const logger = getLogger('loader');
  *    `skipMissing` is true, which matches the current Phase-1 behaviour where
  *    the INI is considered the source of truth for which keys exist).
  */
-export async function applyArtifact(
+async function applyArtifact(
   artifact: { entries: Record<string, string> },
   iniPath: string,
   options: { dryRun?: boolean; skipBackup?: boolean; skipMissing?: boolean } = {},

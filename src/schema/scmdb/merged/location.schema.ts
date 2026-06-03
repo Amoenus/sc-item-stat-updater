@@ -54,7 +54,7 @@ export const LocationPoolSchema = z.object({
 });
 export type LocationPool = z.infer<typeof LocationPoolSchema>;
 
-export const PyroRegionAreaSchema = z.object({
+const PyroRegionAreaSchema = z.object({
   guid: z.string(),
   locations: z.array(StarElementSchema),
 });

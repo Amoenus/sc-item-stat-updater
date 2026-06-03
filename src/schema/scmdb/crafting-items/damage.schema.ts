@@ -21,7 +21,7 @@ export const DamageDropoffSchema = z.object({
 });
 export type DamageDropoff = z.infer<typeof DamageDropoffSchema>;
 
-export const BiochemicalSchema = z.object({
+const BiochemicalSchema = z.object({
   multiplier: z.number(),
   threshold: z.number(),
 });

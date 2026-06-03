@@ -86,7 +86,7 @@ const SUBTYPE_MAP: Record<string, string> = {
  * Returns an empty string for BASIC (no class indicator) and passes through
  * any unknown values as-is for forward compatibility.
  */
-export function mapSubtype(raw: string): string {
+function mapSubtype(raw: string): string {
   const upper = raw.toUpperCase();
   return upper in SUBTYPE_MAP ? SUBTYPE_MAP[upper] : raw;
 }
@@ -120,7 +120,7 @@ export function extractHealth($: CheerioDoc): string {
 /**
  * Extracts distortion resistance shutdown damage from `SEntityComponentDistortionParams`.
  */
-export function extractDistortionShutdown($: CheerioDoc): string {
+function extractDistortionShutdown($: CheerioDoc): string {
   return (
     xmlVal($, 'SEntityComponentDistortionParams DistortionParams MaxDistortionHealth') ||
     xmlVal($, 'SEntityComponentDistortionParams MaxDistortionHealth')
@@ -141,7 +141,7 @@ export function extractDistortionShutdown($: CheerioDoc): string {
  * files. They are intentionally concentrated here so fixes are one-line changes
  * per item type in each DataCore config file.
  */
-export function deriveNameKey(entityClass: string, entityClassPrefix: string, nameKeyInfix: string): string {
+function deriveNameKey(entityClass: string, entityClassPrefix: string, nameKeyInfix: string): string {
   const suffix = entityClass.replace(new RegExp(`^${entityClassPrefix}`, 'i'), '').toUpperCase();
   return `item_Name${nameKeyInfix}${suffix}`;
 }

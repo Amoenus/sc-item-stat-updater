@@ -75,7 +75,7 @@ export function parseNameLine(line: string): { key: string; value: string } | nu
   };
 }
 
-export function isAuxiliaryNameKey(key: string): boolean {
+function isAuxiliaryNameKey(key: string): boolean {
   return AUX_NAME_KEY_SUFFIX_PATTERN.test(key);
 }
 
@@ -119,7 +119,7 @@ export function buildVariantFamilyIndex(lines: string[]): Map<string, number[]> 
   return familyIndex;
 }
 
-export function stripLeadingTitleTag(value: unknown): string {
+function stripLeadingTitleTag(value: unknown): string {
   let clean: string;
   if (value == null) {
     clean = '';
