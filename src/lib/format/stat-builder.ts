@@ -93,3 +93,5 @@ export function stat(row: Record<string, string>) {
 
   return builder;
 }
+
+export type StatBuilder = ReturnType<typeof stat>;

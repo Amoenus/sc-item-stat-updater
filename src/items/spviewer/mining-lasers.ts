@@ -1,5 +1,6 @@
-﻿import { stat } from '../../lib/format/stat-builder';
+import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
+import { addEmissionAndDurabilityStats } from './shared-stat-sections';
 
 export default {
   csvFile: 'weaponmining.spviewer.csv',
@@ -27,29 +28,24 @@ export default {
     });
   },
   buildValue(r, flavorText) {
-    return stat(r)
-      .line('Item Type', 'Mining Laser')
-      .raw('Manufacturer', 'Manufacturer')
-      .raw('Size', 'Size')
-      .rawIf('Module Slots', 'Module  Slots')
-      .section('-- Laser Stats --')
-      .raw('Power Max', 'Laser Power Max')
-      .raw('Power Min', 'Laser Power Min')
-      .raw('Range Max', 'Range Power Max')
-      .raw('Range Min', 'Range Power Min')
-      .rawIf('Throttle Lerp', 'Throttle  Lerp Speed')
-      .section('-- Rock Modifiers --')
-      .rawIf('Resistance', 'Rock Modifier Resistance')
-      .rawIf('Instability', 'Rock Modifier Instability')
-      .rawIf('Optimal Charge Zone', 'Rock Modifier Optimal Charge Zone')
-      .rawIf('Optimal Rate', 'Rock Modifier Optimal Rate')
-      .rawIf('Inert Materials', 'Rock Modifier Inert Materials')
-      .section('-- Emission --')
-      .rawIf('EM Active', 'EM Emit Active')
-      .rawIf('IR', 'IR Emit')
-      .section('-- Durability --')
-      .raw('Health', 'Health')
-      .rawIf('Distortion Shutdown', 'Distortion Resistance Shutdown Dmg')
-      .build(flavorText);
+    return addEmissionAndDurabilityStats(
+      stat(r)
+        .line('Item Type', 'Mining Laser')
+        .raw('Manufacturer', 'Manufacturer')
+        .raw('Size', 'Size')
+        .rawIf('Module Slots', 'Module  Slots')
+        .section('-- Laser Stats --')
+        .raw('Power Max', 'Laser Power Max')
+        .raw('Power Min', 'Laser Power Min')
+        .raw('Range Max', 'Range Power Max')
+        .raw('Range Min', 'Range Power Min')
+        .rawIf('Throttle Lerp', 'Throttle  Lerp Speed')
+        .section('-- Rock Modifiers --')
+        .rawIf('Resistance', 'Rock Modifier Resistance')
+        .rawIf('Instability', 'Rock Modifier Instability')
+        .rawIf('Optimal Charge Zone', 'Rock Modifier Optimal Charge Zone')
+        .rawIf('Optimal Rate', 'Rock Modifier Optimal Rate')
+        .rawIf('Inert Materials', 'Rock Modifier Inert Materials'),
+    ).build(flavorText);
   },
 } satisfies ItemConfig;
