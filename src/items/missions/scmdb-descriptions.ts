@@ -6,8 +6,8 @@
  */
 import type { ItemConfig } from '../../lib/types';
 
-const APPENDED_METADATA_PATTERN =
-  /(?:\\n\\n(?:Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/;
+const GENERATED_SECTION_START_PATTERN =
+  /\\n\\n(?:\*\* Contract Intel \*\*|\*\* Encounter \*\*|\*\* Hauling \*\*|Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\])/;
 
 function appendParagraph(value: string): string {
   return value ? String.raw`\n\n${value}` : '';
@@ -15,6 +15,10 @@ function appendParagraph(value: string): string {
 
 function formatCooldown(cooldown: string): string {
   return cooldown ? String.raw`\n\nCooldown: ${cooldown}` : '';
+}
+
+function formatNamedSection(title: string, value: string): string {
+  return value ? String.raw`\n\n** ${title} **\n${value}` : '';
 }
 
 function formatRewardList(rewardList: string, noteText: string): string {
@@ -34,6 +38,9 @@ function buildMetadata(row: Record<string, string>): string {
   const noteText = getCell(row, 'Note');
 
   return [
+    formatNamedSection('Contract Intel', getCell(row, 'ContractIntel')),
+    formatNamedSection('Encounter', getCell(row, 'EncounterSummary')),
+    formatNamedSection('Hauling', getCell(row, 'HaulingSummary')),
     formatCooldown(getCell(row, 'Cooldown')),
     appendParagraph(noteText),
     formatRewardList(getCell(row, 'RewardList'), noteText),
@@ -42,7 +49,8 @@ function buildMetadata(row: Record<string, string>): string {
 }
 
 function stripAppendedMetadata(oldValue: string): string {
-  return oldValue.replace(APPENDED_METADATA_PATTERN, '');
+  const match = GENERATED_SECTION_START_PATTERN.exec(oldValue);
+  return match ? oldValue.slice(0, match.index) : oldValue;
 }
 
 export default {
@@ -51,6 +59,10 @@ export default {
   requiredColumns: ['Localization Key', 'Description'],
   noInsert: true,
   descKeyMatch: (key) => /_desc|_description/i.test(key),
+  getTargetKeys(row) {
+    const key = row['Localization Key'] ?? '';
+    return /_desc|_description/i.test(key) ? [key] : [];
+  },
   buildValue(row, _flavorText, oldValue, _targetKey) {
     const description = row['Description'] ?? row['Text'] ?? '';
     const baseValue = oldValue ? stripAppendedMetadata(oldValue) : description;

@@ -1,10 +1,13 @@
-Rarity Category,Element List
+Rarity Category,Element List,Insight Summary
+Insights,,"Hardest: Aslarite (Raw) (Extreme), Beryl (Raw) (Extreme), Bexalite (Raw) (Extreme), Borase (Ore) (Extreme), Gold (Ore) (Extreme)
+Most Volatile: Lindinium (Ore) (Extreme fracture risk), Quantainium (Raw) (Extreme fracture risk), Savrilium (Ore) (Extreme fracture risk), Stileron (Ore) (Extreme fracture risk), Riccite (Ore) (Extreme fracture risk)
+Refinery Standouts: Agricium (Ore): 3 refineries (+8); Beryl (Raw): Levski (+8); Bexalite (Raw): MIC-L5 Modern Icarus Station (+12); Borase (Ore): MIC-L5 Modern Icarus Station (+9); Copper (Ore): MIC-L5 Modern Icarus Station (+9)"
 Uncommon,"Agricium (Ore)
 Aslarite (Raw)
 Laranite (Raw)
 Titanium (Ore)
 Torite (Ore)
-Tungsten (Ore)"
+Tungsten (Ore)",
 Common,"Aluminium (Ore)
 Copper (Ore)
 Corundum (Raw)
@@ -13,15 +16,15 @@ Ice (Raw)
 Iron (Ore)
 Quartz (Raw)
 Silicon (Raw)
-Tin (Ore)"
+Tin (Ore)",
 Rare,"Beryl (Raw)
 Bexalite (Raw)
 Borase (Ore)
 Gold (Ore)
-Taranite (Raw)"
+Taranite (Raw)",
 Epic,"Lindinium (Ore)
 Ouratite (Raw)
-Riccite (Ore)"
+Riccite (Ore)",
 Unknown,"Aphorite
 Beradom
 Carinite
@@ -34,7 +37,7 @@ Hadanite
 Jaclium
 Janalite
 Sadaryx
-Saldynium"
+Saldynium",
 Legendary,"Quantainium (Raw)
 Savrilium (Ore)
-Stileron (Ore)"
+Stileron (Ore)",

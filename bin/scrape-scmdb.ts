@@ -125,16 +125,29 @@ function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.par
         'Element Name',
         'Rarity',
         'Ground Scan Signature',
+        'FPS Scan Signature',
         'Scan Signature',
         'Resistance',
         'Instability',
+        'Density',
+        'Optimal Window Midpoint',
+        'Optimal Window Randomness',
+        'Optimal Window Thinness',
+        'Explosion Multiplier',
+        'Cluster Factor',
+        'Quality Bands',
+        'Material Name',
+        'Mining Difficulty',
+        'Volatility Note',
+        'Cluster Note',
+        'Best Refinery',
       ]),
     );
   }
 
   const journal = buildMiningJournalRows(miningData);
   if (journal.length) {
-    writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List']));
+    writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List', 'Insight Summary']));
   }
 
   const locRows = buildMiningLocationRows(miningData);
@@ -231,7 +244,7 @@ async function main() {
   const legacyRows = mergedData.legacyContracts.map((c) =>
     buildContractRow(toLegacyContractRowSource(c), chainData, factionRewardsContext),
   );
-  const missionRows = buildMissionRows(mergedData.contracts, chainData, mergedData.blueprintPools);
+  const missionRows = buildMissionRows(mergedData.contracts, chainData, mergedData.blueprintPools, mergedData);
   const blueprintPoolRows = buildBlueprintPoolRows(mergedData.blueprintPools);
   const contractBlueprintRows = buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools);
 
@@ -243,6 +256,9 @@ async function main() {
         'Description',
         'TitleNote',
         'Note',
+        'ContractIntel',
+        'EncounterSummary',
+        'HaulingSummary',
         'RewardList',
         'ItemRewardList',
         'Cooldown',

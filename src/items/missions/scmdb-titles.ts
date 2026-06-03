@@ -15,10 +15,14 @@ function formatTitleNote(noteText: string): string {
 }
 
 function rebuildTitleValue(oldValue: string, noteText: string | undefined, note: string): string {
-  const normalizedOldValue = oldValue.replace(
-    new RegExp(String.raw`\s*(?:${IniTag.EM4.open}\[BP(?: Chain)?\]${IniTag.EM4.close}|\[BP(?: Chain)?\])\s*$`),
+  const normalizedOldValue = oldValue
+    .replace(
+    new RegExp(
+      String.raw`(?:\s*(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\]${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\]))+\s*$`,
+    ),
     '',
-  );
+    )
+    .trimEnd();
   return noteText ? `${normalizedOldValue}${note}` : normalizedOldValue;
 }
 
@@ -28,6 +32,10 @@ export default {
   requiredColumns: ['Localization Key', 'Description'],
   noInsert: true,
   descKeyMatch: (key) => /_title/i.test(key),
+  getTargetKeys(row) {
+    const key = row['Localization Key'] ?? '';
+    return /_title/i.test(key) ? [key] : [];
+  },
   buildValue(row, _flavorText, oldValue, _targetKey) {
     const description = row['Description'] ?? row['Text'] ?? '';
     const noteText = row['TitleNote'];

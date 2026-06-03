@@ -14,6 +14,82 @@ import {
 /**
  * Builds rows for the mining elements CSV.
  */
+function formatQualityBands(bands: number[] | undefined): string {
+  return bands?.length ? bands.map((band) => `${(band / 10).toFixed(1)}%`).join(' / ') : '';
+}
+
+export function deriveMiningDifficulty(el: {
+  resistance?: number;
+  instability?: number;
+  optimalWindowThinness?: number;
+  optimalWindowRandomness?: number;
+  explosionMultiplier?: number;
+}): string {
+  const score =
+    (el.resistance ?? 0) * 2 +
+    (el.instability ?? 0) / 350 +
+    (el.optimalWindowThinness ?? 0) / 2 +
+    (el.optimalWindowRandomness ?? 0) * 2 +
+    (el.explosionMultiplier ?? 0) / 5;
+  if (score >= 6) return 'Extreme';
+  if (score >= 4.8) return 'Volatile';
+  if (score >= 3.6) return 'Difficult';
+  if (score >= 2.2) return 'Moderate';
+  return 'Easy';
+}
+
+const DIFFICULTY_SCORE: Record<string, number> = {
+  Easy: 1,
+  Moderate: 2,
+  Difficult: 3,
+  Volatile: 4,
+  Extreme: 5,
+};
+
+function deriveVolatilityNote(el: { instability?: number; explosionMultiplier?: number }): string {
+  const instability = el.instability ?? 0;
+  const explosion = el.explosionMultiplier ?? 0;
+  if (explosion >= 8 || instability >= 650) return 'Extreme fracture risk';
+  if (explosion >= 5 || instability >= 450) return 'High explosion risk';
+  if (instability >= 250) return 'Unstable charge behavior';
+  return 'Low volatility';
+}
+
+function deriveClusterNote(clusterFactor: number | undefined): string {
+  if (clusterFactor === undefined) return '';
+  if (clusterFactor >= 0.65) return 'Cluster-prone';
+  if (clusterFactor >= 0.3) return 'Occasional clusters';
+  return 'Isolated';
+}
+
+function buildRefineryHint(elementName: string, miningData: MiningDataDTO): string {
+  const profiles = miningData.refineryProfiles ?? {};
+  const refineries = Object.values(miningData.refineries ?? {});
+  let bestBonus: number | null = null;
+  let bestProfileIds: string[] = [];
+  for (const [profileId, bonuses] of Object.entries(profiles)) {
+    const bonus = bonuses[elementName];
+    if (bonus === undefined) continue;
+    if (bestBonus === null || bonus > bestBonus) {
+      bestBonus = bonus;
+      bestProfileIds = [profileId];
+    } else if (bonus === bestBonus) {
+      bestProfileIds.push(profileId);
+    }
+  }
+  if (bestBonus === null || bestBonus <= 0) return '';
+  const refineryNames = refineries
+    .filter((refinery) => refinery.profileId && bestProfileIds.includes(refinery.profileId))
+    .map((refinery) => refinery.name);
+  const where =
+    refineryNames.length === 1
+      ? refineryNames[0]
+      : refineryNames.length > 1
+        ? `${refineryNames.length} refineries`
+        : bestProfileIds[0];
+  return `${where} (+${bestBonus})`;
+}
+
 export function buildMiningElementRows(miningData: MiningDataDTO): MiningElementRowDTO[] {
   const elements: MiningElementRowDTO[] = [];
   for (const [_id, el] of Object.entries(miningData.mineableElements || {})) {
@@ -22,9 +98,22 @@ export function buildMiningElementRows(miningData: MiningDataDTO): MiningElement
         'Element Name': el.name,
         Rarity: el.rarity,
         'Ground Scan Signature': el.groundScanSignature,
+        'FPS Scan Signature': el.fpsScanSignature,
         'Scan Signature': el.scanSignature,
         Resistance: el.resistance,
         Instability: el.instability,
+        Density: el.density,
+        'Optimal Window Midpoint': el.optimalWindowMidpoint,
+        'Optimal Window Randomness': el.optimalWindowRandomness,
+        'Optimal Window Thinness': el.optimalWindowThinness,
+        'Explosion Multiplier': el.explosionMultiplier,
+        'Cluster Factor': el.clusterFactor,
+        'Quality Bands': formatQualityBands(el.qualityBands),
+        'Material Name': el.materialName,
+        'Mining Difficulty': deriveMiningDifficulty(el),
+        'Volatility Note': deriveVolatilityNote(el),
+        'Cluster Note': deriveClusterNote(el.clusterFactor),
+        'Best Refinery': buildRefineryHint(el.name, miningData),
       }),
     );
   }
@@ -49,6 +138,40 @@ export function buildMiningJournalRows(miningData: MiningDataDTO): MiningJournal
       ScmdbMiningJournalRowSchema.parse({
         'Rarity Category': cat,
         'Element List': list.join('\n'),
+        'Insight Summary': '',
+      }),
+    );
+  }
+  const elements = Object.values(miningData.mineableElements || {});
+  const hardest = elements
+    .toSorted((a, b) => DIFFICULTY_SCORE[deriveMiningDifficulty(b)] - DIFFICULTY_SCORE[deriveMiningDifficulty(a)])
+    .slice(0, 5)
+    .map((el) => `${el.name} (${deriveMiningDifficulty(el)})`);
+  const volatile = elements
+    .toSorted(
+      (a, b) =>
+        (b.explosionMultiplier ?? 0) +
+        (b.instability ?? 0) / 100 -
+        ((a.explosionMultiplier ?? 0) + (a.instability ?? 0) / 100),
+    )
+    .slice(0, 5)
+    .map((el) => `${el.name} (${deriveVolatilityNote(el)})`);
+  const refineryStandouts = elements
+    .map((el) => ({ name: el.name, hint: buildRefineryHint(el.name, miningData) }))
+    .filter((entry) => entry.hint)
+    .slice(0, 5)
+    .map((entry) => `${entry.name}: ${entry.hint}`);
+  const insightLines = [
+    hardest.length ? `Hardest: ${hardest.join(', ')}` : '',
+    volatile.length ? `Most Volatile: ${volatile.join(', ')}` : '',
+    refineryStandouts.length ? `Refinery Standouts: ${refineryStandouts.join('; ')}` : '',
+  ].filter(Boolean);
+  if (insightLines.length) {
+    journal.unshift(
+      ScmdbMiningJournalRowSchema.parse({
+        'Rarity Category': 'Insights',
+        'Element List': '',
+        'Insight Summary': insightLines.join('\n'),
       }),
     );
   }
@@ -97,6 +220,7 @@ function processOverrideEntries(
   notes: Map<string, string[]>,
   groupEntries: ScmdbLocationOverrideEntryDTO[],
   defaultMin: number,
+  groupLabel: string,
   rarityLabel: string,
 ): void {
   for (const entry of groupEntries) {
@@ -104,7 +228,7 @@ function processOverrideEntries(
     if (overrideMin === undefined || overrideMin <= defaultMin) continue;
     const floorPct = (overrideMin / QUALITY_PCT_DIVISOR).toFixed(1);
     const defaultPct = (defaultMin / QUALITY_PCT_DIVISOR).toFixed(1);
-    const note = `${rarityLabel} ship rocks: quality floor ${floorPct}% (standard ${defaultPct}%)`;
+    const note = `${rarityLabel} ${groupLabel}: quality floor ${floorPct}% (standard ${defaultPct}%)`;
     addLocationNote(notes, entry.locations ?? [], note);
   }
 }
@@ -121,19 +245,28 @@ export function buildLocationQualityNotes(
   qualityDistribution: MiningDataDTO['qualityDistribution'],
 ): Map<string, string[]> {
   const notes: Map<string, string[]> = new Map();
-  const sm = qualityDistribution?.shipmineables;
-  if (!sm) return notes;
+  if (!qualityDistribution) return notes;
+  const groups = [
+    ['shipmineables', 'ship rocks'],
+    ['fpsmineables', 'FPS mineables'],
+    ['groundmineables', 'ground vehicle mineables'],
+    ['harvestables', 'harvestables'],
+  ] as const;
 
-  for (const rarity of RARITY_ORDER) {
-    const rarityData = sm[rarity];
-    if (!rarityData) continue;
-    const defaultMin = rarityData.default?.min ?? null;
-    if (defaultMin === null) continue;
-    const locationOverrides = rarityData.locationOverrides;
-    if (!locationOverrides) continue;
-    const rarityLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-    for (const groupEntries of Object.values(locationOverrides)) {
-      processOverrideEntries(notes, groupEntries, defaultMin, rarityLabel);
+  for (const [groupKey, groupLabel] of groups) {
+    const distribution = qualityDistribution[groupKey];
+    if (!distribution) continue;
+    for (const rarity of RARITY_ORDER) {
+      const rarityData = distribution[rarity];
+      if (!rarityData) continue;
+      const defaultMin = rarityData.default?.min ?? null;
+      if (defaultMin === null) continue;
+      const locationOverrides = rarityData.locationOverrides;
+      if (!locationOverrides) continue;
+      const rarityLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+      for (const groupEntries of Object.values(locationOverrides)) {
+        processOverrideEntries(notes, groupEntries, defaultMin, groupLabel, rarityLabel);
+      }
     }
   }
 

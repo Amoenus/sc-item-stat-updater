@@ -4,6 +4,7 @@ export function buildJournalValue(rows: Array<Record<string, string>>, oldValue:
   // Extract intro block - everything before first "\\n\\n**" (start of first rarity section)
   const introEndIndex = oldValue.indexOf(String.raw`\n\n**`);
   const introBlock = introEndIndex === -1 ? oldValue : oldValue.substring(0, introEndIndex);
+  const insights = rows.map((row) => row['Insight Summary'] ?? '').find((value) => value.trim().length > 0);
 
   // Define rarity order (skip Unknown)
   const rarityOrder = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'];
@@ -30,6 +31,10 @@ export function buildJournalValue(rows: Array<Record<string, string>>, oldValue:
   // Build sections in correct order
   let result = introBlock;
   const nlSep = String.raw`\n`;
+
+  if (insights) {
+    result += String.raw`\n\n** Mining Insights **\n${insights}`;
+  }
 
   // Add each rarity section if it has elements
   for (const rarity of rarityOrder) {

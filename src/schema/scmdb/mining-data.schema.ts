@@ -6,16 +6,28 @@ import { z } from 'zod';
 
 const MineableElementSchema = z.object({
   name: z.string(),
+  resourceType: z.string().optional(),
+  density: z.number().optional(),
   rarity: z.string().optional(),
+  fpsScanSignature: z.number().optional(),
   groundScanSignature: z.number().optional(),
   scanSignature: z.number().optional(),
   resistance: z.number().optional(),
   instability: z.number().optional(),
+  optimalWindowMidpoint: z.number().optional(),
+  optimalWindowRandomness: z.number().optional(),
+  optimalWindowThinness: z.number().optional(),
+  explosionMultiplier: z.number().optional(),
+  clusterFactor: z.number().optional(),
+  qualityBands: z.array(z.number()).optional(),
+  materialName: z.string().optional(),
 });
 export type MineableElement = z.infer<typeof MineableElementSchema>;
 
 const CompositionPartSchema = z.object({
   elementName: z.string().optional(),
+  percentage: z.number().optional(),
+  probability: z.number().optional(),
 });
 export type CompositionPart = z.infer<typeof CompositionPartSchema>;
 
@@ -63,15 +75,27 @@ const RarityDataSchema = z.object({
 export type RarityData = z.infer<typeof RarityDataSchema>;
 
 const QualityDistributionSchema = z.object({
+  creatures: z.record(z.string(), RarityDataSchema).optional(),
+  fpsmineables: z.record(z.string(), RarityDataSchema).optional(),
+  groundmineables: z.record(z.string(), RarityDataSchema).optional(),
+  harvestables: z.record(z.string(), RarityDataSchema).optional(),
   shipmineables: z.record(z.string(), RarityDataSchema).optional(),
 });
 export type QualityDistribution = z.infer<typeof QualityDistributionSchema>;
+
+const RefinerySchema = z.object({
+  name: z.string(),
+  system: z.string().optional(),
+  profileId: z.string().optional(),
+});
 
 export const MiningDataSchema = z.object({
   mineableElements: z.record(z.string(), MineableElementSchema).optional(),
   compositions: z.record(z.string(), CompositionSchema).optional(),
   locations: z.array(MiningLocationSchema).optional(),
   qualityDistribution: QualityDistributionSchema.optional(),
+  refineryProfiles: z.record(z.string(), z.record(z.string(), z.number())).optional(),
+  refineries: z.union([z.record(z.string(), RefinerySchema), z.array(RefinerySchema)]).optional(),
 });
 export type MiningData = z.infer<typeof MiningDataSchema>;
 
@@ -83,15 +107,29 @@ export const MiningElementRowSchema = z.object({
   'Element Name': z.string(),
   Rarity: z.string().optional(),
   'Ground Scan Signature': z.number().optional(),
+  'FPS Scan Signature': z.number().optional(),
   'Scan Signature': z.number().optional(),
   Resistance: z.number().optional(),
   Instability: z.number().optional(),
+  Density: z.number().optional(),
+  'Optimal Window Midpoint': z.number().optional(),
+  'Optimal Window Randomness': z.number().optional(),
+  'Optimal Window Thinness': z.number().optional(),
+  'Explosion Multiplier': z.number().optional(),
+  'Cluster Factor': z.number().optional(),
+  'Quality Bands': z.string().optional(),
+  'Material Name': z.string().optional(),
+  'Mining Difficulty': z.string().optional(),
+  'Volatility Note': z.string().optional(),
+  'Cluster Note': z.string().optional(),
+  'Best Refinery': z.string().optional(),
 });
 export type MiningElementRowDTO = z.infer<typeof MiningElementRowSchema>;
 
 export const MiningJournalRowSchema = z.object({
   'Rarity Category': z.string(),
   'Element List': z.string(),
+  'Insight Summary': z.string().optional(),
 });
 export type MiningJournalRowDTO = z.infer<typeof MiningJournalRowSchema>;
 

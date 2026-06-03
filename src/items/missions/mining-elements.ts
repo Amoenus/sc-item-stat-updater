@@ -1,65 +1,70 @@
 import type { ItemConfig } from '../../lib/types';
+
+const SUFFIXLESS_TARGETS: Record<string, string> = {};
+const COMMODITY_SLUG_ALIASES: Record<string, string> = {
+  aluminium: 'aluminum',
+};
+
+function toCommoditySlug(name: string): string {
+  const slug = name.toLowerCase().replace(/[\s-]/g, '');
+  return COMMODITY_SLUG_ALIASES[slug] ?? slug;
+}
+
+function appendIfPresent(lines: string[], label: string, value: string | undefined): void {
+  if (value && value.trim() !== '') lines.push(`${label}: ${value}`);
+}
+
 export default {
   csvFile: 'mining-elements.csv',
   label: 'Mining element stats',
   requiredColumns: ['Element Name', 'Rarity', 'Scan Signature', 'Resistance', 'Instability'],
-  // Only update keys already in the INI; never insert orphan commodity entries
   noInsert: true,
-  // Only match _ore_desc and _raw_desc keys — those carry flavor text and scanner data
   descKeyMatch: (kl: string) =>
     kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
 
-  /** Derives the target INI key from the Element Name. */
   getTargetKeys(row, _deriveDescKey) {
     const elementName = row['Element Name'];
     if (!elementName) return [];
 
-    // Match suffix: "Agricium (Ore)" -> base="Agricium", type="ore"
-    //               "Aphorite (Raw)" -> base="Aphorite",  type="raw"
     const suffixMatch = /^(.+?)\s*\((\w+)\)\s*$/.exec(elementName);
-
     if (suffixMatch) {
       const baseName = suffixMatch[1];
-      const suffix = suffixMatch[2].toLowerCase(); // "ore" or "raw"
-      const keyBase = baseName.toLowerCase().replace(/[\s-]/g, '');
-      // e.g. "items_commodities_agricium_ore_desc"
-      return [`items_commodities_${keyBase}_${suffix}_desc`];
+      const suffix = suffixMatch[2].toLowerCase();
+      if (suffix !== 'ore' && suffix !== 'raw') return [];
+      return [`items_commodities_${toCommoditySlug(baseName)}_${suffix}_desc`];
     }
 
-    // No suffix in CSV name — try both _raw_desc and _ore_desc; the updater
-    // (noInsert: true) will keep only the variant that already exists in the INI.
-    const keyBase = elementName.toLowerCase().replace(/[\s-]/g, '');
-    return [`items_commodities_${keyBase}_raw_desc`, `items_commodities_${keyBase}_ore_desc`];
+    const mappedTarget = SUFFIXLESS_TARGETS[elementName] ?? SUFFIXLESS_TARGETS[toCommoditySlug(elementName)];
+    return mappedTarget ? [mappedTarget] : [];
   },
 
-  /** Builds the new INI value by appending scanner data stats. */
   buildValue(row, _flavorText, oldValue, _targetKey) {
-    // Use the full existing INI value as the base — for _ore_desc/_raw_desc keys the entire
-    // value is flavor text (no \n\n separator before a stats block like other items use).
-    // Strip any previously-appended scanner block first for idempotency.
     const statsBlockMarker = String.raw`\n\n** Scanner Data **`;
     const statsBlockIndex = oldValue.indexOf(statsBlockMarker);
     const cleanFlavorText = statsBlockIndex === -1 ? oldValue : oldValue.substring(0, statsBlockIndex);
 
-    // Build the stats block
     const rarity = row['Rarity'] || 'N/A';
-    const scanSignature = row['Scan Signature'] || 'N/A';
-    const resistance = row['Resistance'] || 'N/A';
-    const instability = row['Instability'] || 'N/A';
-
-    // Capitalize rarity (Title Case)
     const formattedRarity = rarity === 'N/A' ? 'N/A' : rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
+    const scannerLines = [`Rarity: ${formattedRarity}`, `Scan Signature: ${row['Scan Signature'] || 'N/A'}`];
+    appendIfPresent(scannerLines, 'Ground Scan Signature', row['Ground Scan Signature']);
+    appendIfPresent(scannerLines, 'FPS Scan Signature', row['FPS Scan Signature']);
+    appendIfPresent(scannerLines, 'Density', row.Density);
+    scannerLines.push(`Resistance: ${row.Resistance || 'N/A'}`, `Instability: ${row.Instability || 'N/A'}`);
 
-    let statsBlock = String.raw`\n\n** Scanner Data **\nRarity: ${formattedRarity}\nScan Signature: ${scanSignature}\nResistance: ${resistance}\nInstability: ${instability}`;
+    const behaviorLines: string[] = [];
+    appendIfPresent(behaviorLines, 'Difficulty', row['Mining Difficulty']);
+    appendIfPresent(behaviorLines, 'Optimal Charge', row['Optimal Window Midpoint']);
+    appendIfPresent(behaviorLines, 'Window Variance', row['Optimal Window Randomness']);
+    appendIfPresent(behaviorLines, 'Window Width', row['Optimal Window Thinness']);
+    appendIfPresent(behaviorLines, 'Volatility', row['Volatility Note']);
+    appendIfPresent(behaviorLines, 'Cluster Tendency', row['Cluster Note']);
+    appendIfPresent(behaviorLines, 'Quality Bands', row['Quality Bands']);
 
-    // Add Ground Scan Signature if present
-    const groundScanSignature = row['Ground Scan Signature'];
-    if (groundScanSignature && groundScanSignature.trim() !== '') {
-      statsBlock = statsBlock.replace(
-        /(Scan Signature: [^\\]*)/,
-        String.raw`$1\nGround Scan Signature: ${groundScanSignature}`,
-      );
-    }
+    const behaviorBlock = behaviorLines.length
+      ? String.raw`\n\n** Mining Behavior **\n${behaviorLines.join(String.raw`\n`)}`
+      : '';
+    const refineryLine = row['Best Refinery'] ? String.raw`\n\nBest Refinery: ${row['Best Refinery']}` : '';
+    const statsBlock = String.raw`\n\n** Scanner Data **\n${scannerLines.join(String.raw`\n`)}${behaviorBlock}${refineryLine}`;
 
     return cleanFlavorText + statsBlock;
   },

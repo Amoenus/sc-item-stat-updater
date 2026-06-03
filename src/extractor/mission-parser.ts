@@ -15,6 +15,7 @@ import type {
   ScmdbFactionDTO as FactionDTO,
   ScmdbFactionRewardsDTO as FactionRewardsDTO,
   ScmdbLegacyContractDTO as LegacyContractDTO,
+  ScmdbMergedDTO as MergedDTO,
 } from '../schema/scmdb.schemas';
 
 /**
@@ -335,10 +336,10 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
   return { isBlueprintReward, blueprintChainDepth };
 }
 
-function buildBlueprintRowFields(contractId: string, chainData: ChainDataDTO): Pick<
-  ContractRowDTO,
-  'isBlueprintReward' | 'isBlueprintChainPrerequisite' | 'blueprintChainDepth'
-> {
+function buildBlueprintRowFields(
+  contractId: string,
+  chainData: ChainDataDTO,
+): Pick<ContractRowDTO, 'isBlueprintReward' | 'isBlueprintChainPrerequisite' | 'blueprintChainDepth'> {
   const isBlueprintReward = chainData.isBlueprintReward.get(contractId) === true;
   const depth = chainData.blueprintChainDepth.get(contractId);
   return {
@@ -615,9 +616,142 @@ function getBlueprintMissionTags(isBlueprintReward: boolean, isBlueprintChain: b
   return NO_BLUEPRINT_TAGS;
 }
 
+function isTrueIntroMission(contract: ContractDTO): boolean {
+  return contract.isIntro === true;
+}
+
+function collectIntroTitleKeys(contracts: ContractDTO[]): ReadonlySet<string> {
+  return new Set(
+    contracts
+      .filter(isTrueIntroMission)
+      .map((contract) => normalizeLocalizationKey(contract.titleKey || ''))
+      .filter(Boolean),
+  );
+}
+
+function getMissionTitleTag(isIntroTitle: boolean, isBlueprintReward: boolean, isBlueprintChain: boolean): string {
+  if (isIntroTitle) return ` ${IniTag.EM4.wrap('[Intro]')}`;
+  return getBlueprintMissionTags(isBlueprintReward, isBlueprintChain).titleTag;
+}
+
 function getContractCooldownText(contract: ContractDTO): string {
   if (!contract.hasPersonalCooldown || contract.personalCooldownTime <= 0) return '';
   return formatCooldownMinutes(contract.personalCooldownTime);
+}
+
+function formatUec(value: number): string {
+  return `${Math.round(value).toLocaleString('en-US')} aUEC`;
+}
+
+function formatTimeLimit(minutes: number): string {
+  if (!Number.isFinite(minutes) || minutes <= 0) return '';
+  return Number.isInteger(minutes) ? `${minutes} min` : `${minutes.toFixed(1)} min`;
+}
+
+function hasRuntimeRewardToken(description: string): boolean {
+  return /~mission\(reward\)|~missions\([^)]*reward/i.test(description);
+}
+
+type MissionEnrichmentContext = Pick<MergedDTO, 'factions' | 'resourcePools'>;
+
+function resolveFactionName(factionGuid: string, context?: MissionEnrichmentContext): string {
+  return context?.factions?.[factionGuid]?.name ?? factionGuid;
+}
+
+function buildContractIntel(contract: ContractDTO, context?: MissionEnrichmentContext): string {
+  const lines: string[] = [];
+  const reward = contract.rewardUEC;
+  const timeLimit = contract.timeToComplete;
+  const buyIn = contract.buyIn;
+
+  if (typeof reward === 'number' && reward > 0 && !hasRuntimeRewardToken(contract.description)) {
+    lines.push(`Reward: ${formatUec(reward)}`);
+  }
+  if (typeof timeLimit === 'number' && timeLimit > 0) {
+    lines.push(`Time Limit: ${formatTimeLimit(timeLimit)}`);
+    if (typeof reward === 'number' && reward > 0) {
+      lines.push(`Efficiency: ${formatUec(reward / timeLimit)}/min`);
+    }
+  }
+  const cooldown = getContractCooldownText(contract);
+  if (cooldown) lines.push(`Cooldown: ${cooldown}`);
+  if (typeof buyIn === 'number' && buyIn > 0) {
+    lines.push(`Buy-in: ${formatUec(buyIn)}`);
+    if (typeof reward === 'number') lines.push(`Net Reward: ${formatUec(reward - buyIn)}`);
+  }
+  if (contract.minStanding?.name) lines.push(`Requires: ${contract.minStanding.name}`);
+  if (typeof contract.rewardRepCalculated === 'number' && contract.rewardRepCalculated !== 0 && contract.factionGuid) {
+    const sign = contract.rewardRepCalculated > 0 ? '+' : '';
+    lines.push(
+      `Faction Rep: ${resolveFactionName(contract.factionGuid, context)} ${sign}${contract.rewardRepCalculated}`,
+    );
+  }
+
+  return lines.join(String.raw`\n`);
+}
+
+function sumWaveShips(waves: NonNullable<ContractDTO['shipEncounters']>['spawnConfig']['groups'][number]['waves']): {
+  min: number;
+  max: number;
+} {
+  return waves.reduce((sum, wave) => ({ min: sum.min + wave.minShips, max: sum.max + wave.maxShips }), {
+    min: 0,
+    max: 0,
+  });
+}
+
+function formatRange(min: number, max: number): string {
+  return min === max ? String(min) : `${min}-${max}`;
+}
+
+function buildEncounterSummary(contract: ContractDTO): string {
+  const config = contract.shipEncounters?.spawnConfig;
+  const groups = config?.groups ?? [];
+  if (!config || groups.length === 0) return '';
+  const lines: string[] = [`Encounter: ${formatRange(config.totalMinShips, config.totalMaxShips)} ships`];
+
+  for (const group of groups) {
+    const role = group.role.toLowerCase();
+    const count = sumWaveShips(group.waves);
+    if (count.max <= 0) continue;
+    if (role.includes('target')) lines.push(`Target: ${formatRange(count.min, count.max)} ship(s)`);
+    else if (role.includes('reinforc')) lines.push(`Reinforcements: ${formatRange(count.min, count.max)} ship(s)`);
+    else if (role.includes('ally') || role.includes('friendly'))
+      lines.push(`Allies: ${formatRange(count.min, count.max)} ship(s)`);
+    else if (role.includes('salvage')) lines.push(`Salvage Target: ${formatRange(count.min, count.max)} ship(s)`);
+    else if (group.classification === 'criminal') lines.push(`Hostiles: ${formatRange(count.min, count.max)} ship(s)`);
+  }
+
+  return [...new Set(lines)].slice(0, 5).join(String.raw`\n`);
+}
+
+function resolveResourceName(resourceId: string, context?: MissionEnrichmentContext): string {
+  return context?.resourcePools?.[resourceId]?.name ?? resourceId;
+}
+
+function buildHaulingSummary(contract: ContractDTO, context?: MissionEnrichmentContext): string {
+  const orders = contract.haulingOrders;
+  if (!orders) return '';
+  const formatOrder = (order: {
+    resource: string;
+    minSCU?: number;
+    maxSCU?: number;
+    maxContainerSize?: number;
+  }): string => {
+    const amount =
+      order.minSCU !== undefined && order.maxSCU !== undefined
+        ? `${formatRange(order.minSCU, order.maxSCU)} SCU`
+        : order.minSCU !== undefined
+          ? `${order.minSCU} SCU`
+          : '';
+    const container = order.maxContainerSize && order.maxContainerSize > 0 ? `, max ${order.maxContainerSize} SCU` : '';
+    return `${amount ? `${amount} ` : ''}${resolveResourceName(order.resource, context)}${container}`;
+  };
+
+  if (Array.isArray(orders)) return `Order: ${orders.map(formatOrder).join(' + ')}`;
+  if ('options' in orders)
+    return `Order: ${orders.options.map((group) => group.map(formatOrder).join(' + ')).join(' OR ')}`;
+  return '';
 }
 
 function buildTitleMissionRow(titleKey: string, title: string, titleTag: string): MissionRowDTO | null {
@@ -627,6 +761,9 @@ function buildTitleMissionRow(titleKey: string, title: string, titleTag: string)
     Description: title,
     TitleNote: titleTag,
     Note: '',
+    ContractIntel: '',
+    EncounterSummary: '',
+    HaulingSummary: '',
     RewardList: '',
     ItemRewardList: '',
     Cooldown: '',
@@ -637,6 +774,9 @@ function buildDescriptionMissionRow(
   descKey: string,
   description: string,
   descTag: string,
+  contractIntel: string,
+  encounterSummary: string,
+  haulingSummary: string,
   rewardList: string,
   itemRewardList: string,
   cooldown: string,
@@ -647,6 +787,9 @@ function buildDescriptionMissionRow(
     Description: description,
     Note: descTag,
     TitleNote: '',
+    ContractIntel: contractIntel,
+    EncounterSummary: encounterSummary,
+    HaulingSummary: haulingSummary,
     RewardList: rewardList,
     ItemRewardList: itemRewardList,
     Cooldown: cooldown,
@@ -657,24 +800,33 @@ function buildMissionRowsForContract(
   contract: ContractDTO,
   chainData: ChainDataDTO,
   blueprintPools: BlueprintPoolsDTO,
+  introTitleKeys: ReadonlySet<string>,
+  context?: MissionEnrichmentContext,
 ): MissionRowDTO[] {
   const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
   const isBlueprintChain = (chainData.blueprintChainDepth.get(contract.id) ?? 0) > 0;
   const tags = getBlueprintMissionTags(isBlueprintReward, isBlueprintChain);
 
   const titleKey = normalizeLocalizationKey(contract.titleKey || '');
+  const titleTag = getMissionTitleTag(introTitleKeys.has(titleKey), isBlueprintReward, isBlueprintChain);
   const descKey = normalizeLocalizationKey(contract.descriptionLocKey || contract.descriptionKey || '');
   const rewardList = isBlueprintReward ? buildBlueprintRewardList(contract, blueprintPools) : '';
   const itemRewardList = buildItemRewardList(contract);
   const cooldown = getContractCooldownText(contract);
+  const contractIntel = buildContractIntel(contract, context);
+  const encounterSummary = buildEncounterSummary(contract);
+  const haulingSummary = buildHaulingSummary(contract, context);
 
   const rows: MissionRowDTO[] = [];
-  const titleRow = buildTitleMissionRow(titleKey, contract.title, tags.titleTag);
+  const titleRow = buildTitleMissionRow(titleKey, contract.title, titleTag);
   if (titleRow) rows.push(titleRow);
   const descRow = buildDescriptionMissionRow(
     descKey,
     contract.description,
     tags.descTag,
+    contractIntel,
+    encounterSummary,
+    haulingSummary,
     rewardList,
     itemRewardList,
     cooldown,
@@ -690,6 +842,14 @@ export function buildMissionRows(
   contracts: ContractDTO[],
   chainData: ChainDataDTO,
   blueprintPools: BlueprintPoolsDTO,
+  context?: MissionEnrichmentContext,
 ): MissionRowDTO[] {
-  return contracts.flatMap((contract) => buildMissionRowsForContract(contract, chainData, blueprintPools));
+  const rowsByKey = new Map<string, MissionRowDTO>();
+  const introTitleKeys = collectIntroTitleKeys(contracts);
+  for (const row of contracts.flatMap((contract) =>
+    buildMissionRowsForContract(contract, chainData, blueprintPools, introTitleKeys, context),
+  )) {
+    rowsByKey.set(row['Localization Key'], row);
+  }
+  return [...rowsByKey.values()];
 }
