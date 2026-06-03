@@ -6,27 +6,43 @@
  */
 import type { ItemConfig } from '../../lib/types';
 
-function formatDescNote(noteText: string): string {
-  if (!noteText) {
-    return '';
-  }
-  return String.raw`\n\n${noteText}`;
+const APPENDED_METADATA_PATTERN =
+  /(?:\\n\\n(?:Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/;
+
+function appendParagraph(value: string): string {
+  return value ? String.raw`\n\n${value}` : '';
 }
 
-function rebuildDescValue(
-  oldValue: string,
-  cooldown: string,
-  note: string,
-  rewardList: string,
-  itemRewardList: string,
-  noteText: string,
-): string {
-  const normalized = oldValue.replace(
-    /(?:\\n\\n(?:Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\]))(?:\\n\\n.*)?$/,
-    '',
-  );
-  if (!noteText && !rewardList && !itemRewardList && !cooldown) return normalized;
-  return `${normalized}${cooldown}${note}${rewardList}${itemRewardList}`;
+function formatCooldown(cooldown: string): string {
+  return cooldown ? String.raw`\n\nCooldown: ${cooldown}` : '';
+}
+
+function formatRewardList(rewardList: string, noteText: string): string {
+  const noteAlreadyContainsRewardList = noteText.includes(rewardList);
+  return rewardList && !noteAlreadyContainsRewardList ? appendParagraph(rewardList) : '';
+}
+
+function formatItemRewardList(itemRewardList: string): string {
+  return itemRewardList ? String.raw`\n\n[Item Reward]\n\n${itemRewardList}` : '';
+}
+
+function getCell(row: Record<string, string>, column: string): string {
+  return row[column] ?? '';
+}
+
+function buildMetadata(row: Record<string, string>): string {
+  const noteText = getCell(row, 'Note');
+
+  return [
+    formatCooldown(getCell(row, 'Cooldown')),
+    appendParagraph(noteText),
+    formatRewardList(getCell(row, 'RewardList'), noteText),
+    formatItemRewardList(getCell(row, 'ItemRewardList')),
+  ].join('');
+}
+
+function stripAppendedMetadata(oldValue: string): string {
+  return oldValue.replace(APPENDED_METADATA_PATTERN, '');
 }
 
 export default {
@@ -37,21 +53,8 @@ export default {
   descKeyMatch: (key) => /_desc|_description/i.test(key),
   buildValue(row, _flavorText, oldValue, _targetKey) {
     const description = row['Description'] ?? row['Text'] ?? '';
-    const noteText = row['Note'];
-    const note = formatDescNote(noteText ?? '');
-    const cooldownValue = row['Cooldown'] ?? '';
-    const cooldown = cooldownValue ? String.raw`\n\nCooldown: ${cooldownValue}` : '';
-    const rewardListValue = row['RewardList'] ?? '';
-    const itemRewardListValue = row['ItemRewardList'] ?? '';
-    const noteContainsRewardList =
-      typeof noteText === 'string' && rewardListValue !== '' && noteText.includes(rewardListValue);
-    const rewardList = rewardListValue && !noteContainsRewardList ? String.raw`\n\n${rewardListValue}` : '';
-    const itemRewardList = itemRewardListValue ? String.raw`\n\n[Item Reward]\n\n${itemRewardListValue}` : '';
+    const baseValue = oldValue ? stripAppendedMetadata(oldValue) : description;
 
-    if (oldValue) {
-      return rebuildDescValue(oldValue, cooldown, note, rewardList, itemRewardList, noteText ?? '');
-    }
-
-    return description + cooldown + note + rewardList + itemRewardList;
+    return `${baseValue}${buildMetadata(row)}`;
   },
 } satisfies ItemConfig;
