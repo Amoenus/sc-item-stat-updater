@@ -88,3 +88,26 @@ export function makeGetTargetKeys(
     return [deriveDescKey(nameKey)];
   };
 }
+
+/**
+ * Factory that creates a `getTargetKeys` implementation for DataCore item
+ * configs where multiple entity class prefixes map to different INI key infixes.
+ *
+ * Each entry in `prefixMap` is a `[prefix, infix]` pair. The first matching
+ * prefix is used to derive the key; unmatched entity classes return `[]`.
+ */
+export function makeGetTargetKeysFromPrefixMap(
+  prefixMap: Array<[string, string]>,
+): NonNullable<ItemConfig['getTargetKeys']> {
+  return (row, deriveDescKey) => {
+    const entityClass = row['Entity Class'];
+    if (!entityClass) return [];
+    for (const [pfx, infix] of prefixMap) {
+      if (entityClass.toLowerCase().startsWith(pfx)) {
+        const suffix = entityClass.slice(pfx.length).toUpperCase();
+        return [deriveDescKey(`item_Name${infix}${suffix}`)];
+      }
+    }
+    return [];
+  };
+}

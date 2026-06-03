@@ -24,6 +24,6 @@ const WEAPON_DESC_PREFIXES = [
 
 const WEAPON_TYPES = ['cannon', 'repeater', 'gatling', 'scattergun', 'massdriver', 'laser', 'distortion'];
 
-function isWeaponDescKey(keyLower: string): boolean {
+export function isWeaponDescKey(keyLower: string): boolean {
   return WEAPON_DESC_PREFIXES.some((p) => keyLower.includes(p)) && WEAPON_TYPES.some((t) => keyLower.includes(t));
 }

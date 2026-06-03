@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import type { DataCoreItemTypeConfig } from './types';
+import { makeGetTargetKeysFromPrefixMap, type DataCoreItemTypeConfig } from './types';
 
 // ⚠️ FPS weapon entity class prefixes are highly variable (pistol_, smg_, rifle_,
 // sniper_, shotgun_, lmg_, etc.). No single prefix pattern covers all types.
@@ -43,28 +43,15 @@ export default {
   // This implementation strips common FPS weapon prefixes. Items whose entity
   // class doesn't match any known pattern will produce empty target key lists
   // (skipped silently). Expand the prefix list as real data is available.
-  getTargetKeys(row, deriveDescKey) {
-    const entityClass = row['Entity Class'];
-    if (!entityClass) return [];
-
+  getTargetKeys: makeGetTargetKeysFromPrefixMap([
     // Known FPS weapon prefixes and their INI key mappings
-    const prefixMap: Array<[string, string]> = [
-      ['pistol_', 'PISTOL_'],
-      ['smg_', 'SMG_'],
-      ['rifle_', 'RIFLE_'],
-      ['sniper_', 'SNIPER_'],
-      ['shotgun_', 'SHOTGUN_'],
-      ['lmg_', 'LMG_'],
-    ];
-
-    for (const [pfx, infix] of prefixMap) {
-      if (entityClass.toLowerCase().startsWith(pfx)) {
-        const suffix = entityClass.slice(pfx.length).toUpperCase();
-        return [deriveDescKey(`item_Name${infix}${suffix}`)];
-      }
-    }
-    return [];
-  },
+    ['pistol_', 'PISTOL_'],
+    ['smg_', 'SMG_'],
+    ['rifle_', 'RIFLE_'],
+    ['sniper_', 'SNIPER_'],
+    ['shotgun_', 'SHOTGUN_'],
+    ['lmg_', 'LMG_'],
+  ]),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', r['Type'] || 'Personal Weapon')

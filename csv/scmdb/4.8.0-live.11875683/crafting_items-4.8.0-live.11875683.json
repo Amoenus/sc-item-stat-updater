@@ -3957,6 +3957,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -3970,6 +3971,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -3983,6 +3985,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -3996,6 +3999,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 150,
@@ -4034,6 +4038,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4047,6 +4052,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4060,6 +4066,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4069,6 +4076,14 @@
         "physical": 0,
         "energy": 0.0001,
         "distortion": 0,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 27,
         "thermal": 0,
         "biochemical": 0,
         "stun": 0
@@ -4086,6 +4101,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4124,6 +4140,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4162,6 +4179,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4175,6 +4193,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4188,6 +4207,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4201,6 +4221,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4214,6 +4235,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4227,6 +4249,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4240,6 +4263,7 @@
         "biochemical": 0,
         "stun": 10
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4278,6 +4302,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 12,
@@ -4316,6 +4341,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4329,6 +4355,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4342,6 +4369,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 15,
@@ -4380,6 +4408,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4393,6 +4422,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4406,6 +4436,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4419,6 +4450,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4432,6 +4464,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4445,6 +4478,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4458,6 +4492,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4471,6 +4506,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 55,
@@ -4509,6 +4545,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4547,6 +4584,35 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 25.7,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "damageDropoff": null
+    },
+    {
+      "speed": 1345.5,
+      "lifetime": 0.96,
+      "damage": {
+        "physical": 0,
+        "energy": 0.0001,
+        "distortion": 0,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 38.5,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
       "damageDropoff": null
     },
     {
@@ -4556,6 +4622,14 @@
         "physical": 0,
         "energy": 0.0001,
         "distortion": 0,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0.0001,
+        "distortion": 57.9,
         "thermal": 0,
         "biochemical": 0,
         "stun": 0
@@ -4573,6 +4647,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4586,6 +4661,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4599,6 +4675,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4612,6 +4689,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4625,6 +4703,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4638,6 +4717,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4651,6 +4731,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 7,
@@ -4689,6 +4770,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4727,6 +4809,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4765,6 +4848,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4778,6 +4862,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4791,6 +4876,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4804,6 +4890,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4813,6 +4900,14 @@
         "physical": 0,
         "energy": 0.00009,
         "distortion": 0,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 81,
         "thermal": 0,
         "biochemical": 0,
         "stun": 0
@@ -4830,6 +4925,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 30,
@@ -4868,6 +4964,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4881,6 +4978,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4894,6 +4992,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4907,6 +5006,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 50,
@@ -4945,6 +5045,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -4983,6 +5084,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -4996,6 +5098,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5034,6 +5137,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5047,6 +5151,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5060,6 +5165,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5098,6 +5204,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 60,
@@ -5136,6 +5243,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 20,
@@ -5174,6 +5282,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5187,6 +5296,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5200,6 +5310,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5213,6 +5324,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5251,6 +5363,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5264,6 +5377,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5277,6 +5391,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5290,6 +5405,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5303,6 +5419,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5316,6 +5433,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5329,6 +5447,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5342,6 +5461,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5355,6 +5475,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5368,6 +5489,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5381,6 +5503,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5394,6 +5517,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5407,6 +5531,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5420,6 +5545,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5433,6 +5559,7 @@
         "biochemical": 0,
         "stun": 10
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5471,6 +5598,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5484,6 +5612,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5497,6 +5626,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5510,6 +5640,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5523,6 +5654,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5536,6 +5668,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5549,6 +5682,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 40,
@@ -5587,6 +5721,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 550,
@@ -5625,6 +5760,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 50,
@@ -5663,6 +5799,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 15,
@@ -5701,6 +5838,7 @@
         "biochemical": 0,
         "stun": 3
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5739,6 +5877,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5752,6 +5891,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5790,6 +5930,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5828,6 +5969,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 50,
@@ -5866,6 +6008,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -5879,6 +6022,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -5917,6 +6061,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 12,
@@ -5955,6 +6100,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 12,
@@ -5993,6 +6139,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6006,6 +6153,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6019,6 +6167,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 20,
@@ -6057,6 +6206,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 100,
@@ -6095,6 +6245,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6108,6 +6259,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6121,6 +6273,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 30,
@@ -6159,6 +6312,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 335,
@@ -6197,6 +6351,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6210,6 +6365,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6223,6 +6379,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6236,6 +6393,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6249,6 +6407,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6262,6 +6421,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6275,6 +6435,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6284,6 +6445,14 @@
         "physical": 0,
         "energy": 0,
         "distortion": 0.00009,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 81,
         "thermal": 0,
         "biochemical": 0,
         "stun": 0
@@ -6301,6 +6470,14 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0.00009,
+        "distortion": 121.5,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
       "damageDropoff": null
     },
     {
@@ -6310,6 +6487,14 @@
         "physical": 0,
         "energy": 0,
         "distortion": 0.00009,
+        "thermal": 0,
+        "biochemical": 0,
+        "stun": 0
+      },
+      "detonationDamage": {
+        "physical": 0,
+        "energy": 0,
+        "distortion": 182.52,
         "thermal": 0,
         "biochemical": 0,
         "stun": 0
@@ -6327,6 +6512,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6340,6 +6526,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6353,6 +6540,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6366,6 +6554,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6379,6 +6568,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6392,6 +6582,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 10,
@@ -6430,6 +6621,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": null
     },
     {
@@ -6443,6 +6635,7 @@
         "biochemical": 0,
         "stun": 1
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -6481,6 +6674,7 @@
         "biochemical": 0,
         "stun": 0
       },
+      "detonationDamage": null,
       "damageDropoff": {
         "minDistance": {
           "physical": 0,
@@ -8725,7 +8919,7 @@
       "name": "DR Model-XJ2 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 22,
-      "ammoIndex": 7,
+      "ammoIndex": 31,
       "magazineIndex": 7
     },
     {
@@ -8747,7 +8941,7 @@
       "name": "DR Model-XJ3 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 22,
-      "ammoIndex": 31,
+      "ammoIndex": 32,
       "magazineIndex": 7
     },
     {
@@ -8769,7 +8963,7 @@
       "name": "Deadbolt I Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 32,
+      "ammoIndex": 33,
       "magazineIndex": 18
     },
     {
@@ -8791,7 +8985,7 @@
       "name": "Deadbolt II Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 33,
+      "ammoIndex": 34,
       "magazineIndex": 19
     },
     {
@@ -8813,7 +9007,7 @@
       "name": "Deadbolt III Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 34,
+      "ammoIndex": 35,
       "magazineIndex": 20
     },
     {
@@ -8835,7 +9029,7 @@
       "name": "Deadbolt IV Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 35,
+      "ammoIndex": 36,
       "magazineIndex": 21
     },
     {
@@ -8857,7 +9051,7 @@
       "name": "Deadbolt V Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 36,
+      "ammoIndex": 37,
       "magazineIndex": 22
     },
     {
@@ -8879,7 +9073,7 @@
       "name": "Deadbolt VI Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 23,
-      "ammoIndex": 37,
+      "ammoIndex": 38,
       "magazineIndex": 23
     },
     {
@@ -8902,7 +9096,7 @@
       "name": "Deadrig Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 24,
-      "ammoIndex": 38,
+      "ammoIndex": 39,
       "magazineIndex": 10
     },
     {
@@ -8925,7 +9119,7 @@
       "name": "Demeco \"Purgatory Camo\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 25,
-      "ammoIndex": 39,
+      "ammoIndex": 40,
       "magazineIndex": 24
     },
     {
@@ -8948,7 +9142,7 @@
       "name": "Demeco LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 25,
-      "ammoIndex": 39,
+      "ammoIndex": 40,
       "magazineIndex": 24
     },
     {
@@ -8971,7 +9165,7 @@
       "name": "Devastator \"Brimstone\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -8994,7 +9188,7 @@
       "name": "Devastator \"Desert Shadow\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9017,7 +9211,7 @@
       "name": "Devastator \"Executive Edition\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9040,7 +9234,7 @@
       "name": "Devastator \"Midnight\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9063,7 +9257,7 @@
       "name": "Devastator \"Nightstalker\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9086,7 +9280,7 @@
       "name": "Devastator \"Pathfinder\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9109,7 +9303,7 @@
       "name": "Devastator \"Rager\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9132,7 +9326,7 @@
       "name": "Devastator \"Voyager\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9155,7 +9349,7 @@
       "name": "Devastator \"Warhawk\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9178,7 +9372,7 @@
       "name": "Devastator Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 26,
-      "ammoIndex": 40,
+      "ammoIndex": 41,
       "magazineIndex": 11
     },
     {
@@ -9200,7 +9394,7 @@
       "name": "Dominance-1 Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 27,
-      "ammoIndex": 41,
+      "ammoIndex": 42,
       "magazineIndex": 7
     },
     {
@@ -9222,7 +9416,7 @@
       "name": "Dominance-2 Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 28,
-      "ammoIndex": 42,
+      "ammoIndex": 43,
       "magazineIndex": 7
     },
     {
@@ -9244,7 +9438,7 @@
       "name": "Dominance-3 Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 29,
-      "ammoIndex": 43,
+      "ammoIndex": 44,
       "magazineIndex": 7
     },
     {
@@ -9266,7 +9460,7 @@
       "name": "Draugar Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 30,
-      "ammoIndex": 44,
+      "ammoIndex": 45,
       "magazineIndex": 25
     },
     {
@@ -9288,7 +9482,7 @@
       "name": "EVSD Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 31,
-      "ammoIndex": 45,
+      "ammoIndex": 46,
       "magazineIndex": 7
     },
     {
@@ -9311,7 +9505,7 @@
       "name": "F55 \"Mark I\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 32,
-      "ammoIndex": 46,
+      "ammoIndex": 47,
       "magazineIndex": 26
     },
     {
@@ -9334,7 +9528,7 @@
       "name": "F55 \"Scorched\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 32,
-      "ammoIndex": 46,
+      "ammoIndex": 47,
       "magazineIndex": 26
     },
     {
@@ -9357,7 +9551,7 @@
       "name": "F55 \"Valor\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 32,
-      "ammoIndex": 46,
+      "ammoIndex": 47,
       "magazineIndex": 26
     },
     {
@@ -9380,7 +9574,7 @@
       "name": "F55 LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 32,
-      "ammoIndex": 46,
+      "ammoIndex": 47,
       "magazineIndex": 26
     },
     {
@@ -9402,7 +9596,7 @@
       "name": "FL-11 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 33,
-      "ammoIndex": 47,
+      "ammoIndex": 48,
       "magazineIndex": 7
     },
     {
@@ -9424,7 +9618,7 @@
       "name": "FL-22 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 33,
-      "ammoIndex": 48,
+      "ammoIndex": 49,
       "magazineIndex": 7
     },
     {
@@ -9446,7 +9640,7 @@
       "name": "FL-33 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 33,
-      "ammoIndex": 49,
+      "ammoIndex": 50,
       "magazineIndex": 7
     },
     {
@@ -9469,7 +9663,7 @@
       "name": "FS-9 \"Blacklist\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 34,
-      "ammoIndex": 50,
+      "ammoIndex": 51,
       "magazineIndex": 27
     },
     {
@@ -9492,7 +9686,7 @@
       "name": "FS-9 \"Finish Line\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 34,
-      "ammoIndex": 50,
+      "ammoIndex": 51,
       "magazineIndex": 27
     },
     {
@@ -9515,7 +9709,7 @@
       "name": "FS-9 \"Stoneface\" LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 34,
-      "ammoIndex": 50,
+      "ammoIndex": 51,
       "magazineIndex": 27
     },
     {
@@ -9538,7 +9732,7 @@
       "name": "FS-9 LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 34,
-      "ammoIndex": 50,
+      "ammoIndex": 51,
       "magazineIndex": 27
     },
     {
@@ -9561,7 +9755,7 @@
       "name": "Fresnel \"Icebox\" Energy LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 35,
-      "ammoIndex": 51,
+      "ammoIndex": 52,
       "magazineIndex": 28
     },
     {
@@ -9584,7 +9778,7 @@
       "name": "Fresnel \"Molten\" Energy LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 35,
-      "ammoIndex": 51,
+      "ammoIndex": 52,
       "magazineIndex": 28
     },
     {
@@ -9607,7 +9801,7 @@
       "name": "Fresnel \"Rockfall\" Energy LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 35,
-      "ammoIndex": 51,
+      "ammoIndex": 52,
       "magazineIndex": 28
     },
     {
@@ -9630,7 +9824,7 @@
       "name": "Fresnel Energy LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 35,
-      "ammoIndex": 51,
+      "ammoIndex": 52,
       "magazineIndex": 28
     },
     {
@@ -9652,7 +9846,7 @@
       "name": "GVSR Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 36,
-      "ammoIndex": 52,
+      "ammoIndex": 53,
       "magazineIndex": 7
     },
     {
@@ -9675,7 +9869,7 @@
       "name": "Gallant \"Boneyard\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9698,7 +9892,7 @@
       "name": "Gallant \"Desert Shadow\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9721,7 +9915,7 @@
       "name": "Gallant \"Executive Edition\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9744,7 +9938,7 @@
       "name": "Gallant \"Midnight\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9767,7 +9961,7 @@
       "name": "Gallant \"Nightstalker\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9790,7 +9984,7 @@
       "name": "Gallant \"Stormfall\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9813,7 +10007,7 @@
       "name": "Gallant \"Warhawk\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9836,7 +10030,7 @@
       "name": "Gallant Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 37,
-      "ammoIndex": 53,
+      "ammoIndex": 54,
       "magazineIndex": 29
     },
     {
@@ -9858,7 +10052,7 @@
       "name": "Havoc Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 38,
-      "ammoIndex": 54,
+      "ammoIndex": 55,
       "magazineIndex": 30
     },
     {
@@ -9880,7 +10074,7 @@
       "name": "Hellion Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 38,
-      "ammoIndex": 55,
+      "ammoIndex": 56,
       "magazineIndex": 31
     },
     {
@@ -9903,7 +10097,7 @@
       "name": "Karna \"Alpine Sunset\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -9926,7 +10120,7 @@
       "name": "Karna \"Brimstone\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -9949,7 +10143,7 @@
       "name": "Karna \"Fate\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -9972,7 +10166,7 @@
       "name": "Karna \"Rager\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -9995,7 +10189,7 @@
       "name": "Karna \"Valor\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -10018,7 +10212,7 @@
       "name": "Karna Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 39,
-      "ammoIndex": 56,
+      "ammoIndex": 57,
       "magazineIndex": 32
     },
     {
@@ -10041,7 +10235,7 @@
       "name": "Killshot \"Dominion Camo\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 40,
-      "ammoIndex": 57,
+      "ammoIndex": 58,
       "magazineIndex": 29
     },
     {
@@ -10064,7 +10258,7 @@
       "name": "Killshot Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 40,
-      "ammoIndex": 57,
+      "ammoIndex": 58,
       "magazineIndex": 29
     },
     {
@@ -10087,7 +10281,7 @@
       "name": "LH86 \"Boneyard\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10110,7 +10304,7 @@
       "name": "LH86 \"Desert Shadow\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10133,7 +10327,7 @@
       "name": "LH86 \"Luckbringer\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10156,7 +10350,7 @@
       "name": "LH86 \"Nightstalker\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10179,7 +10373,7 @@
       "name": "LH86 \"Pathfinder\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10202,7 +10396,7 @@
       "name": "LH86 \"Permafrost\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10225,7 +10419,7 @@
       "name": "LH86 \"Scorched\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10248,7 +10442,7 @@
       "name": "LH86 \"Stormfall\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10271,7 +10465,7 @@
       "name": "LH86 \"Warhawk\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10294,7 +10488,7 @@
       "name": "LH86 Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 41,
-      "ammoIndex": 58,
+      "ammoIndex": 59,
       "magazineIndex": 33
     },
     {
@@ -10316,7 +10510,7 @@
       "name": "Lightstrike I Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 47,
+      "ammoIndex": 48,
       "magazineIndex": 7
     },
     {
@@ -10338,7 +10532,7 @@
       "name": "Lightstrike II Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 48,
+      "ammoIndex": 49,
       "magazineIndex": 7
     },
     {
@@ -10360,7 +10554,7 @@
       "name": "Lightstrike III Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 49,
+      "ammoIndex": 50,
       "magazineIndex": 7
     },
     {
@@ -10382,7 +10576,7 @@
       "name": "Lightstrike IV Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 59,
+      "ammoIndex": 60,
       "magazineIndex": 7
     },
     {
@@ -10404,7 +10598,7 @@
       "name": "Lightstrike V Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 60,
+      "ammoIndex": 61,
       "magazineIndex": 7
     },
     {
@@ -10426,7 +10620,7 @@
       "name": "Lightstrike VI Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 42,
-      "ammoIndex": 61,
+      "ammoIndex": 62,
       "magazineIndex": 7
     },
     {
@@ -10449,7 +10643,7 @@
       "name": "Lumin V \"Valor\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 43,
-      "ammoIndex": 62,
+      "ammoIndex": 63,
       "magazineIndex": 29
     },
     {
@@ -10472,7 +10666,7 @@
       "name": "Lumin V SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 43,
-      "ammoIndex": 62,
+      "ammoIndex": 63,
       "magazineIndex": 29
     },
     {
@@ -10494,7 +10688,7 @@
       "name": "M3A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 63,
+      "ammoIndex": 64,
       "magazineIndex": 7
     },
     {
@@ -10516,7 +10710,7 @@
       "name": "M4A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 64,
+      "ammoIndex": 65,
       "magazineIndex": 7
     },
     {
@@ -10538,7 +10732,7 @@
       "name": "M5A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 65,
+      "ammoIndex": 66,
       "magazineIndex": 7
     },
     {
@@ -10560,7 +10754,7 @@
       "name": "M6A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 66,
+      "ammoIndex": 67,
       "magazineIndex": 7
     },
     {
@@ -10582,7 +10776,7 @@
       "name": "M7A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 67,
+      "ammoIndex": 68,
       "magazineIndex": 7
     },
     {
@@ -10604,7 +10798,7 @@
       "name": "M8A Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 44,
-      "ammoIndex": 68,
+      "ammoIndex": 69,
       "magazineIndex": 7
     },
     {
@@ -10626,7 +10820,7 @@
       "name": "MVSA Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 45,
-      "ammoIndex": 69,
+      "ammoIndex": 70,
       "magazineIndex": 7
     },
     {
@@ -10648,7 +10842,7 @@
       "name": "Mantis GT-220 Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 46,
-      "ammoIndex": 70,
+      "ammoIndex": 71,
       "magazineIndex": 34
     },
     {
@@ -10670,7 +10864,7 @@
       "name": "NDB-26 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 47,
-      "ammoIndex": 71,
+      "ammoIndex": 72,
       "magazineIndex": 7
     },
     {
@@ -10692,7 +10886,7 @@
       "name": "NDB-28 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 47,
-      "ammoIndex": 72,
+      "ammoIndex": 73,
       "magazineIndex": 7
     },
     {
@@ -10714,7 +10908,7 @@
       "name": "NDB-30 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 47,
-      "ammoIndex": 73,
+      "ammoIndex": 74,
       "magazineIndex": 7
     },
     {
@@ -10736,7 +10930,7 @@
       "name": "NN-13 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 48,
-      "ammoIndex": 74,
+      "ammoIndex": 75,
       "magazineIndex": 7
     },
     {
@@ -10758,7 +10952,7 @@
       "name": "NN-14 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 48,
-      "ammoIndex": 75,
+      "ammoIndex": 76,
       "magazineIndex": 7
     },
     {
@@ -10780,7 +10974,7 @@
       "name": "NN-15 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 48,
-      "ammoIndex": 76,
+      "ammoIndex": 77,
       "magazineIndex": 7
     },
     {
@@ -10802,7 +10996,7 @@
       "name": "Novian \"Ghostmaker\" Crossbow",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 49,
-      "ammoIndex": 77,
+      "ammoIndex": 78,
       "magazineIndex": 35
     },
     {
@@ -10824,7 +11018,7 @@
       "name": "Novian \"Nighthunter\" Crossbow",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 49,
-      "ammoIndex": 77,
+      "ammoIndex": 78,
       "magazineIndex": 35
     },
     {
@@ -10846,7 +11040,7 @@
       "name": "Novian \"Wildshot\" Crossbow",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 49,
-      "ammoIndex": 77,
+      "ammoIndex": 78,
       "magazineIndex": 35
     },
     {
@@ -10868,7 +11062,7 @@
       "name": "Novian Crossbow",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 49,
-      "ammoIndex": 77,
+      "ammoIndex": 78,
       "magazineIndex": 35
     },
     {
@@ -10890,7 +11084,7 @@
       "name": "Omnisky III Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 50,
-      "ammoIndex": 78,
+      "ammoIndex": 79,
       "magazineIndex": 7
     },
     {
@@ -10912,7 +11106,7 @@
       "name": "Omnisky IX Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 79,
+      "ammoIndex": 80,
       "magazineIndex": 7
     },
     {
@@ -10934,7 +11128,7 @@
       "name": "Omnisky VI Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 80,
+      "ammoIndex": 81,
       "magazineIndex": 7
     },
     {
@@ -10956,7 +11150,7 @@
       "name": "Omnisky XII Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 81,
+      "ammoIndex": 82,
       "magazineIndex": 7
     },
     {
@@ -10978,7 +11172,7 @@
       "name": "Omnisky XV Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 82,
+      "ammoIndex": 83,
       "magazineIndex": 7
     },
     {
@@ -11000,7 +11194,7 @@
       "name": "Omnisky XVIII Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 83,
+      "ammoIndex": 84,
       "magazineIndex": 7
     },
     {
@@ -11023,7 +11217,7 @@
       "name": "P4-AR \"Blacklist\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 52,
-      "ammoIndex": 84,
+      "ammoIndex": 85,
       "magazineIndex": 36
     },
     {
@@ -11046,7 +11240,7 @@
       "name": "P4-AR \"Desert Shadow\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 52,
-      "ammoIndex": 84,
+      "ammoIndex": 85,
       "magazineIndex": 36
     },
     {
@@ -11069,7 +11263,7 @@
       "name": "P4-AR \"Nightstalker\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 52,
-      "ammoIndex": 84,
+      "ammoIndex": 85,
       "magazineIndex": 36
     },
     {
@@ -11092,7 +11286,7 @@
       "name": "P4-AR \"Warhawk\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 52,
-      "ammoIndex": 84,
+      "ammoIndex": 85,
       "magazineIndex": 36
     },
     {
@@ -11115,7 +11309,7 @@
       "name": "P4-AR Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 52,
-      "ammoIndex": 84,
+      "ammoIndex": 85,
       "magazineIndex": 36
     },
     {
@@ -11138,7 +11332,7 @@
       "name": "P6-LR \"Archangel\" Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 53,
-      "ammoIndex": 85,
+      "ammoIndex": 86,
       "magazineIndex": 10
     },
     {
@@ -11161,7 +11355,7 @@
       "name": "P6-LR \"Blacklist\" Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 53,
-      "ammoIndex": 85,
+      "ammoIndex": 86,
       "magazineIndex": 10
     },
     {
@@ -11184,7 +11378,7 @@
       "name": "P6-LR \"Rime\" Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 53,
-      "ammoIndex": 85,
+      "ammoIndex": 86,
       "magazineIndex": 10
     },
     {
@@ -11207,7 +11401,7 @@
       "name": "P6-LR Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 53,
-      "ammoIndex": 85,
+      "ammoIndex": 86,
       "magazineIndex": 10
     },
     {
@@ -11230,7 +11424,7 @@
       "name": "P8-AR Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 54,
-      "ammoIndex": 86,
+      "ammoIndex": 87,
       "magazineIndex": 3
     },
     {
@@ -11253,7 +11447,7 @@
       "name": "P8-SC \"Boneyard\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11276,7 +11470,7 @@
       "name": "P8-SC \"Desert Shadow\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11299,7 +11493,7 @@
       "name": "P8-SC \"Stormfall\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11322,7 +11516,7 @@
       "name": "P8-SC SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11345,7 +11539,7 @@
       "name": "P8-SC \"Executive Edition\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11368,7 +11562,7 @@
       "name": "P8-SC \"Midnight\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11391,7 +11585,7 @@
       "name": "P8-SC \"Nightstalker\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11414,7 +11608,7 @@
       "name": "P8-SC \"Warhawk\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 55,
-      "ammoIndex": 87,
+      "ammoIndex": 88,
       "magazineIndex": 29
     },
     {
@@ -11437,7 +11631,7 @@
       "name": "Parallax \"Sanguine\" Energy Assault Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 56,
-      "ammoIndex": 88,
+      "ammoIndex": 89,
       "magazineIndex": 37
     },
     {
@@ -11460,7 +11654,7 @@
       "name": "Parallax \"Shock Trooper\" Energy Assault Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 56,
-      "ammoIndex": 88,
+      "ammoIndex": 89,
       "magazineIndex": 37
     },
     {
@@ -11483,7 +11677,7 @@
       "name": "Parallax \"Sunstone\" Energy Assault Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 56,
-      "ammoIndex": 88,
+      "ammoIndex": 89,
       "magazineIndex": 37
     },
     {
@@ -11506,7 +11700,7 @@
       "name": "Parallax Energy Assault Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 56,
-      "ammoIndex": 88,
+      "ammoIndex": 89,
       "magazineIndex": 37
     },
     {
@@ -11528,7 +11722,7 @@
       "name": "Predator Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 57,
-      "ammoIndex": 89,
+      "ammoIndex": 90,
       "magazineIndex": 38
     },
     {
@@ -11551,7 +11745,7 @@
       "name": "Prism \"Bonedust\" Laser Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 58,
-      "ammoIndex": 90,
+      "ammoIndex": 91,
       "magazineIndex": 39
     },
     {
@@ -11574,7 +11768,7 @@
       "name": "Prism \"Deep Sea\" Laser Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 58,
-      "ammoIndex": 90,
+      "ammoIndex": 91,
       "magazineIndex": 39
     },
     {
@@ -11597,7 +11791,7 @@
       "name": "Prism \"Firesteel\" Laser Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 58,
-      "ammoIndex": 90,
+      "ammoIndex": 91,
       "magazineIndex": 39
     },
     {
@@ -11620,7 +11814,7 @@
       "name": "Prism Laser Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 58,
-      "ammoIndex": 90,
+      "ammoIndex": 91,
       "magazineIndex": 39
     },
     {
@@ -11643,7 +11837,7 @@
       "name": "Pulse \"Blacklist\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 59,
-      "ammoIndex": 91,
+      "ammoIndex": 92,
       "magazineIndex": 17
     },
     {
@@ -11666,7 +11860,7 @@
       "name": "Pulse \"Rouge\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 59,
-      "ammoIndex": 91,
+      "ammoIndex": 92,
       "magazineIndex": 17
     },
     {
@@ -11689,7 +11883,7 @@
       "name": "Pulse Laser Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 59,
-      "ammoIndex": 91,
+      "ammoIndex": 92,
       "magazineIndex": 17
     },
     {
@@ -11712,7 +11906,7 @@
       "name": "Pulverizer LMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 60,
-      "ammoIndex": 92,
+      "ammoIndex": 93,
       "magazineIndex": 40
     },
     {
@@ -11734,7 +11928,7 @@
       "name": "PyroBurst Scattergun",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 61,
-      "ammoIndex": 93,
+      "ammoIndex": 94,
       "magazineIndex": 7
     },
     {
@@ -11756,7 +11950,7 @@
       "name": "Quarreler Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 51,
-      "ammoIndex": 79,
+      "ammoIndex": 80,
       "magazineIndex": 7
     },
     {
@@ -11779,7 +11973,7 @@
       "name": "Quartz \"Black Op\" Energy SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 62,
-      "ammoIndex": 94,
+      "ammoIndex": 95,
       "magazineIndex": 29
     },
     {
@@ -11802,7 +11996,7 @@
       "name": "Quartz \"Deadfall\" Energy SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 62,
-      "ammoIndex": 94,
+      "ammoIndex": 95,
       "magazineIndex": 29
     },
     {
@@ -11825,7 +12019,7 @@
       "name": "Quartz \"Lumen\" Energy SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 62,
-      "ammoIndex": 94,
+      "ammoIndex": 95,
       "magazineIndex": 29
     },
     {
@@ -11848,7 +12042,7 @@
       "name": "Quartz Energy SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 62,
-      "ammoIndex": 94,
+      "ammoIndex": 95,
       "magazineIndex": 29
     },
     {
@@ -11871,7 +12065,7 @@
       "name": "R97 \"Kismet\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 63,
-      "ammoIndex": 95,
+      "ammoIndex": 96,
       "magazineIndex": 41
     },
     {
@@ -11894,7 +12088,7 @@
       "name": "R97 \"Righteous\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 63,
-      "ammoIndex": 95,
+      "ammoIndex": 96,
       "magazineIndex": 41
     },
     {
@@ -11917,7 +12111,7 @@
       "name": "R97 \"Scorched\" Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 63,
-      "ammoIndex": 95,
+      "ammoIndex": 96,
       "magazineIndex": 41
     },
     {
@@ -11940,7 +12134,7 @@
       "name": "R97 Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 63,
-      "ammoIndex": 95,
+      "ammoIndex": 96,
       "magazineIndex": 41
     },
     {
@@ -11963,7 +12157,7 @@
       "name": "Ravager-212 \"Outcast\" Twin Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 64,
-      "ammoIndex": 96,
+      "ammoIndex": 97,
       "magazineIndex": 9
     },
     {
@@ -11986,7 +12180,7 @@
       "name": "Ravager-212 Twin Shotgun",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 64,
-      "ammoIndex": 96,
+      "ammoIndex": 97,
       "magazineIndex": 9
     },
     {
@@ -12008,7 +12202,7 @@
       "name": "Reign-3 Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 9,
-      "ammoIndex": 97,
+      "ammoIndex": 98,
       "magazineIndex": 7
     },
     {
@@ -12030,7 +12224,7 @@
       "name": "Revenant Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 65,
-      "ammoIndex": 98,
+      "ammoIndex": 99,
       "magazineIndex": 42
     },
     {
@@ -12053,7 +12247,7 @@
       "name": "Ripper \"Sunblock\" SMG",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 66,
-      "ammoIndex": 62,
+      "ammoIndex": 63,
       "magazineIndex": 17
     },
     {
@@ -12076,7 +12270,7 @@
       "name": "S-38 \"Scorched\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 67,
-      "ammoIndex": 99,
+      "ammoIndex": 100,
       "magazineIndex": 39
     },
     {
@@ -12099,7 +12293,7 @@
       "name": "S-38 Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 67,
-      "ammoIndex": 99,
+      "ammoIndex": 100,
       "magazineIndex": 39
     },
     {
@@ -12122,7 +12316,7 @@
       "name": "S71 \"Bullseye\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 68,
-      "ammoIndex": 100,
+      "ammoIndex": 101,
       "magazineIndex": 8
     },
     {
@@ -12145,7 +12339,7 @@
       "name": "S71 \"Justified\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 68,
-      "ammoIndex": 100,
+      "ammoIndex": 101,
       "magazineIndex": 8
     },
     {
@@ -12168,7 +12362,7 @@
       "name": "S71 \"Purgatory Camo\" Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 68,
-      "ammoIndex": 100,
+      "ammoIndex": 101,
       "magazineIndex": 8
     },
     {
@@ -12191,7 +12385,7 @@
       "name": "S71 Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 68,
-      "ammoIndex": 100,
+      "ammoIndex": 101,
       "magazineIndex": 8
     },
     {
@@ -12213,7 +12407,7 @@
       "name": "SW16BR1 “Buzzsaw” Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 69,
-      "ammoIndex": 101,
+      "ammoIndex": 102,
       "magazineIndex": 43
     },
     {
@@ -12257,7 +12451,7 @@
       "name": "SW16BR3 “Shredder” Repeater",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 70,
-      "ammoIndex": 102,
+      "ammoIndex": 103,
       "magazineIndex": 44
     },
     {
@@ -12280,7 +12474,7 @@
       "name": "Salvo Esteban Frag Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 71,
-      "ammoIndex": 103,
+      "ammoIndex": 104,
       "magazineIndex": 10
     },
     {
@@ -12303,7 +12497,7 @@
       "name": "Salvo Frag Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 71,
-      "ammoIndex": 103,
+      "ammoIndex": 104,
       "magazineIndex": 10
     },
     {
@@ -12326,7 +12520,7 @@
       "name": "Scalpel \"Permafrost\" Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 72,
-      "ammoIndex": 104,
+      "ammoIndex": 105,
       "magazineIndex": 11
     },
     {
@@ -12349,7 +12543,7 @@
       "name": "Scalpel Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 72,
-      "ammoIndex": 104,
+      "ammoIndex": 105,
       "magazineIndex": 11
     },
     {
@@ -12371,7 +12565,7 @@
       "name": "Scorpion GT-215 Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 73,
-      "ammoIndex": 105,
+      "ammoIndex": 106,
       "magazineIndex": 45
     },
     {
@@ -12393,7 +12587,7 @@
       "name": "Singe Cannon (S1)",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 74,
-      "ammoIndex": 106,
+      "ammoIndex": 107,
       "magazineIndex": 7
     },
     {
@@ -12415,7 +12609,7 @@
       "name": "Singe Cannon (S2)",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 75,
-      "ammoIndex": 107,
+      "ammoIndex": 108,
       "magazineIndex": 7
     },
     {
@@ -12437,7 +12631,7 @@
       "name": "Singe Cannon (S3)",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 76,
-      "ammoIndex": 108,
+      "ammoIndex": 109,
       "magazineIndex": 7
     },
     {
@@ -12459,7 +12653,7 @@
       "name": "Sledge I Mass Driver Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 77,
-      "ammoIndex": 109,
+      "ammoIndex": 110,
       "magazineIndex": 46
     },
     {
@@ -12481,7 +12675,7 @@
       "name": "Sledge II Mass Driver Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 78,
-      "ammoIndex": 110,
+      "ammoIndex": 111,
       "magazineIndex": 46
     },
     {
@@ -12503,7 +12697,7 @@
       "name": "Sledge III Mass Driver Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 79,
-      "ammoIndex": 111,
+      "ammoIndex": 112,
       "magazineIndex": 47
     },
     {
@@ -12525,7 +12719,7 @@
       "name": "Strife Mass Driver Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 80,
-      "ammoIndex": 110,
+      "ammoIndex": 111,
       "magazineIndex": 48
     },
     {
@@ -12547,7 +12741,7 @@
       "name": "Suckerpunch Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 81,
-      "ammoIndex": 112,
+      "ammoIndex": 113,
       "magazineIndex": 7
     },
     {
@@ -12569,7 +12763,7 @@
       "name": "Suckerpunch-L Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 81,
-      "ammoIndex": 113,
+      "ammoIndex": 114,
       "magazineIndex": 7
     },
     {
@@ -12591,7 +12785,7 @@
       "name": "Suckerpunch-XL Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 81,
-      "ammoIndex": 114,
+      "ammoIndex": 115,
       "magazineIndex": 7
     },
     {
@@ -12613,7 +12807,7 @@
       "name": "Tarantula GT-870 Mark 1 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 82,
-      "ammoIndex": 115,
+      "ammoIndex": 116,
       "magazineIndex": 49
     },
     {
@@ -12635,7 +12829,7 @@
       "name": "Tarantula GT-870 Mark 2 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 82,
-      "ammoIndex": 116,
+      "ammoIndex": 117,
       "magazineIndex": 15
     },
     {
@@ -12657,7 +12851,7 @@
       "name": "Tarantula GT-870 Mark 3 Cannon",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 82,
-      "ammoIndex": 117,
+      "ammoIndex": 118,
       "magazineIndex": 50
     },
     {
@@ -12679,7 +12873,7 @@
       "name": "Thlilye Laser Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 83,
-      "ammoIndex": 118,
+      "ammoIndex": 119,
       "magazineIndex": 7
     },
     {
@@ -12701,7 +12895,7 @@
       "name": "Tigerstrike T-19P",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 84,
-      "ammoIndex": 119,
+      "ammoIndex": 120,
       "magazineIndex": 51
     },
     {
@@ -12723,7 +12917,7 @@
       },
       "name": "Tripledown Pistol",
       "cgItemType": "WeaponPersonal",
-      "ammoIndex": 120,
+      "ammoIndex": 121,
       "magazineIndex": 52
     },
     {
@@ -12745,7 +12939,7 @@
       "name": "YellowJacket GT-210 Gatling",
       "cgItemType": "WeaponGun",
       "fireModesIndex": 85,
-      "ammoIndex": 121,
+      "ammoIndex": 122,
       "magazineIndex": 53
     },
     {
@@ -12768,7 +12962,7 @@
       "name": "Yubarev \"Igniter\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 86,
-      "ammoIndex": 122,
+      "ammoIndex": 123,
       "magazineIndex": 54
     },
     {
@@ -12791,7 +12985,7 @@
       "name": "Yubarev \"Mirage\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 86,
-      "ammoIndex": 122,
+      "ammoIndex": 123,
       "magazineIndex": 54
     },
     {
@@ -12814,7 +13008,7 @@
       "name": "Yubarev \"Venom\" Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 86,
-      "ammoIndex": 122,
+      "ammoIndex": 123,
       "magazineIndex": 54
     },
     {
@@ -12837,7 +13031,7 @@
       "name": "Yubarev Pistol",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 86,
-      "ammoIndex": 122,
+      "ammoIndex": 123,
       "magazineIndex": 54
     },
     {
@@ -12860,7 +13054,7 @@
       "name": "Zenith \"Darkwave\" Laser Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 87,
-      "ammoIndex": 123,
+      "ammoIndex": 124,
       "magazineIndex": 55
     },
     {
@@ -12883,7 +13077,7 @@
       "name": "Zenith \"Landslide\" Laser Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 87,
-      "ammoIndex": 123,
+      "ammoIndex": 124,
       "magazineIndex": 55
     },
     {
@@ -12906,7 +13100,7 @@
       "name": "Zenith \"Snow Camo\" Laser Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 87,
-      "ammoIndex": 123,
+      "ammoIndex": 124,
       "magazineIndex": 55
     },
     {
@@ -12929,7 +13123,7 @@
       "name": "Zenith \"Thunderstrike\" Laser Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 87,
-      "ammoIndex": 123,
+      "ammoIndex": 124,
       "magazineIndex": 55
     },
     {
@@ -12952,7 +13146,7 @@
       "name": "Zenith Laser Sniper Rifle",
       "cgItemType": "WeaponPersonal",
       "fireModesIndex": 87,
-      "ammoIndex": 123,
+      "ammoIndex": 124,
       "magazineIndex": 55
     },
     {

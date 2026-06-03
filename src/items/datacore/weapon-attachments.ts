@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import type { DataCoreItemTypeConfig } from './types';
+import { makeGetTargetKeysFromPrefixMap, type DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Weapon attachment entity classes vary greatly (optic_, barrel_, under_, etc.).
 // The p4kFilter and key derivation are speculative — verify against real game files.
@@ -29,26 +29,13 @@ export default {
   // ⚠️ Attachment INI key derivation requires knowing the attachment-type prefix.
   // Common prefixes: optic_, barrel_, under_, stock_. No single rule covers all.
   // This implementation attempts prefix matching; expand as real data is available.
-  getTargetKeys(row, deriveDescKey) {
-    const entityClass = row['Entity Class'];
-    if (!entityClass) return [];
-
-    const prefixMap: Array<[string, string]> = [
-      ['optic_', 'OPTIC_'],
-      ['barrel_', 'BARREL_'],
-      ['under_', 'UNDER_'],
-      ['stock_', 'STOCK_'],
-      ['grip_', 'GRIP_'],
-    ];
-
-    for (const [pfx, infix] of prefixMap) {
-      if (entityClass.toLowerCase().startsWith(pfx)) {
-        const suffix = entityClass.slice(pfx.length).toUpperCase();
-        return [deriveDescKey(`item_Name${infix}${suffix}`)];
-      }
-    }
-    return [];
-  },
+  getTargetKeys: makeGetTargetKeysFromPrefixMap([
+    ['optic_', 'OPTIC_'],
+    ['barrel_', 'BARREL_'],
+    ['under_', 'UNDER_'],
+    ['stock_', 'STOCK_'],
+    ['grip_', 'GRIP_'],
+  ]),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', r['Type'] || 'Weapon Attachment')
