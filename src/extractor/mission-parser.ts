@@ -201,6 +201,14 @@ function flattenValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function optionalValue<T>(value: T | null | undefined): T | undefined {
+  return value ?? undefined;
+}
+
+function emptyValue<T>(value: T | null | undefined): T | '' {
+  return value ?? '';
+}
+
 function buildTagProviders(contracts: ContractDTO[]): Map<string, string[]> {
   const tagProviders = new Map<string, string[]>();
   for (const contract of contracts) {
@@ -327,6 +335,111 @@ export function collectBlueprintChainData(contracts: ContractDTO[]): ChainDataDT
   return { isBlueprintReward, blueprintChainDepth };
 }
 
+function buildBlueprintRowFields(contractId: string, chainData: ChainDataDTO): Pick<
+  ContractRowDTO,
+  'isBlueprintReward' | 'isBlueprintChainPrerequisite' | 'blueprintChainDepth'
+> {
+  const isBlueprintReward = chainData.isBlueprintReward.get(contractId) === true;
+  const depth = chainData.blueprintChainDepth.get(contractId);
+  return {
+    isBlueprintReward: isBlueprintReward ? 'true' : 'false',
+    isBlueprintChainPrerequisite: depth !== undefined && depth > 0 ? 'true' : 'false',
+    blueprintChainDepth: depth === undefined ? '' : String(depth),
+  };
+}
+
+function buildFlattenedContractRowFields(
+  contract: ContractRowSource,
+): Pick<
+  ContractRowDTO,
+  | 'locations'
+  | 'destinations'
+  | 'prerequisites'
+  | 'tokenSubstitutions'
+  | 'minStanding'
+  | 'maxStanding'
+  | 'blueprintRewards'
+  | 'shipEncounters'
+  | 'haulingOrders'
+  | 'itemRewards'
+  | 'completionTags'
+  | 'pyroRegion'
+  | 'systems'
+  | 'factionRewards_fail'
+  | 'requiredScenarios'
+  | 'requiredIntros'
+  | 'linkedIntros'
+  | 'propertyValues'
+> {
+  return {
+    locations: flattenValue(contract.locations),
+    destinations: flattenValue(contract.destinations),
+    prerequisites: flattenValue(contract.prerequisites),
+    tokenSubstitutions: flattenValue(contract.tokenSubstitutions),
+    minStanding: flattenValue(contract.minStanding),
+    maxStanding: flattenValue(contract.maxStanding),
+    blueprintRewards: flattenValue(contract.blueprintRewards),
+    shipEncounters: flattenValue(contract.shipEncounters),
+    haulingOrders: flattenValue(contract.haulingOrders),
+    itemRewards: flattenValue(contract.itemRewards),
+    completionTags: flattenValue(contract.completionTags),
+    pyroRegion: flattenValue(contract.pyroRegion),
+    systems: flattenValue(contract.systems),
+    factionRewards_fail: flattenValue(contract.factionRewards_fail),
+    requiredScenarios: flattenValue(contract.requiredScenarios),
+    requiredIntros: flattenValue(contract.requiredIntros),
+    linkedIntros: flattenValue(contract.linkedIntros),
+    propertyValues: flattenValue(contract.propertyValues),
+  };
+}
+
+function buildDefaultedContractRowFields(
+  contract: ContractRowSource,
+): Pick<
+  ContractRowDTO,
+  | 'personalCooldownTime'
+  | 'rewardRepCalculated'
+  | 'buyIn'
+  | 'onceOnly'
+  | 'maxPlayersPerInstance'
+  | 'availableInPrison'
+  | 'canReacceptAfterAbandoning'
+  | 'canReacceptAfterFailing'
+  | 'hasPersonalCooldown'
+  | 'abandonedCooldownTime'
+  | 'hideInMobiGlas'
+  | 'isIntro'
+  | 'pickupCount'
+  | 'deliveryCount'
+> {
+  return {
+    personalCooldownTime: optionalValue(contract.personalCooldownTime),
+    rewardRepCalculated: optionalValue(contract.rewardRepCalculated),
+    buyIn: emptyValue(contract.buyIn),
+    onceOnly: optionalValue(contract.onceOnly),
+    maxPlayersPerInstance: optionalValue(contract.maxPlayersPerInstance),
+    availableInPrison: optionalValue(contract.availableInPrison),
+    canReacceptAfterAbandoning: optionalValue(contract.canReacceptAfterAbandoning),
+    canReacceptAfterFailing: optionalValue(contract.canReacceptAfterFailing),
+    hasPersonalCooldown: optionalValue(contract.hasPersonalCooldown),
+    abandonedCooldownTime: optionalValue(contract.abandonedCooldownTime),
+    hideInMobiGlas: optionalValue(contract.hideInMobiGlas),
+    isIntro: emptyValue(contract.isIntro),
+    pickupCount: emptyValue(contract.pickupCount),
+    deliveryCount: emptyValue(contract.deliveryCount),
+  };
+}
+
+function buildFactionRewardRowFields(
+  contractId: string,
+  context: FactionRewardsContext,
+): Pick<ContractRowDTO, 'factionRewards' | 'factionRewardsRaw'> {
+  return {
+    factionRewards: context.factionRewards.get(contractId) ?? '',
+    factionRewardsRaw: context.factionRewardsRaw.get(contractId) ?? '',
+  };
+}
+
 /**
  * Builds a contract row.
  */
@@ -335,8 +448,6 @@ export function buildContractRow(
   chainData: ChainDataDTO,
   factionRewardsContext: FactionRewardsContext,
 ): ContractRowDTO {
-  const isBlueprintReward = chainData.isBlueprintReward.get(contract.id) === true;
-  const depth = chainData.blueprintChainDepth.get(contract.id);
   return ContractRowSchema.parse({
     id: contract.id,
     debugName: contract.debugName,
@@ -353,43 +464,10 @@ export function buildContractRow(
     canBeShared: contract.canBeShared,
     illegal: contract.illegal,
     factionGuid: contract.factionGuid,
-    locations: flattenValue(contract.locations),
-    destinations: flattenValue(contract.destinations),
-    prerequisites: flattenValue(contract.prerequisites),
-    tokenSubstitutions: flattenValue(contract.tokenSubstitutions),
-    minStanding: flattenValue(contract.minStanding),
-    maxStanding: flattenValue(contract.maxStanding),
-    blueprintRewards: flattenValue(contract.blueprintRewards),
-    isBlueprintReward: isBlueprintReward ? 'true' : 'false',
-    isBlueprintChainPrerequisite: depth !== undefined && depth > 0 ? 'true' : 'false',
-    blueprintChainDepth: depth === undefined ? '' : String(depth),
-    personalCooldownTime: contract.personalCooldownTime ?? undefined,
-    rewardRepCalculated: contract.rewardRepCalculated ?? undefined,
-    factionRewards: factionRewardsContext.factionRewards.get(contract.id) ?? '',
-    factionRewardsRaw: factionRewardsContext.factionRewardsRaw.get(contract.id) ?? '',
-    shipEncounters: flattenValue(contract.shipEncounters),
-    haulingOrders: flattenValue(contract.haulingOrders),
-    itemRewards: flattenValue(contract.itemRewards),
-    completionTags: flattenValue(contract.completionTags),
-    pyroRegion: flattenValue(contract.pyroRegion),
-    buyIn: contract.buyIn ?? '',
-    onceOnly: contract.onceOnly ?? undefined,
-    maxPlayersPerInstance: contract.maxPlayersPerInstance ?? undefined,
-    availableInPrison: contract.availableInPrison ?? undefined,
-    canReacceptAfterAbandoning: contract.canReacceptAfterAbandoning ?? undefined,
-    canReacceptAfterFailing: contract.canReacceptAfterFailing ?? undefined,
-    hasPersonalCooldown: contract.hasPersonalCooldown ?? undefined,
-    abandonedCooldownTime: contract.abandonedCooldownTime ?? undefined,
-    hideInMobiGlas: contract.hideInMobiGlas ?? undefined,
-    systems: flattenValue(contract.systems),
-    factionRewards_fail: flattenValue(contract.factionRewards_fail),
-    requiredScenarios: flattenValue(contract.requiredScenarios),
-    isIntro: contract.isIntro ?? '',
-    requiredIntros: flattenValue(contract.requiredIntros),
-    linkedIntros: flattenValue(contract.linkedIntros),
-    pickupCount: contract.pickupCount ?? '',
-    deliveryCount: contract.deliveryCount ?? '',
-    propertyValues: flattenValue(contract.propertyValues),
+    ...buildFlattenedContractRowFields(contract),
+    ...buildBlueprintRowFields(contract.id, chainData),
+    ...buildDefaultedContractRowFields(contract),
+    ...buildFactionRewardRowFields(contract.id, factionRewardsContext),
   });
 }
 
