@@ -44,6 +44,13 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
       observed.push(`regen:${options.repoRoot}:${options.scmdbDir}`);
       return { outPath: 'missions-dir/mining-locations.csv', rowCount: 1, outDir: 'missions-dir' };
     },
+    sourceDiagnostics: async (preparedInput, options) => {
+      observed.push(`diagnostics:${preparedInput.itemVersion}:${options.provider}:${options.ptu}`);
+      return {
+        versions: [],
+        warnings: [],
+      };
+    },
     preflight: async (categories) => {
       observed.push(`preflight:${categories.length}`);
     },
@@ -77,6 +84,7 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
   assert.deepEqual(observed, [
     'prepare:spviewer:true',
     'regen:repo:missions-dir',
+    'diagnostics:items-live:spviewer:true',
     'preflight:1',
     'backup:repo\\global.ini',
     'categories:repo\\global.ini:true',
@@ -92,6 +100,7 @@ test('runBatchUpdate skips backup for dry runs and returns nonzero when steps re
     dryRun: true,
     prepare: async () => makePrepared(),
     regenerateMiningLocations: () => ({ outPath: 'out', rowCount: 0, outDir: 'missions-dir' }),
+    sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
     preflight: async () => {},
     backupIni: async () => {
       backupCalled = true;

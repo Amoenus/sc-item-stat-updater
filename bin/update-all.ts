@@ -20,6 +20,10 @@ import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/present
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 import { preflightCheckConfigs } from '../src/application/use-cases/update-planning';
 import { regenMiningLocations } from '../src/sources/scmdb/mining-locations';
+import {
+  buildSourceFreshnessDiagnostics,
+  formatSourceFreshnessDiagnostics,
+} from '../src/application/use-cases/source-freshness-diagnostics';
 
 const logger = getLogger('update-all');
 
@@ -95,12 +99,13 @@ if (providerValue !== 'spviewer' && providerValue !== 'datacore') {
 }
 const provider: UpdateProvider = providerValue;
 
-const { categories, scmdbVersion, itemVersion, missionCsvDir, spviewerVersionDir } = await prepareUpdateCategories({
+const prepared = await prepareUpdateCategories({
   repoRoot,
   provider,
   ptu: values.ptu,
   csvDir: values['csv-dir'],
 });
+const { categories, scmdbVersion, itemVersion, missionCsvDir, spviewerVersionDir } = prepared;
 
 const options = {
   iniPath: values['ini-path'],
@@ -111,8 +116,9 @@ const options = {
 const channel = values.ptu ? 'PTU' : 'LIVE';
 logger.info('Starting batch update', { scmdbVersion, itemVersion, provider, channel, dryRun: options.dryRun });
 console.log(`=== Starting update (${channel}, provider: ${provider}) ===`);
-console.log(`  SCMDB:    ${scmdbVersion}`);
-console.log(`  ${provider === 'datacore' ? 'DataCore' : 'SPViewer'}: ${itemVersion}\n`);
+
+const sourceDiagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider, ptu: values.ptu });
+console.log(`${formatSourceFreshnessDiagnostics(sourceDiagnostics)}\n`);
 
 try {
   logger.info('Regenerating mining-locations.csv', { missionCsvDir });

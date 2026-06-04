@@ -7,6 +7,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
   const updateOptions: unknown[] = [];
   const scmdbOptions: unknown[] = [];
   const spviewerOptions: unknown[] = [];
+  const logs: string[] = [];
 
   const result = await runFullPipeline({
     rootDir: 'repo',
@@ -47,10 +48,23 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
         results: [],
         errors: [],
         prepared: {} as never,
+        sourceDiagnostics: {
+          versions: [
+            {
+              provider: 'scmdb',
+              label: 'SCMDB',
+              channel: 'PTU',
+              version: 'scmdb-ptu',
+              path: 'repo/csv/scmdb/scmdb-ptu',
+            },
+          ],
+          warnings: [],
+        },
         iniPath: 'repo\\global.ini',
         totalDurationMs: 0,
       };
     },
+    log: (message) => logs.push(message),
     onStepComplete: (summary) => {
       completed.push(summary);
     },
@@ -78,6 +92,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     'Stat updates applied',
     'global.ini deployed to game directory',
   ]);
+  assert.ok(logs.some((message) => message.includes('SCMDB (PTU): scmdb-ptu')));
 });
 
 test('runFullPipeline returns the in-process update exit code and skips deployment on update errors', async () => {
@@ -119,6 +134,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
       results: [],
       errors: [{ label: 'DataCore', message: 'failed' }],
       prepared: {} as never,
+      sourceDiagnostics: {
+        versions: [],
+        warnings: [],
+      },
       iniPath: `${options.repoRoot}\\global.ini`,
       totalDurationMs: 0,
     }),

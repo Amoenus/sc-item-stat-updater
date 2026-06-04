@@ -18,6 +18,10 @@ import {
   runUpdateExtraSteps,
   type UpdateExtraStepLabel,
 } from './run-update-extra-steps';
+import {
+  buildSourceFreshnessDiagnostics,
+  type SourceFreshnessDiagnostics,
+} from './source-freshness-diagnostics';
 
 export interface RunBatchUpdateOptions {
   repoRoot: string;
@@ -34,6 +38,7 @@ export interface RunBatchUpdateOptions {
   backupIni?: typeof backupIniFile;
   runCategories?: typeof runPreparedUpdateCategories;
   runExtraSteps?: typeof runUpdateExtraSteps;
+  sourceDiagnostics?: typeof buildSourceFreshnessDiagnostics;
   now?: () => number;
   onCategoryStart?: (category: UpdateCategory, index: number) => void;
   onCategoryError?: (error: BatchUpdateError) => void;
@@ -46,6 +51,7 @@ export interface RunBatchUpdateResult {
   results: BatchUpdateResult[];
   errors: BatchUpdateError[];
   prepared: PreparedUpdateCategories;
+  sourceDiagnostics: SourceFreshnessDiagnostics;
   iniPath: string;
   totalDurationMs: number;
 }
@@ -61,6 +67,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   const backupIni = options.backupIni ?? backupIniFile;
   const runCategories = options.runCategories ?? runPreparedUpdateCategories;
   const runExtraSteps = options.runExtraSteps ?? runUpdateExtraSteps;
+  const sourceDiagnostics = options.sourceDiagnostics ?? buildSourceFreshnessDiagnostics;
 
   const prepared = await prepare({
     repoRoot: options.repoRoot,
@@ -73,6 +80,8 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     repoRoot: options.repoRoot,
     scmdbDir: prepared.missionCsvDir,
   });
+
+  const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
 
   await preflight(prepared.categories);
 
@@ -108,6 +117,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     results,
     errors,
     prepared,
+    sourceDiagnostics: diagnostics,
     iniPath,
     totalDurationMs: Math.round(now() - totalStart),
   };

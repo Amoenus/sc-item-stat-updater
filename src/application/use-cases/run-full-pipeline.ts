@@ -5,6 +5,7 @@ import { runBatchUpdate } from './run-batch-update';
 import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
 import { runSpviewerScrape } from './run-spviewer-scrape';
+import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -79,6 +80,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     ptu: options.ptu,
     provider: options.datacore ? 'datacore' : 'spviewer',
   });
+  log(formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics));
   if (updateResult.exitCode !== 0) return { exitCode: updateResult.exitCode, extractedGamePath, repoIniPath };
   options.onStepComplete?.('Stat updates applied');
 

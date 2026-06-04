@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #103: Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
 - #104: Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
 - #105: Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
 - #106: Add malformed-artifact and schema-error UX tests with friendlier error messages.
@@ -56,10 +55,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #103 next. It is a source freshness diagnostics slice and should use temporary version directories and incomplete-source fixtures rather than real generated data.
+Inspect #104 next. It is a comparison-report slice for categories supported by both DataCore and SPViewer; keep it fixture-driven and avoid committing generated CSV output.
 
 ## Completed Functional Issues
 
+- #103: Added source freshness diagnostics for update and pipeline flows. The diagnostics summarize selected SCMDB and item-provider LIVE/PTU versions with source paths, warn when selected versions look like the wrong channel, and warn when prepared source files are missing/incomplete with provider/category/path context. Tests use temporary source directories and fixtures only.
 - #102: `apply-artifact --dry-run` now prints a concise preview summary with changed, inserted, skipped, and issue counts plus capped representative key samples. Loader tests cover compact artifact input, inserted keys, skipped/missing keys, issue counts, and sample truncation, while artifact serialization tests continue to prove application-only metadata such as line indexes is not written to JSON.
 - #101: Missing-source-data preflight errors now include provider, channel, category slug, config label when useful, expected resolved path, and a relevant `npm run scrape:*` command suggestion. Focused tests cover a missing DataCore item source and a missing SCMDB PTU mission source while preserving the successful preflight path.
 - #100: Added `npm run check:no-generated-churn`, backed by a git-status guard for repository `csv/` and root `global.ini`, with tests proving fixture/temp-directory writes are ignored and generated-data changes produce clear path-specific failures.
