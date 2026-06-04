@@ -843,6 +843,57 @@ Next agent instructions:
 4. Avoid running DataCore extraction commands that write generated XML/CSV unless explicitly requested.
 5. Keep current `npm run scrape:datacore` behavior stable.
 
+### 2026-06-04: DataCore acquisition boundary and Issue 008 closure
+
+Primary issue:
+
+- Issue 008 / GitHub #92: Move DataCore Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/datacore/acquisition.ts`.
+- Moved DataCore XML cache extraction mechanics out of `bin/scrape-datacore.ts`:
+  - optional forced cache clearing
+  - DCB copy into the XML cache
+  - injected unforge execution
+  - temporary DCB and monolithic XML cleanup
+  - post-extraction XML count
+- Kept `bin/scrape-datacore.ts` responsible for CLI parse args, help text, user-facing output, tool-install output, extraction status messages, CSV writes, and process exits.
+- Added tests for cache extraction, cleanup, XML counting, and forced cache clearing.
+- Reviewed Issue 008/#92 acceptance:
+  - DataCore parser/common normalizer helpers are available through `src/sources/datacore/xml-parser.ts`.
+  - DataCore DCB/XML discovery and extraction cache mechanics are under `src/sources/datacore`.
+  - Current `npm run scrape:datacore` command remains in place and its help smoke passes.
+  - DataCore source tests pass from their new locations.
+- Did not run real DataCore extraction or write generated XML/CSV data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/datacore/acquisition.test.ts src/sources/datacore/xml-files.test.ts src/sources/datacore/xml-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/acquisition.ts src/sources/datacore/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+- `npm run scrape:datacore -- --help`
+
+Notes:
+
+- GitHub #92 can be closed as completed.
+- Issue 011 / GitHub #95 remains open, with DataCore no longer the primary blocker.
+- Physical relocation of `src/extractor/datacore-xml-parser.ts` should wait for folder cleanup / compatibility cleanup.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move DataCore acquisition cache extraction`.
+2. Continue with Issue 010 / GitHub #94: Classify SPViewer As Legacy Provider, or continue Issue 011 / GitHub #95 through the SPViewer scraper boundary.
+3. For SPViewer, first inspect #94 acceptance criteria and decide whether it can be closed by classification/facades or needs source-module extraction.
+4. Keep CLI parse args, user-facing output, progress, file writes, and process exits in scripts.
+5. Avoid generated/scraped data churn unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

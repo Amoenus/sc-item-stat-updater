@@ -233,3 +233,30 @@ Remaining for #95:
 - Review DataCore extraction/acquisition orchestration before treating the scraper boundary as settled.
 - Move/classify SPViewer scraper responsibilities as legacy source behavior.
 - Smoke test CLI help/commands as source boundaries settle.
+
+DataCore source closure on 2026-06-04:
+
+- Added `src/sources/datacore/acquisition.ts`.
+- Moved DataCore XML cache extraction mechanics out of `bin/scrape-datacore.ts`:
+  - optional forced cache clearing
+  - DCB copy into the XML cache
+  - injected unforge execution
+  - temporary DCB and monolithic XML cleanup
+  - post-extraction XML count
+- Kept CLI parse args, help text, user-facing status output, tool-install output, extraction status messages, CSV writes, and process exits in the script.
+- Smoke-tested both direct script help and `npm run scrape:datacore -- --help`.
+- Closed GitHub #92 after verifying the DataCore source boundary.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/datacore/acquisition.test.ts src/sources/datacore/xml-files.test.ts src/sources/datacore/xml-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/acquisition.ts src/sources/datacore/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+- `npm run scrape:datacore -- --help`
+
+Remaining for #95:
+
+- Move/classify SPViewer scraper responsibilities as legacy source behavior.
+- Smoke test CLI help/commands as source boundaries settle.

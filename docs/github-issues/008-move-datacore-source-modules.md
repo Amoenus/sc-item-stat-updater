@@ -102,3 +102,35 @@ Remaining:
 - Review whether the DCB extraction/unforge orchestration needs a source/acquisition helper before closing #92.
 - Keep CLI parse args, help text, user-facing output, progress, CSV writes, and exits in `bin/scrape-datacore.ts`.
 - Keep current `npm run scrape:datacore` behavior stable and avoid generated XML/CSV churn.
+
+Final closure on 2026-06-04:
+
+- Added `src/sources/datacore/acquisition.ts`.
+- Moved DataCore XML cache extraction mechanics into the DataCore source boundary:
+  - optional forced cache clearing
+  - DCB copy into the XML cache
+  - injected unforge execution
+  - temporary DCB and monolithic XML cleanup
+  - post-extraction XML count
+- Updated `bin/scrape-datacore.ts` to keep CLI concerns while delegating extraction cache mechanics to the source helper.
+- Added tests for cache extraction, cleanup, XML counting, and forced cache clearing.
+- Reviewed acceptance criteria:
+  - DataCore parser/common normalizer helpers are available under `src/sources/datacore/xml-parser.ts`.
+  - DataCore DCB/XML discovery and extraction cache mechanics are under `src/sources/datacore`.
+  - `bin/scrape-datacore.ts` delegates source behavior while retaining CLI parse args, help text, user-facing output, extraction status messages, CSV writes, and exits.
+  - DataCore source tests pass from the new locations.
+- Did not run real DataCore extraction or write generated XML/CSV data.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/datacore/acquisition.test.ts src/sources/datacore/xml-files.test.ts src/sources/datacore/xml-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/acquisition.ts src/sources/datacore/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+- `npm run scrape:datacore -- --help`
+
+Notes:
+
+- GitHub #92 can be closed as completed.
+- Physical relocation of `src/extractor/datacore-xml-parser.ts` should wait for folder cleanup / compatibility cleanup.

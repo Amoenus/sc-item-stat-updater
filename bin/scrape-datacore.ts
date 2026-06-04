@@ -49,6 +49,7 @@ import {
 } from '../src/sources/datacore/xml-parser';
 import { ensureToolsInstalled, readGameVersion, resolveLiveDir, runTool } from '../src/io/local/unp4k-tool';
 import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../src/items/datacore/types';
+import { extractDataCoreXmlCache } from '../src/sources/datacore/acquisition';
 import {
   collectDataCoreXmlFilesMatching,
   countDataCoreXmlFiles,
@@ -215,7 +216,6 @@ if (cachedCount > 0 && !values['force-extract']) {
 } else {
   if (values['force-extract'] && cachedCount > 0) {
     console.log('--force-extract: clearing existing cache...');
-    await fsp.rm(xmlCacheDir, { recursive: true, force: true });
   }
 
   console.log(`Extracting DataForge records from ${path.basename(dcbPath)}...`);
@@ -225,19 +225,14 @@ if (cachedCount > 0 && !values['force-extract']) {
   // unforge produces:
   //   <cacheDir>/<dcbname>.xml  — monolithic XML (deleted after extraction)
   //   <cacheDir>/libs/foundry/records/...  — individual entity record XMLs
-  await fsp.mkdir(xmlCacheDir, { recursive: true });
-  const workDcb = path.join(xmlCacheDir, path.basename(dcbPath));
-  await fsp.copyFile(dcbPath, workDcb);
-
   console.log(`  Running: unforge.cli.exe "${xmlCacheDir}"`);
-  runTool(tools.unforge, [xmlCacheDir]);
+  const { xmlFileCount: newCount } = await extractDataCoreXmlCache({
+    dcbPath,
+    xmlCacheDir,
+    clearExisting: Boolean(values['force-extract'] && cachedCount > 0),
+    runUnforge: (cacheDir) => runTool(tools.unforge, [cacheDir]),
+  });
 
-  // Remove the DCB copy and monolithic XML — keep only individual record XMLs.
-  await fsp.rm(workDcb, { force: true });
-  const monolithicXml = workDcb.replace(/\.dcb$/i, '.xml');
-  await fsp.rm(monolithicXml, { force: true });
-
-  const newCount = await countDataCoreXmlFiles(xmlCacheDir);
   console.log(`  Extraction complete: ${newCount.toLocaleString()} XML records cached.\n`);
 }
 
