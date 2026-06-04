@@ -57,14 +57,14 @@ These were split from the additional candidate inventory on 2026-06-04.
 - #109: Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
 - #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
 - #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
-- #112: Add validation that `legacy-contracts.csv` and blueprint marker fields remain stable and documented for downstream users.
 
 ## Recommended Next Slice
 
-Inspect #112 next. It is behavior-preserving test coverage for downstream SCMDB CSV contracts and should be closeable without generated-data churn.
+Inspect #99 next. It is behavior-preserving command smoke coverage for no-write/help paths and should be implemented with fixtures or temporary directories.
 
 ## Completed Functional Issues
 
+- #112: SCMDB output contract tests now pin `legacy-contracts.csv` column ordering, assert the blueprint marker fields `isBlueprintReward`, `isBlueprintChainPrerequisite`, and `blueprintChainDepth`, and document the downstream contract in `docs/scmdb-output-contracts.md`.
 - #50: `descKeyMatch` guardrails now include representative positive/negative samples for every loadable registered item config, structured overlap detection, and dry-run overlap logging in prepared category runs with explicit INI fixtures.
 - #54: Fixture-driven pipeline integration coverage now copies `test/fixtures/pipeline-integration` into a temporary directory, loads real `sp-coolers` and `dc-powerplants` configs through the registry, plans updates from CSV fixtures, applies the patch plans to a fixture `global.ini`, asserts exact generated INI output, and verifies unrelated keys stay unchanged.
 - #55: Key resolver edge-case coverage now exercises lookup-map hits, reverse-index hits, suffix stripping success and failure, suffix `endsWith` fallback, empty/missing names, no-match unresolved behavior, and debug logging assertions.

@@ -4,18 +4,18 @@ Date: 2026-06-04
 
 ## Current State
 
-- Working tree was clean before the current #50 slice except the previous #55 and #54 commits were ahead of `origin/master`.
-- Primary issue for this slice: #50, `descKeyMatch` contract and overlap detection.
-- #50 can be closed after the current commit because every loadable registered item config now has representative predicate samples, overlap detection is structured and logged, and prepared-category dry runs with an explicit INI path emit overlap diagnostics.
+- Working tree was clean before the current #112 slice except the previous #50 commit was ahead of `origin/master`.
+- Primary issue for this slice: #112, SCMDB legacy contract and blueprint marker stability.
+- #112 can be closed after the current commit because `legacy-contracts.csv` header order is pinned, blueprint marker field values are covered, and `docs/scmdb-output-contracts.md` documents the downstream contract.
 - No generated data under `csv/` and no `global.ini` changes were made.
 
 ## Verification From Current Slice
 
 - `npm run typecheck`
 - `npm test`
-- `npx biome lint src/application/use-cases/desc-key-match-diagnostics.ts src/application/use-cases/desc-key-match-diagnostics.test.ts src/application/use-cases/run-prepared-update-categories.ts src/application/use-cases/run-prepared-update-categories.test.ts`
+- `npx biome lint src/sources/scmdb/outputs.test.ts src/sources/scmdb/output-files.test.ts`
 - `npm run check:architecture`
 
 ## Recommended Next Slice
 
-Inspect #112 next. It asks for downstream SCMDB contract tests around `legacy-contracts.csv` columns and blueprint marker fields, which fits the current behavior-preserving test-first strategy.
+Inspect #99 next. It asks for command-level no-write smoke tests around `update-all`, `update-item`, `apply-artifact`, and pipeline orchestration; keep using fixtures and temporary directories.

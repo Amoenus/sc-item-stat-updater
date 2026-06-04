@@ -14,6 +14,9 @@ avoiding noisy duplication.
   refinery profiles, quality overrides, encounter summaries, and mining
   behavior stats.
 
+See `docs/scmdb-output-contracts.md` for downstream SCMDB CSV contracts such as
+`legacy-contracts.csv` headers and blueprint marker fields.
+
 Out of scope for this plan:
 
 - General DataCore component stat extraction.
