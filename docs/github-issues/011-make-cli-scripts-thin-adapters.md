@@ -159,3 +159,23 @@ Remaining:
 
 - Continue moving SCMDB output planning behind source modules.
 - Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/output-files.ts`.
+- Added `planScmdbOutputFiles` so `bin/scrape-scmdb.ts` no longer owns the output row-group decision ladder.
+- Updated the scraper script to loop over planned output descriptors while keeping filesystem writes, user-facing messages, args, and exits in the script.
+- Smoke-tested `node --import tsx/esm bin/scrape-scmdb.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/scmdb/output-files.test.ts src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/output-files.ts src/sources/scmdb/output-files.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
+- Reassess #95 once SCMDB source-module boundaries are stable.

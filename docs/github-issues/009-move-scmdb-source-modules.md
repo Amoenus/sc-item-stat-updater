@@ -125,3 +125,24 @@ Remaining:
 
 - Move SCMDB output file planning or schema compatibility adapters behind `src/sources/scmdb`.
 - Decide when to relocate or compatibility-export `src/extractor/mining-parser.ts` and `src/extractor/mission-parser.ts` under the SCMDB source boundary.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/output-files.ts`.
+- Added `planScmdbOutputFiles` to convert SCMDB row groups into ordered output descriptors with filename, output section, rows, and headers.
+- Updated `bin/scrape-scmdb.ts` to loop over planned output descriptors and keep only filesystem writes plus user-facing messages.
+- Added tests for empty output omission, scraper write order, mission/root output sections, and header pairing.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/output-files.test.ts src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/output-files.ts src/sources/scmdb/output-files.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Decide whether to compatibility-export or relocate SCMDB mining/mission parser modules under `src/sources/scmdb`.
+- Consider completing Issue 007 / GitHub #91 source dataset contracts before larger source moves.

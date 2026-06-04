@@ -2,16 +2,6 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  buildScmdbOutputRows,
-  SCMDB_BLUEPRINT_POOL_HEADERS,
-  SCMDB_CONTRACT_BLUEPRINT_HEADERS,
-  SCMDB_CONTRACT_HEADERS,
-  SCMDB_MINING_ELEMENT_HEADERS,
-  SCMDB_MINING_JOURNAL_HEADERS,
-  SCMDB_MINING_LOCATION_HEADERS,
-  SCMDB_MISSION_HEADERS,
-} from '../src/sources/scmdb/outputs';
 import { toCsv } from '../src/lib/csv';
 import {
   ScmdbCraftingBlueprintsSchema,
@@ -26,6 +16,8 @@ import {
   fetchScmdbJson,
   SCMDB_VERSIONS_URL,
 } from '../src/sources/scmdb/acquisition';
+import { planScmdbOutputFiles } from '../src/sources/scmdb/output-files';
+import { buildScmdbOutputRows } from '../src/sources/scmdb/outputs';
 import { selectScmdbVersion, type ScmdbVersionEntry } from '../src/sources/scmdb/version-selection';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -148,39 +140,13 @@ async function main() {
 
   const outputRows = buildScmdbOutputRows(mergedData, miningData);
 
-  if (outputRows.missionRows.length) {
-    writeMissionOutput('scmdb-missions.csv', toCsv(outputRows.missionRows, SCMDB_MISSION_HEADERS));
-  }
-
-  if (outputRows.contractRows.length) {
-    writeOutput('contracts.csv', toCsv(outputRows.contractRows, SCMDB_CONTRACT_HEADERS));
-  }
-
-  if (outputRows.legacyRows.length) {
-    writeOutput('legacy-contracts.csv', toCsv(outputRows.legacyRows, SCMDB_CONTRACT_HEADERS));
-  }
-
-  if (outputRows.blueprintPoolRows.length) {
-    writeOutput('blueprint-pools.csv', toCsv(outputRows.blueprintPoolRows, SCMDB_BLUEPRINT_POOL_HEADERS));
-  }
-
-  if (outputRows.miningElementRows.length) {
-    writeOutput('mining-elements.csv', toCsv(outputRows.miningElementRows, SCMDB_MINING_ELEMENT_HEADERS));
-  }
-
-  if (outputRows.miningJournalRows.length) {
-    writeOutput('mining-journal.csv', toCsv(outputRows.miningJournalRows, SCMDB_MINING_JOURNAL_HEADERS));
-  }
-
-  if (outputRows.miningLocationRows.length) {
-    writeOutput('mining-locations.csv', toCsv(outputRows.miningLocationRows, SCMDB_MINING_LOCATION_HEADERS));
-  }
-
-  if (outputRows.contractBlueprintRows.length) {
-    writeOutput(
-      'contract-blueprint-rewards.csv',
-      toCsv(outputRows.contractBlueprintRows, SCMDB_CONTRACT_BLUEPRINT_HEADERS),
-    );
+  for (const outputFile of planScmdbOutputFiles(outputRows)) {
+    const content = toCsv(outputFile.rows, outputFile.headers);
+    if (outputFile.section === 'missions') {
+      writeMissionOutput(outputFile.fileName, content);
+    } else {
+      writeOutput(outputFile.fileName, content);
+    }
   }
 
   console.log(`SCMDB scrape complete. Outputs saved to csv/scmdb/${selected.version}/`);

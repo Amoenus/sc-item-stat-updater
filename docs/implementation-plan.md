@@ -640,6 +640,46 @@ Next agent instructions:
 4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
 5. Keep CLI parse args, console output, file writes, and process exits in `bin/scrape-scmdb.ts` until a stronger use-case result shape exists.
 
+### 2026-06-04: SCMDB output file planning
+
+Primary issue:
+
+- Issue 009 / GitHub #93: Move SCMDB Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/scmdb/output-files.ts`.
+- Added `planScmdbOutputFiles` to convert SCMDB row groups into ordered output descriptors with filename, output section, rows, and headers.
+- Updated `bin/scrape-scmdb.ts` to loop over planned output descriptors and keep only filesystem writes plus user-facing messages.
+- Added tests for empty output omission, scraper write order, mission/root output sections, and header pairing.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/output-files.test.ts src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/output-files.ts src/sources/scmdb/output-files.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Notes:
+
+- Issue 009 / GitHub #93 remains open.
+- Issue 011 / GitHub #95 remains open.
+- Existing scraper command names and output locations are unchanged.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move SCMDB output planning to source module`.
+2. Review Issue 009 / GitHub #93 acceptance again.
+3. Consider whether the next #93 slice should be a compatibility relocation of SCMDB mining/mission parser exports into `src/sources/scmdb`, or whether #91 Source Dataset Contracts should be completed before more moves.
+4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
+5. Keep CLI parse args, console output, file writes, and process exits in `bin/scrape-scmdb.ts` until a stronger use-case result shape exists.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
