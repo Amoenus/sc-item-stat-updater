@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import type { ItemConfig } from './types';
+import type { ItemConfig } from '../enrichment/item-config';
 import { preflightCheckConfigs } from './updater';
 
 /** Creates a minimal ItemConfig with only the fields needed for preflight. */

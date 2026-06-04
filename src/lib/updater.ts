@@ -10,7 +10,7 @@ import { sanitizeIniValue } from '../enrichment/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../localization/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../localization/key-resolver';
 import { getLogger } from '../infrastructure/logger';
-import type { IssueRecord, ItemConfig } from './types';
+import type { IssueRecord, ItemConfig } from '../enrichment/item-config';
 
 const logger = getLogger('updater');
 

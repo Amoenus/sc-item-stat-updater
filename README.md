@@ -130,7 +130,7 @@ Runs `tsc --noEmit` to validate TypeScript types without emitting any output fil
 
 ## Project structure
 
-The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. `src/lib` is intentionally kept as a small compatibility layer for older imports while active code uses the responsibility-specific folders below.
+The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Active code uses the responsibility-specific folders below; `src/lib` currently contains only updater compatibility glue and its regression tests.
 
 ```
 bin/
@@ -147,7 +147,7 @@ src/
   infrastructure/         # Logging and CSV serialization infrastructure
   io/local/               # Local filesystem IO helpers and path conventions
   items/                  # Item and mission enrichment rule modules
-  lib/                    # Compatibility re-exports plus updater compatibility glue
+  lib/                    # Updater compatibility glue and regression tests
   localization/           # INI parsing/application, key resolution, and localization text helpers
   pipeline/               # Core pipeline data contracts
   presentation/           # CLI argument and presentation helpers

@@ -15,7 +15,7 @@ import {
   getUpdateExtraStepLabels,
   runUpdateExtraSteps,
 } from '../src/application/use-cases/run-update-extra-steps';
-import { backupIniFile } from '../src/io/local/ini-file';
+import { backupIniFile } from '../src/localization/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 import { preflightCheckConfigs } from '../src/lib/updater';
