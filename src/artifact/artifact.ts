@@ -13,6 +13,7 @@ import { buildPatchPlanResult } from '../application/use-cases/build-patch-plan'
 import type { ItemConfig } from '../enrichment/item-config';
 import type { PatchPlan } from '../pipeline/types';
 import { ArtifactSchema, type ArtifactDTO } from '../schema/artifact.schema';
+import type { ZodIssue } from 'zod';
 
 export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
 
@@ -103,6 +104,31 @@ export async function writeArtifactFile(artifactPath: string, artifact: Artifact
   await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf8');
 }
 
+function formatIssuePath(issue: ZodIssue): { field: string; detailPath: string } {
+  const pathParts = issue.path.map((part) => String(part));
+  const field = pathParts[0] ?? '(root)';
+  return {
+    field,
+    detailPath: pathParts.length > 0 ? pathParts.join('.') : '(root)',
+  };
+}
+
+function formatArtifactSchemaError(artifactPath: string, issues: ZodIssue[]): string {
+  const firstIssue = issues[0];
+  if (!firstIssue) {
+    return `Artifact file is invalid: ${artifactPath}\n  Field: (root)\n  Problem: Unknown schema error`;
+  }
+  const { field, detailPath } = formatIssuePath(firstIssue);
+  const additionalCount = issues.length - 1;
+  const additional = additionalCount > 0 ? `\n  Additional issues: ${additionalCount}` : '';
+  return [
+    `Artifact file is invalid: ${artifactPath}`,
+    `  Field: ${field}`,
+    `  Problem: ${firstIssue.message}`,
+    `  Detail: ${detailPath}: ${firstIssue.message}${additional}`,
+  ].join('\n');
+}
+
 /**
  * Reads and validates a patch artifact from disk against the canonical
  * `ArtifactSchema`. A `ZodError` is thrown if the file does not conform; this
@@ -123,12 +149,15 @@ export async function readArtifactFile(artifactPath: string): Promise<ArtifactDT
   try {
     parsed = JSON.parse(raw);
   } catch (err) {
-    throw new Error(`Artifact file is not valid JSON: ${artifactPath}`, { cause: err });
+    const problem = err instanceof Error ? err.message : String(err);
+    throw new Error(`Artifact file is not valid JSON: ${artifactPath}\n  Field: JSON\n  Problem: ${problem}`, {
+      cause: err,
+    });
   }
 
   const result = ArtifactSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error(`Artifact file has unexpected structure: ${artifactPath}\n${result.error.message}`);
+    throw new Error(formatArtifactSchemaError(artifactPath, result.error.issues), { cause: result.error });
   }
 
   return result.data;
