@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #104: Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
 - #105: Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
 - #106: Add malformed-artifact and schema-error UX tests with friendlier error messages.
 - #107: Add localization duplicate/collision tests beyond key resolution, including plural/gender suffix handling and all-occurrence update paths.
@@ -55,10 +54,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #104 next. It is a comparison-report slice for categories supported by both DataCore and SPViewer; keep it fixture-driven and avoid committing generated CSV output.
+Inspect #105 next. It is a test-quality slice for high-value generated strings and should use stable fixtures/snapshots without changing generated data.
 
 ## Completed Functional Issues
 
+- #104: Added a provider-output comparison use case for shared DataCore/SPViewer categories. It compares dry-run patch-plan entries, reports DataCore-only keys, SPViewer-only keys, changed shared values, and compact formatted summaries. Tests use temporary CSV/INI fixtures for a shared `coolers` category and assert the comparison does not write `global.ini`.
 - #103: Added source freshness diagnostics for update and pipeline flows. The diagnostics summarize selected SCMDB and item-provider LIVE/PTU versions with source paths, warn when selected versions look like the wrong channel, and warn when prepared source files are missing/incomplete with provider/category/path context. Tests use temporary source directories and fixtures only.
 - #102: `apply-artifact --dry-run` now prints a concise preview summary with changed, inserted, skipped, and issue counts plus capped representative key samples. Loader tests cover compact artifact input, inserted keys, skipped/missing keys, issue counts, and sample truncation, while artifact serialization tests continue to prove application-only metadata such as line indexes is not written to JSON.
 - #101: Missing-source-data preflight errors now include provider, channel, category slug, config label when useful, expected resolved path, and a relevant `npm run scrape:*` command suggestion. Focused tests cover a missing DataCore item source and a missing SCMDB PTU mission source while preserving the successful preflight path.
