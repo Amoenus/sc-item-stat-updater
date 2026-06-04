@@ -1,156 +1,17 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import puppeteer from 'puppeteer';
-import {
-  extractVersions,
-  findDropdownOptionSelector,
-  findPaginatorSelector,
-  hasAllOption,
-  parseTable,
-} from '../src/sources/spviewer/html-parser.js';
-import type { SpviewerScrapedDataDTO } from '../src/schema/spviewer.schemas.js';
+import { runSpviewerScrape, SPVIEWER_ITEM_TYPES } from '../src/application/use-cases/run-spviewer-scrape';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootDir = join(__dirname, '..');
 
-const PAGE_LOAD_TIMEOUT_MS = 60_000;
-const TABLE_LOAD_TIMEOUT_MS = 90_000;
-const PAGINATION_SETTLE_MS = 500;
-const POST_PAGINATION_SETTLE_MS = 2000;
-
-const ITEM_TYPES = [
-  // OP. MODES
-  'Bomb',
-  'EMP',
-  'Missile',
-  'WeaponMining',
-  'MiningModifier',
-  'SalvageModifier',
-  'TractorBeam',
-  // WEAPONS
-  'WeaponGun',
-  'MissileLauncher',
-  'WeaponDefensive',
-  'Turret',
-  // SYSTEMS
-  'Shield',
-  'Cooler',
-  'Radar',
-  'SelfDestruct',
-  'FlightController',
-  'ShieldController',
-  // PROPULSION
-  'PowerPlant',
-  'QuantumDrive',
-  'QuantumInterdictionGenerator',
-  'JumpDrive',
-  // FPS GEAR
-  'WeaponPersonal',
-  'WeaponAttachment',
-  'Throwable',
-];
-
-const BASE_URL = 'https://www.spviewer.eu/items';
-
-// Try to show all entries (click "All" in page-size dropdown if present).
-// Best-effort: errors are silently swallowed so scraping still continues.
-// HTML detection uses cheerio; only interactions (click) use Puppeteer.
-async function expandPaginatorToAll(page: import('puppeteer').Page): Promise<void> {
-  try {
-    const initialHtml = await page.content();
-    const paginatorSelector = findPaginatorSelector(initialHtml);
-    if (!paginatorSelector) return;
-
-    await page.click(paginatorSelector);
-    await sleep(PAGINATION_SETTLE_MS);
-
-    const expandedHtml = await page.content();
-    if (hasAllOption(expandedHtml)) {
-      await page.evaluate(() => {
-        const items = document.querySelectorAll('li');
-        for (const item of items) {
-          if (/^all$/i.test(item.textContent?.trim() ?? '')) {
-            (item as HTMLElement).click();
-            return;
-          }
-        }
-      });
-    } else {
-      const optionSelector = findDropdownOptionSelector(expandedHtml);
-      if (optionSelector) {
-        const options = await page.$$(optionSelector);
-        if (options.length) await options.at(-1)?.click();
-      }
-    }
-    await sleep(POST_PAGINATION_SETTLE_MS);
-  } catch {
-    /* pagination handling is best-effort */
-  }
-}
-
-/**
- * Scrapes item data for a given item type from SPViewer.
- */
-async function scrapeItems(browser: import('puppeteer').Browser, itemType: string): Promise<SpviewerScrapedDataDTO> {
-  console.log(`  Scraping ${itemType}...`);
-
-  const page = await browser.newPage();
-
-  try {
-    await page.goto(`${BASE_URL}?item=${itemType}`, {
-      waitUntil: 'networkidle2',
-      timeout: PAGE_LOAD_TIMEOUT_MS,
-    });
-
-    // Wait for the DataTable to load rows (up to 90s for DB init)
-    await page.waitForFunction(
-      () => {
-        const rows = document.querySelectorAll('table tbody tr');
-        return rows.length > 0 && !rows[0].textContent.includes('No data available');
-      },
-      { timeout: TABLE_LOAD_TIMEOUT_MS },
-    );
-
-    await expandPaginatorToAll(page);
-    await sleep(POST_PAGINATION_SETTLE_MS);
-
-    const html = await page.content();
-    try {
-      return parseTable(html);
-    } catch (err) {
-      const msg = err instanceof Error ? err.toString() : String(err);
-      throw new Error(`SPViewer scraped data for ${itemType} failed schema validation:\n${msg}`);
-    }
-  } finally {
-    await page.close();
-  }
-}
-
-/**
- * @param {{ headers: string[], rows: string[][] }} data
- * @returns {string}
- */
-function toCsv({ headers, rows }: { headers: string[]; rows: string[][] }): string {
-  const escapeVal = (v: string): string => {
-    if (v.includes(',') || v.includes('"') || v.includes('\n')) {
-      return `"${v.replaceAll('"', '""')}"`;
-    }
-    return v;
-  };
-  const lines = [headers.map(escapeVal).join(','), ...rows.map((row) => row.map(escapeVal).join(','))];
-  return `${lines.join('\n')}\n`;
-}
-
-// --- CLI ---
 const args = process.argv.slice(2);
 
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`Usage: node scrape-spviewer.js [itemType ...] [options]
 
-Item types: ${ITEM_TYPES.join(', ')}
+Item types: ${SPVIEWER_ITEM_TYPES.join(', ')}
 
 Options:
   --all        Scrape all item types
@@ -173,14 +34,14 @@ Examples:
 
 if (args.includes('--list')) {
   console.log('Available item types:');
-  for (const t of ITEM_TYPES) console.log(`  ${t}`);
+  for (const type of SPVIEWER_ITEM_TYPES) console.log(`  ${type}`);
   process.exit(0);
 }
 
 const usePtu = args.includes('--ptu');
 const useJson = args.includes('--json');
 const useAll = args.includes('--all');
-const types = useAll ? ITEM_TYPES : args.filter((a) => !a.startsWith('--'));
+const types = useAll ? SPVIEWER_ITEM_TYPES.slice() : args.filter((arg) => !arg.startsWith('--'));
 
 if (types.length === 0) {
   console.error('Error: specify at least one item type, or use --all');
@@ -188,60 +49,42 @@ if (types.length === 0) {
 }
 
 const channel = usePtu ? 'ptu' : 'live';
-console.log(`SPViewer scraper — channel: ${channel.toUpperCase()}`);
-console.log(`Launching browser to detect version...`);
+let activeVersion = '';
 
-const browser = await puppeteer.launch({ headless: true });
+try {
+  const result = await runSpviewerScrape({
+    repoRoot: __rootDir,
+    ptu: usePtu,
+    json: useJson,
+    types,
+    onVersionDetectStart: () => {
+      console.log(`SPViewer scraper - channel: ${channel.toUpperCase()}`);
+      console.log('Launching browser to detect version...');
+    },
+    onPrepared: ({ version }) => {
+      activeVersion = version;
+      console.log(`Version: ${version}`);
+      console.log(`Output:  csv/spviewer/${version}/`);
+      console.log();
+    },
+    onTypeStart: (itemType) => {
+      console.log(`  Scraping ${itemType}...`);
+    },
+    onTypeScraped: (_itemType, data) => {
+      console.log(`    ${data.rows.length} rows, ${data.headers.length} columns`);
+    },
+    onFileWritten: ({ fileName }) => {
+      console.log(`    Saved: csv/spviewer/${activeVersion}/${fileName}`);
+    },
+    onTypeError: ({ itemType, message }) => {
+      console.error(`  FAILED ${itemType}: ${message}`);
+    },
+  });
 
-// Navigate to the first item type page to extract version info from the header.
-const versionPage = await browser.newPage();
-await versionPage.goto(`${BASE_URL}?item=${types[0]}`, {
-  waitUntil: 'networkidle2',
-  timeout: PAGE_LOAD_TIMEOUT_MS,
-});
-
-const versionHtml = await versionPage.content();
-const versions = extractVersions(versionHtml);
-await versionPage.close();
-
-const versionRaw = usePtu ? versions.ptu : versions.live;
-if (!versionRaw) {
-  console.error(
-    `Could not detect ${channel.toUpperCase()} version from SPViewer page header.\n` +
-      `Detected: LIVE=${versions.live ?? 'n/a'}, PTU=${versions.ptu ?? 'n/a'}\n` +
-      `The page structure may have changed.`,
-  );
-  await browser.close();
+  console.log(`\nDone. Scraped ${result.types.length} item type(s) into csv/spviewer/${result.version}/`);
+  if (result.exitCode !== 0) process.exit(result.exitCode);
+} catch (err) {
+  const error = err instanceof Error ? err : new Error(String(err));
+  console.error(error.message);
   process.exit(1);
 }
-
-// Normalise: "4.7.2.11715810" -> "4.7.2.11715810-live" (append channel suffix)
-const version = `${versionRaw}-${channel}`;
-const outDir = join(__rootDir, 'csv', 'spviewer', version);
-
-mkdirSync(outDir, { recursive: true });
-
-console.log(`Version: ${version}`);
-console.log(`Output:  csv/spviewer/${version}/`);
-console.log();
-
-for (const itemType of types) {
-  try {
-    const data = await scrapeItems(browser, itemType);
-    console.log(`    ${data.rows.length} rows, ${data.headers.length} columns`);
-
-    const ext = useJson ? 'json' : 'csv';
-    const filename = `${itemType.toLowerCase()}.spviewer.${ext}`;
-    const outPath = join(outDir, filename);
-
-    const content = useJson ? JSON.stringify(data, null, 2) : toCsv(data);
-    writeFileSync(outPath, content, 'utf-8');
-    console.log(`    Saved: csv/spviewer/${version}/${filename}`);
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    console.error(`  FAILED ${itemType}: ${error.message}`);
-  }
-}
-
-await browser.close();
-console.log(`\nDone. Scraped ${types.length} item type(s) into csv/spviewer/${version}/`);

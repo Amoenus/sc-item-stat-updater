@@ -1167,6 +1167,64 @@ Next agent instructions:
 4. Avoid browser scraping or generated SPViewer CSV/JSON churn unless explicitly requested.
 5. Reassess GitHub #95 closure only after the SPViewer boundary is settled and final CLI smoke coverage passes.
 
+### 2026-06-04: Pipeline SPViewer scrape runs in process and Issue 011 closure
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/run-spviewer-scrape.ts`.
+- Moved SPViewer browser scrape orchestration into a callable use case:
+  - browser launch/close lifecycle
+  - version-page navigation and LIVE/PTU version detection
+  - per-type page navigation and table wait
+  - paginator expansion
+  - SPViewer table parsing
+  - CSV/JSON output content and writes
+  - structured written-file metadata and per-type errors
+- Updated `bin/scrape-spviewer.ts` to keep CLI argument interpretation, help/list output, user-facing status/save/error messages, and exit handling while delegating scrape execution to `runSpviewerScrape`.
+- Updated `runFullPipeline` to call `runSpviewerScrape` in process for the SPViewer scrape step instead of shelling out to `bin/scrape-spviewer.ts --all`.
+- Removed the now-unused `runScript`/`spawnSync` pipeline compatibility hook because no pipeline step shells out anymore.
+- Preserved existing SPViewer behavior where per-type scrape failures are reported but do not fail the whole scrape after all requested types are attempted.
+- Did not run browser scraping or write generated SPViewer CSV/JSON data.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/run-spviewer-scrape.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-spviewer.ts src/application/use-cases/run-spviewer-scrape.ts src/application/use-cases/run-spviewer-scrape.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `node --import tsx/esm bin/scrape-spviewer.ts --help`
+- `node --import tsx/esm bin/scrape-spviewer.ts --list`
+- `node --import tsx/esm bin/pipeline.ts --help`
+- `npm run scrape:spviewer -- --list`
+- `npm run pipeline -- --help`
+
+Closure review:
+
+- `bin/pipeline.ts` delegates pipeline behavior to `runFullPipeline`.
+- `bin/update-all.ts` delegates enrichment behavior to application use cases.
+- SCMDB, DataCore, and SPViewer scraper scripts now delegate reusable scrape/acquisition/normalization orchestration to source/application modules while keeping CLI presentation in `bin/*.ts`.
+- `runFullPipeline` no longer shells out for update or scraper steps.
+- No application/source use case calls `parseArgs`, user-facing `console.*`, or `process.exit`.
+- Existing npm help/list script smoke still works.
+- No generated/scraped data changes were included.
+
+Notes:
+
+- Issue 011 / GitHub #95 is closed after this slice.
+- Broad folder cleanup, compatibility export removal, and any future `src/lib`/`src/items` naming cleanup remain later explicit issues.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Run pipeline SPViewer scrape in process`.
+2. Continue the Clean Pipeline Architecture migration by reviewing the next open local/GitHub issue; likely folder cleanup/compatibility cleanup only after stable behavior homes are confirmed.
+3. Keep compatibility cleanup separate from behavior-moving work unless the issue acceptance criteria explicitly call for removal.
+4. Keep `runUpdate` and `buildPatchData` compatibility exports until remaining old imports are known and migrated.
+5. Avoid generated/scraped data churn unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

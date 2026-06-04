@@ -3,10 +3,10 @@ import test from 'node:test';
 import { runFullPipeline } from './run-full-pipeline';
 
 test('runFullPipeline runs update in process instead of shelling out to update-all', async () => {
-  const scriptCalls: string[][] = [];
   const completed: string[] = [];
   const updateOptions: unknown[] = [];
   const scmdbOptions: unknown[] = [];
+  const spviewerOptions: unknown[] = [];
 
   const result = await runFullPipeline({
     rootDir: 'repo',
@@ -19,10 +19,6 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
       assert.equal(targetIniPath, 'game/global.ini');
       return { repoIniPath, targetIniPath };
     },
-    runScript: (scriptArgs) => {
-      scriptCalls.push(scriptArgs);
-      return 0;
-    },
     runScmdb: async (options) => {
       scmdbOptions.push(options);
       return {
@@ -30,6 +26,18 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
         outDir: 'repo/csv/scmdb/scmdb-live',
         missionsOutDir: 'repo/csv/scmdb/scmdb-live/missions',
         files: [],
+      };
+    },
+    runSpviewer: async (options) => {
+      spviewerOptions.push(options);
+      return {
+        exitCode: 0,
+        channel: 'ptu',
+        version: '4.8.0-ptu',
+        outDir: 'repo/csv/spviewer/4.8.0-ptu',
+        types: ['Shield'],
+        files: [],
+        errors: [],
       };
     },
     runUpdate: async (options) => {
@@ -53,8 +61,8 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     extractedGamePath: 'game/global.ini',
     repoIniPath: 'repo\\global.ini',
   });
-  assert.deepEqual(scriptCalls, [['bin/scrape-spviewer.ts', '--all']]);
   assert.deepEqual(scmdbOptions, [{ repoRoot: 'repo', ptu: true }]);
+  assert.deepEqual(spviewerOptions, [{ repoRoot: 'repo', ptu: true }]);
   assert.deepEqual(updateOptions, [
     {
       repoRoot: 'repo',
@@ -74,7 +82,6 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
 
 test('runFullPipeline returns the in-process update exit code and skips deployment on update errors', async () => {
   let deployed = false;
-  const scriptCalls: string[][] = [];
   const datacoreOptions: unknown[] = [];
 
   const result = await runFullPipeline({
@@ -84,10 +91,6 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
     deploy: async ({ repoIniPath, targetIniPath }) => {
       deployed = true;
       return { repoIniPath, targetIniPath };
-    },
-    runScript: (scriptArgs) => {
-      scriptCalls.push(scriptArgs);
-      return 0;
     },
     runScmdb: async () => ({
       selected: { version: 'scmdb-live', file: 'merged-scmdb-live.json' },
@@ -123,6 +126,5 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
 
   assert.equal(result.exitCode, 1);
   assert.equal(deployed, false);
-  assert.deepEqual(scriptCalls, []);
   assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: undefined }]);
 });

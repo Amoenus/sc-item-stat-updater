@@ -1,10 +1,10 @@
-import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
 import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
+import { runSpviewerScrape } from './run-spviewer-scrape';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -15,10 +15,10 @@ export interface RunFullPipelineOptions {
   verbose?: boolean;
   log?: (message: string) => void;
   onStepComplete?: (summary: string) => void;
-  runScript?: (scriptArgs: string[]) => number;
   runUpdate?: typeof runBatchUpdate;
   runDatacore?: typeof runDatacoreScrape;
   runScmdb?: typeof runScmdbScrape;
+  runSpviewer?: typeof runSpviewerScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
 }
@@ -29,23 +29,14 @@ export interface RunFullPipelineResult {
   repoIniPath: string;
 }
 
-function defaultRunScript(rootDir: string, scriptArgs: string[]): number {
-  const result = spawnSync('node', ['--import', 'tsx/esm', ...scriptArgs], {
-    stdio: 'inherit',
-    cwd: rootDir,
-  });
-  if (result.error) throw result.error;
-  return result.status ?? 1;
-}
-
 export async function runFullPipeline(options: RunFullPipelineOptions): Promise<RunFullPipelineResult> {
   const log = options.log ?? (() => {});
-  const runScript = options.runScript ?? ((scriptArgs) => defaultRunScript(options.rootDir, scriptArgs));
   const repoIniPath = path.join(options.rootDir, 'global.ini');
 
   const runUpdate = options.runUpdate ?? runBatchUpdate;
   const runDatacore = options.runDatacore ?? runDatacoreScrape;
   const runScmdb = options.runScmdb ?? runScmdbScrape;
+  const runSpviewer = options.runSpviewer ?? runSpviewerScrape;
   const refresh = options.refresh ?? refreshGlobalIni;
   const deploy = options.deploy ?? deployGlobalIni;
 
@@ -71,8 +62,11 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     options.onStepComplete?.('SCMDB scraped');
 
     log('=== Step 2b: Scraping SPViewer ===');
-    const exitCode = runScript(['bin/scrape-spviewer.ts', '--all']);
-    if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
+    const spviewerResult = await runSpviewer({
+      repoRoot: options.rootDir,
+      ptu: options.ptu,
+    });
+    if (spviewerResult.exitCode !== 0) return { exitCode: spviewerResult.exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('SPViewer scraped');
   } else {
     log('=== Step 2: Skipping scrape (pass --scrape or --datacore to enable) ===');
