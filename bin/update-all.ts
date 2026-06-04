@@ -11,15 +11,14 @@ import {
   type BatchUpdateResult,
   runPreparedUpdateCategories,
 } from '../src/application/use-cases/run-prepared-update-categories';
+import {
+  getUpdateExtraStepLabels,
+  runUpdateExtraSteps,
+} from '../src/application/use-cases/run-update-extra-steps';
 import { backupIniFile } from '../src/io/local/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { preflightCheckConfigs } from '../src/lib/updater';
-import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
-import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
-import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
-import { runMissileTitleTagUpdate } from '../src/lib/updates/missile-title-tags';
-import { runRawCommodityLabelFixUpdate } from '../src/lib/updates/raw-commodity-label-fixes';
 import { regenMiningLocations } from './regen-mining-locations';
 
 const logger = getLogger('update-all');
@@ -28,22 +27,6 @@ registerUnhandledRejectionHandler(logger);
 
 type StepError = { label: string; message: string };
 type AnyUpdateResult = BatchUpdateResult;
-
-async function runStep(
-  label: string,
-  results: AnyUpdateResult[],
-  errors: StepError[],
-  fn: () => Promise<AnyUpdateResult | null | undefined>,
-): Promise<void> {
-  try {
-    const result = await fn();
-    if (result != null) results.push(result);
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    errors.push({ label, message: error.message });
-    logger.error(`Failed: ${label}`, { error: error.message });
-  }
-}
 
 function printSummary(results: AnyUpdateResult[], errors: StepError[], totalDuration: number): void {
   console.log();
@@ -184,14 +167,8 @@ if (!options.dryRun) {
 }
 const sharedOptions = { ...options, skipBackup: true };
 
-const fixedExtraSteps = [
-  'Component Titles',
-  'FPS title tags',
-  'Missile title tags',
-  'Raw commodity labels',
-  'Adagio location tags (experimental)',
-] as const;
-const extraSteps = fixedExtraSteps.length + (values['include-mining-journal'] ? 1 : 0);
+const extraStepLabels = getUpdateExtraStepLabels({ includeMiningJournal: values['include-mining-journal'] });
+const extraSteps = extraStepLabels.length;
 const bar = new cliProgress.SingleBar({
   format: '{bar} {percentage}% | {value}/{total} | {category}',
   barCompleteChar: '\u2588',
@@ -221,94 +198,26 @@ const categoryResult = await runPreparedUpdateCategories(categories, {
 results.push(...categoryResult.results);
 errors.push(...categoryResult.errors);
 
-let barStep = categories.length;
-bar.update(barStep, { category: 'Component Titles' });
-await runStep('Component Titles', results, errors, async () => {
-  if (!spviewerVersionDir) return null; // requires SPViewer data
-  logger.info('Starting component title update');
-  const result = await runComponentTitleUpdate({
-    iniPath,
-    spviewerDir: spviewerVersionDir,
-    dryRun: options.dryRun,
-  });
-  logger.info('Component title update complete', {
-    updatedCount: result.updatedCount,
-    matchedCount: result.matchedCount,
-    scannedCount: result.scannedCount,
-    dryRun: options.dryRun,
-  });
-  return result;
+const extraStepResult = await runUpdateExtraSteps({
+  iniPath,
+  repoRoot,
+  missionCsvDir,
+  spviewerVersionDir,
+  dryRun: options.dryRun,
+  includeMiningJournal: values['include-mining-journal'],
+  onStepStart: (label, index) => {
+    bar.update(categories.length + index, { category: label });
+    logger.info('Starting extra update step', { label });
+  },
+  onStepError: (error: BatchUpdateError) => {
+    logger.error(`Failed: ${error.label}`, { error: error.message, cause: error.cause });
+  },
 });
 
-barStep++;
-bar.update(barStep, { category: 'FPS title tags' });
-await runStep('FPS title tags', results, errors, async () => {
-  if (!spviewerVersionDir) return null; // requires SPViewer data
-  logger.info('Starting FPS title tag update');
-  const result = await runFpsTitleTagUpdate({
-    iniPath,
-    spviewerDir: spviewerVersionDir,
-    dryRun: options.dryRun,
-  });
-  logger.info('FPS title tag update complete', {
-    updatedCount: result.updatedCount,
-    matchedCount: result.matchedCount,
-    scannedCount: result.scannedCount,
-    dryRun: options.dryRun,
-  });
-  return result;
-});
+results.push(...extraStepResult.results);
+errors.push(...extraStepResult.errors);
 
-barStep++;
-bar.update(barStep, { category: 'Missile title tags' });
-await runStep('Missile title tags', results, errors, async () => {
-  if (!spviewerVersionDir) return null; // requires SPViewer data
-  logger.info('Starting missile title tag update');
-  const result = await runMissileTitleTagUpdate({
-    iniPath,
-    spviewerDir: spviewerVersionDir,
-    repoRoot,
-    dryRun: options.dryRun,
-  });
-  logger.info('Missile title tag update complete', {
-    updatedCount: result.updatedCount,
-    matchedCount: result.matchedCount,
-    scannedCount: result.scannedCount,
-    dryRun: options.dryRun,
-  });
-  return result;
-});
-
-barStep++;
-
-if (values['include-mining-journal']) {
-  bar.update(barStep, { category: 'Mining journal' });
-  await runStep('Mining journal', results, errors, async () => {
-    const { runMiningJournalUpdate } = await import('../src/lib/updates/mining-journal-update.js');
-    return runMiningJournalUpdate({ iniPath, missionCsvDir, dryRun: options.dryRun });
-  });
-  barStep++;
-}
-
-bar.update(barStep, { category: 'Raw commodity labels' });
-await runStep('Raw commodity labels', results, errors, () =>
-  runRawCommodityLabelFixUpdate({ iniPath, dryRun: options.dryRun }),
-);
-
-barStep++;
-bar.update(barStep, { category: 'Adagio location tags (experimental)' });
-await runStep('Adagio location tags (experimental)', results, errors, async () => {
-  logger.info('Starting Adagio location tag update (experimental)');
-  const result = await runAdagioLocationTagUpdate({ iniPath, dryRun: options.dryRun });
-  logger.info('Adagio location tag update complete', {
-    updatedCount: result.updatedCount,
-    matchedCount: result.matchedCount,
-    dryRun: options.dryRun,
-  });
-  return result;
-});
-
-barStep++;
+const barStep = categories.length + extraSteps;
 bar.update(barStep, { category: 'Done' });
 bar.stop();
 

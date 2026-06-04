@@ -71,3 +71,29 @@ Remaining:
 
 - Extract or classify the remaining `update-all` extra update steps once their result/error reporting can be represented without CLI concerns.
 - Move scraper acquisition/normalization behavior behind source modules before doing broad folder cleanup.
+
+Continued on 2026-06-04:
+
+- Added `runUpdateExtraSteps` under `src/application/use-cases`.
+- Added `getUpdateExtraStepLabels` so `bin/update-all.ts` can keep progress totals/order without owning step classification.
+- Moved the remaining `update-all` extra-step execution loop into the use case:
+  - Component Titles
+  - FPS title tags
+  - Missile title tags
+  - optional Mining journal
+  - Raw commodity labels
+  - Adagio location tags (experimental)
+- Kept `bin/update-all.ts` responsible for CLI concerns: parse args, progress rendering, logger callbacks, preflight, mining-regeneration orchestration, backups, artifact writing, summaries, shutdown, and exit codes.
+- Added injected-runner coverage for step ordering, optional mining journal inclusion, skipped/null step results, and continue-on-error behavior.
+
+Verification:
+
+- `node --import tsx/esm --test src/application/use-cases/run-update-extra-steps.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-all.ts src/application/use-cases/run-update-extra-steps.ts src/application/use-cases/run-update-extra-steps.test.ts`
+
+Remaining:
+
+- Move scraper acquisition/normalization behavior behind source modules.
+- Smoke test CLI help/commands as the script boundary settles.

@@ -466,6 +466,52 @@ Next agent instructions:
 5. Do not broadly rename `src/lib`, `src/items`, or `src/artifact` yet.
 6. Do not include local scraped/generated data unless explicitly requested.
 
+### 2026-06-04: Extra update step execution use case
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/run-update-extra-steps.ts`.
+- Moved the remaining `bin/update-all.ts` extra-step execution loop into the application layer:
+  - component title updates
+  - FPS title tags
+  - missile title tags
+  - optional mining journal update
+  - raw commodity label fixes
+  - Adagio location tags
+- Added `getUpdateExtraStepLabels` so the CLI can keep progress totals/order without owning step classification.
+- Kept `bin/update-all.ts` responsible for CLI parsing, progress rendering, logging callbacks, preflight, mining-regeneration orchestration, backups, artifact writing, summaries, logger shutdown, and exit codes.
+- Preserved continue-on-error behavior and result/error collection for extra steps.
+- Added injected-runner tests for extra-step ordering, optional mining journal inclusion, skipped/null steps, and continue-on-error behavior.
+- Did not move scraper acquisition/normalization behavior yet.
+- Did not rename `src/lib`, `src/items`, or `src/artifact`.
+- Did not include generated/scraped data changes.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/run-update-extra-steps.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-all.ts src/application/use-cases/run-update-extra-steps.ts src/application/use-cases/run-update-extra-steps.test.ts`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open.
+- `bin/update-all.ts` now delegates standard category preparation, standard category execution, artifact planning, and extra-step execution to application/artifact use cases.
+- Remaining #95 work is primarily scraper/acquisition normalization and final CLI smoke testing.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Extract update extra step execution`.
+2. Continue Issue 011 / GitHub #95 by inspecting scraper scripts and choosing one small acquisition/source-boundary slice.
+3. Keep command names and npm scripts stable.
+4. Keep user-facing CLI output, progress bars, parse args, and process exits in `bin/*.ts`.
+5. Do not broadly rename folders until source/acquisition behavior has stable homes.
+6. Do not include scraped/generated data unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
