@@ -1,5 +1,5 @@
 ﻿import { findLatestMatchingFile } from '../../io/local/discovery';
-import { IniTag } from '../../lib/ini-tags';
+import { IniTag } from '../../localization/ini-tags';
 import type { ItemConfig } from '../../lib/types';
 import { CommodityInputSchema, CommodityResourcePoolEntrySchema } from '../../schema/scmdb/merged/pools.schema';
 

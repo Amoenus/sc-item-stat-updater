@@ -72,3 +72,20 @@ Remaining:
 
 - Move or facade `ini-tags`, `key-resolver`, and localization text utilities under `src/localization`.
 - Document or remove remaining compatibility re-exports before closing GitHub #88.
+
+INI tags boundary slice on 2026-06-04:
+
+- Moved localization tag descriptors and key suffix constants from `src/lib/ini-tags.ts` to `src/localization/ini-tags.ts`.
+- Left `src/lib/ini-tags.ts` as a documented compatibility re-export for older imports.
+- Updated active localization, mission item, mission extractor, and extra-step imports to use `src/localization/ini-tags`.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/ini-tags.ts src/lib/ini-tags.ts src/localization/ini-file.ts src/items/missions/scmdb-titles.ts src/items/missions/commodities.ts src/extractor/mission/row-builder.ts src/lib/updates/adagio-location-tags.ts`
+
+Remaining:
+
+- Move or facade `key-resolver` and localization text utilities under `src/localization`.
+- Document or remove remaining compatibility re-exports before closing GitHub #88.

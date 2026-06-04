@@ -8,7 +8,7 @@
  * ~mission(Destination|Address). This is unverified behaviour.
  */
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { IniTag } from '../ini-tags';
+import { IniTag } from '../../localization/ini-tags';
 import { getLogger } from '../logger';
 import { buildScannedUpdateResult } from './update-result';
 

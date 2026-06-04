@@ -1,4 +1,4 @@
-import { IniTag } from '../../lib/ini-tags.js';
+import { IniTag } from '../../localization/ini-tags.js';
 import {
   type BlueprintPoolRowDTO,
   BlueprintPoolRowSchema,
