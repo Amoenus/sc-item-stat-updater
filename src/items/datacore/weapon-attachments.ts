@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeysFromPrefixMap, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
 // ⚠️ Weapon attachment entity classes vary greatly (optic_, barrel_, under_, etc.).
 // The p4kFilter and key derivation are speculative — verify against real game files.

@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeysFromPrefixMap, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
 // ⚠️ FPS weapon entity class prefixes are highly variable (pistol_, smg_, rifle_,
 // sniper_, shotgun_, lmg_, etc.). No single prefix pattern covers all types.

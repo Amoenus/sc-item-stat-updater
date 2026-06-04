@@ -17,10 +17,10 @@ function formatTitleNote(noteText: string): string {
 function rebuildTitleValue(oldValue: string, noteText: string | undefined, note: string): string {
   const normalizedOldValue = oldValue
     .replace(
-    new RegExp(
-      String.raw`(?:\s*(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\]${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\]))+\s*$`,
-    ),
-    '',
+      new RegExp(
+        String.raw`(?:\s*(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\]${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\]))+\s*$`,
+      ),
+      '',
     )
     .trimEnd();
   return noteText ? `${normalizedOldValue}${note}` : normalizedOldValue;
