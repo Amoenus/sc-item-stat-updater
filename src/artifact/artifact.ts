@@ -10,7 +10,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { buildPatchPlanResult } from '../application/use-cases/build-patch-plan';
-import type { ItemConfig } from '../lib/types';
+import type { ItemConfig } from '../enrichment/item-config';
 import type { PatchPlan } from '../pipeline/types';
 import { ArtifactSchema, type ArtifactDTO } from '../schema/artifact.schema';
 

@@ -1,4 +1,4 @@
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 const SUFFIXLESS_TARGETS: Record<string, string> = {};
 const COMMODITY_SLUG_ALIASES: Record<string, string> = {

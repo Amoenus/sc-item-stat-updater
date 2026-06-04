@@ -1,5 +1,5 @@
 import { stat } from '../../enrichment/stat-builder';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 export default {
   csvFile: 'weaponattachment.spviewer.csv',

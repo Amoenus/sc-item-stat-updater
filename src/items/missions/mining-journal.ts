@@ -1,4 +1,4 @@
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 /** Builds the journal value from CSV rows. Returns new INI value with rarity-grouped format. */
 export function buildJournalValue(rows: Array<Record<string, string>>, oldValue: string): string {
   // Extract intro block - everything before first "\\n\\n**" (start of first rarity section)

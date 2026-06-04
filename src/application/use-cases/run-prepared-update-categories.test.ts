@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import type { UpdateCategory } from './prepare-update-categories';
 import { runPreparedUpdateCategories } from './run-prepared-update-categories';
 

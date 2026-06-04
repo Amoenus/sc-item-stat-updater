@@ -177,3 +177,22 @@ Remaining:
 - Review whether `src/lib/updater.ts`, `src/lib/types.ts`, and `src/lib/preflight.test.ts` can remain as compatibility coverage or need a final compatibility-cleanup/documentation slice.
 - Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+Item config contract slice on 2026-06-04:
+
+- Moved item enrichment config contracts from `src/lib/types.ts` to `src/enrichment/item-config.ts`.
+- Left `src/lib/types.ts` as a documented compatibility re-export for older imports.
+- Updated active application, artifact, registry, and item rule imports to use `src/enrichment/item-config`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on `src/enrichment/item-config.ts`, `src/lib/types.ts`, and active import rewrites.
+
+Remaining:
+
+- Review whether `src/lib/updater.ts`, `src/lib/updater.test.ts`, and `src/lib/preflight.test.ts` can remain as compatibility coverage or need a final compatibility-cleanup/documentation slice.
+- Decide the `src/items` narrowing/rename path in a separate explicit slice.
+- Update README/project-structure docs once enough folder cleanup has landed.

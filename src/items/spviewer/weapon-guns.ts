@@ -1,5 +1,5 @@
 import { stat } from '../../enrichment/stat-builder';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
 
 export default {

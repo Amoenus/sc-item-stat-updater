@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { findLatestMatchingDirectory } from '../../io/local/discovery';
 import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../../items/registry';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 export type UpdateProvider = 'spviewer' | 'datacore';
 

@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import { artifactToPatchPlan, generateArtifact, patchPlanToArtifactEntries } from './artifact';
 import type { Artifact } from './artifact';
 import type { LocalizationPatchPlan } from '../localization/patch-application';
-import type { ItemConfig } from '../lib/types';
+import type { ItemConfig } from '../enrichment/item-config';
 
 describe('artifact patch-plan conversion', () => {
   it('serializes patch-plan entries to the artifact entries map without application-only metadata', () => {

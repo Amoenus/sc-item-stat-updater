@@ -4,7 +4,7 @@
  * Handles keys matching `/_desc|_description/i` — strips any existing appended
  * metadata (cooldown, reward lists, notes) and rebuilds them from the CSV row.
  */
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 const GENERATED_SECTION_START_PATTERN =
   /\\n\\n(?:\*\* Contract Intel \*\*|\*\* Encounter \*\*|\*\* Hauling \*\*|Cooldown: [^\\]+|\[BP Reward\]|\[BP Chain\]|\[Item Reward\])/;

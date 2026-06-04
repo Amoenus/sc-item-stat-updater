@@ -1,5 +1,5 @@
-﻿import { readJsonRelative } from '../../io/local/json-file';
-import type { ItemConfig } from '../../lib/types';
+import { readJsonRelative } from '../../io/local/json-file';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
   string,

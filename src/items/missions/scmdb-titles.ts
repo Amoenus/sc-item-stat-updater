@@ -5,7 +5,7 @@
  * and optionally appends a TitleNote.
  */
 import { IniTag } from '../../localization/ini-tags';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 function formatTitleNote(noteText: string): string {
   if (!noteText) {

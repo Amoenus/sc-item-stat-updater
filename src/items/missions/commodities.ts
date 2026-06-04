@@ -1,6 +1,6 @@
-﻿import { findLatestMatchingFile } from '../../io/local/discovery';
+import { findLatestMatchingFile } from '../../io/local/discovery';
 import { IniTag } from '../../localization/ini-tags';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import { CommodityInputSchema, CommodityResourcePoolEntrySchema } from '../../schema/scmdb/merged/pools.schema';
 
 const ILLEGAL_COMMODITY_KEYS = new Set(

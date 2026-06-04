@@ -1,4 +1,4 @@
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 
 export type DataCoreFieldSelector =
   | string

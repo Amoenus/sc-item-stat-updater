@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { ItemConfig } from '../lib/types';
+import type { ItemConfig } from '../enrichment/item-config';
 
 const itemsDir = path.resolve(import.meta.dirname);
 const spviewerDir = path.join(itemsDir, 'spviewer');

@@ -1,5 +1,5 @@
 import { stat } from '../../enrichment/stat-builder';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import type { DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Salvage modifier entity classes use varying prefixes (smod_, scrp_, etc.)

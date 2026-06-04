@@ -1571,6 +1571,39 @@ Next agent instructions:
 4. Avoid broad `src/items` renames unless the slice has explicit acceptance and low churn.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Item config contract boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved item enrichment config contracts from `src/lib/types.ts` to `src/enrichment/item-config.ts`.
+- Left `src/lib/types.ts` as a documented compatibility re-export for older imports.
+- Updated active application, artifact, registry, and item rule imports to use `src/enrichment/item-config`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on `src/enrichment/item-config.ts`, `src/lib/types.ts`, and active import rewrites.
+
+Notes:
+
+- GitHub #96 remains open.
+- The remaining active `src/lib` dependency is `src/lib/updater.ts`, plus tests that cover compatibility behavior.
+- `src/items` still contains enrichment rule modules; narrowing or renaming that folder should remain an explicit slice.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move item config contracts`.
+2. Continue Issue 012 / GitHub #96 by reviewing the remaining `src/lib/updater.ts` compatibility layer and README/project-structure docs.
+3. Keep `runUpdate` and `buildPatchData` compatibility exports until remaining old imports are known and migrated.
+4. Decide the `src/items` narrowing/rename path separately and avoid broad churn unless clearly justified.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

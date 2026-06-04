@@ -1,5 +1,5 @@
 import { stat } from '../../enrichment/stat-builder';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
 // ⚠️ Weapon attachment entity classes vary greatly (optic_, barrel_, under_, etc.).

@@ -1,5 +1,5 @@
 import { stat } from '../../enrichment/stat-builder';
-import type { ItemConfig } from '../../lib/types';
+import type { ItemConfig } from '../../enrichment/item-config';
 import type { DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Mining laser entity class prefixes (wmn_, mlas_, wmlas_) and the p4k
