@@ -154,3 +154,25 @@ Remaining:
 
 - Keep `runUpdate` and `buildPatchData` as compatibility exports for old imports until remaining callers no longer need them.
 - Review whether Issue #87 can close after full verification, including the requested dry-run comparison coverage, or whether the old compatibility exports should be shrunk further first.
+
+Closed on 2026-06-04:
+
+- Reviewed acceptance criteria after moving `existingLineIndex` into localization application metadata.
+- Confirmed `buildUpdatePlan`, `buildPatchPlan`, and `buildPatchPlanResult` provide patch planning without writing `global.ini`.
+- Confirmed `applyPatchPlanToIniLines` applies patch plans separately to INI lines.
+- Confirmed `runUpdate` is compatibility composition over planning, application, integrity validation, and conditional writing.
+- Confirmed planner tests, patch-application tests, and existing updater compatibility tests are present.
+- Compared dry-run output from `runUpdate` and `enrichGlobalIni` on temp INI copies for `sp-weapon-guns`.
+- Compared dry-run output from `runUpdate` and `enrichGlobalIni` on temp INI copies for `mission-scmdb-descriptions`.
+
+Final verification:
+
+- `npm run typecheck`
+- `npm test`
+- Dry-run comparison matched for one SPViewer category and one SCMDB mission category.
+
+Decision:
+
+- Acceptance criteria are met.
+- GitHub #87 can be closed as completed.
+- `runUpdate` and `buildPatchData` remain compatibility exports by design until later migration slices identify and move remaining old imports.

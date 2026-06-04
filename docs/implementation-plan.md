@@ -387,6 +387,47 @@ Next agent instructions:
    - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore`
    - Optional only if generated data changes are acceptable: SCMDB mission-category dry-run comparison
 
+### 2026-06-04: Issue 003 closure verification
+
+Primary issue:
+
+- Issue 003 / GitHub #87: Split Updater Into Planning And Application
+
+Implemented:
+
+- Reviewed Issue 003/#87 acceptance after the line-index metadata slice.
+- Confirmed patch planning is available without writing through `buildUpdatePlan`, `buildPatchPlan`, and `buildPatchPlanResult`.
+- Confirmed INI application is separate through `applyPatchPlanToIniLines`.
+- Confirmed `runUpdate` remains compatibility composition over planning, application, integrity validation, and conditional writing.
+- Confirmed separate planner/application tests exist and existing updater tests pass.
+- Compared dry-run outputs from legacy compatibility `runUpdate` and application use case `enrichGlobalIni` on temp INI copies for:
+  - SPViewer category `sp-weapon-guns`
+  - SCMDB mission category `mission-scmdb-descriptions`
+- No scraped/generated data changes were included.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- Dry-run comparison: `runUpdate` vs `enrichGlobalIni` matched for `sp-weapon-guns`.
+- Dry-run comparison: `runUpdate` vs `enrichGlobalIni` matched for `mission-scmdb-descriptions`.
+
+Notes:
+
+- GitHub #87 can be closed as completed.
+- `runUpdate` and `buildPatchData` remain documented compatibility exports for old imports; their removal should happen only after remaining old callers are known and migrated.
+- Issue 005 / GitHub #89 and Issue 011 / GitHub #95 remain separate next slices.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Close updater planning/application split`.
+2. Prefer reviewing Issue 005 / GitHub #89 next because its acceptance criteria may already be met after artifact conversion and loader fixture coverage.
+3. If #89 is complete, update local docs/GitHub and close it with verification rather than changing code.
+4. Otherwise continue Issue 011 / GitHub #95 by extracting or explicitly classifying the remaining `update-all` extra steps.
+5. Do not broadly rename `src/lib` or `src/items` yet.
+6. Do not include local scraped/generated data unless explicitly requested.
+7. Continue to verify each slice with `npm run typecheck`, `npm test` unless docs-only, and touched-file Biome lint for changed source/test files.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
