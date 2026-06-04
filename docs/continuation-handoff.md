@@ -4,18 +4,19 @@ Date: 2026-06-04
 
 ## Current State
 
-- Working tree was clean before the current #99 slice except the previous #112 and #50 commits were ahead of `origin/master`.
-- Primary issue for this slice: #99, command-level no-write smoke tests.
-- #99 can be closed after the current commit because `update-all`, `update-item`, `pipeline`, and `apply-artifact` command entrypoints now have smoke coverage for help or dry-run paths with exit-code and output assertions.
+- Working tree was clean before the current #100 slice except the previous #99, #112, and #50 commits were ahead of `origin/master`.
+- Primary issue for this slice: #100, generated-data churn guard.
+- #100 can be closed after the current commit because `npm run check:no-generated-churn` detects changes under repository `csv/` and root `global.ini`, ignores fixture/temp-directory writes outside those paths, and reports changed paths clearly.
 - No generated data under `csv/` and no `global.ini` changes were made.
 
 ## Verification From Current Slice
 
 - `npm run typecheck`
 - `npm test`
-- `npx biome lint src/presentation/command-smoke.test.ts`
+- `npx biome lint src/application/use-cases/generated-data-churn-guard.ts src/application/use-cases/generated-data-churn-guard.test.ts scripts/check-generated-data-churn.ts`
 - `npm run check:architecture`
+- `npm run check:no-generated-churn`
 
 ## Recommended Next Slice
 
-Inspect #100 next. It asks for a generated-data churn guard that detects accidental `csv/` or repository `global.ini` changes after no-write verification commands.
+Inspect #101 next. It asks for actionable missing-source-data errors with provider/channel/category/path context and scrape/extract command suggestions.

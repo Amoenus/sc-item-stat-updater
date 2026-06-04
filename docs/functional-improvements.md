@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #100: Add a generated-data churn guard that detects accidental changes under `csv/` or `global.ini` after verification commands that should not write.
 - #101: Improve missing-source-data errors so they name the exact provider, channel, category, expected path, and suggested scrape/extract command.
 - #102: Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
 - #103: Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
@@ -59,10 +58,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #100 next. It complements the command smoke tests by adding an explicit generated-data churn guard for no-write verification commands.
+Inspect #101 next. It is a behavior-preserving UX slice for missing-source-data errors and can use temporary directories for focused tests.
 
 ## Completed Functional Issues
 
+- #100: Added `npm run check:no-generated-churn`, backed by a git-status guard for repository `csv/` and root `global.ini`, with tests proving fixture/temp-directory writes are ignored and generated-data changes produce clear path-specific failures.
 - #99: Command-level smoke tests now spawn `update-all`, `update-item`, and `pipeline` help paths plus an `apply-artifact --dry-run` temp fixture, asserting exit codes, user-facing output, and no INI fixture writes.
 - #112: SCMDB output contract tests now pin `legacy-contracts.csv` column ordering, assert the blueprint marker fields `isBlueprintReward`, `isBlueprintChainPrerequisite`, and `blueprintChainDepth`, and document the downstream contract in `docs/scmdb-output-contracts.md`.
 - #50: `descKeyMatch` guardrails now include representative positive/negative samples for every loadable registered item config, structured overlap detection, and dry-run overlap logging in prepared category runs with explicit INI fixtures.

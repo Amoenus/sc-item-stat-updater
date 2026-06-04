@@ -128,6 +128,14 @@ npm run typecheck
 
 Runs `tsc --noEmit` to validate TypeScript types without emitting any output files.
 
+### Generated-data churn guard
+
+```sh
+npm run check:no-generated-churn
+```
+
+Run this after dry-run, help, smoke, or other no-write verification commands. It fails if the repository `csv/` data or root `global.ini` changed, while fixture and temporary-directory writes remain outside the guard scope.
+
 ## Project structure
 
 The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Active code uses the responsibility-specific folders below.
