@@ -66,6 +66,19 @@ test('deployGlobalIni copies the repo global.ini back to the extracted game path
   assert.equal(await fs.readFile(targetIniPath, 'utf8'), 'enriched');
 });
 
+test('deployGlobalIni backs up the existing game target before copying', async () => {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploy-global-ini-'));
+  const repoIniPath = path.join(tmpDir, 'repo-global.ini');
+  const targetIniPath = path.join(tmpDir, 'game-global.ini');
+  await fs.writeFile(repoIniPath, 'enriched');
+  await fs.writeFile(targetIniPath, 'original game file');
+
+  await deployGlobalIni({ repoIniPath, targetIniPath });
+
+  assert.equal(await fs.readFile(`${targetIniPath}.backup.1`, 'utf8'), 'original game file');
+  assert.equal(await fs.readFile(targetIniPath, 'utf8'), 'enriched');
+});
+
 test('deployGlobalIni distinguishes missing repo file and deployment failures', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploy-global-ini-'));
   const repoIniPath = path.join(tmpDir, 'repo-global.ini');
@@ -74,6 +87,7 @@ test('deployGlobalIni distinguishes missing repo file and deployment failures', 
   await assert.rejects(() => deployGlobalIni({ repoIniPath, targetIniPath }), /repo file is missing/);
 
   await fs.writeFile(repoIniPath, 'enriched');
+  await fs.writeFile(targetIniPath, 'original game file');
   await assert.rejects(
     () =>
       deployGlobalIni({
@@ -85,4 +99,5 @@ test('deployGlobalIni distinguishes missing repo file and deployment failures', 
       }),
     /Failed to deploy global\.ini: target read-only/,
   );
+  assert.equal(await fs.readFile(targetIniPath, 'utf8'), 'original game file');
 });

@@ -1,9 +1,11 @@
 import fs from 'node:fs/promises';
+import { backupIniFile } from '../../localization/ini-file';
 
 export interface DeployGlobalIniOptions {
   repoIniPath: string;
   targetIniPath: string;
   copyFile?: (source: string, destination: string) => Promise<void>;
+  backupIni?: typeof backupIniFile;
 }
 
 export interface DeployGlobalIniResult {
@@ -13,6 +15,7 @@ export interface DeployGlobalIniResult {
 
 export async function deployGlobalIni(options: DeployGlobalIniOptions): Promise<DeployGlobalIniResult> {
   const copyFile = options.copyFile ?? fs.copyFile;
+  const backupIni = options.backupIni ?? backupIniFile;
 
   try {
     await fs.stat(options.repoIniPath);
@@ -22,6 +25,7 @@ export async function deployGlobalIni(options: DeployGlobalIniOptions): Promise<
   }
 
   try {
+    await backupIni(options.targetIniPath);
     await copyFile(options.repoIniPath, options.targetIniPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

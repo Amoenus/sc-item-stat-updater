@@ -44,16 +44,16 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #109: Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
 - #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
 - #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
 
 ## Recommended Next Slice
 
-Inspect #109 next. It is a backup/restore test slice for write and deploy paths; use temporary directories and fixture INI files.
+Inspect #110 next. It is a CLI discoverability slice for category/provider/source metadata; preserve existing CLI behavior while adding the new listing path.
 
 ## Completed Functional Issues
 
+- #109: Added backup coverage for write and deploy paths. `enrichGlobalIni` now has a temp-fixture test proving repository `global.ini.backup.1` is created before writes, and `deployGlobalIni` backs up an existing game target before copying; deployment failure coverage now proves the original fixture target stays intact.
 - #108: Added a large generated-in-test INI update performance budget. The test builds a controlled 2,500-row fixture with 5,000 base/plural INI updates, reports planning and application timings separately, keeps loose CI-friendly budgets, and uses only in-memory fixtures rather than real `global.ini` or generated source data.
 - #107: Added focused localization duplicate/collision coverage. Planner tests now pin duplicate base keys plus plural/gender suffix occurrences with explicit line indexes; patch-application tests prove all occurrence updates preserve actual suffixed line keys; artifact serialization tests prove duplicate occurrence line-index metadata still stays out of persisted artifact entries.
 - #106: Improved malformed artifact UX in `readArtifactFile`. Invalid JSON now reports the path, `JSON` field context, and parse problem; schema failures report the artifact path, high-level field, concise problem, and detailed schema path while preserving the Zod error as `cause`. Tests cover malformed JSON, missing `entries`, invalid `entries`, invalid issue payloads, and valid artifact readback.

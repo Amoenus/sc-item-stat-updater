@@ -50,6 +50,16 @@ test('enrichGlobalIni plans and applies updates through the application use case
   assert.equal(updatedIni, '\ufeffitem_Name=Old Name\nitem_Desc=stat: 42');
 });
 
+test('enrichGlobalIni creates a repository global.ini backup before writing', async () => {
+  const { csvDir, iniPath } = await writeFixtures();
+  const originalIni = await fs.readFile(iniPath, 'utf-8');
+
+  await enrichGlobalIni(config, { csvDir, iniPath });
+
+  assert.equal(await fs.readFile(`${iniPath}.backup.1`, 'utf-8'), originalIni);
+  assert.equal(await fs.readFile(iniPath, 'utf-8'), '\ufeffitem_Name=Old Name\nitem_Desc=stat: 42');
+});
+
 test('enrichGlobalIni dry run returns patches without writing global.ini', async () => {
   const { csvDir, iniPath } = await writeFixtures();
 
