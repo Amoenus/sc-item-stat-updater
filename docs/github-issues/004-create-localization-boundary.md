@@ -89,3 +89,22 @@ Remaining:
 
 - Move or facade `key-resolver` and localization text utilities under `src/localization`.
 - Document or remove remaining compatibility re-exports before closing GitHub #88.
+
+Key resolver boundary slice on 2026-06-04:
+
+- Moved localization key resolution from `src/lib/key-resolver.ts` to `src/localization/key-resolver.ts`.
+- Moved key-resolver tests from `src/lib/key-resolver.test.ts` to `src/localization/key-resolver.test.ts`.
+- Left `src/lib/key-resolver.ts` as a documented compatibility re-export for older imports.
+- Updated the active updater import to use `src/localization/key-resolver`.
+
+Verification:
+
+- `node --import tsx/esm --test src/localization/key-resolver.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/key-resolver.ts src/localization/key-resolver.test.ts src/lib/key-resolver.ts src/lib/updater.ts`
+
+Remaining:
+
+- Move or facade localization text utilities under `src/localization`.
+- Document or remove remaining compatibility re-exports before closing GitHub #88.

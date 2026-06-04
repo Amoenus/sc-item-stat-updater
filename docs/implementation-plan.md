@@ -1315,6 +1315,39 @@ Next agent instructions:
 4. Do not begin broad `src/lib` or `src/items` folder cleanup until #88 is closed or genuinely blocked.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Localization key resolver boundary
+
+Primary issue:
+
+- Issue 004 / GitHub #88: Create Localization Boundary
+
+Implemented:
+
+- Moved localization key resolution from `src/lib/key-resolver.ts` to `src/localization/key-resolver.ts`.
+- Moved key-resolver tests from `src/lib/key-resolver.test.ts` to `src/localization/key-resolver.test.ts`.
+- Left `src/lib/key-resolver.ts` as a documented compatibility re-export for older imports.
+- Updated the active updater import to use `src/localization/key-resolver`.
+
+Verified:
+
+- `node --import tsx/esm --test src/localization/key-resolver.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/key-resolver.ts src/localization/key-resolver.test.ts src/lib/key-resolver.ts src/lib/updater.ts`
+
+Notes:
+
+- GitHub #88 remains open.
+- Remaining localization-boundary work includes localization text utilities and final compatibility re-export review.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move key resolver to localization`.
+2. Continue Issue 004 / GitHub #88 with localization text utilities.
+3. Keep compatibility re-exports for old paths until active imports are migrated and closure review says they can be removed.
+4. Do not begin broad `src/lib` or `src/items` folder cleanup until #88 is closed or genuinely blocked.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
