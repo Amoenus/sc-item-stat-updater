@@ -50,3 +50,25 @@ Move gradually and keep compatibility re-exports if needed.
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Add or update tests for variant key preservation and BOM handling if coverage is missing.
+
+## Progress
+
+INI file boundary slice on 2026-06-04:
+
+- Moved localization-aware INI parsing/writing from `src/io/local/ini-file.ts` to `src/localization/ini-file.ts`.
+- Moved the `findIniKey` test from `src/io/local/ini-file.test.ts` to `src/localization/ini-file.test.ts`.
+- Left `src/io/local/ini-file.ts` as a documented compatibility re-export for older imports.
+- Updated active application, artifact, updater, and extra-step imports to use `src/localization/ini-file`.
+- Confirmed source acquisition modules do not import localization INI or patch-application modules.
+
+Verification:
+
+- `node --import tsx/esm --test src/localization/ini-file.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/ini-file.ts src/localization/ini-file.test.ts src/io/local/ini-file.ts src/application/use-cases/build-patch-plan.ts src/application/use-cases/enrich-global-ini.ts src/application/use-cases/run-batch-update.ts src/artifact/loader.ts src/lib/updater.ts src/lib/updates/adagio-location-tags.ts src/lib/updates/component-titles.ts src/lib/updates/fps-title-tags.ts src/lib/updates/mining-journal-update.ts src/lib/updates/missile-title-tags.ts src/lib/updates/missing-strings.ts src/lib/updates/raw-commodity-label-fixes.ts`
+
+Remaining:
+
+- Move or facade `ini-tags`, `key-resolver`, and localization text utilities under `src/localization`.
+- Document or remove remaining compatibility re-exports before closing GitHub #88.

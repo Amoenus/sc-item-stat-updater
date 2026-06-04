@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EXPERIMENTAL: Wraps ~mission(location) in <EM4> tags for Adagio salvage
  * description keys that reference a location but don't highlight it.
  *
@@ -7,7 +7,7 @@
  * matching the visual style of other mission description fields such as
  * ~mission(Destination|Address). This is unverified behaviour.
  */
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { IniTag } from '../ini-tags';
 import { getLogger } from '../logger';
 import { buildScannedUpdateResult } from './update-result';

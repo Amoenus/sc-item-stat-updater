@@ -1,6 +1,6 @@
 ﻿import { readCsvFile } from '../../io/local/csv-parser';
 import { pathExists } from '../../io/local/discovery';
-import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { resolveMissionCsvPath } from '../../io/local/path-conventions';
 import { buildJournalValue } from '../../items/missions/mining-journal';
 import { getLogger } from '../logger';

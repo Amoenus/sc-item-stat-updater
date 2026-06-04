@@ -1,4 +1,4 @@
-import type { ItemConfig } from '../../lib/types';
+﻿import type { ItemConfig } from '../../lib/types';
 import {
   buildUpdatePlan,
   findLastDescIndex,
@@ -9,7 +9,7 @@ import {
   type UpdatePlanResult,
 } from '../../lib/updater';
 import type { PatchPlan } from '../../pipeline/types';
-import { readIniFile } from '../../io/local/ini-file';
+import { readIniFile } from '../../localization/ini-file';
 
 export type BuildPatchPlanOptions = Pick<UpdateOptions, 'iniPath' | 'csvDir' | 'dryRun' | 'force'>;
 

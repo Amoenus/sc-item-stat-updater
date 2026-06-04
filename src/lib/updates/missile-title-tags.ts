@@ -1,5 +1,5 @@
 ﻿import { readCsvFile } from '../../io/local/csv-parser';
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { readJsonFile } from '../../io/local/json-file';
 import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
 import { getLogger } from '../logger';

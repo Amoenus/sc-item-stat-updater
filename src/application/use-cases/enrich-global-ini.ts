@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises';
+﻿import fs from 'node:fs/promises';
 import type { ItemConfig } from '../../lib/types';
-import { writeIniFile } from '../../io/local/ini-file';
+import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
 import { getLogger } from '../../lib/logger';
 import { resolveOptions, validateIntegrity, type UpdatePlanResult } from '../../lib/updater';

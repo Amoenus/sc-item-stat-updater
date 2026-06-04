@@ -1,5 +1,5 @@
 ﻿import { readCsvFile } from '../../io/local/csv-parser';
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { getLogger } from '../logger';
 import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils';
 import {

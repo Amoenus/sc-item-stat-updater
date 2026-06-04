@@ -1248,6 +1248,41 @@ Notes:
 - GitHub #85 is closed.
 - Continue with Issue 004 / GitHub #88 localization-boundary review before broad folder cleanup.
 
+### 2026-06-04: Localization INI file boundary
+
+Primary issue:
+
+- Issue 004 / GitHub #88: Create Localization Boundary
+
+Implemented:
+
+- Moved localization-aware INI parsing/writing from `src/io/local/ini-file.ts` to `src/localization/ini-file.ts`.
+- Moved the `findIniKey` test from `src/io/local/ini-file.test.ts` to `src/localization/ini-file.test.ts`.
+- Left `src/io/local/ini-file.ts` as a documented compatibility re-export for older imports.
+- Updated active application, artifact, updater, and extra-step imports to use `src/localization/ini-file`.
+- Confirmed source acquisition modules do not import localization INI or patch-application modules.
+
+Verified:
+
+- `node --import tsx/esm --test src/localization/ini-file.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/ini-file.ts src/localization/ini-file.test.ts src/io/local/ini-file.ts src/application/use-cases/build-patch-plan.ts src/application/use-cases/enrich-global-ini.ts src/application/use-cases/run-batch-update.ts src/artifact/loader.ts src/lib/updater.ts src/lib/updates/adagio-location-tags.ts src/lib/updates/component-titles.ts src/lib/updates/fps-title-tags.ts src/lib/updates/mining-journal-update.ts src/lib/updates/missile-title-tags.ts src/lib/updates/missing-strings.ts src/lib/updates/raw-commodity-label-fixes.ts`
+
+Notes:
+
+- GitHub #88 remains open.
+- Remaining localization-boundary work includes `ini-tags`, `key-resolver`, and localization text utilities.
+- Keep compatibility re-exports documented until all old imports are known and migrated.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move INI file helpers to localization`.
+2. Continue Issue 004 / GitHub #88 with one localization-aware module at a time.
+3. Prefer `ini-tags` or `key-resolver` next because both are explicitly named in the #88 proposed moves.
+4. Do not begin broad `src/lib` or `src/items` folder cleanup until #88 is closed or genuinely blocked.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

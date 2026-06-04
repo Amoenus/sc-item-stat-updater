@@ -1,5 +1,5 @@
 ﻿import fs from 'node:fs/promises';
-import { readIniFile, writeIniFileIfChanged } from '../../io/local/ini-file';
+import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { getLogger } from '../logger';
 import { buildScannedUpdateResult } from './update-result';
 

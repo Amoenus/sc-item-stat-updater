@@ -1,5 +1,5 @@
-import path from 'node:path';
-import { backupIniFile } from '../../io/local/ini-file';
+﻿import path from 'node:path';
+import { backupIniFile } from '../../localization/ini-file';
 import { preflightCheckConfigs } from '../../lib/updater';
 import { regenMiningLocations } from '../../sources/scmdb/mining-locations';
 import {

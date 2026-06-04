@@ -1,7 +1,7 @@
 ﻿import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readCsvFile } from '../io/local/csv-parser';
-import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
+import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
 import { readJsonFile } from '../io/local/json-file';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
 import { resolveChildPath } from '../io/local/path-conventions';
@@ -589,7 +589,7 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
 
 /**
  * Runs the Extract+Transform phase for one item config and returns a patch manifest
- * (key→value pairs) without writing to global.ini. This compatibility API is
+ * (key?value pairs) without writing to global.ini. This compatibility API is
  * retained for old callers; new planning callers should use the PatchPlan APIs.
  */
 export async function buildPatchData(config: ItemConfig, options: UpdateOptions = {}) {

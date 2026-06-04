@@ -3,14 +3,14 @@
  *
  * Applies a pre-generated patch artifact (the output of generateArtifact / the
  * CI/CD pipeline) to the user's local global.ini.  This is the "Load" half of
- * the Extract → Transform → Load pipeline; it has no knowledge of upstream APIs
+ * the Extract ? Transform ? Load pipeline; it has no knowledge of upstream APIs
  * or item configs.
  *
  * In Phase 2 this logic will run entirely in the browser using the HTML5 File
  * API instead of Node fs — the interface is intentionally kept generic.
  */
 
-import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
+import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
 import { getLogger } from '../lib/logger';
 import { validateIntegrity } from '../lib/updater';
 
