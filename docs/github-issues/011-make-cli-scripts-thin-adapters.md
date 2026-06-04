@@ -97,3 +97,24 @@ Remaining:
 
 - Move scraper acquisition/normalization behavior behind source modules.
 - Smoke test CLI help/commands as the script boundary settles.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/version-selection.ts`.
+- Moved SCMDB LIVE/PTU classification and version selection out of `bin/scrape-scmdb.ts`.
+- Kept CLI argument parsing, help output, user-facing messages, and process exits in the scraper script.
+- Added focused source-module tests for explicit version selection, PTU selection, default LIVE selection, fallback behavior, and missing-version errors.
+- Smoke-tested `node --import tsx/esm bin/scrape-scmdb.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/version-selection.ts src/sources/scmdb/version-selection.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Continue moving SCMDB scraper acquisition/normalization behavior behind `src/sources/scmdb`.
+- Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.

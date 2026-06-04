@@ -26,6 +26,7 @@ import {
   ScmdbMiningDataSchema,
   ScmdbVersionsSchema,
 } from '../src/schema/scmdb.schemas';
+import { selectScmdbVersion, type ScmdbVersionEntry } from '../src/sources/scmdb/version-selection';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
@@ -83,37 +84,15 @@ function writeMissionOutput(fileName: string, content: string): void {
   console.log(`Saved missions/${fileName}`);
 }
 
-export function isLiveVersion(version: string): boolean {
-  return /\blive\b/i.test(version) || /-live\./i.test(version);
-}
-
-export function isPtuVersion(version: string): boolean {
-  return /\bptu\b/i.test(version) || /-ptu\./i.test(version);
-}
-
-type VersionEntry = { version: string; file: string };
-
-function selectVersion(args: string[], versions: VersionEntry[]): VersionEntry {
+function getVersionSelection(args: string[]): { version?: string; ptu: boolean } {
   const versionArgIndex = args.indexOf('--version');
-  const ptu = args.includes('--ptu');
-
   if (versionArgIndex !== -1) {
     const requested = args[versionArgIndex + 1];
     if (!requested) throw new Error('--version requires a value');
-    const found = versions.find((entry) => entry.version === requested);
-    if (!found) throw new Error(`Version not found: ${requested}`);
-    return found;
+    return { version: requested, ptu: args.includes('--ptu') };
   }
 
-  if (ptu) {
-    const found = versions.find((entry) => isPtuVersion(entry.version));
-    if (!found) throw new Error('No PTU SCMDB version available');
-    return found;
-  }
-
-  const liveVersion = versions.find((entry) => isLiveVersion(entry.version)) ?? versions[0];
-  if (!liveVersion) throw new Error('No SCMDB versions available');
-  return liveVersion;
+  return { ptu: args.includes('--ptu') };
 }
 
 function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.parse>): void {
@@ -159,7 +138,7 @@ function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.par
   }
 }
 
-function printVersions(versions: VersionEntry[]): void {
+function printVersions(versions: ScmdbVersionEntry[]): void {
   console.log('Available SCMDB versions:');
   for (const entry of versions) {
     console.log(`  ${entry.version} -> ${entry.file}`);
@@ -187,7 +166,7 @@ async function main() {
     process.exit(0);
   }
 
-  const selected = selectVersion(args, versions);
+  const selected = selectScmdbVersion(versions, getVersionSelection(args));
 
   console.log(`Using SCMDB version ${selected.version}`);
 

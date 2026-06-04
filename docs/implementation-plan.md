@@ -512,6 +512,52 @@ Next agent instructions:
 5. Do not broadly rename folders until source/acquisition behavior has stable homes.
 6. Do not include scraped/generated data unless explicitly requested.
 
+### 2026-06-04: SCMDB version selection source module
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Secondary impact:
+
+- Issue 009 / GitHub #93: Move SCMDB Source Modules
+
+Implemented:
+
+- Added `src/sources/scmdb/version-selection.ts`.
+- Moved SCMDB version/channel classification and selection out of `bin/scrape-scmdb.ts`.
+- Kept CLI argument parsing, help output, user-facing messages, and process exits in `bin/scrape-scmdb.ts`.
+- Added focused tests for:
+  - LIVE/PTU version classification
+  - explicit `--version` selection
+  - PTU selection
+  - default LIVE selection
+  - default fallback when no LIVE entry exists
+  - clear missing-version/no-version errors
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/version-selection.ts src/sources/scmdb/version-selection.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open.
+- Issue 009 / GitHub #93 remains open; this is only the first SCMDB source-boundary slice.
+- Existing scraper command names and output locations are unchanged.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move SCMDB version selection to source module`.
+2. Continue Issue 009 / GitHub #93 or Issue 011 / GitHub #95 by moving another small SCMDB scraper responsibility behind `src/sources/scmdb`.
+3. Good next candidates: SCMDB fetch/validate helpers, raw output planning, or pure row-output assembly helpers.
+4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
+5. Keep CLI parse args, console output, and process exits in `bin/scrape-scmdb.ts`.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

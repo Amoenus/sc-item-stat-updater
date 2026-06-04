@@ -57,3 +57,27 @@ src/enrichment/
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Run `npm run scrape:scmdb -- --list-versions` if network access is expected for the environment.
+
+## Progress
+
+2026-06-04:
+
+- Added the first SCMDB source module at `src/sources/scmdb/version-selection.ts`.
+- Moved SCMDB LIVE/PTU classification and version selection out of `bin/scrape-scmdb.ts`.
+- Kept CLI argument parsing, help output, user-facing messages, and process exits in the scraper script.
+- Added focused tests for explicit version selection, PTU selection, default LIVE selection, fallback behavior, and missing-version errors.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/version-selection.ts src/sources/scmdb/version-selection.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Move SCMDB fetch/validate behavior into a source/acquisition boundary.
+- Move SCMDB row-output assembly toward source transforms or compatibility adapters.
+- Keep mission/mining/commodity enrichment planning separate from source acquisition/normalization.
