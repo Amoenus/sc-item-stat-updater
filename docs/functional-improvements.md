@@ -22,12 +22,6 @@ Current intentional compatibility:
 
 ## Tracked Functional Backlog
 
-### #48: Parallel SPViewer CSV Lookup Loading
-
-Priority: Low-Medium
-
-`buildLookupFromCsvFiles` should read independent SPViewer CSV inputs in parallel. The old issue text references the former `src/lib/updates/lookup-utils.ts` path; the implemented path is now `src/enrichment/updates/lookup-utils.ts`.
-
 ### #52: OpenTelemetry Audit
 
 Priority: Low
@@ -42,10 +36,11 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 ## Recommended Next Slice
 
-Inspect #48 next. It is a low-medium priority performance/IO slice for parallel SPViewer CSV lookup loading in `src/enrichment/updates/lookup-utils.ts`.
+Inspect #52 next. It is a low-priority dependency audit to determine whether OpenTelemetry is still needed for real tracing/export or only local CLI logging.
 
 ## Completed Functional Issues
 
+- #48: Added focused regression coverage for parallel SPViewer lookup loading in `buildLookupFromCsvFiles`. The tests prove independent CSV loaders are all started before earlier reads resolve and that duplicate-key merge precedence still follows filename order.
 - #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy/fallback coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
 - #110: Added `update-item --list-categories` for category discovery. The output distinguishes SPViewer, DataCore, SCMDB, and mixed-source batch modes; includes required CSV/JSON source file names or dynamic-source hints; and reports LIVE/PTU source-root expectations. Tests cover representative SPViewer, DataCore, SCMDB, dynamic JSON, and mixed-source output.
 - #109: Added backup coverage for write and deploy paths. `enrichGlobalIni` now has a temp-fixture test proving repository `global.ini.backup.1` is created before writes, and `deployGlobalIni` backs up an existing game target before copying; deployment failure coverage now proves the original fixture target stays intact.
