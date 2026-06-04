@@ -401,3 +401,34 @@ Remaining for #95:
   - `bin/scrape-datacore.ts --all`
   - `bin/scrape-spviewer.ts --all`
 - Add callable application/source entry points for those scraper orchestration paths or document a deliberate boundary if those scrape commands should remain subprocesses.
+
+DataCore pipeline scrape progress on 2026-06-04:
+
+- Added `src/application/use-cases/run-datacore-scrape.ts`.
+- Moved DataCore scraper orchestration into a callable use case:
+  - DataCore type loading
+  - LIVE/PTU version and cache path resolution
+  - DCB discovery
+  - unp4k/unforge tool readiness
+  - XML cache hit/extraction decisions
+  - per-type XML parsing and CSV content generation
+  - structured per-type result/error reporting
+- Updated `bin/scrape-datacore.ts` to keep CLI parsing, help/list output, progress rendering, user-facing cache/tool/output messages, and exit handling while delegating scrape execution to `runDatacoreScrape`.
+- Updated `runFullPipeline` to call `runDatacoreScrape` in process for the DataCore scrape step instead of shelling out to `bin/scrape-datacore.ts --all`.
+- Added tests for cached XML dry-run parsing, missing-cache extraction callbacks, force-extract cache clearing metadata, unknown type validation before local game access, and in-process DataCore pipeline execution.
+- Did not run real DataCore extraction or write generated XML/CSV data.
+
+Verification:
+
+- `node --import tsx/esm --test src/application/use-cases/run-datacore-scrape.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/application/use-cases/run-datacore-scrape.ts src/application/use-cases/run-datacore-scrape.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+- `node --import tsx/esm bin/pipeline.ts --help`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open because `runFullPipeline` still shells out through `spawnSync` for the SPViewer scrape step:
+  - `bin/scrape-spviewer.ts --all`
+- The next #95 slice should target SPViewer pipeline orchestration or explicitly document why the legacy browser-backed scrape must remain a subprocess boundary.

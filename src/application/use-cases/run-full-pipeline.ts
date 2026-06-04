@@ -3,6 +3,7 @@ import path from 'node:path';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
+import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
 
 export interface RunFullPipelineOptions {
@@ -16,6 +17,7 @@ export interface RunFullPipelineOptions {
   onStepComplete?: (summary: string) => void;
   runScript?: (scriptArgs: string[]) => number;
   runUpdate?: typeof runBatchUpdate;
+  runDatacore?: typeof runDatacoreScrape;
   runScmdb?: typeof runScmdbScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
@@ -42,6 +44,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const repoIniPath = path.join(options.rootDir, 'global.ini');
 
   const runUpdate = options.runUpdate ?? runBatchUpdate;
+  const runDatacore = options.runDatacore ?? runDatacoreScrape;
   const runScmdb = options.runScmdb ?? runScmdbScrape;
   const refresh = options.refresh ?? refreshGlobalIni;
   const deploy = options.deploy ?? deployGlobalIni;
@@ -56,8 +59,11 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     options.onStepComplete?.('SCMDB scraped');
 
     log('=== Step 2b: Scraping Datacore ===');
-    const exitCode = runScript(['bin/scrape-datacore.ts', '--all']);
-    if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
+    const datacoreResult = await runDatacore({
+      repoRoot: options.rootDir,
+      ptu: options.ptu,
+    });
+    if (datacoreResult.exitCode !== 0) return { exitCode: datacoreResult.exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('Datacore scraped');
   } else if (options.scrape) {
     log('=== Step 2: Scraping SCMDB ===');

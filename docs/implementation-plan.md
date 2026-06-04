@@ -1122,6 +1122,51 @@ Next agent instructions:
 4. Avoid DataCore extraction commands that write generated XML/CSV unless explicitly requested.
 5. Keep CLI parse args, progress, user-facing output, file-write messages, and process exits in `bin/*.ts`.
 
+### 2026-06-04: Pipeline DataCore scrape runs in process
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/run-datacore-scrape.ts`.
+- Moved DataCore scraper orchestration into a callable use case:
+  - DataCore type loading
+  - LIVE/PTU version and cache path resolution
+  - DCB discovery
+  - unp4k/unforge tool readiness
+  - XML cache hit/extraction decisions
+  - per-type XML parsing and CSV content generation
+  - structured per-type result/error reporting
+- Updated `bin/scrape-datacore.ts` to keep CLI parsing, help/list output, progress rendering, user-facing cache/tool/output messages, and exit handling while delegating scrape execution to `runDatacoreScrape`.
+- Updated `runFullPipeline` to call `runDatacoreScrape` in process for the DataCore scrape step instead of shelling out to `bin/scrape-datacore.ts --all`.
+- Added tests for cached XML dry-run parsing, missing-cache extraction callbacks, force-extract cache clearing metadata, unknown type validation before local game access, and in-process DataCore pipeline execution.
+- Did not run real DataCore extraction or write generated XML/CSV data.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/run-datacore-scrape.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/application/use-cases/run-datacore-scrape.ts src/application/use-cases/run-datacore-scrape.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+- `node --import tsx/esm bin/pipeline.ts --help`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open because `runFullPipeline` still shells out through `spawnSync` for the SPViewer scrape step:
+  - `bin/scrape-spviewer.ts --all`
+- The next #95 slice should target SPViewer pipeline orchestration or explicitly document why the legacy browser-backed scrape must remain a subprocess boundary.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Run pipeline DataCore scrape in process`.
+2. Continue Issue 011 / GitHub #95 by reviewing the remaining SPViewer pipeline shellout.
+3. Keep `bin/scrape-spviewer.ts` responsible for browser-facing CLI output, parse args, progress, file-write messages, and process exits unless a callable result shape can preserve behavior cleanly.
+4. Avoid browser scraping or generated SPViewer CSV/JSON churn unless explicitly requested.
+5. Reassess GitHub #95 closure only after the SPViewer boundary is settled and final CLI smoke coverage passes.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
