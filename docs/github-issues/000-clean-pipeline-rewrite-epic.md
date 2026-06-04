@@ -62,6 +62,32 @@ Incrementally migrate the project to the Clean Pipeline Architecture accepted in
 - `npm test` passes.
 - The full local pipeline still supports extracting fresh `global.ini`, enriching it, updating the repo copy, and deploying it back to the game folder.
 
+## Closure Review
+
+Closed on 2026-06-04 after completing child issues 001-013 / GitHub #85-#97.
+
+Implemented:
+
+- Core pipeline contracts, source dataset contracts, patch plans, and update issue types.
+- Application use cases for full pipeline orchestration, batch updates, prepared category execution, patch planning, enrichment, source scraping, extraction, and deployment.
+- Localization boundary for INI parsing/application, key resolution, text helpers, and application-only line-index metadata.
+- Artifact alignment with patch-plan projection and no serialized localization application metadata.
+- Source boundaries for DataCore, SCMDB, and legacy/fallback SPViewer.
+- CLI thinning, folder cleanup, compatibility-layer documentation, and architecture guardrails.
+
+Verification:
+
+- `npm run check:architecture`
+- `npm run typecheck`
+- `npm test`
+- Touched-file `npx biome lint` per slice
+
+Notes:
+
+- No generated/scraped data changes were committed during closure.
+- `src/lib/updater.ts` remains intentional compatibility glue for older `runUpdate` and `buildPatchData` imports.
+- Follow-up issues #54, #55, #50, #52, #51, and #48 remain valid non-epic work.
+
 ## Progress
 
 2026-06-04:

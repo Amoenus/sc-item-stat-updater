@@ -1679,6 +1679,37 @@ Next agent instructions:
 3. Close #97 only if the acceptance criteria are met.
 4. Avoid generated/scraped data churn.
 
+### 2026-06-04: Clean Pipeline Rewrite epic closure
+
+Primary issue:
+
+- GitHub #84 / Issue 000: Clean Pipeline Rewrite Epic
+
+Closure review:
+
+- All child migration issues #85-#97 are closed.
+- README and architecture docs match the implemented folder structure.
+- `npm run check:architecture`, `npm run typecheck`, and `npm test` passed in the final guardrail slice.
+- Existing npm scripts remain present, including extraction, update, pipeline, scraping, and deployment-oriented pipeline commands.
+- `src/lib/updater.ts` remains intentional compatibility glue for older `runUpdate` and `buildPatchData` imports.
+- No generated/scraped data changes were committed during closure.
+
+Remaining non-epic follow-up work:
+
+- #54 pipeline integration fixture test.
+- #55 key-resolver edge-case tests.
+- #50 `descKeyMatch` contract coverage.
+- #52 OpenTelemetry audit.
+- #51 Puppeteer dependency review.
+- #48 SPViewer CSV lookup performance.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Close clean pipeline epic`.
+2. Pick the next open non-epic issue only after inspecting its acceptance criteria.
+3. Keep generated/scraped data out of commits unless explicitly requested.
+4. Continue using small verified commits.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
