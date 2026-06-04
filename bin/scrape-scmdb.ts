@@ -3,21 +3,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  buildMiningElementRows,
-  buildMiningJournalRows,
-  buildMiningLocationRows,
-} from '../src/extractor/mining-parser';
-
-import {
-  buildBlueprintPoolRows,
-  buildContractBlueprintRows,
-  buildContractRow,
-  buildFactionRewardsContext,
-  buildMissionRows,
-  collectBlueprintChainData,
-  toContractRowSource,
-  toLegacyContractRowSource,
-} from '../src/extractor/mission-parser';
+  buildScmdbOutputRows,
+  SCMDB_BLUEPRINT_POOL_HEADERS,
+  SCMDB_CONTRACT_BLUEPRINT_HEADERS,
+  SCMDB_CONTRACT_HEADERS,
+  SCMDB_MINING_ELEMENT_HEADERS,
+  SCMDB_MINING_JOURNAL_HEADERS,
+  SCMDB_MINING_LOCATION_HEADERS,
+  SCMDB_MISSION_HEADERS,
+} from '../src/sources/scmdb/outputs';
 import { toCsv } from '../src/lib/csv';
 import {
   ScmdbCraftingBlueprintsSchema,
@@ -82,49 +76,6 @@ function getVersionSelection(args: string[]): { version?: string; ptu: boolean }
   }
 
   return { ptu: args.includes('--ptu') };
-}
-
-function writeMiningData(miningData: ReturnType<typeof ScmdbMiningDataSchema.parse>): void {
-  const elements = buildMiningElementRows(miningData);
-  if (elements.length) {
-    writeOutput(
-      'mining-elements.csv',
-      toCsv(elements, [
-        'Element Name',
-        'Rarity',
-        'Ground Scan Signature',
-        'FPS Scan Signature',
-        'Scan Signature',
-        'Resistance',
-        'Instability',
-        'Density',
-        'Optimal Window Midpoint',
-        'Optimal Window Randomness',
-        'Optimal Window Thinness',
-        'Explosion Multiplier',
-        'Cluster Factor',
-        'Quality Bands',
-        'Material Name',
-        'Mining Difficulty',
-        'Volatility Note',
-        'Cluster Note',
-        'Best Refinery',
-      ]),
-    );
-  }
-
-  const journal = buildMiningJournalRows(miningData);
-  if (journal.length) {
-    writeOutput('mining-journal.csv', toCsv(journal, ['Rarity Category', 'Element List', 'Insight Summary']));
-  }
-
-  const locRows = buildMiningLocationRows(miningData);
-  if (locRows.length) {
-    writeOutput(
-      'mining-locations.csv',
-      toCsv(locRows, ['Location Name', 'Ship Mineables', 'Hand Mineables', 'Ground Vehicle Mineables', 'Quality Note']),
-    );
-  }
 }
 
 function printVersions(versions: ScmdbVersionEntry[]): void {
@@ -195,178 +146,40 @@ async function main() {
   if (craftingItemsRaw) ScmdbCraftingItemsSchema.parse(craftingItemsRaw);
   if (craftingBlueprintsRaw) ScmdbCraftingBlueprintsSchema.parse(craftingBlueprintsRaw);
 
-  const chainData = collectBlueprintChainData(mergedData.contracts);
-  const factionRewardsContext = buildFactionRewardsContext(
-    mergedData.factionRewardsPools,
-    mergedData.factions,
-    mergedData.contracts,
-  );
-  const contractRows = mergedData.contracts.map((c) =>
-    buildContractRow(toContractRowSource(c), chainData, factionRewardsContext),
-  );
-  const legacyRows = mergedData.legacyContracts.map((c) =>
-    buildContractRow(toLegacyContractRowSource(c), chainData, factionRewardsContext),
-  );
-  const missionRows = buildMissionRows(mergedData.contracts, chainData, mergedData.blueprintPools, mergedData);
-  const blueprintPoolRows = buildBlueprintPoolRows(mergedData.blueprintPools);
-  const contractBlueprintRows = buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools);
+  const outputRows = buildScmdbOutputRows(mergedData, miningData);
 
-  if (missionRows.length) {
-    writeMissionOutput(
-      'scmdb-missions.csv',
-      toCsv(missionRows, [
-        'Localization Key',
-        'Description',
-        'TitleNote',
-        'Note',
-        'ContractIntel',
-        'EncounterSummary',
-        'HaulingSummary',
-        'RewardList',
-        'ItemRewardList',
-        'Cooldown',
-      ]),
-    );
+  if (outputRows.missionRows.length) {
+    writeMissionOutput('scmdb-missions.csv', toCsv(outputRows.missionRows, SCMDB_MISSION_HEADERS));
   }
 
-  if (contractRows.length) {
-    const headers = [
-      'id',
-      'debugName',
-      'category',
-      'missionType',
-      'missionTypeKey',
-      'title',
-      'titleKey',
-      'description',
-      'descriptionKey',
-      'descriptionLocKey',
-      'rewardUEC',
-      'timeToComplete',
-      'canBeShared',
-      'illegal',
-      'factionGuid',
-      'locations',
-      'destinations',
-      'prerequisites',
-      'tokenSubstitutions',
-      'minStanding',
-      'maxStanding',
-      'blueprintRewards',
-      'isBlueprintReward',
-      'isBlueprintChainPrerequisite',
-      'blueprintChainDepth',
-      'personalCooldownTime',
-      'rewardRepCalculated',
-      'factionRewards',
-      'factionRewardsRaw',
-      'shipEncounters',
-      'haulingOrders',
-      'itemRewards',
-      'completionTags',
-      'pyroRegion',
-      'buyIn',
-      'onceOnly',
-      'maxPlayersPerInstance',
-      'availableInPrison',
-      'canReacceptAfterAbandoning',
-      'canReacceptAfterFailing',
-      'hasPersonalCooldown',
-      'abandonedCooldownTime',
-      'hideInMobiGlas',
-      'systems',
-      'factionRewards_fail',
-      'requiredScenarios',
-      'isIntro',
-      'requiredIntros',
-      'linkedIntros',
-      'pickupCount',
-      'deliveryCount',
-      'propertyValues',
-    ];
-    writeOutput('contracts.csv', toCsv(contractRows, headers));
+  if (outputRows.contractRows.length) {
+    writeOutput('contracts.csv', toCsv(outputRows.contractRows, SCMDB_CONTRACT_HEADERS));
   }
 
-  if (legacyRows.length) {
-    const headers = [
-      'id',
-      'debugName',
-      'category',
-      'missionType',
-      'missionTypeKey',
-      'title',
-      'titleKey',
-      'description',
-      'descriptionKey',
-      'descriptionLocKey',
-      'rewardUEC',
-      'timeToComplete',
-      'canBeShared',
-      'illegal',
-      'factionGuid',
-      'locations',
-      'destinations',
-      'prerequisites',
-      'tokenSubstitutions',
-      'minStanding',
-      'maxStanding',
-      'blueprintRewards',
-      'isBlueprintReward',
-      'isBlueprintChainPrerequisite',
-      'blueprintChainDepth',
-      'personalCooldownTime',
-      'rewardRepCalculated',
-      'factionRewards',
-      'factionRewardsRaw',
-      'shipEncounters',
-      'haulingOrders',
-      'itemRewards',
-      'completionTags',
-      'pyroRegion',
-      'buyIn',
-      'onceOnly',
-      'maxPlayersPerInstance',
-      'availableInPrison',
-      'canReacceptAfterAbandoning',
-      'canReacceptAfterFailing',
-      'hasPersonalCooldown',
-      'abandonedCooldownTime',
-      'hideInMobiGlas',
-      'systems',
-      'factionRewards_fail',
-      'requiredScenarios',
-      'isIntro',
-      'requiredIntros',
-      'linkedIntros',
-      'pickupCount',
-      'deliveryCount',
-      'propertyValues',
-    ];
-    writeOutput('legacy-contracts.csv', toCsv(legacyRows, headers));
+  if (outputRows.legacyRows.length) {
+    writeOutput('legacy-contracts.csv', toCsv(outputRows.legacyRows, SCMDB_CONTRACT_HEADERS));
   }
 
-  if (blueprintPoolRows.length) {
-    writeOutput('blueprint-pools.csv', toCsv(blueprintPoolRows, ['id', 'name', 'source', 'blueprints']));
+  if (outputRows.blueprintPoolRows.length) {
+    writeOutput('blueprint-pools.csv', toCsv(outputRows.blueprintPoolRows, SCMDB_BLUEPRINT_POOL_HEADERS));
   }
 
-  if (miningData) {
-    writeMiningData(miningData);
+  if (outputRows.miningElementRows.length) {
+    writeOutput('mining-elements.csv', toCsv(outputRows.miningElementRows, SCMDB_MINING_ELEMENT_HEADERS));
   }
 
-  if (contractBlueprintRows.length) {
+  if (outputRows.miningJournalRows.length) {
+    writeOutput('mining-journal.csv', toCsv(outputRows.miningJournalRows, SCMDB_MINING_JOURNAL_HEADERS));
+  }
+
+  if (outputRows.miningLocationRows.length) {
+    writeOutput('mining-locations.csv', toCsv(outputRows.miningLocationRows, SCMDB_MINING_LOCATION_HEADERS));
+  }
+
+  if (outputRows.contractBlueprintRows.length) {
     writeOutput(
       'contract-blueprint-rewards.csv',
-      toCsv(contractBlueprintRows, [
-        'contractId',
-        'debugName',
-        'title',
-        'blueprintPoolId',
-        'poolName',
-        'chance',
-        'trigger',
-        'blueprintSource',
-        'blueprintItems',
-      ]),
+      toCsv(outputRows.contractBlueprintRows, SCMDB_CONTRACT_BLUEPRINT_HEADERS),
     );
   }
 

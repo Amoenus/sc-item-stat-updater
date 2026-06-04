@@ -103,3 +103,25 @@ Remaining:
 
 - Move SCMDB row-output assembly toward source transforms or compatibility adapters.
 - Keep mission/mining/commodity enrichment planning separate from source acquisition/normalization.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/outputs.ts`.
+- Moved SCMDB CSV header contracts and pure row-group assembly out of `bin/scrape-scmdb.ts`.
+- Added `buildScmdbOutputRows` to assemble mission, contract, legacy contract, blueprint pool, contract blueprint, mining element, mining journal, and mining location row groups from parsed SCMDB data.
+- Updated `bin/scrape-scmdb.ts` to delegate source row assembly to `buildScmdbOutputRows` and keep only output writing decisions.
+- Added tests for empty SCMDB row groups, mining output groups, and exported CSV header contracts.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/outputs.ts src/sources/scmdb/outputs.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Move SCMDB output file planning or schema compatibility adapters behind `src/sources/scmdb`.
+- Decide when to relocate or compatibility-export `src/extractor/mining-parser.ts` and `src/extractor/mission-parser.ts` under the SCMDB source boundary.

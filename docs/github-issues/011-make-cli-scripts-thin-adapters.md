@@ -139,3 +139,23 @@ Remaining:
 
 - Continue moving SCMDB row assembly/output planning behind source modules.
 - Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/outputs.ts`.
+- Moved SCMDB CSV header contracts and pure row-group assembly out of `bin/scrape-scmdb.ts`.
+- Updated the scraper script to delegate source row assembly to `buildScmdbOutputRows` while keeping output writing, user-facing messages, args, and exits in the script.
+- Smoke-tested `node --import tsx/esm bin/scrape-scmdb.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/outputs.ts src/sources/scmdb/outputs.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Continue moving SCMDB output planning behind source modules.
+- Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
