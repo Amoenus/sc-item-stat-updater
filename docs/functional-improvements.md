@@ -22,12 +22,6 @@ Current intentional compatibility:
 
 ## Tracked Functional Backlog
 
-### #52: OpenTelemetry Audit
-
-Priority: Low
-
-Identify whether OpenTelemetry packages are used for real tracing/export or only local CLI logging. If they are only local logging support, replace or remove them; if tracing is intentional, document the destination and purpose.
-
 ### #51: Puppeteer Dependency Review
 
 Priority: Low
@@ -36,10 +30,11 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 ## Recommended Next Slice
 
-Inspect #52 next. It is a low-priority dependency audit to determine whether OpenTelemetry is still needed for real tracing/export or only local CLI logging.
+Inspect #51 next. It is a low-priority dependency review for isolating or making optional the Puppeteer scraper dependency.
 
 ## Completed Functional Issues
 
+- #52: Audited OpenTelemetry usage and removed it. The packages were only used by the local stderr logger with no trace, metrics, OTLP, Jaeger, or collector destination, so `src/infrastructure/logger.ts` now implements the existing text/JSON CLI logging behavior directly and `package.json`/lockfile no longer include `@opentelemetry/*`.
 - #48: Added focused regression coverage for parallel SPViewer lookup loading in `buildLookupFromCsvFiles`. The tests prove independent CSV loaders are all started before earlier reads resolve and that duplicate-key merge precedence still follows filename order.
 - #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy/fallback coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
 - #110: Added `update-item --list-categories` for category discovery. The output distinguishes SPViewer, DataCore, SCMDB, and mixed-source batch modes; includes required CSV/JSON source file names or dynamic-source hints; and reports LIVE/PTU source-root expectations. Tests cover representative SPViewer, DataCore, SCMDB, dynamic JSON, and mixed-source output.
