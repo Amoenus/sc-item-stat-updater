@@ -5,8 +5,7 @@ import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
 import { readJsonFile } from '../io/local/json-file';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
 import { resolveChildPath } from '../io/local/path-conventions';
-import { applyPatchPlanToIniLines } from '../localization/patch-application';
-import type { PatchPlan } from '../pipeline/types';
+import { applyPatchPlanToIniLines, type LocalizationPatchPlan } from '../localization/patch-application';
 import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
@@ -64,7 +63,7 @@ interface UpdateStats {
 
 export interface UpdatePlanResult extends UpdateStats {
   label: string;
-  plan: PatchPlan;
+  plan: LocalizationPatchPlan;
   newLines: string[];
 }
 
@@ -337,7 +336,7 @@ class PlanningContext {
   lowerCaseIndex: Map<string, string>;
   allOccurrences: Map<string, number[]>;
   updatedKeys: Set<string>;
-  plan: PatchPlan;
+  plan: LocalizationPatchPlan;
   newLines: string[];
   issues: IssueRecord[];
   updatedCount: number;

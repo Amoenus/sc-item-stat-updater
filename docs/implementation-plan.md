@@ -337,6 +337,56 @@ Next agent instructions:
    - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore`
    - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore --emit-artifact <temp path>`
 
+### 2026-06-04: Localization application owns line-index metadata
+
+Primary issue:
+
+- Issue 003 / GitHub #87: Split Updater Into Planning And Application
+
+Secondary impact:
+
+- Issue 005 / GitHub #89: Align Artifacts With Patch Plans
+
+Implemented:
+
+- Removed `existingLineIndex` from the core `PatchEntry` type in `src/pipeline/types.ts`.
+- Added `LocalizationPatchEntry` and `LocalizationPatchPlan` in `src/localization/patch-application.ts` as the application-only type home for duplicate/suffixed-key line-index metadata.
+- Kept `buildPatchPlan` returning the clean core `PatchPlan` for new planning flows.
+- Kept `buildPatchPlanResult`, `runUpdate`, and `buildPatchData` able to carry localization application metadata internally so current INI duplicate and suffix behavior is unchanged.
+- Updated artifact comments, schema comments, architecture docs, and local issue notes to describe `existingLineIndex` as localization application metadata rather than core patch-plan or artifact data.
+- Did not rename `src/lib` or `src/items`.
+- Did not include generated/scraped data changes.
+
+Verified:
+
+- `npm run typecheck`
+- `node --import tsx/esm --test src/localization/patch-application.test.ts src/lib/updater.test.ts src/artifact/artifact.test.ts`
+- `npm test`
+- `npx biome lint src/pipeline/types.ts src/localization/patch-application.ts src/localization/patch-application.test.ts src/lib/updater.ts src/artifact/artifact.ts src/artifact/artifact.test.ts src/schema/artifact.schema.ts`
+
+Notes:
+
+- `runUpdate` remains a compatibility export for old imports.
+- `buildPatchData` remains a compatibility export for old imports, but new planning flows should prefer `buildPatchPlan` / `buildPatchPlanResult`.
+- Issue #87 may be close to completion, but full issue closure should first review whether the requested dry-run comparison coverage has been satisfied for DataCore/SPViewer and SCMDB mission categories.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move line-index metadata to localization application`.
+2. Inspect GitHub #87 and decide whether the next slice can close it or should only add final verification/cleanup.
+3. If closing #87, run full verification and compare at least one DataCore/SPViewer dry run and one SCMDB mission dry run if generated/local data changes are acceptable.
+4. Otherwise, continue shrinking compatibility around `runUpdate` only after confirming remaining old imports.
+5. Keep Issue #95 separate unless explicitly choosing that slice; classify/extract update-all extra steps only under that scope.
+6. Keep preflight, progress rendering, process exits, and user-facing CLI output in scripts unless a use-case result shape is explicit.
+7. Do not broadly rename `src/lib` or `src/items` yet.
+8. Do not include local scraped/generated data unless explicitly requested.
+9. Verification to run:
+   - `npm run typecheck`
+   - `npm test`
+   - touched-file `npx biome lint`
+   - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore`
+   - Optional only if generated data changes are acceptable: SCMDB mission-category dry-run comparison
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

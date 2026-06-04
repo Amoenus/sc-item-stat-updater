@@ -135,3 +135,22 @@ Remaining:
 - Keep `runUpdate` as compatibility glue for old imports until no callers need it.
 - Keep `buildPatchData` as a compatibility export for old callers, but prefer `buildPatchPlan` / `buildPatchPlanResult` for new planning flows.
 - Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.
+
+Continued on 2026-06-04:
+
+- Moved the duplicate/suffixed-key line-index hint out of the core `PatchEntry` contract.
+- Added `LocalizationPatchEntry` / `LocalizationPatchPlan` in `src/localization/patch-application.ts` as the application-only home for `existingLineIndex`.
+- Kept `buildPatchPlan` returning the clean core `PatchPlan` while `buildPatchPlanResult`, `runUpdate`, and `buildPatchData` can still carry application metadata internally where INI application needs it.
+- Updated artifact and architecture docs to describe `existingLineIndex` as localization application metadata rather than serialized or core patch-plan data.
+
+Verified:
+
+- `npm run typecheck`
+- `node --import tsx/esm --test src/localization/patch-application.test.ts src/lib/updater.test.ts src/artifact/artifact.test.ts`
+- `npm test`
+- `npx biome lint src/pipeline/types.ts src/localization/patch-application.ts src/localization/patch-application.test.ts src/lib/updater.ts src/artifact/artifact.ts src/artifact/artifact.test.ts src/schema/artifact.schema.ts`
+
+Remaining:
+
+- Keep `runUpdate` and `buildPatchData` as compatibility exports for old imports until remaining callers no longer need them.
+- Review whether Issue #87 can close after full verification, including the requested dry-run comparison coverage, or whether the old compatibility exports should be shrunk further first.

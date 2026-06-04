@@ -24,7 +24,7 @@ const ARTIFACT_PATCH_REASON = 'Serialized patch artifact entry';
  *
  * The artifact schema intentionally persists only localization key/value pairs
  * for backward compatibility with existing consumers. In-memory application
- * hints such as PatchEntry.existingLineIndex are not serialized.
+ * hints such as LocalizationPatchEntry.existingLineIndex are not serialized.
  */
 export function patchPlanToArtifactEntries(plan: PatchPlan): Record<string, string> {
   const entries: Record<string, string> = {};

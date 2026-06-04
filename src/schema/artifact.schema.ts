@@ -3,9 +3,9 @@
  *
  * This is the single source of truth for the shape of `patch-data.json`.
  * The artifact entries map is the persisted, backward-compatible projection of
- * `PatchPlan.entries`: each patch entry is serialized as `key -> value`, while
- * in-memory application metadata such as `existingLineIndex` is intentionally
- * omitted from JSON.
+ * `PatchPlan.entries`: each patch entry is serialized as `key -> value`.
+ * Localization application metadata such as `existingLineIndex` lives outside
+ * the core PatchEntry contract and is intentionally omitted from JSON.
  *
  * Both the generator (`generateArtifact`) and the reader (`readArtifactFile`)
  * derive their TypeScript types from this schema; no hand-maintained interface

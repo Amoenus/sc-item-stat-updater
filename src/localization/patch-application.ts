@@ -1,4 +1,16 @@
-import type { PatchPlan } from '../pipeline/types';
+import type { PatchEntry, PatchPlan } from '../pipeline/types';
+
+export interface LocalizationPatchEntry extends PatchEntry {
+  /**
+   * Application-only hint for duplicate/suffixed INI keys. This must stay out
+   * of serialized artifacts and the core PatchEntry contract.
+   */
+  existingLineIndex?: number;
+}
+
+export interface LocalizationPatchPlan extends PatchPlan {
+  entries: LocalizationPatchEntry[];
+}
 
 export interface PatchApplicationResult {
   lines: string[];
@@ -41,7 +53,7 @@ export function insertLocalizationEntries(lines: string[], newLines: string[], i
 export function applyPatchPlanToIniLines(
   inputLines: string[],
   index: Record<string, number>,
-  plan: PatchPlan,
+  plan: LocalizationPatchPlan,
   options: ApplyPatchPlanOptions = {},
 ): PatchApplicationResult {
   const lines = [...inputLines];

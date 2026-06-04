@@ -56,7 +56,7 @@ Current `src/artifact` can remain until the final folder cleanup.
 - Defined artifact entries as the persisted projection of `PatchPlan.entries`.
 - Added conversion helpers for `PatchPlan -> artifact entries` and `artifact -> PatchPlan`.
 - Updated artifact generation to consume the application `buildPatchPlanResult` use case instead of the legacy `buildPatchData` bridge.
-- Documented that `PatchEntry.existingLineIndex` remains in-memory only and is intentionally omitted from artifact JSON.
+- Documented that `existingLineIndex` is localization application metadata, outside the core `PatchEntry` contract, and intentionally omitted from artifact JSON.
 - Wired `bin/update-all.ts --emit-artifact` through `generateArtifact`, with artifact planning performed before any non-dry-run INI writes.
 - Added fixture-driven `generateArtifact` test coverage.
 

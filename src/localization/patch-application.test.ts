@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { applyLocalizationLinePatch, applyPatchPlanToIniLines } from './patch-application';
+import type { LocalizationPatchPlan } from './patch-application';
 import type { PatchPlan } from '../pipeline/types';
 
 describe('localization: patch application', () => {
@@ -37,7 +38,7 @@ describe('localization: patch application', () => {
 
   it('applies a planned entry to an explicit existing line index', () => {
     const lines = ['item_desc,P=old plural', 'item_desc=old base'];
-    const plan: PatchPlan = {
+    const plan: LocalizationPatchPlan = {
       entries: [
         {
           key: 'item_desc',

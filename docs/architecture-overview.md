@@ -200,11 +200,10 @@ type PatchEntry = {
   value: string;
   source: string;
   reason: string;
-  existingLineIndex?: number;
 };
 ```
 
-`existingLineIndex` is a transitional in-memory application hint used while the legacy updater is being split. It lets the planner preserve current duplicate and plural/gender suffix behavior without changing the artifact JSON shape. Future artifact alignment should decide whether this stays as metadata, moves into an application-only type, or disappears when localization variants have a cleaner model.
+Duplicate and plural/gender suffix handling still needs an application-only line-index hint while the legacy updater is being split. That hint now lives on the localization application type `LocalizationPatchEntry`, not the core `PatchEntry` contract. This keeps persisted patch plans and artifacts independent from line positions while preserving current INI behavior.
 
 ### Patch Artifact
 
@@ -217,7 +216,7 @@ type PatchArtifact = {
 };
 ```
 
-`entries` is the persisted projection of `PatchPlan.entries`, keyed by localization key. Application-only metadata such as `existingLineIndex` is intentionally not serialized. Code that needs the in-memory pipeline contract can convert artifact entries back into a `PatchPlan` with artifact-level default `source` and `reason` values.
+`entries` is the persisted projection of `PatchPlan.entries`, keyed by localization key. Localization application metadata such as `existingLineIndex` is intentionally not serialized. Code that needs the in-memory pipeline contract can convert artifact entries back into a `PatchPlan` with artifact-level default `source` and `reason` values.
 
 ## Boundary Rules
 

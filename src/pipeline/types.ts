@@ -14,7 +14,6 @@ export interface PatchEntry {
   value: string;
   source: string;
   reason: string;
-  existingLineIndex?: number;
 }
 
 export interface UpdateIssue {
