@@ -55,3 +55,29 @@ src/enrichment/item-descriptions/spviewer/
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Run `npm run scrape:spviewer -- --list` or equivalent lightweight command if available.
+
+## Progress
+
+2026-06-04:
+
+- Added `src/sources/spviewer/html-parser.ts` as a legacy/fallback SPViewer source-boundary facade for the existing HTML parser helpers.
+- Updated `bin/scrape-spviewer.ts` to import version extraction, pagination detection, dropdown detection, and table parsing through `src/sources/spviewer`.
+- Kept `src/extractor/spviewer-html-parser.ts` in place as a compatibility module until later folder cleanup.
+- Added facade coverage for version extraction, paginator detection, "All" option detection, and table parsing.
+- Updated README usage and project structure docs to describe SPViewer as the default legacy/fallback item provider during migration and DataCore as the preferred provider where coverage exists.
+- Updated architecture docs to point at the implemented `src/sources/spviewer` facade/types while preserving compatibility cleanup as later work.
+- Smoke-tested `npm run scrape:spviewer -- --list`.
+- Did not run browser scraping or write generated SPViewer CSV/JSON data.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/spviewer/html-parser.test.ts src/extractor/spviewer-html-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-spviewer.ts src/sources/spviewer/html-parser.ts src/sources/spviewer/html-parser.test.ts`
+- `npm run scrape:spviewer -- --list`
+
+Notes:
+
+- GitHub #94 can be closed as completed.
+- Physical relocation of `src/extractor/spviewer-html-parser.ts` should wait for folder cleanup / compatibility cleanup.

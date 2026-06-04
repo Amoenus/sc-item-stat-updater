@@ -10,7 +10,7 @@ import {
   findPaginatorSelector,
   hasAllOption,
   parseTable,
-} from '../src/extractor/spviewer-html-parser.js';
+} from '../src/sources/spviewer/html-parser.js';
 import type { SpviewerScrapedDataDTO } from '../src/schema/spviewer.schemas.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

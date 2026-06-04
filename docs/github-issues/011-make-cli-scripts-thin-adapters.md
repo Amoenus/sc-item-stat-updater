@@ -260,3 +260,24 @@ Remaining for #95:
 
 - Move/classify SPViewer scraper responsibilities as legacy source behavior.
 - Smoke test CLI help/commands as source boundaries settle.
+
+SPViewer legacy-source progress on 2026-06-04:
+
+- Added `src/sources/spviewer/html-parser.ts` as the legacy/fallback source-boundary facade for SPViewer HTML parser helpers.
+- Updated `bin/scrape-spviewer.ts` to import parser helpers through `src/sources/spviewer`.
+- Updated README and architecture docs to describe SPViewer as legacy/fallback while DataCore is preferred where coverage exists.
+- Smoke-tested `npm run scrape:spviewer -- --list`.
+- Did not run browser scraping or write generated SPViewer CSV/JSON data.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/spviewer/html-parser.test.ts src/extractor/spviewer-html-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-spviewer.ts src/sources/spviewer/html-parser.ts src/sources/spviewer/html-parser.test.ts`
+- `npm run scrape:spviewer -- --list`
+
+Remaining for #95:
+
+- Run final CLI help/list smoke coverage across the settled scripts.
+- Decide whether #95 can close or if folder cleanup/compatibility exports should remain tracked separately.

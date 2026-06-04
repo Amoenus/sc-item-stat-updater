@@ -61,7 +61,7 @@ Examples:
 
 - DataCore XML becomes typed component-stat records.
 - SCMDB merged JSON becomes typed mission, mining, commodity, and crafting records.
-- SPViewer tables become typed item-stat records.
+- SPViewer tables become typed item-stat records for legacy/fallback comparison flows.
 
 Source quirks belong here. Later stages should not need to know whether a value came from XML attributes, CSV columns, nested SCMDB JSON, or scraped HTML.
 
@@ -163,6 +163,8 @@ src/
 ```
 
 The current code does not yet match this layout. The rewrite should proceed by moving behavior behind use cases and tests rather than by doing a blind folder shuffle.
+
+Current migration note: DataCore and SCMDB already expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy/fallback source and exposes its HTML parser facade and dataset types under `src/sources/spviewer` while the old extractor module stays in place for compatibility until folder cleanup.
 
 ## Core Concepts
 

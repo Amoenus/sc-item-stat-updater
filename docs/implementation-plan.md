@@ -894,6 +894,48 @@ Next agent instructions:
 4. Keep CLI parse args, user-facing output, progress, file writes, and process exits in scripts.
 5. Avoid generated/scraped data churn unless explicitly requested.
 
+### 2026-06-04: SPViewer legacy source classification and Issue 010 closure
+
+Primary issue:
+
+- Issue 010 / GitHub #94: Classify SPViewer As Legacy Provider
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/spviewer/html-parser.ts` as a legacy/fallback SPViewer source-boundary facade for the existing HTML parser helpers.
+- Updated `bin/scrape-spviewer.ts` to import version extraction, pagination detection, dropdown detection, and table parsing through `src/sources/spviewer`.
+- Kept `src/extractor/spviewer-html-parser.ts` in place as a compatibility module until later folder cleanup.
+- Added facade coverage for version extraction, paginator detection, "All" option detection, and table parsing.
+- Updated README usage and project structure docs to describe SPViewer as the default legacy/fallback item provider during migration and DataCore as the preferred provider where coverage exists.
+- Updated architecture docs to point at the implemented `src/sources/spviewer` facade/types while preserving compatibility cleanup as later work.
+- Did not run browser scraping or write generated SPViewer CSV/JSON data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/spviewer/html-parser.test.ts src/extractor/spviewer-html-parser.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-spviewer.ts src/sources/spviewer/html-parser.ts src/sources/spviewer/html-parser.test.ts`
+- `npm run scrape:spviewer -- --list`
+
+Notes:
+
+- GitHub #94 can be closed as completed.
+- Issue 011 / GitHub #95 remains open for final CLI help/list smoke testing and closure review.
+- Physical relocation of `src/extractor/spviewer-html-parser.ts` should wait for folder cleanup / compatibility cleanup.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Classify SPViewer as legacy source`.
+2. Continue Issue 011 / GitHub #95 by inspecting acceptance criteria and running final CLI help/list smoke coverage across settled scripts.
+3. If #95 acceptance is met, update local docs/GitHub and close #95.
+4. Keep compatibility exports and broad folder cleanup for later explicit issues unless #95 acceptance requires a narrow note.
+5. Avoid generated/scraped data churn unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

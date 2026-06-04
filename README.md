@@ -33,11 +33,12 @@ npm install
 npm run update
 ```
 
-Runs all categories (SPViewer + SCMDB missions) using both data sources. It automatically detects the latest versioned directories for LIVE data.
+Runs all categories using the selected item-stat provider plus SCMDB missions. SPViewer remains the default legacy/fallback item provider during the migration; use `--provider datacore` when DataCore coverage is preferred for supported categories. It automatically detects the latest versioned directories for LIVE data.
 
 Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
 - `--dry-run` to preview changes without modifying `global.ini`.
+- `--provider spviewer|datacore` to choose the item-stat source.
 
 > Note: `npm run update` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
 
@@ -47,7 +48,7 @@ Options:
 node --import tsx/esm bin/scrape-spviewer.ts --all
 ```
 
-This command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`.
+This legacy/fallback provider command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`.
 
 To scrape only specific item types:
 
@@ -149,7 +150,11 @@ The current code is mid-migration. The target architecture is a Clean Pipeline A
 │   │   │   └── text-utils.ts    # Key derivation & flavor text extraction
 │   │   ├── updates/             # Standalone update modules
 │   │   ├── types.ts             # Shared TypeScript interfaces
-│   │   └── updater.ts           # Generic update engine
+│   │   └── updater.ts           # Compatibility update engine
+│   ├── sources/
+│   │   ├── datacore/            # DataCore source discovery, acquisition, parser facades, types
+│   │   ├── scmdb/               # SCMDB acquisition, output transforms, parser facades, types
+│   │   └── spviewer/            # Legacy/fallback SPViewer parser facade and types
 │   ├── extractor/
 │   │   ├── mining-parser.ts     # Mining data extractor
 │   │   └── mission-parser.ts    # Mission data extractor
