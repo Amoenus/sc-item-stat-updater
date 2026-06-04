@@ -1,16 +1,18 @@
-# ADR 004: GitHub Actions as the Scraper Orchestrator
+# ADR 004: GitHub Actions as a Shared Artifact Orchestrator
 
 ## Status
-Accepted
+Accepted, future-facing
 
 ## Context
-In Phase 1, the CLI application relies on local execution, meaning every individual user who runs the tool will independently scrape upstream APIs (like SPViewer or SCMDB). On a major patch day, if 1,000 users run the tool simultaneously, it will result in 1,000 concurrent, redundant scraping sessions hitting those APIs. This is inefficient and risks having our tool flagged or IP-banned for abuse.
+The local CLI can scrape or extract data directly. If many users run web scraping at the same time, especially against third-party sources such as SCMDB or SPViewer, the project could create redundant upstream load. Game-file extraction can happen locally, but web data is a better candidate for shared artifacts when possible.
 
 ## Decision
-We will transition the primary scraping responsibility to a scheduled GitHub Actions cron job.
-* This CI/CD job will run the Extraction and Transformation pipeline centrally.
-* It will generate the optimized intermediary JSON artifact (`patch-data.json`).
-* It will commit this artifact to the `gh-pages` branch, making it statically available.
+For shared web-source data, we may use scheduled GitHub Actions to run acquisition and patch planning centrally.
+* The CI job can acquire SCMDB/SPViewer data politely.
+* It can generate optimized intermediary JSON artifacts.
+* It can publish artifacts for local or future static-client consumption.
+
+The local pipeline remains the primary workflow for extracting `global.ini` and game-file data from the user's installed game.
 
 ## Consequences
 ### Positive

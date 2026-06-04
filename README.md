@@ -1,6 +1,18 @@
 # Star Citizen Item Stat Updater
 
-Updates item descriptions in `global.ini` with detailed component stats from CSV data files sourced from SPViewer and SCMDB.
+Enriches Star Citizen's `global.ini` with additional quality-of-life information for in-game text.
+
+The long-term architecture is a local enrichment pipeline:
+
+1. Extract a fresh `global.ini` from the game files.
+2. Extract additional game-file data, primarily DataCore where possible.
+3. Extract enriched web data from SCMDB.
+4. Optionally use SPViewer as a legacy or fallback source.
+5. Build localization patch plans.
+6. Apply those patches to the repo copy of `global.ini`.
+7. Deploy the enriched `global.ini` back into the game folder.
+
+See [docs/architecture-overview.md](docs/architecture-overview.md) for the current architecture direction.
 
 ## Requirements
 
@@ -117,6 +129,8 @@ Runs `tsc --noEmit` to validate TypeScript types without emitting any output fil
 
 ## Project structure
 
+The current code is mid-migration. The target architecture is a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Existing folders still reflect the older implementation and will be moved incrementally while tests stay green.
+
 ```
 ├── bin/
 │   ├── update-all.ts        # Runs all category updaters
@@ -152,13 +166,18 @@ Runs `tsc --noEmit` to validate TypeScript types without emitting any output fil
 
 ## How it works
 
-The update engine (`src/lib/updater.ts`):
+The current update engine (`src/lib/updater.ts`):
 
 1. Reads the item's CSV file
 2. Reads `global.ini`
 3. For each CSV row, finds the matching description key(s) in `global.ini`
 4. Replaces the value with a formatted stat block while preserving any existing flavor text
 5. Writes the updated `global.ini` back (UTF-8 with BOM)
+
+The target architecture will split this into two clearer steps:
+
+1. Build a patch plan from normalized source data.
+2. Apply that patch plan to INI text safely.
 
 Each item module (`src/items/spviewer/*.ts` or `src/items/missions/*.ts`) provides:
 - `csvFile` — which CSV to read
@@ -209,6 +228,7 @@ The included `global.ini` is based on localization work from:
 
 CSV component data is sourced from:
 
+- DataCore extracted from local Star Citizen game files
 - SPViewer: [spviewer.eu](https://www.spviewer.eu/)
 - SCMDB: [scmdb.net](https://www.scmdb.net/)
 
