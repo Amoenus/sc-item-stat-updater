@@ -44,17 +44,17 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #108: Add a performance budget around a representative large fixture update to catch slow planning or INI application regressions.
 - #109: Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
 - #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
 - #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
 
 ## Recommended Next Slice
 
-Inspect #108 next. It is a performance-budget test slice; use representative fixtures and avoid generated-data writes.
+Inspect #109 next. It is a backup/restore test slice for write and deploy paths; use temporary directories and fixture INI files.
 
 ## Completed Functional Issues
 
+- #108: Added a large generated-in-test INI update performance budget. The test builds a controlled 2,500-row fixture with 5,000 base/plural INI updates, reports planning and application timings separately, keeps loose CI-friendly budgets, and uses only in-memory fixtures rather than real `global.ini` or generated source data.
 - #107: Added focused localization duplicate/collision coverage. Planner tests now pin duplicate base keys plus plural/gender suffix occurrences with explicit line indexes; patch-application tests prove all occurrence updates preserve actual suffixed line keys; artifact serialization tests prove duplicate occurrence line-index metadata still stays out of persisted artifact entries.
 - #106: Improved malformed artifact UX in `readArtifactFile`. Invalid JSON now reports the path, `JSON` field context, and parse problem; schema failures report the artifact path, high-level field, concise problem, and detailed schema path while preserving the Zod error as `cause`. Tests cover malformed JSON, missing `entries`, invalid `entries`, invalid issue payloads, and valid artifact readback.
 - #105: Added snapshot-style exact-string tests for high-value generated localization output: SCMDB mission descriptions, mining journal entries, component title tags, SCMDB mission title tag ordering, and Adagio location labels. The tests pin whitespace/tag ordering and use temp files or in-memory builders only.
