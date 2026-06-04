@@ -19,7 +19,7 @@ import { backupIniFile } from '../src/io/local/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { preflightCheckConfigs } from '../src/lib/updater';
-import { regenMiningLocations } from './regen-mining-locations';
+import { regenMiningLocations } from '../src/sources/scmdb/mining-locations';
 
 const logger = getLogger('update-all');
 
@@ -117,6 +117,7 @@ console.log(`  ${provider === 'datacore' ? 'DataCore' : 'SPViewer'}: ${itemVersi
 try {
   logger.info('Regenerating mining-locations.csv', { missionCsvDir });
   regenMiningLocations({
+    repoRoot,
     scmdbDir: missionCsvDir,
     log: (message: string) => logger.debug(message),
   });

@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
+import { runBatchUpdate } from './run-batch-update';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -13,6 +14,9 @@ export interface RunFullPipelineOptions {
   log?: (message: string) => void;
   onStepComplete?: (summary: string) => void;
   runScript?: (scriptArgs: string[]) => number;
+  runUpdate?: typeof runBatchUpdate;
+  refresh?: typeof refreshGlobalIni;
+  deploy?: typeof deployGlobalIni;
 }
 
 export interface RunFullPipelineResult {
@@ -35,14 +39,12 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const runScript = options.runScript ?? ((scriptArgs) => defaultRunScript(options.rootDir, scriptArgs));
   const repoIniPath = path.join(options.rootDir, 'global.ini');
 
-  const updateArgs: string[] = ['bin/update-all.ts'];
-  if (options.dryRun) updateArgs.push('--dry-run');
-  if (options.ptu) updateArgs.push('--ptu');
-  if (options.verbose) updateArgs.push('--verbose');
-  if (options.datacore) updateArgs.push('--provider', 'datacore');
+  const runUpdate = options.runUpdate ?? runBatchUpdate;
+  const refresh = options.refresh ?? refreshGlobalIni;
+  const deploy = options.deploy ?? deployGlobalIni;
 
   log('=== Step 1: Extracting global.ini from Data.p4k ===');
-  const { extractedGamePath } = await refreshGlobalIni({ repoIniPath, log });
+  const { extractedGamePath } = await refresh({ repoIniPath, log });
   options.onStepComplete?.('global.ini extracted & synced to repo');
 
   if (options.datacore) {
@@ -70,12 +72,17 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   }
 
   log('=== Step 3: Applying stat updates ===');
-  const updateExitCode = runScript(updateArgs);
-  if (updateExitCode !== 0) return { exitCode: updateExitCode, extractedGamePath, repoIniPath };
+  const updateResult = await runUpdate({
+    repoRoot: options.rootDir,
+    dryRun: options.dryRun,
+    ptu: options.ptu,
+    provider: options.datacore ? 'datacore' : 'spviewer',
+  });
+  if (updateResult.exitCode !== 0) return { exitCode: updateResult.exitCode, extractedGamePath, repoIniPath };
   options.onStepComplete?.('Stat updates applied');
 
   log('=== Step 4: Deploying updated global.ini -> game directory ===');
-  await deployGlobalIni({ repoIniPath, targetIniPath: extractedGamePath });
+  await deploy({ repoIniPath, targetIniPath: extractedGamePath });
   log(`Deployed: ${extractedGamePath}`);
   options.onStepComplete?.('global.ini deployed to game directory');
 

@@ -1027,6 +1027,54 @@ Next agent instructions:
 4. Keep user-facing CLI output, parse args, progress, file writes, and process exits in scripts unless a use-case result shape is explicit.
 5. Avoid generated/scraped data churn unless explicitly requested.
 
+### 2026-06-04: Pipeline update step runs in process
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/run-batch-update.ts`.
+- Moved callable batch update orchestration into the application layer:
+  - provider/source category preparation
+  - SCMDB mining-location regeneration
+  - preflight checks
+  - single backup before non-dry-run batch execution
+  - prepared category execution
+  - extra update step execution
+  - structured results/errors and exit-code calculation
+- Moved the callable `regenMiningLocations` implementation from `bin/regen-mining-locations.ts` to `src/sources/scmdb/mining-locations.ts`; the CLI remains a parse/help adapter.
+- Updated `bin/update-all.ts` to import mining-location regeneration from the SCMDB source module.
+- Updated `runFullPipeline` to call `runBatchUpdate` in process for the update step instead of shelling out to `bin/update-all.ts`.
+- Added tests proving `runBatchUpdate` orchestration, backup skipping in dry-run, error exit codes, and `runFullPipeline` update-step in-process execution.
+- Did not run update dry-runs, scraper commands, or pipeline execution because those may touch local/generated data or game files.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/run-batch-update.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-all.ts bin/regen-mining-locations.ts src/application/use-cases/run-batch-update.ts src/application/use-cases/run-batch-update.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts src/sources/scmdb/mining-locations.ts`
+- `node --import tsx/esm bin/pipeline.ts --help`
+- `node --import tsx/esm bin/regen-mining-locations.ts --help`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open because `runFullPipeline` still shells out through `spawnSync` for scraper steps:
+  - `bin/scrape-scmdb.ts`
+  - `bin/scrape-datacore.ts --all`
+  - `bin/scrape-spviewer.ts --all`
+- The next #95 slice should either add callable application/source entry points for scraper orchestration or document a deliberate boundary if those scrape commands should remain subprocesses.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Run pipeline update step in process`.
+2. Continue Issue 011 / GitHub #95 by targeting one scraper shellout path.
+3. Prefer SCMDB first because its source modules already own version selection, acquisition, row assembly, and output planning; the remaining work should be a callable scraper orchestration wrapper that keeps CLI output/file-write presentation in `bin/scrape-scmdb.ts`.
+4. Avoid networked scraper runs or generated CSV/JSON churn unless explicitly requested.
+5. Keep broad folder cleanup and compatibility export removal for later explicit issues.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

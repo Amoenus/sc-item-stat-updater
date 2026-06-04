@@ -334,3 +334,37 @@ Remaining for #95:
 
 - `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
 - Add callable application/source entry points for those pipeline steps so orchestration can run in process and return structured errors.
+
+Pipeline update-step progress on 2026-06-04:
+
+- Added `src/application/use-cases/run-batch-update.ts`.
+- Moved callable batch update orchestration into the application layer:
+  - provider/source category preparation
+  - SCMDB mining-location regeneration
+  - preflight checks
+  - single backup before non-dry-run batch execution
+  - prepared category execution
+  - extra update step execution
+  - structured results/errors and exit-code calculation
+- Moved the callable `regenMiningLocations` implementation from `bin/regen-mining-locations.ts` to `src/sources/scmdb/mining-locations.ts`; the CLI remains a parse/help adapter.
+- Updated `bin/update-all.ts` to import mining-location regeneration from the SCMDB source module.
+- Updated `runFullPipeline` to call `runBatchUpdate` in process for the update step instead of shelling out to `bin/update-all.ts`.
+- Added tests proving `runBatchUpdate` orchestration, backup skipping in dry-run, error exit codes, and `runFullPipeline` update-step in-process execution.
+- Did not run update dry-runs, scraper commands, or pipeline execution because those may touch local/generated data or game files.
+
+Verification:
+
+- `node --import tsx/esm --test src/application/use-cases/run-batch-update.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-all.ts bin/regen-mining-locations.ts src/application/use-cases/run-batch-update.ts src/application/use-cases/run-batch-update.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts src/sources/scmdb/mining-locations.ts`
+- `node --import tsx/esm bin/pipeline.ts --help`
+- `node --import tsx/esm bin/regen-mining-locations.ts --help`
+
+Remaining for #95:
+
+- `runFullPipeline` still shells out through `spawnSync` for scraper steps:
+  - `bin/scrape-scmdb.ts`
+  - `bin/scrape-datacore.ts --all`
+  - `bin/scrape-spviewer.ts --all`
+- Add callable application/source entry points for scraper orchestration or document a deliberate boundary if those scrape commands should remain subprocesses.
