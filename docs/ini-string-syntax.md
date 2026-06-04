@@ -13,7 +13,7 @@ The game engine interprets the **literal two-character sequence `\n`** (backslas
 | `\n` | Line break (new row in the tooltip) |
 | `\n\n` | Blank line (visual paragraph / section separator) |
 
-> **Note:** Real (physical) newline characters inside a value are unsupported and are stripped by `sanitizeIniValue()` in [src/lib/format/formatter.js](../src/lib/format/formatter.js).
+> **Note:** Real (physical) newline characters inside a value are unsupported and are stripped by `sanitizeIniValue()` in [src/enrichment/formatter.ts](../src/enrichment/formatter.ts).
 
 ---
 
@@ -65,7 +65,7 @@ Strategically use the Brandt…   (flavor text)
 
 ## How the `stat` Builder Produces This Syntax
 
-The fluent `stat()` builder in [src/lib/format/stat-builder.js](../src/lib/format/stat-builder.js) constructs an array of strings, then joins them.
+The fluent `stat()` builder in [src/enrichment/stat-builder.ts](../src/enrichment/stat-builder.ts) constructs an array of strings, then joins them.
 
 | Builder call | Contribution to the parts array | Effect in INI value |
 |---|---|---|

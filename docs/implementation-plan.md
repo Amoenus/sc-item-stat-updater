@@ -1604,6 +1604,48 @@ Next agent instructions:
 4. Decide the `src/items` narrowing/rename path separately and avoid broad churn unless clearly justified.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: README structure alignment and Issue 012 closure review
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Updated README project structure to match the implemented Clean Pipeline Architecture folders.
+- Documented `src/lib` as a small compatibility layer with updater compatibility glue.
+- Documented `src/items` as item and mission enrichment rule modules, narrowing its current role without a broad rename.
+- Updated INI syntax docs to reference `src/enrichment/formatter.ts` and `src/enrichment/stat-builder.ts`.
+- Confirmed `src/io/local` is documented as local filesystem IO while localization behavior lives under `src/localization`.
+- Confirmed there are no empty directories under `src`.
+- Did not move generated/scraped data.
+
+Verified:
+
+- `npm run typecheck`
+- Empty-directory scan under `src`
+
+Closure review:
+
+- `src/lib` is now a small documented compatibility layer plus `src/lib/updater.ts` compatibility glue for old `runUpdate`/`buildPatchData` imports.
+- `src/items` is narrowed in docs and active imports to item/mission enrichment rules; a broad folder rename remains intentionally deferred to avoid churn.
+- `src/io/local` is clearly split from localization: local filesystem/path helpers remain there, while INI parsing/application and localization helpers live under `src/localization`.
+- README project structure matches the implemented structure.
+- No empty architectural folders are left behind.
+
+Notes:
+
+- GitHub #96 can be closed after this slice is committed and the GitHub issue is updated.
+- Remaining migration work should move to another open issue, likely #97 architecture guardrails or #84 epic review.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Update project structure docs`.
+2. Inspect the next open migration issue before making changes.
+3. Keep `runUpdate` and `buildPatchData` compatibility exports until remaining old imports are known and migrated.
+4. Avoid generated/scraped data churn.
+5. Continue committing one verified slice at a time.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

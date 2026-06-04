@@ -196,3 +196,26 @@ Remaining:
 - Review whether `src/lib/updater.ts`, `src/lib/updater.test.ts`, and `src/lib/preflight.test.ts` can remain as compatibility coverage or need a final compatibility-cleanup/documentation slice.
 - Decide the `src/items` narrowing/rename path in a separate explicit slice.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+README/project-structure alignment slice on 2026-06-04:
+
+- Updated README project structure to match the implemented Clean Pipeline Architecture folders.
+- Documented `src/lib` as a small compatibility layer with updater compatibility glue.
+- Documented `src/items` as item and mission enrichment rule modules, narrowing its current role without a broad rename.
+- Updated INI syntax docs to reference `src/enrichment/formatter.ts` and `src/enrichment/stat-builder.ts`.
+- Confirmed `src/io/local` is documented as local filesystem IO while localization behavior lives under `src/localization`.
+- Confirmed there are no empty directories under `src`.
+- Did not move generated/scraped data.
+
+Verification:
+
+- `npm run typecheck`
+- Empty-directory scan under `src`
+
+Closure review:
+
+- `src/lib` is now a small documented compatibility layer plus `src/lib/updater.ts` compatibility glue for old `runUpdate`/`buildPatchData` imports.
+- `src/items` is narrowed in docs and active imports to item/mission enrichment rules; a broad folder rename remains intentionally deferred to avoid churn.
+- `src/io/local` is clearly split from localization: local filesystem/path helpers remain there, while INI parsing/application and localization helpers live under `src/localization`.
+- README project structure matches the implemented structure.
+- No empty architectural folders are left behind.

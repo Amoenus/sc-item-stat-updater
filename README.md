@@ -130,67 +130,52 @@ Runs `tsc --noEmit` to validate TypeScript types without emitting any output fil
 
 ## Project structure
 
-The current code is mid-migration. The target architecture is a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Existing folders still reflect the older implementation and will be moved incrementally while tests stay green.
+The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. `src/lib` is intentionally kept as a small compatibility layer for older imports while active code uses the responsibility-specific folders below.
 
 ```
-├── bin/
-│   ├── update-all.ts        # Runs all category updaters
-│   ├── update-item.ts       # CLI to run a single category
-│   ├── scrape-spviewer.ts   # SPViewer scraping helper
-│   └── scrape-scmdb.ts      # SCMDB scraping helper
-├── src/
-│   ├── lib/
-│   │   ├── io/local/
-│   │   │   ├── csv-parser.ts    # CSV parsing
-│   │   │   ├── ini-file.ts      # global.ini read/write/indexing
-│   │   │   └── mapping-store.ts # SPViewer mapping persistence
-│   │   ├── format/
-│   │   │   ├── formatter.ts     # Number formatting
-│   │   │   ├── stat-builder.ts  # Stat block construction
-│   │   │   └── text-utils.ts    # Key derivation & flavor text extraction
-│   │   ├── updates/             # Standalone update modules
-│   │   ├── types.ts             # Shared TypeScript interfaces
-│   │   └── updater.ts           # Compatibility update engine
-│   ├── sources/
-│   │   ├── datacore/            # DataCore source discovery, acquisition, parser facades, types
-│   │   ├── scmdb/               # SCMDB acquisition, output transforms, parser facades, types
-│   │   └── spviewer/            # Legacy/fallback SPViewer parser facade and types
-│   ├── extractor/
-│   │   ├── mining-parser.ts     # Mining data extractor
-│   │   └── mission-parser.ts    # Mission data extractor
-│   └── items/
-│       ├── missions/            # Mission update configs
-│       └── spviewer/            # SPViewer item configs
-├── csv/
-│   ├── scmdb/                   # SCMDB mission data output
-│   │   └── <version>/           # Versioned directory
-│   └── spviewer/                # SPViewer source CSVs
-│       └── <version>-[live|ptu]/ # Versioned directory
-└── global.ini                   # Star Citizen localization file
+bin/
+  update-all.ts           # Runs full and batch update workflows
+  update-item.ts          # CLI to run a single category
+  scrape-datacore.ts      # DataCore acquisition CLI
+  scrape-scmdb.ts         # SCMDB acquisition CLI
+  scrape-spviewer.ts      # Legacy/fallback SPViewer acquisition CLI
+src/
+  application/            # Use cases and workflow orchestration
+  artifact/               # Patch artifact generation/loading/application
+  enrichment/             # Item config contracts, stat formatting, and extra update steps
+  extractor/              # SCMDB mission/mining parser internals
+  infrastructure/         # Logging and CSV serialization infrastructure
+  io/local/               # Local filesystem IO helpers and path conventions
+  items/                  # Item and mission enrichment rule modules
+  lib/                    # Compatibility re-exports plus updater compatibility glue
+  localization/           # INI parsing/application, key resolution, and localization text helpers
+  pipeline/               # Core pipeline data contracts
+  presentation/           # CLI argument and presentation helpers
+  schema/                 # Runtime schemas
+  sources/                # DataCore, SCMDB, and SPViewer source acquisition/normalization
+csv/
+  datacore/               # DataCore cache/output data
+  scmdb/                  # SCMDB mission/mining output data
+  spviewer/               # SPViewer source CSVs
+global.ini                # Star Citizen localization file
 ```
 
 ## How it works
 
-The current update engine (`src/lib/updater.ts`):
-
-1. Reads the item's CSV file
-2. Reads `global.ini`
-3. For each CSV row, finds the matching description key(s) in `global.ini`
-4. Replaces the value with a formatted stat block while preserving any existing flavor text
-5. Writes the updated `global.ini` back (UTF-8 with BOM)
-
-The target architecture will split this into two clearer steps:
+The update flow is split into two clearer steps:
 
 1. Build a patch plan from normalized source data.
 2. Apply that patch plan to INI text safely.
 
-Each item module (`src/items/spviewer/*.ts` or `src/items/missions/*.ts`) provides:
-- `csvFile` — which CSV to read
-- `buildValue(row, flavorText)` — formats the stat block
-- `descKeyMatch(key)` — identifies existing keys for insertion point
+`src/lib/updater.ts` remains as compatibility glue for older `runUpdate` and `buildPatchData` imports while active callers move through application use cases.
+
+Each item rule module (`src/items/datacore/*.ts`, `src/items/spviewer/*.ts`, or `src/items/missions/*.ts`) provides:
+- `csvFile` or `jsonFile` - which source file to read
+- `buildValue(row, flavorText)` - formats the replacement value
+- `descKeyMatch(key)` - identifies existing keys for insertion point
 - Optional overrides for key derivation or alternate key lookup
 
-Scripts are idempotent — running them multiple times produces no duplicates.
+Scripts are idempotent - running them multiple times produces no duplicates.
 
 ## CSV files
 
