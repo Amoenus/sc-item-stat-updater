@@ -62,6 +62,11 @@ Continued on 2026-06-04:
 - The CLI observes the use case through callbacks for progress rendering and category error logging, but the use case owns per-category option composition, `csvDir` selection, failure collection, and continue-on-error behavior.
 - The script still owns CLI parsing, progress output, preflight, mining regeneration, backups, extra update steps, artifact file writing, and exit codes.
 
+Updated on 2026-06-04:
+
+- Updated `bin/update-item.ts` to delegate single-category enrichment to `enrichGlobalIni` instead of importing the legacy `runUpdate` compatibility helper.
+- `enrichGlobalIni` now owns patch-plan application and conditional INI writing, so CLI callers can depend on an application use case for the standard enrichment path.
+
 Remaining:
 
 - Extract or classify the remaining `update-all` extra update steps once their result/error reporting can be represented without CLI concerns.

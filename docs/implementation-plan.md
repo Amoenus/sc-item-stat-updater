@@ -261,6 +261,55 @@ Next agent instructions:
    - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore`
    - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore --emit-artifact <temp path>`
 
+### 2026-06-04: Enrichment application use case
+
+Primary issue:
+
+- Issue 003 / GitHub #87: Split Updater Into Planning And Application
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Reworked `src/application/use-cases/enrich-global-ini.ts` from a direct `runUpdate` wrapper into the application use case for standard enrichment application.
+- `enrichGlobalIni` now consumes `buildPatchPlanResult`, applies the resulting `PatchPlan` with localization application helpers, validates INI integrity, conditionally writes the updated INI, and returns the CLI-compatible summary/stat/issue shape.
+- Extended `buildPatchPlanResult` to return the INI lines and index it already loads so application callers can apply the patch plan without rereading the INI or relying on `runUpdate`.
+- Updated `bin/update-item.ts` to call `enrichGlobalIni` directly instead of importing `runUpdate`.
+- Added `enrichGlobalIni` fixture tests for non-dry-run writes and dry-run non-writing behavior.
+- Did not rename `src/lib` or `src/items`.
+- Did not include generated/scraped data changes.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/enrich-global-ini.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-item.ts src/application/use-cases/build-patch-plan.ts src/application/use-cases/enrich-global-ini.ts src/application/use-cases/enrich-global-ini.test.ts`
+
+Notes:
+
+- `runUpdate` remains compatibility glue and still contains its legacy orchestration for old callers.
+- `buildPatchData` remains for old callers and still delegates through `runUpdate`.
+- Optional update dry-runs were intentionally skipped because they can touch generated/local data through the wider update flow.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move enrichment application use case`.
+2. Continue Issue 003 / GitHub #87 by removing remaining compatibility dependence on `buildPatchData` where callers can consume `PatchPlan`/artifact helpers directly, or by deciding the long-term home of `PatchEntry.existingLineIndex`.
+3. Keep `runUpdate` compatibility until no CLI or artifact callers depend on it.
+4. Continue Issue 011 / GitHub #95 only as a separate explicit slice, likely by classifying/extracting remaining `update-all` extra update steps.
+5. Keep preflight, progress rendering, process exits, and user-facing CLI output in scripts unless a use-case result shape is explicit.
+6. Do not broadly rename `src/lib` or `src/items` yet.
+7. Do not include local scraped/generated data unless explicitly requested.
+8. Verification to run:
+   - `npm run typecheck`
+   - `npm test`
+   - touched-file `npx biome lint`
+   - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore`
+   - Optional only if generated data changes are acceptable: `npm run update -- --dry-run --provider datacore --emit-artifact <temp path>`
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

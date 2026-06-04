@@ -1,8 +1,8 @@
 import { parseArgs } from 'node:util';
+import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { listCategories, loadConfig } from '../src/items/registry';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
-import { runUpdate } from '../src/lib/updater';
 
 const logger = getLogger('update-item');
 
@@ -51,7 +51,7 @@ const options = {
 
 try {
   const config = await loadConfig(category);
-  const result = await runUpdate(config, options);
+  const result = await enrichGlobalIni(config, options);
   console.log(result.summary);
   printIssues(result.issues, '\n⚠ Problem rows:');
 } catch (err) {

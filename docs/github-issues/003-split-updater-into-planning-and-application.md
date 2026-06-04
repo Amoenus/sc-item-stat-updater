@@ -90,3 +90,28 @@ Remaining:
 - Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.
 - Move update application orchestration out of `runUpdate` once CLI callers can depend on application use cases directly.
 - Keep reducing compatibility usage of `buildPatchData`; it remains for old callers but no longer drives artifact generation.
+
+Continued on 2026-06-04:
+
+- Reworked `enrichGlobalIni` from a direct `runUpdate` wrapper into the application use case that:
+  - consumes `buildPatchPlanResult`
+  - applies the resulting `PatchPlan` with localization application helpers
+  - validates INI integrity
+  - writes only when the command is not a dry run and changes or `force` require persistence
+  - returns the same summary/stat/issue shape expected by CLI callers
+- Extended `buildPatchPlanResult` to expose the INI lines and index it already loaded so application callers can apply the plan without rereading or depending on `runUpdate`.
+- Updated `bin/update-item.ts` to call `enrichGlobalIni` directly instead of importing `runUpdate`.
+- Added fixture tests for `enrichGlobalIni` covering real application writes and dry-run non-writing behavior.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/enrich-global-ini.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-item.ts src/application/use-cases/build-patch-plan.ts src/application/use-cases/enrich-global-ini.ts src/application/use-cases/enrich-global-ini.test.ts`
+
+Remaining:
+
+- Keep `runUpdate` as compatibility glue for old imports until no callers need it.
+- Keep reducing compatibility usage of `buildPatchData`; it still delegates through the legacy `runUpdate` path.
+- Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.

@@ -14,6 +14,8 @@ import { readIniFile } from '../../io/local/ini-file';
 export type BuildPatchPlanOptions = Pick<UpdateOptions, 'iniPath' | 'csvDir' | 'dryRun' | 'force'>;
 
 export interface BuildPatchPlanResult extends UpdatePlanResult {
+  iniLines: string[];
+  iniIndex: Record<string, number>;
   insertionIndex: number;
 }
 
@@ -42,7 +44,7 @@ export async function buildPatchPlanResult(
     opts.force,
   );
 
-  return { ...planResult, insertionIndex };
+  return { ...planResult, iniLines: lines, iniIndex: existingKeys, insertionIndex };
 }
 
 export async function buildPatchPlan(config: ItemConfig, options: BuildPatchPlanOptions = {}): Promise<PatchPlan> {
