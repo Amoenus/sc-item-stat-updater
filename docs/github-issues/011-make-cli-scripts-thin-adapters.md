@@ -45,3 +45,18 @@ Move reusable behavior into application/source/localization modules and leave `b
 - Run `npm test`.
 - Smoke test `--help` for each CLI script.
 - Run `npm run update -- --dry-run` if local data is available.
+
+## Progress
+
+2026-06-04:
+
+- `bin/pipeline.ts` already delegates pipeline behavior to `runFullPipeline`.
+- `bin/update-all.ts` delegates standard category updates to `enrichGlobalIni`.
+- `bin/update-all.ts --emit-artifact` delegates patch artifact planning to `generateArtifact`.
+- Added `prepareUpdateCategories` and updated `bin/update-all.ts` to delegate provider/source-directory discovery and category assembly to the application layer.
+- The script still owns CLI parsing, progress output, preflight, mining regeneration, backups, extra update steps, artifact file writing, and exit codes.
+
+Remaining:
+
+- Extract batch update execution into an application use case once result/error reporting can be represented without CLI concerns.
+- Move scraper acquisition/normalization behavior behind source modules before doing broad folder cleanup.

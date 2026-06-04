@@ -76,6 +76,9 @@ Incrementally migrate the project to the Clean Pipeline Architecture accepted in
   - `existingLineIndex` is treated as in-memory metadata only
   - `generateArtifact` consumes `buildPatchPlanResult`
   - `bin/update-all.ts --emit-artifact` routes through `generateArtifact`
+- CLI thinning has continued:
+  - `prepareUpdateCategories` now owns `update-all` source-directory discovery and category assembly
+  - `bin/update-all.ts` consumes prepared category context instead of loading provider/mission configs directly
 - Verified current migration slice with:
   - `npm run typecheck`
   - `npm test`

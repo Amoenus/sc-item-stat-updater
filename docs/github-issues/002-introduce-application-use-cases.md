@@ -78,7 +78,14 @@ Continued on 2026-06-04:
 - Artifact generation now consumes the application planning use case instead of calling the legacy `buildPatchData` bridge.
 - `bin/update-all.ts --emit-artifact` now routes through `generateArtifact`, with artifact planning prepared before any non-dry-run INI writes.
 
+Continued on 2026-06-04:
+
+- Added `prepareUpdateCategories` as an application use case for `bin/update-all.ts` category/version preparation.
+- The use case now resolves latest SCMDB and provider-specific source directories, loads provider/mission configs, filters skipped mission configs, and returns category/source-directory pairs for both artifact planning and update execution.
+- `bin/update-all.ts` now consumes that prepared result while retaining CLI-only responsibilities such as parsing args, progress display, preflight, backups, process exits, and artifact file emission.
+- Added tests for LIVE/PTU version directory resolution and missing-channel scraper hints.
+
 Remaining:
 
 - Extract smaller use cases for refresh, scrape, deploy, and batch enrichment once `runUpdate` is split further.
-- Extract `bin/update-all.ts` category/version resolution into an application use case so artifact planning and update execution share less script-local orchestration.
+- Extract batch update execution from `bin/update-all.ts` once the application result shape is clear.

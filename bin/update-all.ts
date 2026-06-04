@@ -3,9 +3,11 @@ import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
-import { findLatestMatchingDirectory } from '../src/io/local/discovery';
+import {
+  prepareUpdateCategories,
+  type UpdateProvider,
+} from '../src/application/use-cases/prepare-update-categories';
 import { backupIniFile } from '../src/io/local/ini-file';
-import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { preflightCheckConfigs } from '../src/lib/updater';
@@ -97,76 +99,25 @@ if (values.help) {
 
 applyLogFlags(values);
 
-/**
- * Finds the latest versioned subfolder under a base directory that matches
- * the requested channel (live or ptu).
- *
- * SCMDB folders:   "4.1.1-live.9800000" or "4.2.0-ptu.9900000"
- * SPViewer folders: "4.7.2.11715810-live" or "4.8.0.11768487-ptu"
- *
- * @param {string} base   - absolute path to the parent directory
- * @param {boolean} ptu   - true to look for PTU versions, false for LIVE
- * @param {string} source - label used in error messages (e.g. "SCMDB", "SPViewer")
- * @param {string} scraper - name of the scraper script to suggest in error messages
- * @returns {Promise<string>} - absolute path to the best matching version folder
- */
-async function resolveLatestVersionDir(base: string, ptu: boolean, source: string, scraper: string): Promise<string> {
-  const isMatch = ptu
-    ? (name: string) => /\bptu\b/i.test(name) || /-ptu[.\b]/i.test(name) || name.endsWith('-ptu')
-    : (name: string) => /\blive\b/i.test(name) || /-live[.\b]/i.test(name) || name.endsWith('-live');
-
-  return findLatestMatchingDirectory(base, isMatch, {
-    label: `${source} output directory`,
-    notFoundMessage: `${source} output directory not found: ${base}. Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
-    noMatchMessage:
-      `No ${ptu ? 'PTU' : 'LIVE'} ${source} version folder found under ${base}. ` +
-      `Run ${scraper}${ptu ? ' --ptu' : ''} first.`,
-  });
-}
-
 const repoRoot = path.resolve(import.meta.dirname, '..');
 
-const provider = values.provider ?? 'spviewer';
-if (provider !== 'spviewer' && provider !== 'datacore') {
-  console.error(`Unknown --provider "${provider}". Valid values: spviewer, datacore`);
+const providerValue = values.provider ?? 'spviewer';
+if (providerValue !== 'spviewer' && providerValue !== 'datacore') {
+  console.error(`Unknown --provider "${providerValue}". Valid values: spviewer, datacore`);
   process.exit(1);
 }
+const provider: UpdateProvider = providerValue;
 
-// Resolve versioned SCMDB directory (or use --csv-dir override for SCMDB).
-let csvDir: string;
-let scmdbVersion = '(custom)';
-
-if (values['csv-dir']) {
-  csvDir = values['csv-dir'];
-} else {
-  const scmdbBase = path.join(repoRoot, 'csv', 'scmdb');
-  const versionDir = await resolveLatestVersionDir(scmdbBase, values.ptu, 'SCMDB', 'scrape-scmdb.js');
-  csvDir = versionDir;
-  scmdbVersion = path.basename(versionDir);
-}
-
-// Resolve versioned SPViewer or DataCore directory (always auto-detected).
-let itemVersionDir: string;
-let itemVersion: string;
-
-if (provider === 'datacore') {
-  const datacoreBase = path.join(repoRoot, 'csv', 'datacore');
-  const versionDir = await resolveLatestVersionDir(datacoreBase, values.ptu, 'DataCore', 'scrape-datacore.js');
-  itemVersionDir = versionDir;
-  itemVersion = path.basename(versionDir);
-} else {
-  const spviewerBase = path.join(repoRoot, 'csv', 'spviewer');
-  const versionDir = await resolveLatestVersionDir(spviewerBase, values.ptu, 'SPViewer', 'scrape-spviewer.js');
-  itemVersionDir = versionDir;
-  itemVersion = path.basename(versionDir);
-}
-
-// Keep backward-compatible alias for steps that reference SPViewer dir directly.
-const spviewerVersionDir = provider === 'spviewer' ? itemVersionDir : undefined;
+const { categories, scmdbVersion, itemVersion, missionCsvDir, spviewerVersionDir } = await prepareUpdateCategories({
+  repoRoot,
+  provider,
+  ptu: values.ptu,
+  csvDir: values['csv-dir'],
+});
 
 const options = {
   iniPath: values['ini-path'],
-  csvDir,
+  csvDir: missionCsvDir,
   dryRun: values['dry-run'],
 };
 
@@ -175,13 +126,6 @@ logger.info('Starting batch update', { scmdbVersion, itemVersion, provider, chan
 console.log(`=== Starting update (${channel}, provider: ${provider}) ===`);
 console.log(`  SCMDB:    ${scmdbVersion}`);
 console.log(`  ${provider === 'datacore' ? 'DataCore' : 'SPViewer'}: ${itemVersion}\n`);
-
-// SPViewer configs: use the versioned spviewer directory.
-// Mission configs: use the versioned SCMDB root directory. Individual configs
-//   are responsible for their own subdirectory paths (e.g. scmdb.js uses
-//   csvFile: 'missions/scmdb-missions.csv', commodities.js globs merged-*.json
-//   at the root level via resolveJsonFile).
-const missionCsvDir = csvDir;
 
 try {
   logger.info('Regenerating mining-locations.csv', { missionCsvDir });
@@ -195,17 +139,6 @@ try {
   await shutdownLogger();
   process.exit(1);
 }
-
-const spviewerConfigs = provider === 'spviewer' ? [...(await loadSpviewerConfigs()).values()] : [];
-const datacoreConfigs = provider === 'datacore' ? [...(await loadDatacoreConfigs()).values()] : [];
-const missionConfigs = [...(await loadMissionConfigs()).values()].filter((c) => !c.skip);
-
-// Tag each config with the csvDir it should use.
-const categories = [
-  ...spviewerConfigs.map((cfg) => ({ config: cfg, csvDir: itemVersionDir })),
-  ...datacoreConfigs.map((cfg) => ({ config: cfg, csvDir: itemVersionDir })),
-  ...missionConfigs.map((cfg) => ({ config: cfg, csvDir: missionCsvDir })),
-];
 
 // Preflight: verify every declared static source file exists before touching anything.
 try {

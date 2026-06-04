@@ -169,6 +169,43 @@ Next agent instructions:
 3. Decide whether `existingLineIndex` should move out of the core `PatchEntry` type once localization variants have a cleaner model.
 4. Consider extracting the `update-all` category/version resolution into an application use case so CLI artifact emission and update execution share less script-local orchestration.
 
+### 2026-06-04: Update category preparation use case
+
+Implemented:
+
+- Added `src/application/use-cases/prepare-update-categories.ts`.
+- Moved `bin/update-all.ts` category/version preparation into the application layer:
+  - latest SCMDB directory resolution
+  - latest SPViewer/DataCore directory resolution
+  - provider-specific item config loading
+  - mission config loading and skip filtering
+  - category-to-source-directory pairing
+  - `spviewerVersionDir` compatibility output for SPViewer-only extra steps
+- Kept `bin/update-all.ts` responsible for CLI parsing, logging/progress output, preflight, mining regeneration, backups, extra update steps, artifact writing, and exit codes.
+- Added focused temp-directory tests for LIVE/PTU version directory selection and missing-channel scraper-hint errors.
+- Did not rename `src/lib` or `src/items`.
+- Did not include generated/scraped data changes.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/update-all.ts src/application/use-cases/prepare-update-categories.ts src/application/use-cases/prepare-update-categories.test.ts`
+- `node --import tsx/esm --test src/application/use-cases/prepare-update-categories.test.ts`
+
+Notes:
+
+- Optional update dry-runs were intentionally skipped for this slice because `bin/update-all.ts` still regenerates mining data before update execution, even in dry-run mode.
+
+Next agent instructions:
+
+1. Continue reducing `bin/update-all.ts` by extracting the actual batch update execution into an application use case that can consume prepared categories.
+2. Keep preflight, progress rendering, process exits, and CLI output in the script until the application result shape is explicit.
+3. Add artifact-loader fixture tests that generate or load a compact artifact and apply it to an INI fixture.
+4. Continue moving callers away from `buildPatchData`; leave it as compatibility glue until no old callers depend on it.
+5. Keep `runUpdate` compatibility until CLI callers can depend fully on application use cases.
+6. Do not broadly rename `src/lib` or `src/items` yet.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
