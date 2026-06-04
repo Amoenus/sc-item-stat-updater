@@ -46,7 +46,7 @@ import {
   extractHealth,
   loadXml,
   xmlVal,
-} from '../src/extractor/datacore-xml-parser';
+} from '../src/sources/datacore/xml-parser';
 import { ensureToolsInstalled, readGameVersion, resolveLiveDir, runTool } from '../src/io/local/unp4k-tool';
 import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../src/items/datacore/types';
 import {

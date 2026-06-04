@@ -803,6 +803,46 @@ Next agent instructions:
 4. Avoid running DataCore extraction commands that write generated XML/CSV unless explicitly requested.
 5. Keep `npm run scrape:datacore` behavior stable.
 
+### 2026-06-04: DataCore XML parser source facade
+
+Primary issue:
+
+- Issue 008 / GitHub #92: Move DataCore Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/datacore/xml-parser.ts` as a DataCore source-boundary facade for the existing XML parser and common normalization helpers.
+- Updated `bin/scrape-datacore.ts` to import `extractAttachDef`, `extractEntityClass`, `extractHealth`, `loadXml`, and `xmlVal` through the DataCore source boundary.
+- Kept `src/extractor/datacore-xml-parser.ts` in place as a compatibility module until later folder cleanup.
+- Added facade coverage for XML value/attribute helpers plus common attach, health, and entity-class normalization.
+- Did not run DataCore extraction or write generated XML/CSV data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/datacore/xml-parser.test.ts src/sources/datacore/xml-files.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/xml-parser.ts src/sources/datacore/xml-parser.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+
+Notes:
+
+- Issue 008 / GitHub #92 remains open pending one more DataCore extraction/acquisition boundary review.
+- Issue 011 / GitHub #95 remains open for DataCore acquisition follow-up, SPViewer legacy-source classification, and final CLI smoke testing.
+- The facade mirrors the SCMDB source facade pattern; physical relocation of the legacy extractor should wait for folder cleanup.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Add DataCore XML parser source facade`.
+2. Continue Issue 008 / GitHub #92 by reviewing DCB extraction/unforge orchestration in `bin/scrape-datacore.ts` and deciding whether a small source/acquisition helper can own command planning without moving CLI output, progress, file writes, or exits.
+3. If #92 acceptance is met after that review, run final verification, update local docs/GitHub, and close #92.
+4. Avoid running DataCore extraction commands that write generated XML/CSV unless explicitly requested.
+5. Keep current `npm run scrape:datacore` behavior stable.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

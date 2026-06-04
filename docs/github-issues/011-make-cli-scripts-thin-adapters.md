@@ -212,3 +212,24 @@ Remaining for #95:
 - Continue moving DataCore parser/acquisition responsibilities behind source modules.
 - Move/classify SPViewer scraper responsibilities as legacy source behavior.
 - Smoke test CLI help/commands as source boundaries settle.
+
+DataCore parser facade progress on 2026-06-04:
+
+- Added `src/sources/datacore/xml-parser.ts` as a source-boundary facade over the existing DataCore XML parser/common normalization helpers.
+- Updated `bin/scrape-datacore.ts` to import parser helpers through `src/sources/datacore`.
+- Kept the legacy parser module in place for compatibility and later cleanup.
+- Smoke-tested `node --import tsx/esm bin/scrape-datacore.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/datacore/xml-parser.test.ts src/sources/datacore/xml-files.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/xml-parser.ts src/sources/datacore/xml-parser.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+
+Remaining for #95:
+
+- Review DataCore extraction/acquisition orchestration before treating the scraper boundary as settled.
+- Move/classify SPViewer scraper responsibilities as legacy source behavior.
+- Smoke test CLI help/commands as source boundaries settle.
