@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { setLogLevel } from '../infrastructure/logger';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
 
 describe('buildReverseNameIndex', () => {
@@ -101,12 +102,84 @@ describe('resolveLocalizationKeys', () => {
     assert.strictEqual(resolved[0]['Localization Key'], 'item_Name_prospector_laser');
   });
 
+  it('resolves through lookupMap when reverseIndex has no matching name', () => {
+    const lookupMap = new Map([['Laser Repeater', 'item_Name_laser_repeater']]);
+    const rows = [{ Name: 'Laser Repeater', Power: '120' }];
+    const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', new Map(), lookupMap);
+    assert.strictEqual(resolved.length, 1);
+    assert.strictEqual(resolved[0]['Localization Key'], 'item_Name_laser_repeater');
+    assert.deepStrictEqual(unresolved, []);
+  });
+
+  it('resolves through reverseIndex when lookupMap has no matching name', () => {
+    const lookupMap = new Map([['Different Name', 'item_Name_different']]);
+    const rows = [{ Name: 'Shield Generator', Power: '50' }];
+    const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', reverseIndex, lookupMap);
+    assert.strictEqual(resolved.length, 1);
+    assert.strictEqual(resolved[0]['Localization Key'], 'item_Name_shield_gen');
+    assert.deepStrictEqual(unresolved, []);
+  });
+
+  it('resolves through suffix-endsWith scan across lookupMap entries', () => {
+    const lookupMap = new Map([['RSI Prospector Laser', 'item_Name_lookup_prospector_laser']]);
+    const rows = [{ Name: 'Prospector Laser', Power: '200' }];
+    const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', new Map(), lookupMap);
+    assert.strictEqual(resolved.length, 1);
+    assert.strictEqual(resolved[0]['Localization Key'], 'item_Name_lookup_prospector_laser');
+    assert.deepStrictEqual(unresolved, []);
+  });
+
   it('resolves via parenthetical strip', () => {
     const exactIndex = new Map([['Shield Generator', 'item_Name_shield_gen']]);
     const rows = [{ Name: 'Shield Generator (Ground)', Power: '50' }];
     const { resolved } = resolveLocalizationKeys(rows, 'Name', exactIndex);
     assert.strictEqual(resolved.length, 1);
     assert.strictEqual(resolved[0]['Localization Key'], 'item_Name_shield_gen');
+  });
+
+  it('returns unresolved when a parenthetical variant strips but still has no match', () => {
+    const exactIndex = new Map([['Different Shield', 'item_Name_different_shield']]);
+    const rows = [{ Name: 'Shield Generator (Ground)', Power: '50' }];
+    const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', exactIndex);
+    assert.strictEqual(resolved.length, 0);
+    assert.deepStrictEqual(unresolved, ['Shield Generator (Ground)']);
+  });
+
+  it('keeps empty and missing name values unresolved without attempting fallback scans', () => {
+    const lookupMap = new Map([['Fallback Name', 'item_Name_fallback']]);
+    const rows = [{ Name: '', Power: '0' }, { Power: '1' } as Record<string, string>];
+    const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', reverseIndex, lookupMap);
+    assert.strictEqual(resolved.length, 0);
+    assert.deepStrictEqual(unresolved, ['(empty)', '(empty)']);
+  });
+
+  it('debug-logs unresolved item count and sample names', () => {
+    const rows = [
+      { Name: 'Unknown Widget', Power: '0' },
+      { Name: 'Mystery Module', Power: '1' },
+      { Name: 'Laser Cannon', Power: '100' },
+    ];
+    const stderrWrite = process.stderr.write;
+    const chunks: string[] = [];
+    process.stderr.write = ((chunk: string | Uint8Array) => {
+      chunks.push(String(chunk));
+      return true;
+    }) as typeof process.stderr.write;
+    setLogLevel('debug');
+
+    try {
+      const { resolved, unresolved } = resolveLocalizationKeys(rows, 'Name', reverseIndex);
+      assert.strictEqual(resolved.length, 1);
+      assert.deepStrictEqual(unresolved, ['Unknown Widget', 'Mystery Module']);
+    } finally {
+      setLogLevel('info');
+      process.stderr.write = stderrWrite;
+    }
+
+    const output = chunks.join('');
+    assert.match(output, /Unresolved items \(no localization key found\)/);
+    assert.match(output, /count=2/);
+    assert.match(output, /sample=Unknown Widget, Mystery Module/);
   });
 
   it('savedMapping takes priority over reverseIndex', () => {

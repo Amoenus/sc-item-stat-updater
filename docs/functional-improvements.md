@@ -28,12 +28,6 @@ Priority: High
 
 Add a small fixture-driven integration test that starts with fixture source data and fixture `global.ini`, runs the planning/application flow, and asserts the resulting INI text. This should cover registry lookup, key resolution, patch planning, INI mutation, and preservation of unrelated keys without touching real generated data.
 
-### #55: Key Resolver Edge-Case Tests
-
-Priority: High
-
-Add negative and edge-case coverage for direct mappings, reverse-index resolution, variant suffix stripping, suffix fallback scans, missing keys, and debug logging. This is correctness work because key resolution errors can silently update or skip localization entries.
-
 ### #50: `descKeyMatch` Contract And Overlap Detection
 
 Priority: Medium-High
@@ -79,4 +73,8 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Start with #54 or #55. They are high-value, behavior-preserving test slices that reduce risk before larger functional changes. Avoid generated-data churn by using dedicated fixtures under a test directory rather than real `csv/` outputs or the repository `global.ini`.
+Start with #54. It is high-value, behavior-preserving integration coverage that reduces risk before larger functional changes. Avoid generated-data churn by using dedicated fixtures under a test directory rather than real `csv/` outputs or the repository `global.ini`.
+
+## Completed Functional Issues
+
+- #55: Key resolver edge-case coverage now exercises lookup-map hits, reverse-index hits, suffix stripping success and failure, suffix `endsWith` fallback, empty/missing names, no-match unresolved behavior, and debug logging assertions.
