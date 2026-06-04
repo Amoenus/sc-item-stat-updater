@@ -22,12 +22,6 @@ Current intentional compatibility:
 
 ## Tracked Functional Backlog
 
-### #54: Pipeline Integration Fixture Test
-
-Priority: High
-
-Add a small fixture-driven integration test that starts with fixture source data and fixture `global.ini`, runs the planning/application flow, and asserts the resulting INI text. This should cover registry lookup, key resolution, patch planning, INI mutation, and preservation of unrelated keys without touching real generated data.
-
 ### #50: `descKeyMatch` Contract And Overlap Detection
 
 Priority: Medium-High
@@ -73,8 +67,9 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Start with #54. It is high-value, behavior-preserving integration coverage that reduces risk before larger functional changes. Avoid generated-data churn by using dedicated fixtures under a test directory rather than real `csv/` outputs or the repository `global.ini`.
+Start with #50. It is the next medium-high behavior-preserving guardrail: add representative `descKeyMatch` positive/negative tests and overlap diagnostics before changing broader updater behavior.
 
 ## Completed Functional Issues
 
+- #54: Fixture-driven pipeline integration coverage now copies `test/fixtures/pipeline-integration` into a temporary directory, loads real `sp-coolers` and `dc-powerplants` configs through the registry, plans updates from CSV fixtures, applies the patch plans to a fixture `global.ini`, asserts exact generated INI output, and verifies unrelated keys stay unchanged.
 - #55: Key resolver edge-case coverage now exercises lookup-map hits, reverse-index hits, suffix stripping success and failure, suffix `endsWith` fallback, empty/missing names, no-match unresolved behavior, and debug logging assertions.

@@ -1,0 +1,4 @@
+Entity Class,Manufacturer,Size,Grade,Class,Power Output,EM Per Segment,Health
+powr_amrs_s1_heartbeat,AMRS,1,B,Military,3100,17,150
+powr_aegs_s2_sunflare,AEGS,2,A,Industrial,5500,25,300
+powr_tars_s1_nightfall,TARS,1,C,Stealth,2700,9,140
