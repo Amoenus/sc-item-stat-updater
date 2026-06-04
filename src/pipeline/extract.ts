@@ -4,7 +4,7 @@ import { ensureToolsInstalled, resolveLiveDir, runTool } from '../io/local/unp4k
 
 const FILTER = 'global.ini';
 
-function log(msg: string): void {
+function defaultLog(msg: string): void {
   console.log(`[extract-global-ini] ${msg}`);
 }
 
@@ -15,7 +15,7 @@ function log(msg: string): void {
  *   resolved Star Citizen LIVE directory.
  * @returns The absolute path to the extracted global.ini file.
  */
-export async function extractGlobalIni(p4kFile?: string): Promise<string> {
+export async function extractGlobalIni(p4kFile?: string, log: (msg: string) => void = defaultLog): Promise<string> {
   const liveDir = resolveLiveDir(path.resolve(import.meta.dirname, '..', '..', 'bin'));
   const resolvedP4k = p4kFile ?? path.join(liveDir, 'Data.p4k');
   const outputDir = path.dirname(resolvedP4k);

@@ -314,3 +314,23 @@ Remaining for #95:
 - Do not close #95 yet: older issue context explicitly calls out that `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
 - Add callable application/source entry points for pipeline orchestration so `runFullPipeline` can call in-process functions and return structured errors, while `bin/*.ts` remain CLI adapters.
 - Keep broad folder cleanup and compatibility export removal for their separate issues unless this narrow pipeline orchestration work requires a small compatibility note.
+
+Deployment-use-case progress on 2026-06-04:
+
+- Added `refreshGlobalIni` and `deployGlobalIni` under `src/application/use-cases`.
+- Updated `runFullPipeline` to delegate repo refresh and game deployment steps to those use cases.
+- Updated `extractGlobalIni` to accept an optional logger so application use cases can route extraction messages through pipeline logging.
+- Closed GitHub #90 after temp-directory copy/failure tests passed.
+- Did not manually run the full pipeline because that would touch local game/repo files.
+
+Verification:
+
+- `node --import tsx/esm --test src/application/use-cases/global-ini-deployment.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/pipeline/extract.ts src/application/use-cases/refresh-global-ini.ts src/application/use-cases/deploy-global-ini.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/global-ini-deployment.test.ts`
+
+Remaining for #95:
+
+- `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
+- Add callable application/source entry points for those pipeline steps so orchestration can run in process and return structured errors.

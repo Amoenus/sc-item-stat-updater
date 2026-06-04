@@ -983,6 +983,50 @@ Next agent instructions:
 4. Keep user-facing CLI output, parse args, progress, file writes, and process exits in scripts unless a use-case result shape is explicit.
 5. Avoid generated/scraped data churn unless explicitly requested.
 
+### 2026-06-04: Deployment use cases and Issue 006 closure
+
+Primary issue:
+
+- Issue 006 / GitHub #90: Add Deployment Use Case
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/refresh-global-ini.ts`.
+- Added `src/application/use-cases/deploy-global-ini.ts`.
+- Updated `src/application/use-cases/run-full-pipeline.ts` to delegate repo refresh and game deployment steps to those use cases.
+- Updated `extractGlobalIni` to accept an optional logger so application use cases can route extraction messages through pipeline logging instead of hard-coded console output.
+- Added temp-directory tests for:
+  - refreshing the repo `global.ini` from an extracted game file
+  - distinguishing missing game install/Data.p4k from repo-copy failure
+  - deploying the enriched repo file back to the extracted game path
+  - distinguishing missing repo file from deployment-copy failure
+- Did not manually run the full pipeline because that requires a safe `.env.local` game install and would touch local game/repo files.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/global-ini-deployment.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/pipeline/extract.ts src/application/use-cases/refresh-global-ini.ts src/application/use-cases/deploy-global-ini.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/global-ini-deployment.test.ts`
+
+Notes:
+
+- GitHub #90 can be closed as completed.
+- Issue 011 / GitHub #95 remains open because `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
+- The next #95 slice should add callable application/source entry points for those pipeline steps so orchestration can run in process and return structured errors.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Add global.ini deployment use cases`.
+2. Continue Issue 011 / GitHub #95 with the narrowest remaining pipeline shellout slice.
+3. Prefer introducing callable application functions around update execution first if that avoids making scraper CLIs importable while they still have top-level side effects.
+4. Keep user-facing CLI output, parse args, progress, file writes, and process exits in scripts unless a use-case result shape is explicit.
+5. Avoid generated/scraped data churn unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

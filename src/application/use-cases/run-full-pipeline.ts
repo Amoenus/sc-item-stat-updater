@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
-import { extractGlobalIni } from '../../pipeline/extract';
+import { deployGlobalIni } from './deploy-global-ini';
+import { refreshGlobalIni } from './refresh-global-ini';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -42,9 +42,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   if (options.datacore) updateArgs.push('--provider', 'datacore');
 
   log('=== Step 1: Extracting global.ini from Data.p4k ===');
-  const extractedGamePath = await extractGlobalIni();
-  log(`Copying extracted global.ini -> repo: ${repoIniPath}`);
-  fs.copyFileSync(extractedGamePath, repoIniPath);
+  const { extractedGamePath } = await refreshGlobalIni({ repoIniPath, log });
   options.onStepComplete?.('global.ini extracted & synced to repo');
 
   if (options.datacore) {
@@ -77,7 +75,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   options.onStepComplete?.('Stat updates applied');
 
   log('=== Step 4: Deploying updated global.ini -> game directory ===');
-  fs.copyFileSync(repoIniPath, extractedGamePath);
+  await deployGlobalIni({ repoIniPath, targetIniPath: extractedGamePath });
   log(`Deployed: ${extractedGamePath}`);
   options.onStepComplete?.('global.ini deployed to game directory');
 
