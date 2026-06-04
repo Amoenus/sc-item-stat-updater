@@ -58,24 +58,24 @@ Priority: Low
 
 Puppeteer is only needed for scraping, especially SPViewer flows. Consider making it optional or isolating scraper dependencies so users who only update from existing data do not download Chromium unnecessarily.
 
-## Additional Candidate Improvements
+## Newly Created Functional Issues
 
-These are not yet split into GitHub issues.
+These were split from the additional candidate inventory on 2026-06-04.
 
-- Add command-level no-write smoke tests for `update-all`, `update-item`, `apply-artifact`, and pipeline help/dry-run paths.
-- Add a generated-data churn guard that detects accidental changes under `csv/` or `global.ini` after verification commands that should not write.
-- Improve missing-source-data errors so they name the exact provider, channel, category, expected path, and suggested scrape/extract command.
-- Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
-- Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
-- Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
-- Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
-- Add malformed-artifact and schema-error UX tests with friendlier error messages.
-- Add localization duplicate/collision tests beyond key resolution, including plural/gender suffix handling and all-occurrence update paths.
-- Add a performance budget around a representative large fixture update to catch slow planning or INI application regressions.
-- Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
-- Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
-- Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
-- Add validation that `legacy-contracts.csv` and blueprint marker fields remain stable and documented for downstream users.
+- #99: Add command-level no-write smoke tests for `update-all`, `update-item`, `apply-artifact`, and pipeline help/dry-run paths.
+- #100: Add a generated-data churn guard that detects accidental changes under `csv/` or `global.ini` after verification commands that should not write.
+- #101: Improve missing-source-data errors so they name the exact provider, channel, category, expected path, and suggested scrape/extract command.
+- #102: Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
+- #103: Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
+- #104: Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
+- #105: Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
+- #106: Add malformed-artifact and schema-error UX tests with friendlier error messages.
+- #107: Add localization duplicate/collision tests beyond key resolution, including plural/gender suffix handling and all-occurrence update paths.
+- #108: Add a performance budget around a representative large fixture update to catch slow planning or INI application regressions.
+- #109: Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
+- #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
+- #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
+- #112: Add validation that `legacy-contracts.csv` and blueprint marker fields remain stable and documented for downstream users.
 
 ## Recommended Next Slice
 
