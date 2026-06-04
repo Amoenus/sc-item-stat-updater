@@ -1,9 +1,9 @@
-import { runAdagioLocationTagUpdate } from '../../lib/updates/adagio-location-tags';
-import { runComponentTitleUpdate } from '../../lib/updates/component-titles';
-import { runFpsTitleTagUpdate } from '../../lib/updates/fps-title-tags';
-import { runMiningJournalUpdate } from '../../lib/updates/mining-journal-update';
-import { runMissileTitleTagUpdate } from '../../lib/updates/missile-title-tags';
-import { runRawCommodityLabelFixUpdate } from '../../lib/updates/raw-commodity-label-fixes';
+import { runAdagioLocationTagUpdate } from '../../enrichment/updates/adagio-location-tags';
+import { runComponentTitleUpdate } from '../../enrichment/updates/component-titles';
+import { runFpsTitleTagUpdate } from '../../enrichment/updates/fps-title-tags';
+import { runMiningJournalUpdate } from '../../enrichment/updates/mining-journal-update';
+import { runMissileTitleTagUpdate } from '../../enrichment/updates/missile-title-tags';
+import { runRawCommodityLabelFixUpdate } from '../../enrichment/updates/raw-commodity-label-fixes';
 import type { BatchUpdateError, BatchUpdateResult } from './run-prepared-update-categories';
 
 export type UpdateExtraStepLabel =

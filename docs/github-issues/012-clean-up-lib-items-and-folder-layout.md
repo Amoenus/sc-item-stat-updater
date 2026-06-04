@@ -155,3 +155,25 @@ Remaining:
 - Continue reducing `src/lib` in small slices, likely updater compatibility and enrichment extra steps.
 - Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+Enrichment update steps slice on 2026-06-04:
+
+- Moved extra update step implementations from `src/lib/updates` to `src/enrichment/updates`.
+- Moved the FPS title-tag test to `src/enrichment/updates`.
+- Left `src/lib/updates/*` as documented compatibility re-exports for older imports.
+- Updated `runUpdateExtraSteps` to import active runners from `src/enrichment/updates`.
+- Removed a moved-file non-null assertion warning in `title-tag-utils`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `node --import tsx/esm --test src/enrichment/updates/fps-title-tags.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on moved enrichment update files, compatibility re-exports, and `src/application/use-cases/run-update-extra-steps.ts`
+
+Remaining:
+
+- Review whether `src/lib/updater.ts`, `src/lib/types.ts`, and `src/lib/preflight.test.ts` can remain as compatibility coverage or need a final compatibility-cleanup/documentation slice.
+- Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
+- Update README/project-structure docs once enough folder cleanup has landed.

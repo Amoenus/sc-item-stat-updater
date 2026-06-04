@@ -1534,6 +1534,43 @@ Next agent instructions:
 4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Enrichment update steps boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved extra update step implementations from `src/lib/updates` to `src/enrichment/updates`.
+- Moved the FPS title-tag test to `src/enrichment/updates`.
+- Left `src/lib/updates/*` as documented compatibility re-exports for older imports.
+- Updated `runUpdateExtraSteps` to import active runners from `src/enrichment/updates`.
+- Removed a moved-file non-null assertion warning in `title-tag-utils`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/enrichment/updates/fps-title-tags.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on moved enrichment update files, compatibility re-exports, and `src/application/use-cases/run-update-extra-steps.ts`
+
+Notes:
+
+- GitHub #96 remains open.
+- `src/lib/updates` is now compatibility-only.
+- `src/items` still contains enrichment rule modules themselves; narrowing or renaming that folder should remain an explicit slice.
+- README/project-structure updates should wait until the remaining compatibility layer is reviewed.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move enrichment update steps`.
+2. Continue Issue 012 / GitHub #96 by reviewing the remaining `src/lib` compatibility layer and deciding whether it can be documented as intentionally small.
+3. Keep `runUpdate` and `buildPatchData` compatibility exports until remaining old imports are known and migrated.
+4. Avoid broad `src/items` renames unless the slice has explicit acceptance and low churn.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
