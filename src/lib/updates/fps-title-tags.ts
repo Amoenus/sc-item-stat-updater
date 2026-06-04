@@ -79,7 +79,9 @@ function normalizeTypeCode(value: string | undefined): string {
 function normalizeDamageCode(row: Record<string, string>): string | null {
   const damageValues = new Map(DAMAGE_COLUMNS.map(([column, code]) => [code, Number(row[column] || '0')]));
   const maxDamage = Math.max(...damageValues.values());
-  const primaryDamage = PRIMARY_DAMAGE_CODES.find((code) => (damageValues.get(code) ?? 0) > 0 && damageValues.get(code) === maxDamage);
+  const primaryDamage = PRIMARY_DAMAGE_CODES.find(
+    (code) => (damageValues.get(code) ?? 0) > 0 && damageValues.get(code) === maxDamage,
+  );
   const secondaryDamage = SECONDARY_DAMAGE_CODES.find((code) => (damageValues.get(code) ?? 0) > 0);
   if (primaryDamage || secondaryDamage) return primaryDamage ?? secondaryDamage ?? null;
 

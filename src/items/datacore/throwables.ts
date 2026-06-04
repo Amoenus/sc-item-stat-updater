@@ -1,6 +1,6 @@
 import { stat } from '../../lib/format/stat-builder';
 import type { ItemConfig } from '../../lib/types';
-import { makeGetTargetKeysFromPrefixMap, type DataCoreItemTypeConfig } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
 // ⚠️ Throwable entity class prefixes vary (gren_, throwable_, etc.).
 // Verify p4kFilter and all field paths against real game files.

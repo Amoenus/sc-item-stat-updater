@@ -128,7 +128,10 @@ describe('SCMDB mission parser enrichment', () => {
 
     assert.strictEqual(rows.filter((row) => row['Localization Key'] === 'shared_title').length, 1);
     assert.strictEqual(rows.find((row) => row['Localization Key'] === 'shared_title')?.Description, 'Second Title');
-    assert.strictEqual(rows.find((row) => row['Localization Key'] === 'shared_title')?.TitleNote, ' <EM4>[Intro]</EM4>');
+    assert.strictEqual(
+      rows.find((row) => row['Localization Key'] === 'shared_title')?.TitleNote,
+      ' <EM4>[Intro]</EM4>',
+    );
   });
 
   it('keeps true intro title tags when a later contract shares the same title key', () => {
@@ -154,6 +157,9 @@ describe('SCMDB mission parser enrichment', () => {
     ];
     const rows = buildMissionRows(contracts as never, collectBlueprintChainData(contracts as never), {});
 
-    assert.strictEqual(rows.find((row) => row['Localization Key'] === 'shared_intro_title')?.TitleNote, ' <EM4>[Intro]</EM4>');
+    assert.strictEqual(
+      rows.find((row) => row['Localization Key'] === 'shared_intro_title')?.TitleNote,
+      ' <EM4>[Intro]</EM4>',
+    );
   });
 });

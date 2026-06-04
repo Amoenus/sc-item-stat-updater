@@ -1,8 +1,8 @@
 {
-    "recommendations": [
-        "fallow-rs.fallow-vscode",
-        "editorconfig.editorconfig",
-        "biomejs.biome",
-        "sonarsource.sonarlint-vscode"
-    ]
+  "recommendations": [
+    "fallow-rs.fallow-vscode",
+    "editorconfig.editorconfig",
+    "biomejs.biome",
+    "sonarsource.sonarlint-vscode"
+  ]
 }
