@@ -4,10 +4,19 @@ import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '..
 import type { ItemConfig } from '../../enrichment/item-config';
 
 export type UpdateProvider = 'spviewer' | 'datacore';
+export type UpdateSourceProvider = UpdateProvider | 'scmdb';
+export type UpdateChannel = 'LIVE' | 'PTU';
+
+export interface UpdateSourceMetadata {
+  provider: UpdateSourceProvider;
+  channel: UpdateChannel;
+  category: string;
+}
 
 export interface UpdateCategory {
   config: ItemConfig;
   csvDir: string;
+  source?: UpdateSourceMetadata;
 }
 
 export interface PrepareUpdateCategoriesOptions {
@@ -87,15 +96,28 @@ export async function prepareUpdateCategories(
 
   const spviewerVersionDir = options.provider === 'spviewer' ? itemVersionDir : undefined;
   const missionCsvDir = scmdbDir;
+  const channel: UpdateChannel = ptu ? 'PTU' : 'LIVE';
 
-  const spviewerConfigs = options.provider === 'spviewer' ? [...(await loadSpviewerConfigs()).values()] : [];
-  const datacoreConfigs = options.provider === 'datacore' ? [...(await loadDatacoreConfigs()).values()] : [];
-  const missionConfigs = [...(await loadMissionConfigs()).values()].filter((config) => !config.skip);
+  const spviewerConfigs = options.provider === 'spviewer' ? [...(await loadSpviewerConfigs()).entries()] : [];
+  const datacoreConfigs = options.provider === 'datacore' ? [...(await loadDatacoreConfigs()).entries()] : [];
+  const missionConfigs = [...(await loadMissionConfigs()).entries()].filter(([, config]) => !config.skip);
 
   const categories = [
-    ...spviewerConfigs.map((config) => ({ config, csvDir: itemVersionDir })),
-    ...datacoreConfigs.map((config) => ({ config, csvDir: itemVersionDir })),
-    ...missionConfigs.map((config) => ({ config, csvDir: missionCsvDir })),
+    ...spviewerConfigs.map(([category, config]) => ({
+      config,
+      csvDir: itemVersionDir,
+      source: { provider: 'spviewer' as const, channel, category },
+    })),
+    ...datacoreConfigs.map(([category, config]) => ({
+      config,
+      csvDir: itemVersionDir,
+      source: { provider: 'datacore' as const, channel, category },
+    })),
+    ...missionConfigs.map(([category, config]) => ({
+      config,
+      csvDir: missionCsvDir,
+      source: { provider: 'scmdb' as const, channel, category },
+    })),
   ];
 
   return {

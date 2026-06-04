@@ -84,6 +84,56 @@ describe('preflightCheckConfigs', () => {
     }
   });
 
+  it('reports provider, channel, category, path, and command for a missing DataCore item source', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    try {
+      const expectedPath = path.join(dir, 'coolers.datacore.csv');
+      const categories = [
+        {
+          config: makeConfig({ csvFile: 'coolers.datacore.csv', label: 'DataCore Coolers' }),
+          csvDir: dir,
+          source: { provider: 'datacore' as const, channel: 'LIVE' as const, category: 'dc-coolers' },
+        },
+      ];
+
+      await assert.rejects(preflightCheckConfigs(categories), (err: Error) => {
+        assert.ok(err.message.includes('DataCore'), 'should name the provider');
+        assert.ok(err.message.includes('LIVE'), 'should name the channel');
+        assert.ok(err.message.includes('dc-coolers'), 'should name the category');
+        assert.ok(err.message.includes(expectedPath), 'should include the expected path');
+        assert.ok(err.message.includes('npm run scrape:datacore'), 'should suggest the DataCore scraper');
+        return true;
+      });
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('reports provider, channel, category, path, and command for a missing SCMDB mission source', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    try {
+      const expectedPath = path.join(dir, 'missions.csv');
+      const categories = [
+        {
+          config: makeConfig({ csvFile: 'missions.csv', label: 'Mission Descriptions' }),
+          csvDir: dir,
+          source: { provider: 'scmdb' as const, channel: 'PTU' as const, category: 'mission-descriptions' },
+        },
+      ];
+
+      await assert.rejects(preflightCheckConfigs(categories), (err: Error) => {
+        assert.ok(err.message.includes('SCMDB'), 'should name the provider');
+        assert.ok(err.message.includes('PTU'), 'should name the channel');
+        assert.ok(err.message.includes('mission-descriptions'), 'should name the category');
+        assert.ok(err.message.includes(expectedPath), 'should include the expected path');
+        assert.ok(err.message.includes('npm run scrape:scmdb -- --ptu'), 'should suggest the SCMDB PTU scraper');
+        return true;
+      });
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('reports all missing files in a single error', async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
     try {

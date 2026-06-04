@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #101: Improve missing-source-data errors so they name the exact provider, channel, category, expected path, and suggested scrape/extract command.
 - #102: Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
 - #103: Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
 - #104: Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
@@ -58,10 +57,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #101 next. It is a behavior-preserving UX slice for missing-source-data errors and can use temporary directories for focused tests.
+Inspect #102 next. It is a behavior-preserving artifact UX slice that can be driven by compact fixture artifacts and temporary INI files.
 
 ## Completed Functional Issues
 
+- #101: Missing-source-data preflight errors now include provider, channel, category slug, config label when useful, expected resolved path, and a relevant `npm run scrape:*` command suggestion. Focused tests cover a missing DataCore item source and a missing SCMDB PTU mission source while preserving the successful preflight path.
 - #100: Added `npm run check:no-generated-churn`, backed by a git-status guard for repository `csv/` and root `global.ini`, with tests proving fixture/temp-directory writes are ignored and generated-data changes produce clear path-specific failures.
 - #99: Command-level smoke tests now spawn `update-all`, `update-item`, and `pipeline` help paths plus an `apply-artifact --dry-run` temp fixture, asserting exit codes, user-facing output, and no INI fixture writes.
 - #112: SCMDB output contract tests now pin `legacy-contracts.csv` column ordering, assert the blueprint marker fields `isBlueprintReward`, `isBlueprintChainPrerequisite`, and `blueprintChainDepth`, and document the downstream contract in `docs/scmdb-output-contracts.md`.

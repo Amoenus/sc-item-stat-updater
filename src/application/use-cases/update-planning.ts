@@ -11,6 +11,7 @@ import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
 import { getLogger } from '../../infrastructure/logger';
 import type { IssueRecord, ItemConfig } from '../../enrichment/item-config';
+import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
 
 const logger = getLogger('updater');
 
@@ -59,6 +60,12 @@ interface UpdateStats {
   errorCount: number;
   unresolvedCount: number;
   issues: IssueRecord[];
+}
+
+interface PreflightCategory {
+  config: ItemConfig;
+  csvDir: string;
+  source?: UpdateSourceMetadata;
 }
 
 export interface UpdatePlanResult extends UpdateStats {
@@ -171,6 +178,60 @@ async function loadLookupMap(lookupCsvFile: string, csvDir: string): Promise<Map
   return buildLookupMap(lookupPath);
 }
 
+function formatProvider(provider: UpdateSourceProvider | undefined): string | undefined {
+  switch (provider) {
+    case 'datacore':
+      return 'DataCore';
+    case 'scmdb':
+      return 'SCMDB';
+    case 'spviewer':
+      return 'SPViewer';
+    default:
+      return undefined;
+  }
+}
+
+function inferProvider(config: ItemConfig, csvDir: string): UpdateSourceProvider | undefined {
+  const haystack = [config.csvFile, config.jsonFile, config.lookupCsvFile, csvDir].filter(Boolean).join(' ');
+  if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
+  if (/\bscmdb\b|mission/i.test(haystack)) return 'scmdb';
+  if (/\bspviewer\b|\.spviewer\./i.test(haystack)) return 'spviewer';
+  return undefined;
+}
+
+function inferChannel(csvDir: string): UpdateChannel | undefined {
+  if (/\bptu\b|[-.]ptu\b/i.test(csvDir)) return 'PTU';
+  if (/\blive\b|[-.]live\b/i.test(csvDir)) return 'LIVE';
+  return undefined;
+}
+
+function scrapeCommand(provider: UpdateSourceProvider | undefined, channel: UpdateChannel | undefined): string | undefined {
+  if (!provider) return undefined;
+  const command =
+    provider === 'datacore'
+      ? 'npm run scrape:datacore'
+      : provider === 'scmdb'
+        ? 'npm run scrape:scmdb'
+        : 'npm run scrape:spviewer';
+  return channel === 'PTU' ? `${command} -- --ptu` : command;
+}
+
+function formatMissingSource(category: PreflightCategory, filename: string, filePath: string): string {
+  const provider = category.source?.provider ?? inferProvider(category.config, category.csvDir);
+  const channel = category.source?.channel ?? inferChannel(category.csvDir);
+  const sourceCategory = category.source?.category ?? category.config.label;
+  const context = [formatProvider(provider), channel, sourceCategory].filter(Boolean).join(' | ');
+  const lines = [
+    `  [${context || category.config.label}] ${filename}`,
+    `    Expected: ${filePath}`,
+    `    Generate with: ${scrapeCommand(provider, channel) ?? 'the matching source scraper'}`,
+  ];
+  if (sourceCategory !== category.config.label) {
+    lines.splice(1, 0, `    Config: ${category.config.label}`);
+  }
+  return lines.join('\n');
+}
+
 /** Finds the last existing description key index for insertion ordering. */
 export function findLastDescIndex(
   existingKeys: Record<string, number>,
@@ -280,9 +341,10 @@ function planRow(
  * All missing paths are collected before throwing so users see every problem
  * at once rather than discovering them one run at a time.
  */
-export async function preflightCheckConfigs(categories: Array<{ config: ItemConfig; csvDir: string }>): Promise<void> {
+export async function preflightCheckConfigs(categories: PreflightCategory[]): Promise<void> {
   const perConfig = await Promise.all(
-    categories.map(async ({ config, csvDir }) => {
+    categories.map(async (category) => {
+      const { config, csvDir } = category;
       // Skip configs whose file is resolved dynamically at runtime.
       if (config.resolveJsonFile) return [];
       const filenames = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(
@@ -295,7 +357,7 @@ export async function preflightCheckConfigs(categories: Array<{ config: ItemConf
             await fs.access(filePath);
             return null;
           } catch {
-            return `  [${config.label}] ${filename}`;
+            return formatMissingSource(category, filename, filePath);
           }
         }),
       );
