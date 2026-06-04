@@ -281,3 +281,36 @@ Remaining for #95:
 
 - Run final CLI help/list smoke coverage across the settled scripts.
 - Decide whether #95 can close or if folder cleanup/compatibility exports should remain tracked separately.
+
+Closure review on 2026-06-04:
+
+- Re-reviewed #95 acceptance and recent comments after DataCore and SPViewer source-boundary work closed.
+- Confirmed direct CLI help/list smoke passes for:
+  - `node --import tsx/esm bin/update-all.ts --help`
+  - `node --import tsx/esm bin/update-item.ts --help`
+  - `node --import tsx/esm bin/pipeline.ts --help`
+  - `node --import tsx/esm bin/apply-artifact.ts --help`
+  - `node --import tsx/esm bin/scrape-scmdb.ts --help`
+  - `node --import tsx/esm bin/scrape-datacore.ts --help`
+  - `node --import tsx/esm bin/scrape-spviewer.ts --help`
+  - `node --import tsx/esm bin/regen-mining-locations.ts --help`
+- Confirmed npm-script smoke passes for:
+  - `npm run update -- --help`
+  - `npm run pipeline -- --help`
+  - `npm run scrape:scmdb -- --help`
+  - `npm run scrape:datacore -- --help`
+  - `npm run scrape:spviewer -- --list`
+- Confirmed `parseArgs`, user-facing `console.*`, and `process.exit` calls are in `bin/*.ts` rather than application/source modules.
+- Did not run update dry-runs or real scraper commands because those may touch local/generated data.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- CLI smoke commands listed above
+
+Remaining for #95:
+
+- Do not close #95 yet: older issue context explicitly calls out that `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
+- Add callable application/source entry points for pipeline orchestration so `runFullPipeline` can call in-process functions and return structured errors, while `bin/*.ts` remain CLI adapters.
+- Keep broad folder cleanup and compatibility export removal for their separate issues unless this narrow pipeline orchestration work requires a small compatibility note.

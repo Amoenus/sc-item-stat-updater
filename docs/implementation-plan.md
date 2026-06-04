@@ -936,6 +936,53 @@ Next agent instructions:
 4. Keep compatibility exports and broad folder cleanup for later explicit issues unless #95 acceptance requires a narrow note.
 5. Avoid generated/scraped data churn unless explicitly requested.
 
+### 2026-06-04: Issue 011 closure review and CLI smoke
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Re-reviewed #95 acceptance and issue comments after SCMDB, DataCore, and SPViewer source-boundary issues closed.
+- Confirmed direct CLI help/list smoke passes for:
+  - `node --import tsx/esm bin/update-all.ts --help`
+  - `node --import tsx/esm bin/update-item.ts --help`
+  - `node --import tsx/esm bin/pipeline.ts --help`
+  - `node --import tsx/esm bin/apply-artifact.ts --help`
+  - `node --import tsx/esm bin/scrape-scmdb.ts --help`
+  - `node --import tsx/esm bin/scrape-datacore.ts --help`
+  - `node --import tsx/esm bin/scrape-spviewer.ts --help`
+  - `node --import tsx/esm bin/regen-mining-locations.ts --help`
+- Confirmed npm-script smoke passes for:
+  - `npm run update -- --help`
+  - `npm run pipeline -- --help`
+  - `npm run scrape:scmdb -- --help`
+  - `npm run scrape:datacore -- --help`
+  - `npm run scrape:spviewer -- --list`
+- Confirmed `parseArgs`, user-facing `console.*`, and `process.exit` calls are in `bin/*.ts` rather than application/source modules.
+- Did not run update dry-runs or real scraper commands because those may touch local/generated data.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- CLI smoke commands listed above
+
+Notes:
+
+- GitHub #95 should remain open for now because older issue context explicitly calls out that `runFullPipeline` still shells out through `spawnSync` for scraper/update steps.
+- The next #95 slice should add callable application/source entry points for pipeline orchestration so `runFullPipeline` can call in-process functions and return structured errors, while `bin/*.ts` remain CLI adapters.
+- Broad folder cleanup and compatibility export removal remain separate later issues unless the narrow pipeline orchestration work requires a small compatibility note.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Review CLI adapter closure status`.
+2. Continue Issue 011 / GitHub #95 by designing the smallest in-process pipeline orchestration slice.
+3. Prefer introducing callable application functions around update execution first if that avoids making scraper CLIs importable while they still have top-level side effects.
+4. Keep user-facing CLI output, parse args, progress, file writes, and process exits in scripts unless a use-case result shape is explicit.
+5. Avoid generated/scraped data churn unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
