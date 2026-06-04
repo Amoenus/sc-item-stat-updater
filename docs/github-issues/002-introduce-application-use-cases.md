@@ -67,6 +67,12 @@ Started on 2026-06-04:
 - Use cases return structured results and do not call `process.exit`.
 - Verified with `npm run typecheck` and `npm test`.
 
+Updated on 2026-06-04:
+
+- `buildPatchPlan` now returns the actual `PatchPlan` produced by the extracted updater planner.
+- This use case is intentionally thin for the migration: it provides a stable application boundary while orchestration is moved out of `src/lib/updater.ts`.
+
 Remaining:
 
 - Extract smaller use cases for refresh, scrape, deploy, and batch enrichment once `runUpdate` is split further.
+- Move row/INI loading and key-resolution orchestration into `buildPatchPlan`, or remove the wrapper once callers can depend directly on a stable planning API.

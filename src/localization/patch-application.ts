@@ -6,6 +6,7 @@ export interface PatchApplicationResult {
   missingCount: number;
   patches: Record<string, string>;
   missingKeys: string[];
+  newLines: string[];
 }
 
 export interface ApplyPatchPlanOptions {
@@ -50,7 +51,7 @@ export function applyPatchPlanToIniLines(
   let appliedCount = 0;
 
   for (const entry of plan.entries) {
-    const lineIndex = index[entry.key];
+    const lineIndex = entry.existingLineIndex ?? index[entry.key];
     if (lineIndex == null) {
       missingKeys.push(entry.key);
       if (options.insertMissing) {
@@ -76,5 +77,6 @@ export function applyPatchPlanToIniLines(
     missingCount: missingKeys.length,
     patches,
     missingKeys,
+    newLines,
   };
 }

@@ -1,7 +1,8 @@
 import assert from 'node:assert';
 import { describe, it, mock } from 'node:test';
+import type { ItemConfig } from './types';
 import { getLogger } from './logger';
-import { validateRow } from './updater';
+import { buildUpdatePlan, validateRow } from './updater';
 
 describe('updater: validateRow', () => {
   it('should return "valid" for a valid localization key', () => {
@@ -38,5 +39,74 @@ describe('updater: validateRow', () => {
     const row = { 'Localization Key': 'item.name-01' };
     const result = validateRow(row, 'test-label');
     assert.strictEqual(result, 'valid');
+  });
+});
+
+describe('updater: buildUpdatePlan', () => {
+  const config: ItemConfig = {
+    label: 'test-items',
+    requiredColumns: ['Localization Key', 'Stat'],
+    descKeyMatch: (key) => key.endsWith('_desc'),
+    buildValue: (row) => `stat: ${row.Stat}`,
+  };
+
+  it('plans updates from rows and INI context without mutating INI lines', () => {
+    const lines = ['item_name=Item', 'item_desc=old stat'];
+
+    const result = buildUpdatePlan(
+      config,
+      [
+        { 'Localization Key': 'item_name', Stat: 'new stat' },
+        { 'Localization Key': 'missing_name', Stat: 'missing stat' },
+        { 'Localization Key': 'invalid key!', Stat: 'bad stat' },
+        { 'Localization Key': 'N/A', Stat: 'skip stat' },
+      ],
+      {
+        lines,
+        existingKeys: { item_name: 0, item_desc: 1 },
+        lowerCaseIndex: new Map([
+          ['item_name', 'item_name'],
+          ['item_desc', 'item_desc'],
+        ]),
+        allOccurrences: new Map([['item_desc', [1]]]),
+      },
+      ['Unresolved Item'],
+    );
+
+    assert.deepStrictEqual(lines, ['item_name=Item', 'item_desc=old stat']);
+    assert.strictEqual(result.updatedCount, 1);
+    assert.strictEqual(result.skippedCount, 2);
+    assert.strictEqual(result.errorCount, 1);
+    assert.strictEqual(result.unresolvedCount, 1);
+    assert.deepStrictEqual(result.plan.entries, [
+      {
+        key: 'item_desc',
+        value: 'stat: new stat',
+        source: 'test-items',
+        reason: 'Existing updater patch',
+        existingLineIndex: 1,
+      },
+    ]);
+    assert.deepStrictEqual(
+      result.issues.map((issue) => issue.type),
+      ['unresolved', 'missing', 'error'],
+    );
+  });
+
+  it('records found rows without adding patch entries when values are unchanged', () => {
+    const result = buildUpdatePlan(
+      config,
+      [{ 'Localization Key': 'item_name', Stat: 'same stat' }],
+      {
+        lines: ['item_desc=stat: same stat'],
+        existingKeys: { item_desc: 0 },
+        lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
+        allOccurrences: new Map([['item_desc', [0]]]),
+      },
+    );
+
+    assert.strictEqual(result.updatedCount, 0);
+    assert.strictEqual(result.foundCount, 1);
+    assert.deepStrictEqual(result.plan.entries, []);
   });
 });

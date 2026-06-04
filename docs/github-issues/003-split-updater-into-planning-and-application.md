@@ -66,8 +66,20 @@ Started on 2026-06-04:
 - Added `buildPatchPlan` as an in-memory use case backed by existing `buildPatchData`.
 - Verified with `npm run typecheck` and `npm test`.
 
+Continued on 2026-06-04:
+
+- Extracted `buildUpdatePlan` from `src/lib/updater.ts`.
+- `buildUpdatePlan` accepts item config, resolved rows, and an in-memory INI context.
+- The planner returns `PatchPlan` entries, update issues, and the existing summary counters used by `runUpdate`.
+- Reworked `runUpdate` to compose source loading, INI reading, SPViewer key resolution, planning, patch application, integrity validation, and conditional writing.
+- Added optional `PatchEntry.existingLineIndex` as an in-memory migration hint for duplicate/suffixed INI entries.
+- Updated `applyPatchPlanToIniLines` to honor explicit line indices while keeping input lines immutable.
+- Updated `buildPatchPlan` to return the planner's real `PatchPlan`.
+- Added focused in-memory tests for planner behavior and explicit line-index application.
+- Verified with `npm run typecheck`, `npm test`, and `npm run update -- --dry-run --provider datacore`.
+
 Remaining:
 
-- Extract a true planner from `src/lib/updater.ts` that creates `PatchPlan` entries without mutating INI lines.
-- Recompose `runUpdate` from planning plus patch application.
-- Add planner tests that use small row and INI fixtures.
+- Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.
+- Move more orchestration from `src/lib/updater.ts` into `src/application/use-cases/build-patch-plan.ts`; it is currently a deliberate transitional boundary, not a final best-practice abstraction.
+- Align artifacts with `PatchPlan` so `buildPatchData` no longer needs to bridge through legacy `patches` maps.

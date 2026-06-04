@@ -5,7 +5,8 @@ import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
 import { readJsonFile } from '../io/local/json-file';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
 import { resolveChildPath } from '../io/local/path-conventions';
-import { applyLocalizationLinePatch, insertLocalizationEntries } from '../localization/patch-application';
+import { applyPatchPlanToIniLines } from '../localization/patch-application';
+import type { PatchPlan } from '../pipeline/types';
 import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
@@ -42,6 +43,29 @@ interface ResolvedOptions {
   dryRun: boolean;
   skipBackup: boolean;
   force: boolean;
+}
+
+export interface IniPlanningContext {
+  lines: string[];
+  existingKeys: Record<string, number>;
+  lowerCaseIndex: Map<string, string>;
+  allOccurrences: Map<string, number[]>;
+}
+
+interface UpdateStats {
+  updatedCount: number;
+  newCount: number;
+  skippedCount: number;
+  foundCount: number;
+  errorCount: number;
+  unresolvedCount: number;
+  issues: IssueRecord[];
+}
+
+export interface UpdatePlanResult extends UpdateStats {
+  label: string;
+  plan: PatchPlan;
+  newLines: string[];
 }
 
 /** Resolves base paths and option defaults. */
@@ -179,30 +203,15 @@ function getTargetKeys(
   return [descKey, ...altKeys];
 }
 
-/**
- * Applies one updated value to the lines array, preserving any variant suffix
- * (e.g. `,P`) that may be present on the actual line key.
- */
-function applyLinePatch(
-  lines: string[],
-  lineIndex: number,
-  oldLine: string,
-  foundKey: string,
-  newValue: string,
-  patches: Record<string, string>,
-): void {
-  applyLocalizationLinePatch(lines, lineIndex, oldLine, foundKey, newValue, patches);
-}
-
 type KeyUpdateResult = 'notFound' | 'found' | 'updated';
 
 /**
- * Attempts to find and patch all occurrences of a target key (base form,
- * plural/gendered variants, and true duplicates). Each line is patched
- * independently using its own existing value, so variant strings with
- * different surrounding text are handled correctly.
+ * Attempts to plan updates for all occurrences of a target key (base form,
+ * plural/gendered variants, and true duplicates). Each occurrence is planned
+ * independently using its own existing value, so variant strings with different
+ * surrounding text are handled correctly.
  */
-function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<string, string>): KeyUpdateResult {
+function tryPlanKey(targetKey: string, context: PlanningContext, row: Record<string, string>): KeyUpdateResult {
   const foundKey = findIniKey(context.existingKeys, context.lowerCaseIndex, targetKey);
   if (!foundKey) return 'notFound';
 
@@ -217,7 +226,7 @@ function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<str
     if (!buildValue) throw new Error(`buildValue is required for config "${context.config.label}"`);
     const newValue = sanitizeIniValue(buildValue(row, extractFlavorText(oldValue), oldValue, foundKey));
     if (newValue !== oldValue) {
-      applyLinePatch(context.lines, lineIndex, oldLine, foundKey, newValue, context.patches);
+      context.planPatch(foundKey, newValue, lineIndex);
       anyUpdated = true;
     }
   }
@@ -225,9 +234,9 @@ function tryUpdateKey(targetKey: string, context: UpdateContext, row: Record<str
   return anyUpdated ? 'updated' : 'found';
 }
 
-function processRow(
+function planRow(
   row: Record<string, string>,
-  context: UpdateContext,
+  context: PlanningContext,
   deriveDescKey: (nameKey: string) => string,
   _force = false,
 ): void {
@@ -241,7 +250,7 @@ function processRow(
   let anyFound = false;
 
   for (const targetKey of targetKeys) {
-    const result = tryUpdateKey(targetKey, context, row);
+    const result = tryPlanKey(targetKey, context, row);
     if (result !== 'notFound') {
       anyFound = true;
       if (result === 'updated') anyUpdated = true;
@@ -259,11 +268,6 @@ function processRow(
   }
 
   context.markMissing(targetKeys[0] ?? '');
-}
-
-/** Inserts new lines at the correct position (after last matching desc key). */
-function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: number): void {
-  insertLocalizationEntries(lines, newLines, lastDescIdx);
 }
 
 /**
@@ -326,16 +330,15 @@ export function validateIntegrity(originalLineCount: number, lines: string[]): v
   }
 }
 
-class UpdateContext {
+class PlanningContext {
   config: ItemConfig;
   lines: string[];
   existingKeys: Record<string, number>;
   lowerCaseIndex: Map<string, string>;
   allOccurrences: Map<string, number[]>;
-  dryRun: boolean;
   updatedKeys: Set<string>;
+  plan: PatchPlan;
   newLines: string[];
-  patches: Record<string, string>;
   issues: IssueRecord[];
   updatedCount: number;
   newCount: number;
@@ -351,24 +354,23 @@ class UpdateContext {
     lowerCaseIndex: Map<string, string>,
     allOccurrences: Map<string, number[]>,
     unresolvedNames: string[],
-    dryRun: boolean,
   ) {
     this.config = config;
     this.lines = lines;
     this.existingKeys = existingKeys;
     this.lowerCaseIndex = lowerCaseIndex;
     this.allOccurrences = allOccurrences;
-    this.dryRun = dryRun;
 
     this.updatedKeys = new Set();
+    this.plan = { entries: [], issues: [] };
     this.newLines = [];
-    this.patches = {};
     this.issues = unresolvedNames.map((name) => ({
       label: config.label,
       key: name,
       reason: 'No localization key found',
       type: 'unresolved',
     }));
+    this.plan.issues = this.issues;
 
     this.updatedCount = 0;
     this.newCount = 0;
@@ -376,6 +378,16 @@ class UpdateContext {
     this.skippedCount = 0;
     this.errorCount = 0;
     this.unresolvedCount = unresolvedNames.length;
+  }
+
+  planPatch(key: string, value: string, existingLineIndex: number): void {
+    this.plan.entries.push({
+      key,
+      value,
+      source: this.config.label,
+      reason: 'Existing updater patch',
+      existingLineIndex,
+    });
   }
 
   markSkipped() {
@@ -412,14 +424,11 @@ class UpdateContext {
     this.skippedCount++;
   }
 
-  buildResult(durationMs: number) {
-    const suffix = this.dryRun ? ' (dry run)' : '';
-    const errorSuffix = this.errorCount > 0 ? `, Errors ${this.errorCount}` : '';
-    const unresolvedSuffix = this.unresolvedCount > 0 ? `, Unresolved ${this.unresolvedCount}` : '';
-    const foundSuffix = this.foundCount > 0 ? `, Found ${this.foundCount}` : '';
-    const summary = `${this.config.label}: Updated ${this.updatedCount}, Added ${this.newCount}${foundSuffix}, Skipped ${this.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
-
-    const stats = {
+  buildPlan(): UpdatePlanResult {
+    return {
+      label: this.config.label,
+      plan: this.plan,
+      newLines: this.newLines,
       updatedCount: this.updatedCount,
       newCount: this.newCount,
       skippedCount: this.skippedCount,
@@ -428,17 +437,80 @@ class UpdateContext {
       unresolvedCount: this.unresolvedCount,
       issues: this.issues,
     };
-
-    logger.debug(summary, {
-      label: this.config.label,
-      durationMs,
-      dryRun: this.dryRun,
-      ...stats,
-      issues: this.issues.length,
-    });
-
-    return { label: this.config.label, ...stats, patches: this.patches, newLines: this.newLines, summary };
   }
+}
+
+function buildUpdateResult(planResult: UpdatePlanResult, patches: Record<string, string>, dryRun: boolean, durationMs: number) {
+  const suffix = dryRun ? ' (dry run)' : '';
+  const errorSuffix = planResult.errorCount > 0 ? `, Errors ${planResult.errorCount}` : '';
+  const unresolvedSuffix = planResult.unresolvedCount > 0 ? `, Unresolved ${planResult.unresolvedCount}` : '';
+  const foundSuffix = planResult.foundCount > 0 ? `, Found ${planResult.foundCount}` : '';
+  const summary = `${planResult.label}: Updated ${planResult.updatedCount}, Added ${planResult.newCount}${foundSuffix}, Skipped ${planResult.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
+
+  const stats = {
+    updatedCount: planResult.updatedCount,
+    newCount: planResult.newCount,
+    skippedCount: planResult.skippedCount,
+    foundCount: planResult.foundCount,
+    errorCount: planResult.errorCount,
+    unresolvedCount: planResult.unresolvedCount,
+    issues: planResult.issues,
+  };
+
+  logger.debug(summary, {
+    label: planResult.label,
+    durationMs,
+    dryRun,
+    ...stats,
+    issues: planResult.issues.length,
+  });
+
+  return {
+    label: planResult.label,
+    ...stats,
+    patches,
+    newLines: planResult.newLines,
+    plan: planResult.plan,
+    summary,
+  };
+}
+
+export function buildUpdatePlan(
+  config: ItemConfig,
+  rows: Record<string, string>[],
+  iniContext: IniPlanningContext,
+  unresolvedNames: string[] = [],
+  force = false,
+): UpdatePlanResult {
+  const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
+  const context = new PlanningContext(
+    config,
+    iniContext.lines,
+    iniContext.existingKeys,
+    iniContext.lowerCaseIndex,
+    iniContext.allOccurrences,
+    unresolvedNames,
+  );
+
+  for (const row of rows) {
+    const validation = getRowValidation(config, row);
+    if (validation === 'skip') {
+      context.markSkipped();
+      continue;
+    }
+    if (validation === 'invalid') {
+      context.markInvalid(row['Localization Key']);
+      continue;
+    }
+
+    try {
+      planRow(row, context, deriveDescKey, force);
+    } catch (err) {
+      context.markError(row['Localization Key'], err instanceof Error ? err : new Error(String(err)));
+    }
+  }
+
+  return context.buildPlan();
 }
 
 /**
@@ -447,10 +519,10 @@ class UpdateContext {
  * - Always writes when `force` is set (even if no values changed).
  * - Otherwise writes only when at least one line was updated or added.
  */
-function shouldWriteIni(opts: ResolvedOptions, context: UpdateContext): boolean {
+function shouldWriteIni(opts: ResolvedOptions, planResult: UpdatePlanResult): boolean {
   if (opts.dryRun) return false;
   if (opts.force) return true;
-  return context.updatedCount > 0 || context.newCount > 0;
+  return planResult.updatedCount > 0 || planResult.newCount > 0;
 }
 
 /** Determines the validation result for a row, bypassing column validation for configs with custom target key logic. */
@@ -483,47 +555,25 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
       unresolvedNames = result.unresolved;
     }
 
-    const deriveDescKey = config.nameKeyToDescKey || defaultNameKeyToDescKey;
     const lastDescIdx = findLastDescIndex(existingKeys, lowerCaseIndex, config.descKeyMatch);
 
-    const context = new UpdateContext(
+    const planResult = buildUpdatePlan(
       config,
-      lines,
-      existingKeys,
-      lowerCaseIndex,
-      allOccurrences,
+      resolvedRows,
+      { lines, existingKeys, lowerCaseIndex, allOccurrences },
       unresolvedNames,
-      opts.dryRun,
+      opts.force,
     );
+    const application = applyPatchPlanToIniLines(lines, existingKeys, planResult.plan, { insertionIndex: lastDescIdx });
 
-    for (const row of resolvedRows) {
-      const validation = getRowValidation(config, row);
-      if (validation === 'skip') {
-        context.markSkipped();
-        continue;
-      }
-      if (validation === 'invalid') {
-        context.markInvalid(row['Localization Key']);
-        continue;
-      }
+    validateIntegrity(originalLineCount, application.lines);
 
-      try {
-        processRow(row, context, deriveDescKey, opts.force);
-      } catch (err) {
-        context.markError(row['Localization Key'], err instanceof Error ? err : new Error(String(err)));
-      }
-    }
-
-    insertNewEntries(lines, context.newLines, lastDescIdx);
-
-    validateIntegrity(originalLineCount, lines);
-
-    if (shouldWriteIni(opts, context)) {
-      await writeIniFile(opts.iniPath, lines, { skipBackup: opts.skipBackup });
+    if (shouldWriteIni(opts, planResult)) {
+      await writeIniFile(opts.iniPath, application.lines, { skipBackup: opts.skipBackup });
     }
 
     const durationMs = Math.round(performance.now() - start);
-    return context.buildResult(durationMs);
+    return buildUpdateResult(planResult, application.patches, opts.dryRun, durationMs);
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${(err as Error).message}`, { cause: err });
   }
@@ -536,6 +586,6 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
  */
 export async function buildPatchData(config: ItemConfig, options: UpdateOptions = {}) {
   const result = await runUpdate(config, { ...options, dryRun: true, skipBackup: true });
-  const { patches, newLines, issues, summary, label, ...stats } = result;
-  return { label, patches, newLines, issues, stats, summary };
+  const { patches, newLines, issues, summary, label, plan, ...stats } = result;
+  return { label, patches, newLines, issues, stats, plan, summary };
 }

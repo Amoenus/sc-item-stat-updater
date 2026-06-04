@@ -200,8 +200,11 @@ type PatchEntry = {
   value: string;
   source: string;
   reason: string;
+  existingLineIndex?: number;
 };
 ```
+
+`existingLineIndex` is a transitional in-memory application hint used while the legacy updater is being split. It lets the planner preserve current duplicate and plural/gender suffix behavior without changing the artifact JSON shape. Future artifact alignment should decide whether this stays as metadata, moves into an application-only type, or disappears when localization variants have a cleaner model.
 
 ## Boundary Rules
 
@@ -220,6 +223,8 @@ type PatchEntry = {
 4. Rename broad folders such as `lib` and `items` only after behavior has clearer homes.
 5. Keep tests passing after each move.
 6. Remove abandoned DDD scaffolding and avoid adding empty architectural folders before code exists.
+
+During migration, some use cases may temporarily look like thin middle-men over legacy modules. That is intentional only when it creates a stable application boundary for callers while behavior moves behind it. Each middle layer should either grow into real orchestration or be removed after the legacy dependency is gone.
 
 ## Non-Goals
 

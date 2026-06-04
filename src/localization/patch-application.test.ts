@@ -34,4 +34,25 @@ describe('localization: patch application', () => {
     assert.deepStrictEqual(result.patches, { a_desc: 'new a' });
     assert.deepStrictEqual(result.missingKeys, ['missing_desc']);
   });
+
+  it('applies a planned entry to an explicit existing line index', () => {
+    const lines = ['item_desc,P=old plural', 'item_desc=old base'];
+    const plan: PatchPlan = {
+      entries: [
+        {
+          key: 'item_desc',
+          value: 'new plural',
+          source: 'test',
+          reason: 'fixture',
+          existingLineIndex: 0,
+        },
+      ],
+      issues: [],
+    };
+
+    const result = applyPatchPlanToIniLines(lines, { item_desc: 1 }, plan);
+
+    assert.deepStrictEqual(result.lines, ['item_desc,P=new plural', 'item_desc=old base']);
+    assert.deepStrictEqual(result.patches, { item_desc: 'new plural' });
+  });
 });

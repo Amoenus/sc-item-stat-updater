@@ -95,6 +95,50 @@ Next agent instructions:
 5. Add focused tests for planning separately from application. Use small INI/row fixtures; do not require scraped CSV directories.
 6. Keep `npm run pipeline:scrape:datacore` and `npm run update -- --dry-run --provider datacore` behavior stable.
 
+### 2026-06-04: Issue 003 planner extraction
+
+Implemented:
+
+- Extracted `buildUpdatePlan` from `src/lib/updater.ts`.
+- `buildUpdatePlan` accepts item config, resolved rows, and an in-memory INI context, then returns:
+  - `PatchPlan` entries
+  - update issues
+  - existing summary counters needed by `runUpdate`
+- Reworked `runUpdate` as composition:
+  - load source data
+  - read INI context
+  - resolve SPViewer localization keys when needed
+  - build an in-memory update plan
+  - apply the plan with localization application helpers
+  - validate integrity
+  - write only when requested by non-dry-run options
+- Extended `PatchEntry` with optional `existingLineIndex` as an in-memory migration hint so duplicate/suffixed INI entries keep current behavior.
+- Updated `buildPatchPlan` to return the planner's actual `PatchPlan`.
+- Kept `buildPatchData` and `runUpdate` compatibility result fields for artifact and CLI callers.
+- Added focused planner tests using tiny in-memory fixtures.
+- Added application tests for explicit line-index patch application.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npm run update -- --dry-run --provider datacore`
+- `npx biome lint` on the touched files
+
+Notes:
+
+- Full `npm run lint` is still blocked by pre-existing unrelated issues, including `.fallowrc.json` parse errors, the Biome schema version mismatch, and older lint findings outside this change.
+- `src/application/use-cases/build-patch-plan.ts` is intentionally thin during this migration. It should either grow into the orchestration owner for loading rows/INI context and calling `buildUpdatePlan`, or be removed once callers can depend on a stable planner API directly.
+
+Next agent instructions:
+
+1. Continue Issue 003/005 by deciding how `PatchPlan` should map to artifact JSON.
+2. Avoid leaking `existingLineIndex` into persisted artifacts unless ADR/docs are updated to make that part of the contract.
+3. Move more orchestration from `src/lib/updater.ts` into `src/application/use-cases/build-patch-plan.ts` so the use case stops being a thin pass-through.
+4. Keep `runUpdate` as compatibility glue until CLI/artifact callers are fully moved.
+5. Add tests for artifact generation once it consumes `PatchPlan` directly or formally documents the legacy `patches` map bridge.
+6. Do not rename `src/lib` or `src/items` yet.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
