@@ -558,6 +558,47 @@ Next agent instructions:
 4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
 5. Keep CLI parse args, console output, and process exits in `bin/scrape-scmdb.ts`.
 
+### 2026-06-04: SCMDB acquisition helper source module
+
+Primary issue:
+
+- Issue 009 / GitHub #93: Move SCMDB Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/scmdb/acquisition.ts`.
+- Moved SCMDB data URL construction, JSON fetching, User-Agent handling, HTTP failure reporting, and schema validation into the SCMDB source boundary.
+- Updated `bin/scrape-scmdb.ts` to delegate versions fetch/validation, merged-data fetch, companion URL building, and optional companion JSON fetches to the source module.
+- Kept CLI help output, user-facing status messages, output writes, argument interpretation, and process exits in the scraper script.
+- Added injected-fetch tests so acquisition behavior is verified without network access.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/acquisition.test.ts src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/acquisition.ts src/sources/scmdb/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Notes:
+
+- Issue 009 / GitHub #93 remains open.
+- Issue 011 / GitHub #95 remains open.
+- Existing scraper command names and output locations are unchanged.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move SCMDB acquisition helpers to source module`.
+2. Continue Issue 009 / GitHub #93 by moving another SCMDB scraper responsibility behind `src/sources/scmdb`.
+3. Good next candidates: pure row-output assembly helpers, output file planning, or schema re-export/compatibility adapters.
+4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
+5. Keep CLI parse args, console output, file writes, and process exits in `bin/scrape-scmdb.ts` until a stronger application/acquisition result shape exists.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

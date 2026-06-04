@@ -81,3 +81,25 @@ Remaining:
 - Move SCMDB fetch/validate behavior into a source/acquisition boundary.
 - Move SCMDB row-output assembly toward source transforms or compatibility adapters.
 - Keep mission/mining/commodity enrichment planning separate from source acquisition/normalization.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/acquisition.ts`.
+- Moved SCMDB data URL construction, JSON fetching, User-Agent handling, HTTP failure reporting, and schema validation into the SCMDB source boundary.
+- Updated `bin/scrape-scmdb.ts` to delegate versions fetch/validation, merged-data fetch, companion URL building, and optional companion JSON fetches to the source module.
+- Added injected-fetch tests so acquisition behavior is verified without network access.
+- Kept scraper CLI output, output writes, argument interpretation, and process exits in `bin/scrape-scmdb.ts`.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/acquisition.test.ts src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/acquisition.ts src/sources/scmdb/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Move SCMDB row-output assembly toward source transforms or compatibility adapters.
+- Keep mission/mining/commodity enrichment planning separate from source acquisition/normalization.

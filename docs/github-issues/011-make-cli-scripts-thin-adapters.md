@@ -118,3 +118,24 @@ Remaining:
 
 - Continue moving SCMDB scraper acquisition/normalization behavior behind `src/sources/scmdb`.
 - Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
+
+Continued on 2026-06-04:
+
+- Added `src/sources/scmdb/acquisition.ts`.
+- Moved SCMDB data URL construction, JSON fetching, User-Agent handling, HTTP failure reporting, and schema validation out of `bin/scrape-scmdb.ts`.
+- Updated the scraper script to delegate versions fetch/validation, merged-data fetch, companion URL building, and optional companion JSON fetches to the source module.
+- Kept CLI help output, user-facing status messages, output writes, argument interpretation, and process exits in the scraper script.
+- Smoke-tested `node --import tsx/esm bin/scrape-scmdb.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/scmdb/acquisition.test.ts src/sources/scmdb/version-selection.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/sources/scmdb/acquisition.ts src/sources/scmdb/acquisition.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Remaining:
+
+- Continue moving SCMDB row assembly/output planning behind source modules.
+- Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.

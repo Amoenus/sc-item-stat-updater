@@ -26,6 +26,12 @@ import {
   ScmdbMiningDataSchema,
   ScmdbVersionsSchema,
 } from '../src/schema/scmdb.schemas';
+import {
+  buildScmdbDataUrls,
+  fetchAndValidateScmdbJson,
+  fetchScmdbJson,
+  SCMDB_VERSIONS_URL,
+} from '../src/sources/scmdb/acquisition';
 import { selectScmdbVersion, type ScmdbVersionEntry } from '../src/sources/scmdb/version-selection';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,23 +57,6 @@ Examples:
   node scrape-scmdb.js --version 4.8.0-ptu.11759767
   node scrape-scmdb.js --list-versions
 `);
-}
-
-async function fetchJson(url: string): Promise<unknown> {
-  const res = await fetch(url, { headers: { 'User-Agent': 'SCMDB Scraper' } });
-  if (!res.ok) {
-    throw new Error(`Fetch failed ${res.status} ${res.statusText} for ${url}`);
-  }
-  return res.json();
-}
-
-async function fetchAndValidate<T>(url: string, schema: import('zod').ZodType<T>): Promise<T> {
-  const raw = await fetchJson(url);
-  const result = schema.safeParse(raw);
-  if (!result.success) {
-    throw new Error(`Schema validation failed for ${url}:\n${result.error.toString()}`);
-  }
-  return result.data;
 }
 
 function writeOutput(fileName: string, content: string): void {
@@ -158,8 +147,7 @@ async function main() {
     process.exit(0);
   }
 
-  const versionsUrl = 'https://scmdb.net/data/versions.json';
-  const versions = await fetchAndValidate(versionsUrl, ScmdbVersionsSchema);
+  const versions = await fetchAndValidateScmdbJson(SCMDB_VERSIONS_URL, ScmdbVersionsSchema);
 
   if (listVersions) {
     printVersions(versions);
@@ -176,17 +164,13 @@ async function main() {
   mkdirSync(outDir, { recursive: true });
   mkdirSync(missionsOutDir, { recursive: true });
 
-  const mergedUrl = `https://scmdb.net/data/${selected.file}`;
-  const mergedRaw = await fetchJson(mergedUrl);
+  const { mergedUrl, miningUrl, craftingItemsUrl, craftingBlueprintsUrl } = buildScmdbDataUrls(selected.file);
+  const mergedRaw = await fetchScmdbJson(mergedUrl);
   writeOutput(selected.file, JSON.stringify(mergedRaw, null, 2));
 
-  const miningUrl = `https://scmdb.net/data/mining_data-${selected.file.replace('merged-', '')}`;
-  const craftingItemsUrl = `https://scmdb.net/data/crafting_items-${selected.file.replace('merged-', '')}`;
-  const craftingBlueprintsUrl = `https://scmdb.net/data/crafting_blueprints-${selected.file.replace('merged-', '')}`;
-
-  const miningRaw = await fetchJson(miningUrl).catch(() => null);
-  const craftingItemsRaw = await fetchJson(craftingItemsUrl).catch(() => null);
-  const craftingBlueprintsRaw = await fetchJson(craftingBlueprintsUrl).catch(() => null);
+  const miningRaw = await fetchScmdbJson(miningUrl).catch(() => null);
+  const craftingItemsRaw = await fetchScmdbJson(craftingItemsUrl).catch(() => null);
+  const craftingBlueprintsRaw = await fetchScmdbJson(craftingBlueprintsUrl).catch(() => null);
 
   if (miningRaw) {
     writeOutput(`mining_data-${selected.file.replace('merged-', '')}`, JSON.stringify(miningRaw, null, 2));
