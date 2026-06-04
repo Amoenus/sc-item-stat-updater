@@ -33,7 +33,7 @@ npm install
 npm run update
 ```
 
-Runs all categories using the selected item-stat provider plus SCMDB missions. SPViewer remains the default legacy/fallback item provider during the migration; use `--provider datacore` when DataCore coverage is preferred for supported categories. It automatically detects the latest versioned directories for LIVE data.
+Runs all categories using the selected item-stat provider plus SCMDB missions. SPViewer remains the default legacy/fallback item provider; use `--provider datacore` when DataCore coverage is preferred for supported categories. It automatically detects the latest versioned directories for LIVE data.
 
 Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
@@ -130,7 +130,7 @@ Runs `tsc --noEmit` to validate TypeScript types without emitting any output fil
 
 ## Project structure
 
-The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Active code uses the responsibility-specific folders below; `src/lib` currently contains only updater compatibility glue and its regression tests.
+The code is organized around a Clean Pipeline Architecture built around acquisition, normalization, patch planning, INI application, and deployment. Active code uses the responsibility-specific folders below.
 
 ```
 bin/
@@ -147,7 +147,6 @@ src/
   infrastructure/         # Logging and CSV serialization infrastructure
   io/local/               # Local filesystem IO helpers and path conventions
   items/                  # Item and mission enrichment rule modules
-  lib/                    # Updater compatibility glue and regression tests
   localization/           # INI parsing/application, key resolution, and localization text helpers
   pipeline/               # Core pipeline data contracts
   presentation/           # CLI argument and presentation helpers
@@ -167,7 +166,7 @@ The update flow is split into two clearer steps:
 1. Build a patch plan from normalized source data.
 2. Apply that patch plan to INI text safely.
 
-`src/lib/updater.ts` remains as compatibility glue for older `runUpdate` and `buildPatchData` imports while active callers move through application use cases.
+Planning, preflight, and integrity helpers live in `src/application/use-cases/update-planning.ts`; `enrichGlobalIni` applies the resulting patch plan through localization application helpers.
 
 Each item rule module (`src/items/datacore/*.ts`, `src/items/spviewer/*.ts`, or `src/items/missions/*.ts`) provides:
 - `csvFile` or `jsonFile` - which source file to read

@@ -7,7 +7,7 @@ import {
   resolveSpviewerKeys,
   type UpdateOptions,
   type UpdatePlanResult,
-} from '../../lib/updater';
+} from './update-planning';
 import type { PatchPlan } from '../../pipeline/types';
 import { readIniFile } from '../../localization/ini-file';
 

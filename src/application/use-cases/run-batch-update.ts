@@ -1,6 +1,6 @@
 ﻿import path from 'node:path';
 import { backupIniFile } from '../../localization/ini-file';
-import { preflightCheckConfigs } from '../../lib/updater';
+import { preflightCheckConfigs } from './update-planning';
 import { regenMiningLocations } from '../../sources/scmdb/mining-locations';
 import {
   prepareUpdateCategories,

@@ -3,7 +3,7 @@ import type { ItemConfig } from '../../enrichment/item-config';
 import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
 import { getLogger } from '../../infrastructure/logger';
-import { resolveOptions, validateIntegrity, type UpdatePlanResult } from '../../lib/updater';
+import { resolveOptions, validateIntegrity, type UpdatePlanResult } from './update-planning';
 import type { PatchPlan } from '../../pipeline/types';
 import { buildPatchPlanResult } from './build-patch-plan';
 

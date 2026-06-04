@@ -1,16 +1,16 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readCsvFile } from '../io/local/csv-parser';
-import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
-import { readJsonFile } from '../io/local/json-file';
-import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
-import { resolveChildPath } from '../io/local/path-conventions';
-import { applyPatchPlanToIniLines, type LocalizationPatchPlan } from '../localization/patch-application';
-import { sanitizeIniValue } from '../enrichment/formatter';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../localization/text-utils';
-import { buildReverseNameIndex, resolveLocalizationKeys } from '../localization/key-resolver';
-import { getLogger } from '../infrastructure/logger';
-import type { IssueRecord, ItemConfig } from '../enrichment/item-config';
+import { readCsvFile } from '../../io/local/csv-parser';
+import { findIniKey } from '../../localization/ini-file';
+import { readJsonFile } from '../../io/local/json-file';
+import { buildLookupMap, loadMappingFile, saveMappingFile } from '../../io/local/mapping-store';
+import { resolveChildPath } from '../../io/local/path-conventions';
+import type { LocalizationPatchPlan } from '../../localization/patch-application';
+import { sanitizeIniValue } from '../../enrichment/formatter';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
+import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
+import { getLogger } from '../../infrastructure/logger';
+import type { IssueRecord, ItemConfig } from '../../enrichment/item-config';
 
 const logger = getLogger('updater');
 
@@ -439,41 +439,6 @@ class PlanningContext {
   }
 }
 
-function buildUpdateResult(planResult: UpdatePlanResult, patches: Record<string, string>, dryRun: boolean, durationMs: number) {
-  const suffix = dryRun ? ' (dry run)' : '';
-  const errorSuffix = planResult.errorCount > 0 ? `, Errors ${planResult.errorCount}` : '';
-  const unresolvedSuffix = planResult.unresolvedCount > 0 ? `, Unresolved ${planResult.unresolvedCount}` : '';
-  const foundSuffix = planResult.foundCount > 0 ? `, Found ${planResult.foundCount}` : '';
-  const summary = `${planResult.label}: Updated ${planResult.updatedCount}, Added ${planResult.newCount}${foundSuffix}, Skipped ${planResult.skippedCount}${errorSuffix}${unresolvedSuffix}${suffix} [${durationMs}ms]`;
-
-  const stats = {
-    updatedCount: planResult.updatedCount,
-    newCount: planResult.newCount,
-    skippedCount: planResult.skippedCount,
-    foundCount: planResult.foundCount,
-    errorCount: planResult.errorCount,
-    unresolvedCount: planResult.unresolvedCount,
-    issues: planResult.issues,
-  };
-
-  logger.debug(summary, {
-    label: planResult.label,
-    durationMs,
-    dryRun,
-    ...stats,
-    issues: planResult.issues.length,
-  });
-
-  return {
-    label: planResult.label,
-    ...stats,
-    patches,
-    newLines: planResult.newLines,
-    plan: planResult.plan,
-    summary,
-  };
-}
-
 export function buildUpdatePlan(
   config: ItemConfig,
   rows: Record<string, string>[],
@@ -512,105 +477,8 @@ export function buildUpdatePlan(
   return context.buildPlan();
 }
 
-/**
- * Returns true when the INI file should be written to disk.
- * - Never writes during a dry run.
- * - Always writes when `force` is set (even if no values changed).
- * - Otherwise writes only when at least one line was updated or added.
- */
-function shouldWriteIni(opts: ResolvedOptions, planResult: UpdatePlanResult): boolean {
-  if (opts.dryRun) return false;
-  if (opts.force) return true;
-  return planResult.updatedCount > 0 || planResult.newCount > 0;
-}
-
-async function planAndApplyUpdate(
-  config: ItemConfig,
-  opts: ResolvedOptions,
-): Promise<{ planResult: UpdatePlanResult; patches: Record<string, string>; lines: string[] }> {
-  const rows = await loadSourceData(config, opts.csvDir);
-  const { lines, index: existingKeys, lowerCaseIndex, allOccurrences } = await readIniFile(opts.iniPath);
-  const originalLineCount = lines.length;
-
-  let resolvedRows = rows;
-  let unresolvedNames: string[] = [];
-  if (config.nameColumn) {
-    const result = await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun);
-    resolvedRows = result.resolvedRows;
-    unresolvedNames = result.unresolved;
-  }
-
-  const lastDescIdx = findLastDescIndex(existingKeys, lowerCaseIndex, config.descKeyMatch);
-
-  const planResult = buildUpdatePlan(
-    config,
-    resolvedRows,
-    { lines, existingKeys, lowerCaseIndex, allOccurrences },
-    unresolvedNames,
-    opts.force,
-  );
-  const application = applyPatchPlanToIniLines(lines, existingKeys, planResult.plan, { insertionIndex: lastDescIdx });
-
-  validateIntegrity(originalLineCount, application.lines);
-
-  return { planResult, patches: application.patches, lines: application.lines };
-}
-
 /** Determines the validation result for a row, bypassing column validation for configs with custom target key logic. */
 function getRowValidation(config: ItemConfig, row: Record<string, string>): 'valid' | 'skip' | 'invalid' {
   if (config.getTargetKeys && !row['Localization Key']) return 'valid';
   return validateRow(row, config.label);
-}
-
-/** Runs a source-based update against global.ini. */
-export async function runUpdate(config: ItemConfig, options: UpdateOptions = {}) {
-  const start = performance.now();
-  const opts = resolveOptions(options);
-
-  try {
-    await fs.access(opts.iniPath);
-  } catch {
-    throw new Error(`INI file not found: ${opts.iniPath}`);
-  }
-
-  try {
-    const application = await planAndApplyUpdate(config, opts);
-
-    if (shouldWriteIni(opts, application.planResult)) {
-      await writeIniFile(opts.iniPath, application.lines, { skipBackup: opts.skipBackup });
-    }
-
-    const durationMs = Math.round(performance.now() - start);
-    return buildUpdateResult(application.planResult, application.patches, opts.dryRun, durationMs);
-  } catch (err) {
-    throw new Error(`Failed to update ${config.label}: ${(err as Error).message}`, { cause: err });
-  }
-}
-
-/**
- * Runs the Extract+Transform phase for one item config and returns a patch manifest
- * (key?value pairs) without writing to global.ini. This compatibility API is
- * retained for old callers; new planning callers should use the PatchPlan APIs.
- */
-export async function buildPatchData(config: ItemConfig, options: UpdateOptions = {}) {
-  const start = performance.now();
-  const opts = resolveOptions({ ...options, dryRun: true, skipBackup: true });
-
-  try {
-    await fs.access(opts.iniPath);
-  } catch {
-    throw new Error(`INI file not found: ${opts.iniPath}`);
-  }
-
-  let result: ReturnType<typeof buildUpdateResult>;
-  try {
-    const application = await planAndApplyUpdate(config, opts);
-    const durationMs = Math.round(performance.now() - start);
-    result = buildUpdateResult(application.planResult, application.patches, true, durationMs);
-  } catch (err) {
-    throw new Error(`Failed to update ${config.label}: ${(err as Error).message}`, { cause: err });
-  }
-
-  const { patches, newLines, issues, summary, label, plan, ...stats } = result;
-  return { label, patches, newLines, issues, stats, plan, summary };
 }

@@ -99,72 +99,27 @@ Examples:
 - Back up the previous file where appropriate.
 - Copy the enriched `global.ini` back into the game folder.
 
-## Target Source Layout
+## Source Layout
 
-The exact migration can be incremental, but new code should move toward this structure:
+The implemented source layout is:
 
 ```text
 src/
-  acquisition/
-    game-files/
-      extract-global-ini.ts
-      extract-datacore.ts
-    web/
-      scrape-scmdb.ts
-      scrape-spviewer.ts
-
-  sources/
-    datacore/
-      parser.ts
-      schemas.ts
-      transforms/
-    scmdb/
-      parser.ts
-      schemas.ts
-      transforms/
-    spviewer/
-      parser.ts
-      schemas.ts
-      transforms/
-
-  localization/
-    ini-file.ts
-    ini-tags.ts
-    key-resolver.ts
-    patch-plan.ts
-    patch-application.ts
-
-  enrichment/
-    item-descriptions/
-    mission-text/
-    mining-journal/
-    commodity-labels/
-    title-tags/
-
-  artifacts/
-    artifact.ts
-    artifact.schema.ts
-
-  application/
-    use-cases/
-      refresh-global-ini.ts
-      scrape-data-sources.ts
-      build-patch-plan.ts
-      enrich-global-ini.ts
-      deploy-global-ini.ts
-      run-full-pipeline.ts
-
-  infrastructure/
-    filesystem/
-    logging/
-
-  presentation/
-    cli/
+  application/      # Use cases and workflow orchestration
+  artifact/         # Patch artifact generation/loading/application
+  enrichment/       # Item config contracts, stat formatting, and extra update steps
+  extractor/        # Parser internals reused by source facades
+  infrastructure/   # Logging and CSV serialization infrastructure
+  io/local/         # Local filesystem IO helpers and path conventions
+  items/            # Item and mission enrichment rule modules
+  localization/     # INI parsing/application, key resolution, and localization text helpers
+  pipeline/         # Core pipeline data contracts
+  presentation/     # CLI argument and presentation helpers
+  schema/           # Runtime schemas
+  sources/          # DataCore, SCMDB, and SPViewer source acquisition/normalization
 ```
 
-The current code does not yet match this layout. The rewrite should proceed by moving behavior behind use cases and tests rather than by doing a blind folder shuffle.
-
-Current migration note: DataCore and SCMDB already expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy/fallback source and exposes its HTML parser facade and dataset types under `src/sources/spviewer` while the old extractor module stays in place for compatibility until folder cleanup.
+DataCore and SCMDB expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy/fallback source and exposes its HTML parser facade and dataset types under `src/sources/spviewer`.
 
 ## Core Concepts
 
@@ -205,7 +160,7 @@ type PatchEntry = {
 };
 ```
 
-Duplicate and plural/gender suffix handling still needs an application-only line-index hint while the legacy updater is being split. That hint now lives on the localization application type `LocalizationPatchEntry`, not the core `PatchEntry` contract. This keeps persisted patch plans and artifacts independent from line positions while preserving current INI behavior.
+Duplicate and plural/gender suffix handling uses an application-only line-index hint on the localization application type `LocalizationPatchEntry`, not the core `PatchEntry` contract. This keeps persisted patch plans and artifacts independent from line positions while preserving current INI behavior.
 
 ### Patch Artifact
 
@@ -238,7 +193,7 @@ When adding a source provider, keep acquisition and normalization separate from 
 1. Add provider-specific records and dataset aliases under `src/sources/<provider>/types.ts`.
 2. Put fetch, scrape, cache, or tool-invocation logic under `src/sources/<provider>/acquisition.ts` or similarly named source modules.
 3. Normalize provider data into stable records before application use cases consume it.
-4. Keep provider modules independent from `global.ini` mutation, localization patch application, and `src/lib/updater` compatibility code.
+4. Keep provider modules independent from `global.ini` mutation, localization patch application, and application update-planning code.
 5. Add a use case under `src/application/use-cases` when CLI or pipeline orchestration needs to run the provider.
 6. Add focused tests for version selection, parsing, and output contracts before wiring the provider into a broad pipeline command.
 
@@ -253,16 +208,14 @@ When adding an enrichment planner or item rule, keep source shape knowledge and 
 5. Register new categories in `src/items/registry.ts` and add preflight coverage for required source files.
 6. Add focused tests for planner output and run `npm run check:architecture` before committing boundary-sensitive changes.
 
-## Migration Strategy
+## Maintenance Strategy
 
-1. Introduce application use cases around the existing scripts.
-2. Split the current generic updater into patch planning and patch application.
-3. Move source-specific parsing and transformation behind source modules.
-4. Rename broad folders such as `lib` and `items` only after behavior has clearer homes.
-5. Keep tests passing after each move.
-6. Remove abandoned DDD scaffolding and avoid adding empty architectural folders before code exists.
-
-During migration, some use cases may temporarily look like thin middle-men over legacy modules. That is intentional only when it creates a stable application boundary for callers while behavior moves behind it. Each middle layer should either grow into real orchestration or be removed after the legacy dependency is gone.
+1. Keep CLI scripts as adapters that parse arguments, render progress, and call application use cases.
+2. Keep source-specific parsing and transformation behind source modules.
+3. Keep localization mutation behavior under `src/localization`.
+4. Keep generated patch artifacts free of application-only metadata.
+5. Prefer focused tests around source contracts, patch planning, and INI application before changing behavior.
+6. Run `npm run check:architecture`, `npm run typecheck`, and `npm test` before committing boundary-sensitive changes.
 
 ## Non-Goals
 

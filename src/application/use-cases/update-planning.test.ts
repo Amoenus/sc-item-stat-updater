@@ -1,11 +1,8 @@
 import assert from 'node:assert';
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { describe, it, mock } from 'node:test';
-import type { ItemConfig } from '../enrichment/item-config';
-import { getLogger } from '../infrastructure/logger';
-import { buildPatchData, buildUpdatePlan, validateRow } from './updater';
+import type { ItemConfig } from '../../enrichment/item-config';
+import { getLogger } from '../../infrastructure/logger';
+import { buildUpdatePlan, validateRow } from './update-planning';
 
 describe('updater: validateRow', () => {
   it('should return "valid" for a valid localization key', () => {
@@ -111,39 +108,5 @@ describe('updater: buildUpdatePlan', () => {
     assert.strictEqual(result.updatedCount, 0);
     assert.strictEqual(result.foundCount, 1);
     assert.deepStrictEqual(result.plan.entries, []);
-  });
-});
-
-describe('updater: buildPatchData', () => {
-  const config: ItemConfig = {
-    label: 'test-items',
-    csvFile: 'items.csv',
-    requiredColumns: ['Localization Key', 'Stat'],
-    descKeyMatch: (key) => key.endsWith('_desc'),
-    buildValue: (row) => `stat: ${row.Stat}`,
-  };
-
-  it('builds patch data without writing global.ini', async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'build-patch-data-test-'));
-    try {
-      const csvDir = path.join(tmpDir, 'csv');
-      const iniPath = path.join(tmpDir, 'global.ini');
-      await fs.mkdir(csvDir);
-      await fs.writeFile(path.join(csvDir, 'items.csv'), 'Localization Key,Stat\nitem_Name,42\n');
-      await fs.writeFile(iniPath, 'item_Name=Old Name\nitem_Desc=old stat');
-
-      const result = await buildPatchData(config, { csvDir, iniPath });
-      const iniAfterPatchData = await fs.readFile(iniPath, 'utf-8');
-
-      assert.strictEqual(result.label, 'test-items');
-      assert.deepStrictEqual(result.patches, { item_Desc: 'stat: 42' });
-      assert.strictEqual(result.stats.updatedCount, 1);
-      assert.strictEqual(result.stats.newCount, 0);
-      assert.strictEqual(result.plan.entries[0]?.existingLineIndex, 1);
-      assert.match(result.summary, /^test-items: Updated 1, Added 0, Skipped 0 \(dry run\) \[\d+ms]$/);
-      assert.strictEqual(iniAfterPatchData, 'item_Name=Old Name\nitem_Desc=old stat');
-    } finally {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    }
   });
 });

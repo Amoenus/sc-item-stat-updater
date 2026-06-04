@@ -18,7 +18,7 @@ import {
 import { backupIniFile } from '../src/localization/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
-import { preflightCheckConfigs } from '../src/lib/updater';
+import { preflightCheckConfigs } from '../src/application/use-cases/update-planning';
 import { regenMiningLocations } from '../src/sources/scmdb/mining-locations';
 
 const logger = getLogger('update-all');

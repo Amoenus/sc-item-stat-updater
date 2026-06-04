@@ -12,7 +12,7 @@
 
 import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
 import { getLogger } from '../infrastructure/logger';
-import { validateIntegrity } from '../lib/updater';
+import { validateIntegrity } from '../application/use-cases/update-planning';
 
 const logger = getLogger('loader');
 
