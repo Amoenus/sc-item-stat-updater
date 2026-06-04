@@ -1646,6 +1646,39 @@ Next agent instructions:
 4. Avoid generated/scraped data churn.
 5. Continue committing one verified slice at a time.
 
+### 2026-06-04: Architecture guardrail command
+
+Primary issue:
+
+- Issue 013 / GitHub #97: Add Architecture Guardrails
+
+Implemented:
+
+- Added `scripts/check-architecture.ts`.
+- Added `npm run check:architecture`.
+- The guardrail parses TypeScript imports and prevents `src/sources` modules from importing localization application/updater mutation code.
+- Updated `docs/architecture-overview.md` with checklists for adding source providers and enrichment planners.
+
+Verified:
+
+- `npm run check:architecture`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint scripts/check-architecture.ts package.json docs/architecture-overview.md docs/github-issues/013-add-architecture-guardrails.md docs/implementation-plan.md`
+
+Notes:
+
+- This is intentionally one concrete automated boundary, not a full architecture linter.
+- CLI boundary guardrails should wait until remaining transitional CLI imports are migrated or explicitly allowed.
+- GitHub #97 can be closed after this slice is committed and the GitHub issue is updated.
+
+Next agent instructions:
+
+1. Run `npm run check:architecture`, `npm run typecheck`, `npm test`, and touched-file lint.
+2. If verification passes, update GitHub #97 with results.
+3. Close #97 only if the acceptance criteria are met.
+4. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

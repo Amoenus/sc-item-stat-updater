@@ -229,6 +229,30 @@ type PatchArtifact = {
 - CLI scripts should be thin adapters that parse arguments and call application use cases.
 - Generic filesystem helpers belong under infrastructure; localization-aware INI behavior belongs under localization.
 
+Run `npm run check:architecture` to enforce the current automated boundary rules. The guardrail is intentionally small: source modules must not import localization application or updater mutation code.
+
+## Adding A Source Provider
+
+When adding a source provider, keep acquisition and normalization separate from localization mutation:
+
+1. Add provider-specific records and dataset aliases under `src/sources/<provider>/types.ts`.
+2. Put fetch, scrape, cache, or tool-invocation logic under `src/sources/<provider>/acquisition.ts` or similarly named source modules.
+3. Normalize provider data into stable records before application use cases consume it.
+4. Keep provider modules independent from `global.ini` mutation, localization patch application, and `src/lib/updater` compatibility code.
+5. Add a use case under `src/application/use-cases` when CLI or pipeline orchestration needs to run the provider.
+6. Add focused tests for version selection, parsing, and output contracts before wiring the provider into a broad pipeline command.
+
+## Adding An Enrichment Planner
+
+When adding an enrichment planner or item rule, keep source shape knowledge and INI application responsibilities explicit:
+
+1. Add item or mission rule modules under `src/items` and use `ItemConfig` from `src/enrichment/item-config`.
+2. Use helpers from `src/enrichment` for stat formatting or enrichment-specific update behavior.
+3. Build patch plans through application use cases instead of writing `global.ini` directly.
+4. Keep localization-aware operations in `src/localization`; do not serialize application-only metadata into artifacts.
+5. Register new categories in `src/items/registry.ts` and add preflight coverage for required source files.
+6. Add focused tests for planner output and run `npm run check:architecture` before committing boundary-sensitive changes.
+
 ## Migration Strategy
 
 1. Introduce application use cases around the existing scripts.

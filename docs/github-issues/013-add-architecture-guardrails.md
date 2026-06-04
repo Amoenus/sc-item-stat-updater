@@ -46,3 +46,26 @@ Add tests, scripts, or documentation checks that make the intended boundaries ea
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Run the new guardrail command.
+
+## Progress
+
+Architecture guardrail slice on 2026-06-04:
+
+- Added `scripts/check-architecture.ts`.
+- Added `npm run check:architecture`.
+- The guardrail parses TypeScript imports and prevents `src/sources` modules from importing localization application/updater mutation code.
+- Updated `docs/architecture-overview.md` with checklists for adding source providers and enrichment planners.
+
+Verification:
+
+- `npm run check:architecture`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint scripts/check-architecture.ts package.json docs/architecture-overview.md docs/github-issues/013-add-architecture-guardrails.md docs/implementation-plan.md`
+
+Closure review:
+
+- Automated guardrail protects a high-value boundary by preventing source modules from importing localization application/updater mutation code.
+- `docs/architecture-overview.md` explains how to add a new source provider.
+- `docs/architecture-overview.md` explains how to add a new enrichment planner.
+- `npm run check:architecture` is the documented guardrail command.
