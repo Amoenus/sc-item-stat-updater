@@ -1225,6 +1225,29 @@ Next agent instructions:
 4. Keep `runUpdate` and `buildPatchData` compatibility exports until remaining old imports are known and migrated.
 5. Avoid generated/scraped data churn unless explicitly requested.
 
+### 2026-06-04: Issue 001 closure review
+
+Primary issue:
+
+- Issue 001 / GitHub #85: Define Core Pipeline Types
+
+Closure review:
+
+- Re-reviewed GitHub #85 acceptance after the later planning/application/source slices stabilized.
+- Confirmed core types are exported from `src/pipeline/types.ts`.
+- Confirmed `IssueRecord` remains compatible by extending `UpdateIssue`.
+- Confirmed DataCore, SCMDB, and SPViewer source dataset types consume `SourceDataset`.
+- No behavior changes were needed for closure.
+
+Verified:
+
+- `npm run typecheck`
+
+Notes:
+
+- GitHub #85 is closed.
+- Continue with Issue 004 / GitHub #88 localization-boundary review before broad folder cleanup.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

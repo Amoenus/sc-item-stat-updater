@@ -92,3 +92,17 @@ Implemented on 2026-06-04:
 - Added `SourceName`, `GameChannel`, `SourceDataset`, `PatchEntry`, `UpdateIssue`, `PatchPlan`, and `PipelineRunMetadata`.
 - Updated existing `IssueRecord` to extend `UpdateIssue`.
 - Verified with `npm run typecheck` and `npm test`.
+
+Closure review on 2026-06-04:
+
+- Re-reviewed GitHub #85 acceptance after the later planning/application/source slices stabilized.
+- Confirmed core types are still exported from `src/pipeline/types.ts`.
+- Confirmed existing `IssueRecord` remains compatible by extending `UpdateIssue`.
+- Confirmed DataCore, SCMDB, and SPViewer source dataset types consume `SourceDataset`.
+- No behavior changes were needed for closure.
+
+Verification:
+
+- `npm run typecheck`
+
+GitHub #85 is closed.
