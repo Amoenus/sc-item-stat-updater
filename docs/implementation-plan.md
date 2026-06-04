@@ -680,6 +680,42 @@ Next agent instructions:
 4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
 5. Keep CLI parse args, console output, file writes, and process exits in `bin/scrape-scmdb.ts` until a stronger use-case result shape exists.
 
+### 2026-06-04: Source dataset contracts
+
+Primary issue:
+
+- Issue 007 / GitHub #91: Create Source Dataset Contracts
+
+Implemented:
+
+- Added provider-family normalized dataset contracts:
+  - `src/sources/datacore/types.ts`
+  - `src/sources/scmdb/types.ts`
+  - `src/sources/spviewer/types.ts`
+- Kept raw source schemas separate from normalized target contracts.
+- Reused the core `SourceDataset<TRecord>` metadata shape for source name, version, channel, and records.
+- Added compile-time usage examples in `src/sources/types.test.ts`.
+- Did not change runtime behavior.
+- Did not include generated/scraped data changes.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/types.test.ts`
+- `npm run typecheck`
+
+Notes:
+
+- GitHub #91 can be closed as completed after final verification.
+- These contracts are intentionally provider-family shapes, not one universal item-stat schema.
+- The contracts give Issue 009/#93, Issue 008/#92, and Issue 010/#94 stable targets for later normalization slices.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Add source dataset contracts`.
+2. Reassess Issue 009 / GitHub #93 now that source dataset contracts exist.
+3. Continue #93 with compatibility exports or relocation for SCMDB mining/mission parser modules only if it stays scoped and verified.
+4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

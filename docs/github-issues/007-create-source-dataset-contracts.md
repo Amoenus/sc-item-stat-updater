@@ -47,3 +47,26 @@ src/sources/
 
 - Run `npm run typecheck`.
 - Add compile-time usage examples or small tests if useful.
+
+## Progress
+
+2026-06-04:
+
+- Added provider-family normalized dataset contracts:
+  - `src/sources/datacore/types.ts`
+  - `src/sources/scmdb/types.ts`
+  - `src/sources/spviewer/types.ts`
+- Kept raw source schemas separate from these normalized target contracts.
+- Reused the core `SourceDataset<TRecord>` metadata contract for source name, version, channel, and records.
+- Added compile-time usage examples in `src/sources/types.test.ts`.
+- No behavior changes were included.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/types.test.ts`
+- `npm run typecheck`
+
+Decision:
+
+- Acceptance criteria are met.
+- GitHub #91 can be closed as completed after final verification.
