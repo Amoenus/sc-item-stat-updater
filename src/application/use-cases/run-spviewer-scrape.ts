@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import puppeteer from 'puppeteer';
 import type { SpviewerScrapedDataDTO } from '../../schema/spviewer.schemas';
 import {
   extractVersions,
@@ -60,6 +59,13 @@ export interface SpviewerBrowser {
   close(): Promise<void>;
 }
 
+interface PuppeteerModule {
+  default?: {
+    launch(options: { headless: boolean }): Promise<unknown>;
+  };
+  launch?: (options: { headless: boolean }) => Promise<unknown>;
+}
+
 export interface SpviewerWrittenFile {
   itemType: string;
   fileName: string;
@@ -102,11 +108,42 @@ export interface RunSpviewerScrapeResult {
   errors: SpviewerScrapeTypeError[];
 }
 
+function isMissingPuppeteerError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    ('code' in error ? error.code === 'ERR_MODULE_NOT_FOUND' : /Cannot find package 'puppeteer'/.test(error.message))
+  );
+}
+
+export function createDefaultSpviewerBrowserLauncher(
+  importPuppeteer: () => Promise<PuppeteerModule> = () => import('puppeteer'),
+): () => Promise<SpviewerBrowser> {
+  return async () => {
+    let module: PuppeteerModule;
+    try {
+      module = await importPuppeteer();
+    } catch (error) {
+      if (isMissingPuppeteerError(error)) {
+        throw new Error(
+          'SPViewer scraping requires the optional "puppeteer" dependency. ' +
+            'Install optional dependencies with "npm install" or "npm install puppeteer" before running scrape-spviewer.',
+        );
+      }
+      throw error;
+    }
+
+    const puppeteer = module.default ?? module;
+    if (!puppeteer.launch) {
+      throw new Error('SPViewer scraping requires a Puppeteer module with a launch() function.');
+    }
+    return (await puppeteer.launch({ headless: true })) as unknown as SpviewerBrowser;
+  };
+}
+
 export async function runSpviewerScrape(options: RunSpviewerScrapeOptions): Promise<RunSpviewerScrapeResult> {
   const types = selectTypes(options.types ?? SPVIEWER_ITEM_TYPES.slice());
   const channel = options.ptu ? 'ptu' : 'live';
-  const launchBrowser =
-    options.launchBrowser ?? (async () => (await puppeteer.launch({ headless: true })) as unknown as SpviewerBrowser);
+  const launchBrowser = options.launchBrowser ?? createDefaultSpviewerBrowserLauncher();
   const parse = options.parseTable ?? parseTable;
   const extractPageVersions = options.extractVersions ?? extractVersions;
   const makeDir = options.makeDir ?? ((dir) => fs.mkdir(dir, { recursive: true }).then(() => undefined));

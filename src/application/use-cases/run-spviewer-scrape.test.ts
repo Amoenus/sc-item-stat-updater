@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SPVIEWER_BASE_URL, runSpviewerScrape, type SpviewerBrowser, type SpviewerPage } from './run-spviewer-scrape';
+import {
+  createDefaultSpviewerBrowserLauncher,
+  SPVIEWER_BASE_URL,
+  runSpviewerScrape,
+  type SpviewerBrowser,
+  type SpviewerPage,
+} from './run-spviewer-scrape';
 
 class FakePage implements SpviewerPage {
   public gotos: string[] = [];
@@ -165,4 +171,35 @@ test('runSpviewerScrape uses the requested item type in SPViewer URLs', async ()
 
   assert.equal(pages[0].gotos[0], `${SPVIEWER_BASE_URL}?item=Cooler`);
   assert.equal(pages[1].gotos[0], `${SPVIEWER_BASE_URL}?item=Cooler`);
+});
+
+test('default SPViewer browser launcher reports missing optional Puppeteer clearly', async () => {
+  const missingPackageError = new Error("Cannot find package 'puppeteer'");
+  Object.assign(missingPackageError, { code: 'ERR_MODULE_NOT_FOUND' });
+  const launchBrowser = createDefaultSpviewerBrowserLauncher(async () => {
+    throw missingPackageError;
+  });
+
+  await assert.rejects(
+    launchBrowser,
+    /SPViewer scraping requires the optional "puppeteer" dependency\. Install optional dependencies/,
+  );
+});
+
+test('default SPViewer browser launcher loads Puppeteer only when invoked', async () => {
+  let imported = false;
+  const browser = new FakeBrowser([]);
+  const launchBrowser = createDefaultSpviewerBrowserLauncher(async () => {
+    imported = true;
+    return {
+      launch: async (options) => {
+        assert.deepEqual(options, { headless: true });
+        return browser;
+      },
+    };
+  });
+
+  assert.equal(imported, false);
+  assert.equal(await launchBrowser(), browser);
+  assert.equal(imported, true);
 });

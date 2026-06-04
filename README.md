@@ -25,6 +25,18 @@ See [docs/architecture-overview.md](docs/architecture-overview.md) for the curre
 npm install
 ```
 
+Updater-only installs can skip the scraper browser dependency:
+
+```sh
+npm install --omit=optional
+```
+
+`scrape:spviewer` requires the optional `puppeteer` package. If you installed without optional dependencies, add it before running the SPViewer scraper:
+
+```sh
+npm install puppeteer
+```
+
 ## Usage
 
 ### Update all categories

@@ -22,18 +22,15 @@ Current intentional compatibility:
 
 ## Tracked Functional Backlog
 
-### #51: Puppeteer Dependency Review
-
-Priority: Low
-
-Puppeteer is only needed for scraping, especially SPViewer flows. Consider making it optional or isolating scraper dependencies so users who only update from existing data do not download Chromium unnecessarily.
+No open functional backlog issues remain in this inventory. GitHub may still contain non-functional automation issues such as the dependency dashboard.
 
 ## Recommended Next Slice
 
-Inspect #51 next. It is a low-priority dependency review for isolating or making optional the Puppeteer scraper dependency.
+No next functional slice is currently listed. Re-audit GitHub issues before creating or selecting more backlog work.
 
 ## Completed Functional Issues
 
+- #51: Moved Puppeteer to `optionalDependencies` and isolated scraper loading behind a dynamic SPViewer browser launcher. Updater-only installs can now use `npm install --omit=optional`, SPViewer scraping reports a clear missing-optional-dependency error, and README documents both install paths.
 - #52: Audited OpenTelemetry usage and removed it. The packages were only used by the local stderr logger with no trace, metrics, OTLP, Jaeger, or collector destination, so `src/infrastructure/logger.ts` now implements the existing text/JSON CLI logging behavior directly and `package.json`/lockfile no longer include `@opentelemetry/*`.
 - #48: Added focused regression coverage for parallel SPViewer lookup loading in `buildLookupFromCsvFiles`. The tests prove independent CSV loaders are all started before earlier reads resolve and that duplicate-key merge precedence still follows filename order.
 - #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy/fallback coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
