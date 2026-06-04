@@ -2,7 +2,7 @@ import { parseArgs } from 'node:util';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { listCategories, loadConfig } from '../src/items/registry';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
-import { getLogger, shutdownLogger } from '../src/lib/logger';
+import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 
 const logger = getLogger('update-item');
 

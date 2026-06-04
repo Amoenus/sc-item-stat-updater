@@ -11,7 +11,7 @@
  */
 
 import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
-import { getLogger } from '../lib/logger';
+import { getLogger } from '../infrastructure/logger';
 import { validateIntegrity } from '../lib/updater';
 
 const logger = getLogger('loader');

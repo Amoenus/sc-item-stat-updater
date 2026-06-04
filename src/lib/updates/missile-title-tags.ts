@@ -2,7 +2,7 @@
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { readJsonFile } from '../../io/local/json-file';
 import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
-import { getLogger } from '../logger';
+import { getLogger } from '../../infrastructure/logger';
 import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils';
 import { normalizeSpaces } from './title-tag-utils';
 import { buildScannedUpdateResult } from './update-result';

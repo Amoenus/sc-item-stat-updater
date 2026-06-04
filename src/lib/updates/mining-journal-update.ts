@@ -3,7 +3,7 @@ import { pathExists } from '../../io/local/discovery';
 import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { resolveMissionCsvPath } from '../../io/local/path-conventions';
 import { buildJournalValue } from '../../items/missions/mining-journal';
-import { getLogger } from '../logger';
+import { getLogger } from '../../infrastructure/logger';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('mining-journal-update');

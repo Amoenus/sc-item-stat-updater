@@ -9,7 +9,7 @@
  */
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { IniTag } from '../../localization/ini-tags';
-import { getLogger } from '../logger';
+import { getLogger } from '../../infrastructure/logger';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('adagio-location-tags-update');

@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it, mock } from 'node:test';
 import type { ItemConfig } from './types';
-import { getLogger } from './logger';
+import { getLogger } from '../infrastructure/logger';
 import { buildPatchData, buildUpdatePlan, validateRow } from './updater';
 
 describe('updater: validateRow', () => {

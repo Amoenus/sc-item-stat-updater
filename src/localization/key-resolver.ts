@@ -1,4 +1,4 @@
-import { getLogger } from '../lib/logger';
+import { getLogger } from '../infrastructure/logger';
 
 const logger = getLogger('key-resolver');
 

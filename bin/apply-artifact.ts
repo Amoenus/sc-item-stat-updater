@@ -20,7 +20,7 @@ import { parseArgs } from 'node:util';
 import { readArtifactFile } from '../src/artifact/artifact';
 import { applyArtifact } from '../src/artifact/loader';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
-import { getLogger, shutdownLogger } from '../src/lib/logger';
+import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 
 const logger = getLogger('apply-artifact');
 

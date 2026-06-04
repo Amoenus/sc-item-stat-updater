@@ -93,3 +93,25 @@ Remaining:
 - Continue reducing `src/lib` in small slices, likely infrastructure logging, formatting/stat-builder, updater compatibility, and enrichment extra steps.
 - Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+Logging infrastructure slice on 2026-06-04:
+
+- Moved logger implementation from `src/lib/logger.ts` to `src/infrastructure/logger.ts`.
+- Left `src/lib/logger.ts` as a documented compatibility re-export for older imports.
+- Updated active CLI, application, artifact, localization, local IO, updater, formatter, and enrichment update imports to use `src/infrastructure/logger`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/infrastructure/logger.ts src/lib/logger.ts src/presentation/cli.ts src/application/use-cases/enrich-global-ini.ts src/localization/key-resolver.ts src/localization/ini-file.ts src/artifact/loader.ts src/io/local/mapping-store.ts src/lib/updater.ts src/lib/updater.test.ts src/lib/format/stat-builder.ts src/lib/updates/adagio-location-tags.ts src/lib/updates/fps-title-tags.ts src/lib/updates/component-titles.ts src/lib/updates/mining-journal-update.ts src/lib/updates/missile-title-tags.ts src/lib/updates/missing-strings.ts src/lib/updates/raw-commodity-label-fixes.ts bin/update-item.ts bin/update-all.ts bin/apply-artifact.ts`
+- `node --import tsx/esm bin/update-item.ts --help`
+- `node --import tsx/esm bin/update-all.ts --help`
+- `node --import tsx/esm bin/apply-artifact.ts --help`
+
+Remaining:
+
+- Continue reducing `src/lib` in small slices, likely CSV infrastructure helpers, formatting/stat-builder, updater compatibility, and enrichment extra steps.
+- Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
+- Update README/project-structure docs once enough folder cleanup has landed.

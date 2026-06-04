@@ -1,4 +1,4 @@
-import { getLogger } from '../logger';
+import { getLogger } from '../../infrastructure/logger';
 import { fmtNum } from './formatter';
 
 const logger = getLogger('stat-builder');

@@ -9,7 +9,7 @@ import { applyPatchPlanToIniLines, type LocalizationPatchPlan } from '../localiz
 import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../localization/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../localization/key-resolver';
-import { getLogger } from './logger';
+import { getLogger } from '../infrastructure/logger';
 import type { IssueRecord, ItemConfig } from './types';
 
 const logger = getLogger('updater');

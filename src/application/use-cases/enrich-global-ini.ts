@@ -2,7 +2,7 @@
 import type { ItemConfig } from '../../lib/types';
 import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
-import { getLogger } from '../../lib/logger';
+import { getLogger } from '../../infrastructure/logger';
 import { resolveOptions, validateIntegrity, type UpdatePlanResult } from '../../lib/updater';
 import type { PatchPlan } from '../../pipeline/types';
 import { buildPatchPlanResult } from './build-patch-plan';

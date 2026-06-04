@@ -2,7 +2,7 @@
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { IniKeySuffix } from './ini-tags';
-import { getLogger } from '../lib/logger';
+import { getLogger } from '../infrastructure/logger';
 
 const logger = getLogger('ini-file');
 

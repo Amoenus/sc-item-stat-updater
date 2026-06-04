@@ -1,6 +1,6 @@
 ﻿import { readCsvFile } from '../../io/local/csv-parser';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { getLogger } from '../logger';
+import { getLogger } from '../../infrastructure/logger';
 import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils';
 import {
   applyTagToFamily,

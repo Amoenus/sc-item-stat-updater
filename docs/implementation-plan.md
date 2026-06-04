@@ -1426,6 +1426,43 @@ Next agent instructions:
 4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Logging infrastructure boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved logger implementation from `src/lib/logger.ts` to `src/infrastructure/logger.ts`.
+- Left `src/lib/logger.ts` as a documented compatibility re-export for older imports.
+- Updated active imports across CLI adapters, presentation helpers, application use cases, artifact loading, localization, local IO, updater compatibility, formatter/stat-builder, and enrichment updates to use `src/infrastructure/logger`.
+- Confirmed no active `src` or `bin` imports still point at the old logger path.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/infrastructure/logger.ts src/lib/logger.ts src/presentation/cli.ts src/application/use-cases/enrich-global-ini.ts src/localization/key-resolver.ts src/localization/ini-file.ts src/artifact/loader.ts src/io/local/mapping-store.ts src/lib/updater.ts src/lib/updater.test.ts src/lib/format/stat-builder.ts src/lib/updates/adagio-location-tags.ts src/lib/updates/fps-title-tags.ts src/lib/updates/component-titles.ts src/lib/updates/mining-journal-update.ts src/lib/updates/missile-title-tags.ts src/lib/updates/missing-strings.ts src/lib/updates/raw-commodity-label-fixes.ts bin/update-item.ts bin/update-all.ts bin/apply-artifact.ts`
+- `node --import tsx/esm bin/update-item.ts --help`
+- `node --import tsx/esm bin/update-all.ts --help`
+- `node --import tsx/esm bin/apply-artifact.ts --help`
+
+Notes:
+
+- GitHub #96 remains open.
+- `src/lib` is reduced by one infrastructure responsibility, but still contains compatibility exports, CSV helpers, formatter/stat-builder, updater compatibility, and enrichment extra steps.
+- README/project-structure updates should wait until more folder cleanup has landed.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move logger to infrastructure`.
+2. Continue Issue 012 / GitHub #96 with another small `src/lib` responsibility move.
+3. Consider CSV infrastructure helpers or formatting/stat-builder next; avoid large `src/items` renames.
+4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
