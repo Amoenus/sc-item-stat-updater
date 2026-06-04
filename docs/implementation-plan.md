@@ -1348,6 +1348,48 @@ Next agent instructions:
 4. Do not begin broad `src/lib` or `src/items` folder cleanup until #88 is closed or genuinely blocked.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Localization text utilities and Issue 004 closure
+
+Primary issue:
+
+- Issue 004 / GitHub #88: Create Localization Boundary
+
+Implemented:
+
+- Moved localization text helpers from `src/lib/format/text-utils.ts` to `src/localization/text-utils.ts`.
+- Moved text utility tests from `src/lib/format/text-utils.test.ts` to `src/localization/text-utils.test.ts`.
+- Left `src/lib/format/text-utils.ts` as a documented compatibility re-export for older imports.
+- Updated the active updater import to use `src/localization/text-utils`.
+- Fixed a moved-file lint warning by replacing a non-null assertion with indexed access.
+
+Verified:
+
+- `node --import tsx/esm --test src/localization/text-utils.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/text-utils.ts src/localization/text-utils.test.ts src/lib/format/text-utils.ts src/lib/updater.ts`
+
+Closure review:
+
+- Localization-aware INI parsing/writing, tag descriptors, key resolution, text helpers, patch plans, patch application, and update issue type exports now live under `src/localization`.
+- Compatibility re-exports remain documented at the old `src/io/local/ini-file`, `src/lib/ini-tags`, `src/lib/key-resolver`, and `src/lib/format/text-utils` paths.
+- Existing localization-related tests pass from their new locations.
+- Source acquisition modules do not import localization mutation functions.
+- `src/lib/updater.ts` remains as intentional compatibility glue for old `runUpdate`/`buildPatchData` imports until later compatibility cleanup.
+
+Notes:
+
+- GitHub #88 is closed.
+- Broad folder cleanup can now proceed through Issue 012 / GitHub #96, but keep it in small slices and avoid broad `src/items` renames until enrichment boundaries are explicit.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move text utilities to localization`.
+2. Continue with Issue 012 / GitHub #96 or another open migration issue after inspecting its acceptance criteria.
+3. Keep compatibility re-exports documented until active imports and old callers are fully audited.
+4. Avoid broad `src/items` renames unless the slice has explicit acceptance and low churn.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

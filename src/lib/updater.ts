@@ -7,7 +7,7 @@ import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/ma
 import { resolveChildPath } from '../io/local/path-conventions';
 import { applyPatchPlanToIniLines, type LocalizationPatchPlan } from '../localization/patch-application';
 import { sanitizeIniValue } from './format/formatter';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../localization/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../localization/key-resolver';
 import { getLogger } from './logger';
 import type { IssueRecord, ItemConfig } from './types';

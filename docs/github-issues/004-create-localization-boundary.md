@@ -108,3 +108,28 @@ Remaining:
 
 - Move or facade localization text utilities under `src/localization`.
 - Document or remove remaining compatibility re-exports before closing GitHub #88.
+
+Text utilities and closure review on 2026-06-04:
+
+- Moved localization text helpers from `src/lib/format/text-utils.ts` to `src/localization/text-utils.ts`.
+- Moved text utility tests from `src/lib/format/text-utils.test.ts` to `src/localization/text-utils.test.ts`.
+- Left `src/lib/format/text-utils.ts` as a documented compatibility re-export for older imports.
+- Updated the active updater import to use `src/localization/text-utils`.
+- Fixed a moved-file lint warning by replacing a non-null assertion with indexed access.
+
+Verification:
+
+- `node --import tsx/esm --test src/localization/text-utils.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/localization/text-utils.ts src/localization/text-utils.test.ts src/lib/format/text-utils.ts src/lib/updater.ts`
+
+Closure review:
+
+- Localization-aware INI parsing/writing, tag descriptors, key resolution, text helpers, patch plans, patch application, and update issue type exports now live under `src/localization`.
+- Compatibility re-exports remain documented at the old `src/io/local/ini-file`, `src/lib/ini-tags`, `src/lib/key-resolver`, and `src/lib/format/text-utils` paths.
+- Existing localization-related tests pass from their new locations.
+- Source acquisition modules do not import localization mutation functions.
+- `src/lib/updater.ts` remains as intentional compatibility glue for old `runUpdate`/`buildPatchData` imports until later compatibility cleanup.
+
+GitHub #88 is closed.
