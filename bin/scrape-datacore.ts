@@ -49,6 +49,11 @@ import {
 } from '../src/extractor/datacore-xml-parser';
 import { ensureToolsInstalled, readGameVersion, resolveLiveDir, runTool } from '../src/io/local/unp4k-tool';
 import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../src/items/datacore/types';
+import {
+  collectDataCoreXmlFilesMatching,
+  countDataCoreXmlFiles,
+  findDataCoreDcbFile,
+} from '../src/sources/datacore/xml-files';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -173,20 +178,7 @@ const xmlCacheDir = path.join(REPO_ROOT, 'csv', 'datacore', '.xmlcache', version
 // Find the DataForge DCB file (already on disk, not inside Data.p4k)
 // ---------------------------------------------------------------------------
 
-async function findDcbFile(liveDir: string): Promise<string> {
-  const dataDir = path.join(liveDir, 'Data');
-  let entries: import('node:fs').Dirent<string>[];
-  try {
-    entries = await fsp.readdir(dataDir, { withFileTypes: true });
-  } catch {
-    throw new Error(`Could not read LIVE/Data directory: ${dataDir}. Set SC_LIVE_DIR correctly.`);
-  }
-  const dcb = entries.find((e) => e.isFile() && e.name.toLowerCase().endsWith('.dcb'));
-  if (!dcb) throw new Error(`No .dcb file found in ${dataDir}. Ensure the game is installed.`);
-  return path.join(dataDir, dcb.name);
-}
-
-const dcbPath = await findDcbFile(LIVE_DIR);
+const dcbPath = await findDataCoreDcbFile(LIVE_DIR);
 const toolDir = path.join(LIVE_DIR, 'unp4k');
 
 if (!values['dry-run']) {
@@ -214,15 +206,7 @@ console.log();
 // Prime the XML cache — run unforge once per game version
 // ---------------------------------------------------------------------------
 
-async function countCachedXmls(dir: string): Promise<number> {
-  try {
-    return (await collectXmlFiles(dir)).length;
-  } catch {
-    return 0;
-  }
-}
-
-const cachedCount = await countCachedXmls(xmlCacheDir);
+const cachedCount = await countDataCoreXmlFiles(xmlCacheDir);
 
 if (cachedCount > 0 && !values['force-extract']) {
   console.log(`Using XML cache: ${cachedCount.toLocaleString()} files`);
@@ -253,7 +237,7 @@ if (cachedCount > 0 && !values['force-extract']) {
   const monolithicXml = workDcb.replace(/\.dcb$/i, '.xml');
   await fsp.rm(monolithicXml, { force: true });
 
-  const newCount = await countCachedXmls(xmlCacheDir);
+  const newCount = await countDataCoreXmlFiles(xmlCacheDir);
   console.log(`  Extraction complete: ${newCount.toLocaleString()} XML records cached.\n`);
 }
 
@@ -281,7 +265,7 @@ for (let i = 0; i < selectedTypes.length; i++) {
 
   try {
     // Filter cached XMLs whose path contains the recordFilter substring.
-    const xmlFiles = await collectXmlFilesMatching(xmlCacheDir, typeConfig.recordFilter);
+    const xmlFiles = await collectDataCoreXmlFilesMatching(xmlCacheDir, typeConfig.recordFilter);
 
     const typeHeaders = Object.keys(typeConfig.fieldSelectors);
     const headers = [...COMMON_HEADERS, ...typeHeaders];
@@ -412,40 +396,4 @@ function formatPercent(value: string): string {
   const num = Number(value);
   if (!Number.isFinite(num)) return value;
   return `${Number((num * 100).toFixed(2))}%`;
-}
-
-/**
- * Recursively collects all .xml files under a directory.
- */
-async function collectXmlFiles(dir: string): Promise<string[]> {
-  const results: string[] = [];
-  let entries: import('node:fs').Dirent<string>[];
-  try {
-    entries = await fsp.readdir(dir, { withFileTypes: true });
-  } catch {
-    return results;
-  }
-  for (const entry of entries) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      results.push(...(await collectXmlFiles(full)));
-    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.xml')) {
-      results.push(full);
-    }
-  }
-  return results;
-}
-
-/**
- * Collects .xml files whose full path contains the given filter substring
- * (case-insensitive, normalised to forward slashes).
- *
- * ⚠️ recordFilter values in each DataCore type config are best-effort path
- * substrings derived from expected unforge output structure. Verify and update
- * them against the actual unforged file tree if no rows appear for a type.
- */
-async function collectXmlFilesMatching(dir: string, filter: string): Promise<string[]> {
-  const all = await collectXmlFiles(dir);
-  const lowerFilter = filter.toLowerCase();
-  return all.filter((f) => f.toLowerCase().replaceAll('\\', '/').includes(lowerFilter));
 }

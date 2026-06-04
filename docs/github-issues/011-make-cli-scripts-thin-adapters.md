@@ -191,3 +191,24 @@ Remaining for #95:
 - Move DataCore scraper responsibilities behind source/acquisition modules.
 - Move/classify SPViewer scraper responsibilities as legacy source behavior.
 - Smoke test CLI help/commands as source boundaries settle.
+
+DataCore progress on 2026-06-04:
+
+- Added `src/sources/datacore/xml-files.ts`.
+- Moved DataCore DCB discovery, XML cache discovery, XML path filtering, and XML cache counting out of `bin/scrape-datacore.ts`.
+- Kept CLI parsing, help text, extraction orchestration, CSV writes, user-facing output, and process exits in the scraper script.
+- Smoke-tested `node --import tsx/esm bin/scrape-datacore.ts --help`.
+
+Verification:
+
+- `node --import tsx/esm --test src/sources/datacore/xml-files.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/xml-files.ts src/sources/datacore/xml-files.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+
+Remaining for #95:
+
+- Continue moving DataCore parser/acquisition responsibilities behind source modules.
+- Move/classify SPViewer scraper responsibilities as legacy source behavior.
+- Smoke test CLI help/commands as source boundaries settle.

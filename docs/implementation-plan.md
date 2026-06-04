@@ -763,6 +763,46 @@ Next agent instructions:
 4. Avoid running scraper commands that write generated CSV/XML unless explicitly requested.
 5. Keep CLI parse args, console output, file writes, progress bars, and process exits in scripts until a stronger use-case result shape exists.
 
+### 2026-06-04: DataCore XML discovery source module
+
+Primary issue:
+
+- Issue 008 / GitHub #92: Move DataCore Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/sources/datacore/xml-files.ts`.
+- Moved DataCore DCB discovery, XML cache discovery, XML path filtering, and XML cache counting out of `bin/scrape-datacore.ts`.
+- Updated `bin/scrape-datacore.ts` to delegate those source file concerns while keeping CLI parsing, help text, user-facing output, extraction orchestration, CSV writes, and process exits in the script.
+- Added temp-directory tests for DCB discovery errors, recursive XML collection, and normalized path filtering.
+- Did not run DataCore extraction or write generated XML/CSV data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/datacore/xml-files.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-datacore.ts src/sources/datacore/xml-files.ts src/sources/datacore/xml-files.test.ts`
+- `node --import tsx/esm bin/scrape-datacore.ts --help`
+
+Notes:
+
+- Issue 008 / GitHub #92 remains open because the DataCore parser/normalizer still needs a source-boundary home or facade, and the extraction/acquisition boundary still needs review.
+- Issue 011 / GitHub #95 remains open for remaining DataCore/SPViewer scraper responsibilities and final CLI smoke testing.
+- Generated XML/CSV data was intentionally left untouched.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move DataCore XML discovery to source module`.
+2. Continue Issue 008 / GitHub #92 with a small parser/normalizer source-boundary slice, likely by adding a DataCore parser facade under `src/sources/datacore` before any physical relocation.
+3. Keep `bin/scrape-datacore.ts` responsible for CLI parse args, help output, user-facing status messages, extraction orchestration, CSV writes, and process exits.
+4. Avoid running DataCore extraction commands that write generated XML/CSV unless explicitly requested.
+5. Keep `npm run scrape:datacore` behavior stable.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
