@@ -109,4 +109,33 @@ describe('updater: buildUpdatePlan', () => {
     assert.strictEqual(result.foundCount, 1);
     assert.deepStrictEqual(result.plan.entries, []);
   });
+
+  it('plans every duplicate and plural/gender occurrence with explicit line indexes', () => {
+    const result = buildUpdatePlan(
+      config,
+      [{ 'Localization Key': 'item_name', Stat: 'new collision stat' }],
+      {
+        lines: [
+          'item_desc=old base',
+          'item_desc,P=old plural',
+          'item_desc,G=old gendered',
+          'item_desc=old duplicate',
+        ],
+        existingKeys: { item_desc: 3 },
+        lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
+        allOccurrences: new Map([['item_desc', [0, 1, 2, 3]]]),
+      },
+    );
+
+    assert.strictEqual(result.updatedCount, 1);
+    assert.deepStrictEqual(
+      result.plan.entries.map(({ key, value, existingLineIndex }) => ({ key, value, existingLineIndex })),
+      [
+        { key: 'item_desc', value: 'stat: new collision stat', existingLineIndex: 0 },
+        { key: 'item_desc', value: 'stat: new collision stat', existingLineIndex: 1 },
+        { key: 'item_desc', value: 'stat: new collision stat', existingLineIndex: 2 },
+        { key: 'item_desc', value: 'stat: new collision stat', existingLineIndex: 3 },
+      ],
+    );
+  });
 });

@@ -56,4 +56,28 @@ describe('localization: patch application', () => {
     assert.deepStrictEqual(result.lines, ['item_desc,P=new plural', 'item_desc=old base']);
     assert.deepStrictEqual(result.patches, { item_desc: 'new plural' });
   });
+
+  it('applies all duplicate and plural/gender occurrences while preserving line keys', () => {
+    const lines = ['item_desc=old base', 'item_desc,P=old plural', 'item_desc,G=old gendered', 'item_desc=old duplicate'];
+    const plan: LocalizationPatchPlan = {
+      entries: [
+        { key: 'item_desc', value: 'new shared value', source: 'test', reason: 'fixture', existingLineIndex: 0 },
+        { key: 'item_desc', value: 'new shared value', source: 'test', reason: 'fixture', existingLineIndex: 1 },
+        { key: 'item_desc', value: 'new shared value', source: 'test', reason: 'fixture', existingLineIndex: 2 },
+        { key: 'item_desc', value: 'new shared value', source: 'test', reason: 'fixture', existingLineIndex: 3 },
+      ],
+      issues: [],
+    };
+
+    const result = applyPatchPlanToIniLines(lines, { item_desc: 3 }, plan);
+
+    assert.deepStrictEqual(result.lines, [
+      'item_desc=new shared value',
+      'item_desc,P=new shared value',
+      'item_desc,G=new shared value',
+      'item_desc=new shared value',
+    ]);
+    assert.strictEqual(result.appliedCount, 4);
+    assert.deepStrictEqual(result.missingKeys, []);
+  });
 });

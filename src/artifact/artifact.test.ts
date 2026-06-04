@@ -54,6 +54,35 @@ describe('artifact patch-plan conversion', () => {
     });
   });
 
+  it('serializes duplicate occurrence patch plans without line-index metadata', () => {
+    const plan: LocalizationPatchPlan = {
+      entries: [
+        {
+          key: 'item_desc',
+          value: 'updated base',
+          source: 'test',
+          reason: 'unit test',
+          existingLineIndex: 0,
+        },
+        {
+          key: 'item_desc',
+          value: 'updated duplicate',
+          source: 'test',
+          reason: 'unit test',
+          existingLineIndex: 3,
+        },
+      ],
+      issues: [],
+    };
+
+    const entries = patchPlanToArtifactEntries(plan);
+
+    assert.deepStrictEqual(entries, {
+      item_desc: 'updated duplicate',
+    });
+    assert.strictEqual(JSON.stringify(entries).includes('existingLineIndex'), false);
+  });
+
   it('rehydrates artifact entries as patch-plan entries with artifact defaults', () => {
     const artifact: Artifact = validArtifact({
       issues: [{ label: 'test', key: 'missing_desc', reason: 'missing', type: 'missing' }],

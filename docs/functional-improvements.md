@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #107: Add localization duplicate/collision tests beyond key resolution, including plural/gender suffix handling and all-occurrence update paths.
 - #108: Add a performance budget around a representative large fixture update to catch slow planning or INI application regressions.
 - #109: Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
 - #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
@@ -52,10 +51,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #107 next. It is a localization test slice for duplicate/collision handling, plural/gender suffixes, and all-occurrence update paths.
+Inspect #108 next. It is a performance-budget test slice; use representative fixtures and avoid generated-data writes.
 
 ## Completed Functional Issues
 
+- #107: Added focused localization duplicate/collision coverage. Planner tests now pin duplicate base keys plus plural/gender suffix occurrences with explicit line indexes; patch-application tests prove all occurrence updates preserve actual suffixed line keys; artifact serialization tests prove duplicate occurrence line-index metadata still stays out of persisted artifact entries.
 - #106: Improved malformed artifact UX in `readArtifactFile`. Invalid JSON now reports the path, `JSON` field context, and parse problem; schema failures report the artifact path, high-level field, concise problem, and detailed schema path while preserving the Zod error as `cause`. Tests cover malformed JSON, missing `entries`, invalid `entries`, invalid issue payloads, and valid artifact readback.
 - #105: Added snapshot-style exact-string tests for high-value generated localization output: SCMDB mission descriptions, mining journal entries, component title tags, SCMDB mission title tag ordering, and Adagio location labels. The tests pin whitespace/tag ordering and use temp files or in-memory builders only.
 - #104: Added a provider-output comparison use case for shared DataCore/SPViewer categories. It compares dry-run patch-plan entries, reports DataCore-only keys, SPViewer-only keys, changed shared values, and compact formatted summaries. Tests use temporary CSV/INI fixtures for a shared `coolers` category and assert the comparison does not write `global.ini`.
