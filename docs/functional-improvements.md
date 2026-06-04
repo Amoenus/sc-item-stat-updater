@@ -40,18 +40,13 @@ Priority: Low
 
 Puppeteer is only needed for scraping, especially SPViewer flows. Consider making it optional or isolating scraper dependencies so users who only update from existing data do not download Chromium unnecessarily.
 
-## Newly Created Functional Issues
-
-These were split from the additional candidate inventory on 2026-06-04.
-
-- #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
-
 ## Recommended Next Slice
 
-Inspect #111 next. It is a provider coverage matrix slice; build on the new category listing metadata where practical.
+Inspect #48 next. It is a low-medium priority performance/IO slice for parallel SPViewer CSV lookup loading in `src/enrichment/updates/lookup-utils.ts`.
 
 ## Completed Functional Issues
 
+- #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy/fallback coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
 - #110: Added `update-item --list-categories` for category discovery. The output distinguishes SPViewer, DataCore, SCMDB, and mixed-source batch modes; includes required CSV/JSON source file names or dynamic-source hints; and reports LIVE/PTU source-root expectations. Tests cover representative SPViewer, DataCore, SCMDB, dynamic JSON, and mixed-source output.
 - #109: Added backup coverage for write and deploy paths. `enrichGlobalIni` now has a temp-fixture test proving repository `global.ini.backup.1` is created before writes, and `deployGlobalIni` backs up an existing game target before copying; deployment failure coverage now proves the original fixture target stays intact.
 - #108: Added a large generated-in-test INI update performance budget. The test builds a controlled 2,500-row fixture with 5,000 base/plural INI updates, reports planning and application timings separately, keeps loose CI-friendly budgets, and uses only in-memory fixtures rather than real `global.ini` or generated source data.

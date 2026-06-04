@@ -70,6 +70,22 @@ test('update-item list-categories reports provider and source metadata', async (
   assert.match(result.stdout, /update-all --provider spviewer \| SPViewer \+ SCMDB/);
 });
 
+test('update-item provider-matrix reports coverage status by provider', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--provider-matrix']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /Provider coverage matrix/);
+  assert.match(
+    result.stdout,
+    /\| Coolers \| primary \(dc-coolers\) \| legacy\/fallback \(sp-coolers\) \| unavailable \|/,
+  );
+  assert.match(
+    result.stdout,
+    /\| SCMDB mission descriptions \| unavailable \| unavailable \| primary \(mission-scmdb-descriptions\) \|/,
+  );
+  assert.match(result.stdout, /Mixed-source batch modes:/);
+});
+
 test('pipeline help exits successfully with orchestration options', async () => {
   const result = await runCommand(['bin/pipeline.ts', '--help']);
 

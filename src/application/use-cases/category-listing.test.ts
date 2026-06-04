@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildCategoryListing, formatCategoryListing } from './category-listing';
+import {
+  buildCategoryListing,
+  buildProviderCoverageMatrix,
+  formatCategoryListing,
+  formatProviderCoverageMatrix,
+} from './category-listing';
 
 test('category listing includes representative provider families and source metadata', async () => {
   const listing = await buildCategoryListing();
@@ -73,4 +78,46 @@ test('formatted category listing distinguishes provider families and mixed-sourc
   assert.match(output, /mission-commodities \| Commodities \| files: dynamic JSON source resolved/);
   assert.match(output, /Mixed-source batch modes:\n {2}update-all --provider spviewer \| SPViewer \+ SCMDB/);
   assert.match(output, /update-all --provider datacore \| DataCore \+ SCMDB/);
+});
+
+test('provider coverage matrix distinguishes primary, fallback, and unavailable coverage', async () => {
+  const matrix = await buildProviderCoverageMatrix();
+
+  const coolers = matrix.rows.find((row) => row.category === 'Coolers');
+  assert.deepEqual(coolers, {
+    category: 'Coolers',
+    datacore: { status: 'primary', slug: 'dc-coolers' },
+    spviewer: { status: 'legacy/fallback', slug: 'sp-coolers' },
+    scmdb: { status: 'unavailable' },
+  });
+
+  const missionDescriptions = matrix.rows.find((row) => row.category === 'SCMDB mission descriptions');
+  assert.deepEqual(missionDescriptions, {
+    category: 'SCMDB mission descriptions',
+    datacore: { status: 'unavailable' },
+    spviewer: { status: 'unavailable' },
+    scmdb: { status: 'primary', slug: 'mission-scmdb-descriptions' },
+  });
+
+  assert.equal(matrix.rows.some((row) => row.datacore.status === 'primary'), true);
+  assert.equal(matrix.rows.some((row) => row.spviewer.status === 'legacy/fallback'), true);
+  assert.equal(matrix.rows.some((row) => row.scmdb.status === 'primary'), true);
+  assert.equal(matrix.rows.some((row) => row.datacore.status === 'unavailable'), true);
+  assert.equal(matrix.mixedSources.length, 2);
+});
+
+test('formatted provider coverage matrix includes provider statuses and mixed-source modes', async () => {
+  const output = formatProviderCoverageMatrix(await buildProviderCoverageMatrix());
+
+  assert.match(output, /Provider coverage matrix/);
+  assert.match(
+    output,
+    /\| Coolers \| primary \(dc-coolers\) \| legacy\/fallback \(sp-coolers\) \| unavailable \|/,
+  );
+  assert.match(
+    output,
+    /\| SCMDB mission descriptions \| unavailable \| unavailable \| primary \(mission-scmdb-descriptions\) \|/,
+  );
+  assert.match(output, /Legend: primary = preferred source, legacy\/fallback = supported fallback source/);
+  assert.match(output, /\| update-all --provider datacore \| DataCore \+ SCMDB \|/);
 });

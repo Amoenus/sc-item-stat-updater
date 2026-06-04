@@ -1,5 +1,10 @@
 import { parseArgs } from 'node:util';
-import { buildCategoryListing, formatCategoryListing } from '../src/application/use-cases/category-listing';
+import {
+  buildCategoryListing,
+  buildProviderCoverageMatrix,
+  formatCategoryListing,
+  formatProviderCoverageMatrix,
+} from '../src/application/use-cases/category-listing';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { listCategories, loadConfig } from '../src/items/registry';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
@@ -15,6 +20,7 @@ const { values, positionals } = parseArgs({
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
     'list-categories': { type: 'boolean', default: false },
+    'provider-matrix': { type: 'boolean', default: false },
     force: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
@@ -32,6 +38,12 @@ if (values['list-categories']) {
   process.exit(0);
 }
 
+if (values['provider-matrix']) {
+  console.log(formatProviderCoverageMatrix(await buildProviderCoverageMatrix()));
+  await shutdownLogger();
+  process.exit(0);
+}
+
 if (values.help || !category) {
   const available = await listCategories();
   const allSlugs = [...available.spviewer, ...available.datacore, ...available.missions];
@@ -41,6 +53,7 @@ if (values.help || !category) {
   console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: ./csv)');
   console.log('      --dry-run          Preview changes without writing');
   console.log('      --list-categories  List categories with provider and source file metadata');
+  console.log('      --provider-matrix  List provider coverage by category');
   console.log('      --force            Force update even when values are unchanged');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');

@@ -118,7 +118,19 @@ npm run scrape:scmdb -- --raw
 node --import tsx/esm bin/update-item.ts -c <csv-directory> <category>
 ```
 
-Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/spviewer/<version>-live`). Available categories include SPViewer and mission sources. SPViewer categories are prefixed with `sp-`, for example `sp-weapon-guns`, while mission categories use the `mission-` prefix, for example `mission-scmdb`.
+Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/spviewer/<version>-live`). Available categories include DataCore, SPViewer, and mission sources. DataCore categories are prefixed with `dc-`, SPViewer categories with `sp-`, and mission categories with `mission-`.
+
+To list categories with source-file metadata:
+
+```sh
+node --import tsx/esm bin/update-item.ts --list-categories
+```
+
+To print the provider coverage matrix:
+
+```sh
+node --import tsx/esm bin/update-item.ts --provider-matrix
+```
 
 ### Type checking
 
