@@ -1710,6 +1710,33 @@ Next agent instructions:
 3. Keep generated/scraped data out of commits unless explicitly requested.
 4. Continue using small verified commits.
 
+### 2026-06-04: Post-migration cleanup and functional inventory
+
+Primary goal:
+
+- Remove remaining migration compatibility code where it is no longer needed and identify functional, non-architectural follow-up work.
+
+Implemented:
+
+- Removed obsolete `src/lib` compatibility re-exports in a prior cleanup slice.
+- Moved the remaining update-planning helpers into `src/application/use-cases/update-planning.ts`.
+- Removed the old `runUpdate` and `buildPatchData` compatibility APIs after confirming active imports no longer need them.
+- Removed the empty local `src/lib` directory from the workspace.
+- Added `docs/functional-improvements.md` with a current post-migration cleanup audit and functional improvement inventory.
+
+Verification:
+
+- `npm run typecheck`
+- `npm run check:architecture`
+- `npm test`
+- `npx biome lint docs\functional-improvements.md docs\implementation-plan.md` was not applicable because Biome ignores Markdown files in this repo.
+
+Notes:
+
+- Historical migration docs and issue logs still mention previous `src/lib` paths as slice history.
+- Current README and architecture overview describe the implemented source layout.
+- The highest-value next functional slices are #54 and #55 because they add behavior-preserving regression coverage.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

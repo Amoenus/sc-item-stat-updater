@@ -1,0 +1,82 @@
+# Functional Improvement Inventory
+
+Date: 2026-06-04
+
+This inventory follows the Clean Pipeline Architecture migration. It tracks functional, testing, performance, dependency, and user-experience improvements that remain after the architecture cleanup. It intentionally excludes broad folder reshaping and migration bookkeeping.
+
+## Post-Migration Cleanup Audit
+
+Current cleanup state:
+
+- `src/lib` has no tracked files and the empty local directory was removed.
+- Old compatibility exports for `runUpdate` and `buildPatchData` have been removed.
+- Active source and CLI imports no longer reference `src/lib`.
+- `src/items` remains intentionally scoped to item and mission enrichment rule modules.
+- Historical migration docs and issue logs may still mention old paths because they record previous slices.
+
+Current intentional compatibility:
+
+- Patch artifacts keep the ADR 002 JSON shape for backward compatibility.
+- Artifact JSON does not serialize localization application metadata such as `existingLineIndex`.
+- SPViewer remains a legacy/fallback provider while DataCore coverage continues to improve.
+
+## Tracked Functional Backlog
+
+### #54: Pipeline Integration Fixture Test
+
+Priority: High
+
+Add a small fixture-driven integration test that starts with fixture source data and fixture `global.ini`, runs the planning/application flow, and asserts the resulting INI text. This should cover registry lookup, key resolution, patch planning, INI mutation, and preservation of unrelated keys without touching real generated data.
+
+### #55: Key Resolver Edge-Case Tests
+
+Priority: High
+
+Add negative and edge-case coverage for direct mappings, reverse-index resolution, variant suffix stripping, suffix fallback scans, missing keys, and debug logging. This is correctness work because key resolution errors can silently update or skip localization entries.
+
+### #50: `descKeyMatch` Contract And Overlap Detection
+
+Priority: Medium-High
+
+Add tests and guardrails for item-rule `descKeyMatch` predicates. The current contract is powerful but implicit: overly broad predicates can choose the wrong insertion point or overlap with another category. Add representative positive/negative tests and consider dry-run overlap diagnostics before changing behavior.
+
+### #48: Parallel SPViewer CSV Lookup Loading
+
+Priority: Low-Medium
+
+`buildLookupFromCsvFiles` should read independent SPViewer CSV inputs in parallel. The old issue text references the former `src/lib/updates/lookup-utils.ts` path; the implemented path is now `src/enrichment/updates/lookup-utils.ts`.
+
+### #52: OpenTelemetry Audit
+
+Priority: Low
+
+Identify whether OpenTelemetry packages are used for real tracing/export or only local CLI logging. If they are only local logging support, replace or remove them; if tracing is intentional, document the destination and purpose.
+
+### #51: Puppeteer Dependency Review
+
+Priority: Low
+
+Puppeteer is only needed for scraping, especially SPViewer flows. Consider making it optional or isolating scraper dependencies so users who only update from existing data do not download Chromium unnecessarily.
+
+## Additional Candidate Improvements
+
+These are not yet split into GitHub issues.
+
+- Add command-level no-write smoke tests for `update-all`, `update-item`, `apply-artifact`, and pipeline help/dry-run paths.
+- Add a generated-data churn guard that detects accidental changes under `csv/` or `global.ini` after verification commands that should not write.
+- Improve missing-source-data errors so they name the exact provider, channel, category, expected path, and suggested scrape/extract command.
+- Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
+- Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
+- Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
+- Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
+- Add malformed-artifact and schema-error UX tests with friendlier error messages.
+- Add localization duplicate/collision tests beyond key resolution, including plural/gender suffix handling and all-occurrence update paths.
+- Add a performance budget around a representative large fixture update to catch slow planning or INI application regressions.
+- Add backup/restore tests for write and deploy paths, including repository `global.ini` backups and game-folder deploy backups.
+- Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
+- Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
+- Add validation that `legacy-contracts.csv` and blueprint marker fields remain stable and documented for downstream users.
+
+## Recommended Next Slice
+
+Start with #54 or #55. They are high-value, behavior-preserving test slices that reduce risk before larger functional changes. Avoid generated-data churn by using dedicated fixtures under a test directory rather than real `csv/` outputs or the repository `global.ini`.
