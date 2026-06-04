@@ -18,7 +18,7 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { readArtifactFile } from '../src/artifact/artifact';
-import { applyArtifact } from '../src/artifact/loader';
+import { applyArtifact, formatArtifactApplyPreview } from '../src/artifact/loader';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 
@@ -77,6 +77,9 @@ try {
     skipMissing: values['skip-missing'],
   });
 
+  if (values['dry-run']) {
+    console.log(formatArtifactApplyPreview(result));
+  }
   console.log(result.summary);
 
   printIssues(result.issues);

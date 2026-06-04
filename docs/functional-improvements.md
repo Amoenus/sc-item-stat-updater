@@ -44,7 +44,6 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #102: Add an artifact apply preview summary that reports counts, changed keys, inserted keys, skipped keys, and issues before writes.
 - #103: Add source freshness diagnostics that show detected LIVE/PTU versions and warn when selected source data looks stale or incomplete.
 - #104: Add output comparison reports for categories supported by both DataCore and SPViewer, highlighting coverage and value differences.
 - #105: Add snapshot-style tests for high-value generated strings such as mission descriptions, mining journal entries, component title tags, and location labels.
@@ -57,10 +56,11 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Inspect #102 next. It is a behavior-preserving artifact UX slice that can be driven by compact fixture artifacts and temporary INI files.
+Inspect #103 next. It is a source freshness diagnostics slice and should use temporary version directories and incomplete-source fixtures rather than real generated data.
 
 ## Completed Functional Issues
 
+- #102: `apply-artifact --dry-run` now prints a concise preview summary with changed, inserted, skipped, and issue counts plus capped representative key samples. Loader tests cover compact artifact input, inserted keys, skipped/missing keys, issue counts, and sample truncation, while artifact serialization tests continue to prove application-only metadata such as line indexes is not written to JSON.
 - #101: Missing-source-data preflight errors now include provider, channel, category slug, config label when useful, expected resolved path, and a relevant `npm run scrape:*` command suggestion. Focused tests cover a missing DataCore item source and a missing SCMDB PTU mission source while preserving the successful preflight path.
 - #100: Added `npm run check:no-generated-churn`, backed by a git-status guard for repository `csv/` and root `global.ini`, with tests proving fixture/temp-directory writes are ignored and generated-data changes produce clear path-specific failures.
 - #99: Command-level smoke tests now spawn `update-all`, `update-item`, and `pipeline` help paths plus an `apply-artifact --dry-run` temp fixture, asserting exit codes, user-facing output, and no INI fixture writes.

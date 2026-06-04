@@ -78,14 +78,15 @@ test('apply-artifact dry run reports changes without writing the INI fixture', a
         spviewerVersion: null,
         entries: {
           item_desc_existing: 'Updated value',
+          item_desc_missing: 'Skipped value',
         },
         stats: {
           categoryCount: 1,
-          totalEntries: 1,
+          totalEntries: 2,
           totalSkipped: 0,
           totalErrors: 0,
         },
-        issues: [],
+        issues: [{ label: 'fixture', key: 'artifact_issue_key', reason: 'Generated issue', type: 'warning' }],
       }),
       'utf8',
     );
@@ -95,8 +96,15 @@ test('apply-artifact dry run reports changes without writing the INI fixture', a
 
     assert.equal(result.exitCode, 0, result.stderr);
     assert.match(result.stdout, /Artifact:/);
-    assert.match(result.stdout, /Entries:\s+1/);
-    assert.match(result.stdout, /Loader: Updated 1, Inserted 0, Skipped 0 \(dry run\)/);
+    assert.match(result.stdout, /Entries:\s+2/);
+    assert.match(result.stdout, /Preview summary:/);
+    assert.match(result.stdout, /Changed:\s+1 \(item_desc_existing\)/);
+    assert.match(result.stdout, /Inserted:\s+0 \(none\)/);
+    assert.match(result.stdout, /Skipped:\s+1 \(item_desc_missing\)/);
+    assert.match(result.stdout, /Issues:\s+2/);
+    assert.match(result.stdout, /Loader: Updated 1, Inserted 0, Skipped 1 \(dry run\)/);
+    assert.match(result.stdout, /WARNING \| artifact_issue_key/);
+    assert.match(result.stdout, /MISSING \| item_desc_missing/);
     assert.equal(await fs.readFile(iniPath, 'utf8'), originalIni);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

@@ -16,6 +16,48 @@ import { validateIntegrity } from '../application/use-cases/update-planning';
 
 const logger = getLogger('loader');
 
+export interface ArtifactApplyIssue {
+  key: string;
+  reason: string;
+  type: string;
+  label?: string;
+}
+
+export interface ArtifactApplyResult {
+  updatedCount: number;
+  skippedCount: number;
+  insertedCount: number;
+  changedKeys: string[];
+  insertedKeys: string[];
+  skippedKeys: string[];
+  issues: ArtifactApplyIssue[];
+  summary: string;
+}
+
+function formatKeySamples(keys: string[], maxKeys: number): string {
+  if (keys.length === 0) return 'none';
+  const shown = keys.slice(0, maxKeys);
+  const suffix = keys.length > maxKeys ? `, ...and ${keys.length - maxKeys} more` : '';
+  return `${shown.join(', ')}${suffix}`;
+}
+
+export function formatArtifactApplyPreview(
+  result: Pick<
+    ArtifactApplyResult,
+    'updatedCount' | 'insertedCount' | 'skippedCount' | 'issues' | 'changedKeys' | 'insertedKeys' | 'skippedKeys'
+  >,
+  options: { maxKeys?: number } = {},
+): string {
+  const maxKeys = options.maxKeys ?? 5;
+  return [
+    'Preview summary:',
+    `  Changed:  ${result.updatedCount} (${formatKeySamples(result.changedKeys, maxKeys)})`,
+    `  Inserted: ${result.insertedCount} (${formatKeySamples(result.insertedKeys, maxKeys)})`,
+    `  Skipped:  ${result.skippedCount} (${formatKeySamples(result.skippedKeys, maxKeys)})`,
+    `  Issues:   ${result.issues.length}`,
+  ].join('\n');
+}
+
 /**
  * Applies the entries from a patch artifact to global.ini.
  *
@@ -26,16 +68,10 @@ const logger = getLogger('loader');
  *    the INI is considered the source of truth for which keys exist).
  */
 export async function applyArtifact(
-  artifact: { entries: Record<string, string> },
+  artifact: { entries: Record<string, string>; issues?: ArtifactApplyIssue[] },
   iniPath: string,
   options: { dryRun?: boolean; skipBackup?: boolean; skipMissing?: boolean } = {},
-): Promise<{
-  updatedCount: number;
-  skippedCount: number;
-  insertedCount: number;
-  issues: Array<{ key: string; reason: string; type: string }>;
-  summary: string;
-}> {
+): Promise<ArtifactApplyResult> {
   const { dryRun = false, skipBackup = false, skipMissing = true } = options;
   const start = performance.now();
 
@@ -45,7 +81,10 @@ export async function applyArtifact(
   let updatedCount = 0;
   let skippedCount = 0;
   let insertedCount = 0;
-  const issues = [];
+  const changedKeys: string[] = [];
+  const insertedKeys: string[] = [];
+  const skippedKeys: string[] = [];
+  const issues: ArtifactApplyIssue[] = [...(artifact.issues ?? [])];
   const newLines = [];
 
   for (const [artifactKey, newValue] of Object.entries(artifact.entries)) {
@@ -62,14 +101,17 @@ export async function applyArtifact(
       if (newValue !== oldValue) {
         lines[lineIndex] = `${lineKey}=${newValue}`;
         updatedCount++;
+        changedKeys.push(foundKey);
         logger.debug('Applied patch', { key: foundKey });
       }
     } else if (skipMissing) {
       skippedCount++;
+      skippedKeys.push(artifactKey);
       issues.push({ key: artifactKey, reason: 'Key absent from INI; skipped', type: 'missing' });
       logger.debug('Key absent in INI, skipping', { key: artifactKey });
     } else {
       newLines.push(`${artifactKey}=${newValue}`);
+      insertedKeys.push(artifactKey);
     }
   }
 
@@ -90,5 +132,5 @@ export async function applyArtifact(
     await writeIniFile(iniPath, lines, { skipBackup });
   }
 
-  return { updatedCount, skippedCount, insertedCount, issues, summary };
+  return { updatedCount, skippedCount, insertedCount, changedKeys, insertedKeys, skippedKeys, issues, summary };
 }
