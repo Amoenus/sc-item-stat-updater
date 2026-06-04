@@ -83,3 +83,12 @@ export interface PatchPlan {
 
 - Run `npm run typecheck`.
 - Run existing tests if any import paths are touched.
+
+## Progress
+
+Implemented on 2026-06-04:
+
+- Added `src/pipeline/types.ts`.
+- Added `SourceName`, `GameChannel`, `SourceDataset`, `PatchEntry`, `UpdateIssue`, `PatchPlan`, and `PipelineRunMetadata`.
+- Updated existing `IssueRecord` to extend `UpdateIssue`.
+- Verified with `npm run typecheck` and `npm test`.

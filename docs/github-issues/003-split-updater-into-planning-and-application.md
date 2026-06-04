@@ -52,3 +52,22 @@ src/application/use-cases/enrich-global-ini.ts
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Compare dry-run output before and after the refactor for at least one SPViewer/DataCore category and one SCMDB mission category.
+
+## Progress
+
+Started on 2026-06-04:
+
+- Added `src/localization/patch-plan.ts`.
+- Added `src/localization/patch-application.ts`.
+- Added `src/localization/update-issues.ts`.
+- Added `applyPatchPlanToIniLines`, `applyLocalizationLinePatch`, and `insertLocalizationEntries`.
+- Added in-memory tests for patch application.
+- Updated `src/lib/updater.ts` to delegate line mutation and insertion helpers to localization application code while preserving `runUpdate`.
+- Added `buildPatchPlan` as an in-memory use case backed by existing `buildPatchData`.
+- Verified with `npm run typecheck` and `npm test`.
+
+Remaining:
+
+- Extract a true planner from `src/lib/updater.ts` that creates `PatchPlan` entries without mutating INI lines.
+- Recompose `runUpdate` from planning plus patch application.
+- Add planner tests that use small row and INI fixtures.

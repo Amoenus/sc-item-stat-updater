@@ -5,6 +5,7 @@ import { findIniKey, readIniFile, writeIniFile } from '../io/local/ini-file';
 import { readJsonFile } from '../io/local/json-file';
 import { buildLookupMap, loadMappingFile, saveMappingFile } from '../io/local/mapping-store';
 import { resolveChildPath } from '../io/local/path-conventions';
+import { applyLocalizationLinePatch, insertLocalizationEntries } from '../localization/patch-application';
 import { sanitizeIniValue } from './format/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from './format/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from './key-resolver';
@@ -190,10 +191,7 @@ function applyLinePatch(
   newValue: string,
   patches: Record<string, string>,
 ): void {
-  const eqIdx = oldLine.indexOf('=');
-  const lineKey = eqIdx > -1 ? oldLine.substring(0, eqIdx) : foundKey;
-  lines[lineIndex] = `${lineKey}=${newValue}`;
-  patches[foundKey] = newValue;
+  applyLocalizationLinePatch(lines, lineIndex, oldLine, foundKey, newValue, patches);
 }
 
 type KeyUpdateResult = 'notFound' | 'found' | 'updated';
@@ -265,13 +263,7 @@ function processRow(
 
 /** Inserts new lines at the correct position (after last matching desc key). */
 function insertNewEntries(lines: string[], newLines: string[], lastDescIdx: number): void {
-  if (newLines.length === 0) return;
-  newLines.sort((a, b) => a.localeCompare(b));
-  if (lastDescIdx > -1) {
-    for (let i = 0; i < newLines.length; i++) lines.splice(lastDescIdx + 1 + i, 0, newLines[i]);
-  } else {
-    lines.push(...newLines);
-  }
+  insertLocalizationEntries(lines, newLines, lastDescIdx);
 }
 
 /**

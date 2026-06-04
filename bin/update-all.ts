@@ -2,12 +2,13 @@
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { type Artifact, writeArtifactFile } from '../src/artifact/artifact';
+import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { findLatestMatchingDirectory } from '../src/io/local/discovery';
 import { backupIniFile } from '../src/io/local/ini-file';
 import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../src/items/registry';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
-import { preflightCheckConfigs, runUpdate } from '../src/lib/updater';
+import { preflightCheckConfigs } from '../src/lib/updater';
 import { runAdagioLocationTagUpdate } from '../src/lib/updates/adagio-location-tags';
 import { runComponentTitleUpdate } from '../src/lib/updates/component-titles';
 import { runFpsTitleTagUpdate } from '../src/lib/updates/fps-title-tags';
@@ -252,7 +253,7 @@ for (let i = 0; i < categories.length; i++) {
   const { config, csvDir: entryCsvDir } = categories[i];
   bar.update(i, { category: config.label });
   try {
-    results.push(await runUpdate(config, { ...sharedOptions, csvDir: entryCsvDir }));
+    results.push(await enrichGlobalIni(config, { ...sharedOptions, csvDir: entryCsvDir }));
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     errors.push({ label: config.label, message: error.message });

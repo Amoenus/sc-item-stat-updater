@@ -1,3 +1,5 @@
+import type { UpdateIssue } from '../pipeline/types';
+
 /**
  * Shared properties for all item configs.
  */
@@ -46,9 +48,4 @@ export interface ItemConfig extends BaseItemConfig {
  * {@link ArtifactIssueDTO} in `artifact.schema.ts` mirrors this shape via
  * Zod — if you add a field here, add it there too.
  */
-export interface IssueRecord {
-  label: string;
-  key: string;
-  reason: string;
-  type: string;
-}
+export interface IssueRecord extends UpdateIssue {}

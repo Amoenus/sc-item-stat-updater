@@ -61,6 +61,40 @@ Goal: finish the visible structure after behavior has stable homes.
 11. 012
 12. 013
 
+## Progress Checkpoints
+
+### 2026-06-04: Milestone 1 foundation started
+
+Implemented:
+
+- Issue 001 core contracts in `src/pipeline/types.ts`.
+- Initial Issue 002 use cases in `src/application/use-cases/`:
+  - `runFullPipeline`
+  - `enrichGlobalIni`
+  - `buildPatchPlan`
+- Initial Issue 003 localization boundary files:
+  - `src/localization/patch-plan.ts`
+  - `src/localization/patch-application.ts`
+  - `src/localization/update-issues.ts`
+- `bin/pipeline.ts` now delegates orchestration to `runFullPipeline`.
+- `bin/update-all.ts` now routes standard category updates through `enrichGlobalIni`.
+- `src/lib/updater.ts` still preserves `runUpdate`, but delegates line patching and insertion to localization application helpers.
+- `npm test` was adjusted so the Node test runner discovers tests correctly in PowerShell.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+
+Next agent instructions:
+
+1. Continue Issue 003 by turning `runUpdate` into clearer composition of planning plus application.
+2. Extract a real in-memory planning function from `src/lib/updater.ts` that reads rows and INI context, returns `PatchPlan` plus summary counters, and does not write files.
+3. Teach `runUpdate` to call that planner, apply the resulting plan to INI lines, validate integrity, and write only in the application step.
+4. Preserve compatibility exports from `src/lib/updater.ts` until CLI and artifact callers move fully to use cases.
+5. Add focused tests for planning separately from application. Use small INI/row fixtures; do not require scraped CSV directories.
+6. Keep `npm run pipeline:scrape:datacore` and `npm run update -- --dry-run --provider datacore` behavior stable.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

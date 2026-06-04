@@ -54,3 +54,19 @@ src/application/use-cases/
 - Run `npm test`.
 - Run `npm run update -- --dry-run` if local data files are available.
 - Run `npm run pipeline -- --dry-run` only if the local game-file environment is configured.
+
+## Progress
+
+Started on 2026-06-04:
+
+- Added `src/application/use-cases/run-full-pipeline.ts`.
+- Added `src/application/use-cases/enrich-global-ini.ts`.
+- Added `src/application/use-cases/build-patch-plan.ts`.
+- Updated `bin/pipeline.ts` to delegate to `runFullPipeline`.
+- Updated `bin/update-all.ts` standard category loop to call `enrichGlobalIni`.
+- Use cases return structured results and do not call `process.exit`.
+- Verified with `npm run typecheck` and `npm test`.
+
+Remaining:
+
+- Extract smaller use cases for refresh, scrape, deploy, and batch enrichment once `runUpdate` is split further.
