@@ -79,9 +79,11 @@ Incrementally migrate the project to the Clean Pipeline Architecture accepted in
 - CLI thinning has continued:
   - `prepareUpdateCategories` now owns `update-all` source-directory discovery and category assembly
   - `bin/update-all.ts` consumes prepared category context instead of loading provider/mission configs directly
+  - `runPreparedUpdateCategories` now owns the prepared category execution loop and returns structured category results/errors
+  - `bin/update-all.ts` observes category execution for progress and logs while keeping process exits and user-facing output in the CLI layer
+- Artifact loader coverage now includes compact artifact JSON applied to temp INI fixtures.
 - Verified current migration slice with:
   - `npm run typecheck`
   - `npm test`
   - touched-file Biome lint
-  - `npm run update -- --dry-run --provider datacore`
-  - `npm run update -- --dry-run --provider datacore --emit-artifact <temp path>`
+  - targeted use-case and artifact-loader tests

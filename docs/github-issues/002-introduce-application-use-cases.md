@@ -85,7 +85,19 @@ Continued on 2026-06-04:
 - `bin/update-all.ts` now consumes that prepared result while retaining CLI-only responsibilities such as parsing args, progress display, preflight, backups, process exits, and artifact file emission.
 - Added tests for LIVE/PTU version directory resolution and missing-channel scraper hints.
 
-Remaining:
+Completed on 2026-06-04:
+
+- Added `runPreparedUpdateCategories` as the application use case for executing a prepared batch of category updates.
+- `bin/update-all.ts` now delegates the standard category update loop to the use case while keeping progress rendering, logging, preflight, backups, artifact writing, and exit codes in the CLI script.
+- Added focused tests proving that prepared source directories are passed through per category and that category failures are collected while later categories continue.
+- Acceptance criteria for this issue are met:
+  - `runFullPipeline` and `enrichGlobalIni` exist as callable use cases.
+  - `bin/pipeline.ts` delegates meaningful work to `runFullPipeline`.
+  - `bin/update-all.ts` delegates meaningful preparation and enrichment execution work to application use cases.
+  - use cases do not parse CLI arguments or call `process.exit`.
+  - existing npm scripts are verified through typecheck and tests.
+
+Follow-up:
 
 - Extract smaller use cases for refresh, scrape, deploy, and batch enrichment once `runUpdate` is split further.
-- Extract batch update execution from `bin/update-all.ts` once the application result shape is clear.
+- Continue reducing `runUpdate` compatibility reliance under Issue 003 and CLI thin-adapter work under Issue 011.

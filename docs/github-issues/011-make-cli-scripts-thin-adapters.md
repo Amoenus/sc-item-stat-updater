@@ -56,7 +56,13 @@ Move reusable behavior into application/source/localization modules and leave `b
 - Added `prepareUpdateCategories` and updated `bin/update-all.ts` to delegate provider/source-directory discovery and category assembly to the application layer.
 - The script still owns CLI parsing, progress output, preflight, mining regeneration, backups, extra update steps, artifact file writing, and exit codes.
 
+Continued on 2026-06-04:
+
+- Added `runPreparedUpdateCategories` and updated `bin/update-all.ts` to delegate the prepared category execution loop to the application layer.
+- The CLI observes the use case through callbacks for progress rendering and category error logging, but the use case owns per-category option composition, `csvDir` selection, failure collection, and continue-on-error behavior.
+- The script still owns CLI parsing, progress output, preflight, mining regeneration, backups, extra update steps, artifact file writing, and exit codes.
+
 Remaining:
 
-- Extract batch update execution into an application use case once result/error reporting can be represented without CLI concerns.
+- Extract or classify the remaining `update-all` extra update steps once their result/error reporting can be represented without CLI concerns.
 - Move scraper acquisition/normalization behavior behind source modules before doing broad folder cleanup.

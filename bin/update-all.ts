@@ -2,11 +2,15 @@
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
-import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import {
   prepareUpdateCategories,
   type UpdateProvider,
 } from '../src/application/use-cases/prepare-update-categories';
+import {
+  type BatchUpdateError,
+  type BatchUpdateResult,
+  runPreparedUpdateCategories,
+} from '../src/application/use-cases/run-prepared-update-categories';
 import { backupIniFile } from '../src/io/local/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
@@ -23,7 +27,7 @@ const logger = getLogger('update-all');
 registerUnhandledRejectionHandler(logger);
 
 type StepError = { label: string; message: string };
-type AnyUpdateResult = { label: string; summary: string; patches?: Record<string, string>; issues?: unknown[] };
+type AnyUpdateResult = BatchUpdateResult;
 
 async function runStep(
   label: string,
@@ -200,21 +204,22 @@ const errors: StepError[] = [];
 
 bar.start(categories.length + extraSteps, 0, { category: '' });
 
-for (let i = 0; i < categories.length; i++) {
-  const { config, csvDir: entryCsvDir } = categories[i];
-  bar.update(i, { category: config.label });
-  try {
-    results.push(await enrichGlobalIni(config, { ...sharedOptions, csvDir: entryCsvDir }));
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    errors.push({ label: config.label, message: error.message });
+const categoryResult = await runPreparedUpdateCategories(categories, {
+  ...sharedOptions,
+  onCategoryStart: ({ config }, index) => {
+    bar.update(index, { category: config.label });
+  },
+  onCategoryError: (error: BatchUpdateError) => {
     logger.error('Failed to update category', {
-      label: config.label,
+      label: error.label,
       error: error.message,
-      cause: err instanceof Error && 'cause' in err && err.cause instanceof Error ? err.cause.message : undefined,
+      cause: error.cause,
     });
-  }
-}
+  },
+});
+
+results.push(...categoryResult.results);
+errors.push(...categoryResult.errors);
 
 let barStep = categories.length;
 bar.update(barStep, { category: 'Component Titles' });

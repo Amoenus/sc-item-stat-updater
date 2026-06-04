@@ -60,6 +60,11 @@ Current `src/artifact` can remain until the final folder cleanup.
 - Wired `bin/update-all.ts --emit-artifact` through `generateArtifact`, with artifact planning performed before any non-dry-run INI writes.
 - Added fixture-driven `generateArtifact` test coverage.
 
+Continued on 2026-06-04:
+
+- Added artifact-loader fixture tests that read a compact artifact JSON from disk and apply it to a temp `global.ini` fixture.
+- Covered both update-plus-insert behavior with `skipMissing: false` and skipped missing-key reporting with default load behavior.
+
 ## Test Plan
 
 - Run `npm run typecheck`.
