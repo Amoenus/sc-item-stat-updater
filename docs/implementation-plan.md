@@ -1497,6 +1497,43 @@ Next agent instructions:
 4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: Enrichment formatting boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved numeric/INI formatting helpers from `src/lib/format/formatter.ts` to `src/enrichment/formatter.ts`.
+- Moved stat-building enrichment helpers from `src/lib/format/stat-builder.ts` to `src/enrichment/stat-builder.ts`.
+- Moved the formatter and stat-builder tests to `src/enrichment`.
+- Left `src/lib/format/formatter.ts` and `src/lib/format/stat-builder.ts` as documented compatibility re-exports for older imports.
+- Updated active updater and item enrichment imports to use `src/enrichment`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/enrichment/formatter.test.ts src/enrichment/stat-builder.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on moved enrichment files, compatibility re-exports, `src/lib/updater.ts`, and active `src/items/datacore` / `src/items/spviewer` import rewrites.
+
+Notes:
+
+- GitHub #96 remains open.
+- `src/lib/format` is now compatibility-only for formatter/stat-builder plus the earlier localization text-utils re-export.
+- `src/items` still contains the enrichment rule modules themselves; narrowing or renaming that folder should remain a later explicit slice.
+- README/project-structure updates should wait until more folder cleanup has landed.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move enrichment formatting helpers`.
+2. Continue Issue 012 / GitHub #96 with another small `src/lib` responsibility move.
+3. Consider enrichment extra steps next; avoid large `src/items` renames.
+4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

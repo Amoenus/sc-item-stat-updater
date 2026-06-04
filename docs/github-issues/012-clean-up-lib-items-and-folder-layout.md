@@ -134,3 +134,24 @@ Remaining:
 - Continue reducing `src/lib` in small slices, likely formatting/stat-builder, updater compatibility, and enrichment extra steps.
 - Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+Enrichment formatting slice on 2026-06-04:
+
+- Moved stat-building and numeric/INI formatting helpers from `src/lib/format` to `src/enrichment`.
+- Moved formatter and stat-builder tests to `src/enrichment`.
+- Left `src/lib/format/formatter.ts` and `src/lib/format/stat-builder.ts` as documented compatibility re-exports for older imports.
+- Updated active updater and item enrichment imports to use `src/enrichment`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `node --import tsx/esm --test src/enrichment/formatter.test.ts src/enrichment/stat-builder.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on moved enrichment files, compatibility re-exports, `src/lib/updater.ts`, and active `src/items/datacore` / `src/items/spviewer` import rewrites.
+
+Remaining:
+
+- Continue reducing `src/lib` in small slices, likely updater compatibility and enrichment extra steps.
+- Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
+- Update README/project-structure docs once enough folder cleanup has landed.

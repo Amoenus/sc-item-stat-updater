@@ -1,4 +1,4 @@
-﻿import { stat } from '../../lib/format/stat-builder';
+import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../lib/types';
 
 export default {
@@ -24,8 +24,8 @@ export default {
       .section('-- Thermal --')
       .rawIf('Cooling Usage Start', 'Cooling Usage Start')
       .rawIf('Cooling Usage Min', 'Cooling Usage Min')
-      .rawIf('Max Temp', 'Temperature (°C) Max')
-      .rawIf('Overheat', 'Temperature (°C) Overheat')
+      .rawIf('Max Temp', 'Temperature (�C) Max')
+      .rawIf('Overheat', 'Temperature (�C) Overheat')
       .section('-- Durability --')
       .raw('Health', 'Health')
       .rawIf('Distortion Shutdown', 'Distortion Resistance Shutdown Dmg')

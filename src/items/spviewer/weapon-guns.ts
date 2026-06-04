@@ -1,4 +1,4 @@
-﻿import { stat } from '../../lib/format/stat-builder';
+import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../lib/types';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
 
@@ -23,7 +23,7 @@ export default {
   descKeyMatch: isWeaponDescKey,
   buildValue(r, flavorText) {
     const hasAmmo =
-      r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '' && r['Ammo Quantity'] !== '∞';
+      r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '' && r['Ammo Quantity'] !== '8';
 
     const s = stat(r)
       .line('Item Type', r['Type'])

@@ -1,4 +1,4 @@
-import type { StatBuilder } from '../../lib/format/stat-builder';
+import type { StatBuilder } from '../../enrichment/stat-builder';
 
 export function addEmissionAndDurabilityStats(builder: StatBuilder): StatBuilder {
   return builder

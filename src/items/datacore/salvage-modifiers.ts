@@ -1,4 +1,4 @@
-import { stat } from '../../lib/format/stat-builder';
+import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../lib/types';
 import type { DataCoreItemTypeConfig } from './types';
 
