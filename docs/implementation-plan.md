@@ -428,6 +428,44 @@ Next agent instructions:
 6. Do not include local scraped/generated data unless explicitly requested.
 7. Continue to verify each slice with `npm run typecheck`, `npm test` unless docs-only, and touched-file Biome lint for changed source/test files.
 
+### 2026-06-04: Issue 005 closure verification
+
+Primary issue:
+
+- Issue 005 / GitHub #89: Align Artifacts With Patch Plans
+
+Implemented:
+
+- Reviewed Issue 005/#89 acceptance after closing the planning/application split.
+- Confirmed artifact docs/schema explain artifact `entries` as the persisted, backward-compatible projection of `PatchPlan.entries`.
+- Confirmed `patchPlanToArtifactEntries` converts in-memory patch plans to artifact entries.
+- Confirmed `artifactToPatchPlan` converts artifact entries back into the in-memory pipeline contract with artifact-level default metadata.
+- Confirmed `generateArtifact` consumes `buildPatchPlanResult` and serializes from `PatchPlan` entries rather than legacy patch-data strings.
+- Confirmed `readArtifactFile` validates artifact JSON with `ArtifactSchema`.
+- Confirmed `bin/apply-artifact.ts` still reads artifacts and applies them through the loader.
+- Confirmed artifact conversion, artifact generation, and artifact-loader fixture tests cover the expected compact shape.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- Existing touched-file Biome lint from artifact slices covered `src/artifact/artifact.ts`, `src/artifact/artifact.test.ts`, `src/artifact/loader.test.ts`, and `src/schema/artifact.schema.ts`.
+
+Notes:
+
+- GitHub #89 can be closed as completed.
+- `src/artifact` remains singular until the later folder cleanup issue; the issue explicitly allowed the current folder during migration.
+- Artifact JSON continues to omit localization application metadata such as `existingLineIndex`.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Close artifact patch-plan alignment`.
+2. Continue with Issue 011 / GitHub #95 as the next primary slice.
+3. For #95, first classify the remaining `bin/update-all.ts` extra steps and decide whether a small use case can own extra-step execution without moving CLI progress/output/exit behavior.
+4. Keep scraper/source-module boundary work separate unless choosing that as the explicit #95 slice.
+5. Do not broadly rename `src/lib`, `src/items`, or `src/artifact` yet.
+6. Do not include local scraped/generated data unless explicitly requested.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

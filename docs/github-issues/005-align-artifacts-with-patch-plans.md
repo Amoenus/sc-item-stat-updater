@@ -65,6 +65,30 @@ Continued on 2026-06-04:
 - Added artifact-loader fixture tests that read a compact artifact JSON from disk and apply it to a temp `global.ini` fixture.
 - Covered both update-plus-insert behavior with `skipMissing: false` and skipped missing-key reporting with default load behavior.
 
+Closed on 2026-06-04:
+
+- Reviewed acceptance criteria after Issue 003/#87 was closed.
+- Confirmed artifact comments/schema define `entries` as the persisted, backward-compatible projection of `PatchPlan.entries`.
+- Confirmed `patchPlanToArtifactEntries` converts `PatchPlan` entries to artifact entries.
+- Confirmed `artifactToPatchPlan` rehydrates artifact entries back into the in-memory `PatchPlan` contract.
+- Confirmed `generateArtifact` plans through `buildPatchPlanResult` and serializes from the resulting `PatchPlan`.
+- Confirmed `readArtifactFile` validates JSON with `ArtifactSchema`.
+- Confirmed `bin/apply-artifact.ts` still reads and applies compact artifacts through `applyArtifact`.
+- Confirmed tests cover conversion, generation, and loader fixture behavior.
+
+Final verification:
+
+- `npm run typecheck`
+- `npm test`
+- Prior touched-file Biome lint covered the artifact source/test/schema files changed by the implementation slices.
+
+Decision:
+
+- Acceptance criteria are met.
+- GitHub #89 can be closed as completed.
+- `src/artifact` can remain until the later folder cleanup issue.
+- Artifact JSON must continue to omit localization application metadata such as `existingLineIndex`.
+
 ## Test Plan
 
 - Run `npm run typecheck`.
