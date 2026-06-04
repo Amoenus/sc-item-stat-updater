@@ -368,3 +368,36 @@ Remaining for #95:
   - `bin/scrape-datacore.ts --all`
   - `bin/scrape-spviewer.ts --all`
 - Add callable application/source entry points for scraper orchestration or document a deliberate boundary if those scrape commands should remain subprocesses.
+
+SCMDB pipeline scrape progress on 2026-06-04:
+
+- Added `src/application/use-cases/run-scmdb-scrape.ts`.
+- Moved SCMDB scraper orchestration into a callable use case:
+  - version selection
+  - raw JSON fetching and optional companion-data fetching
+  - output directory creation
+  - raw JSON writes
+  - schema validation
+  - output row assembly and output file planning
+  - CSV content generation and writes
+  - structured written-file result metadata
+- Updated `bin/scrape-scmdb.ts` to keep CLI parsing, help/list output, user-facing save messages, and error/exit handling while delegating scrape execution to `runScmdbScrape`.
+- Updated `runFullPipeline` to call `runScmdbScrape` in process for SCMDB scrape steps instead of shelling out to `bin/scrape-scmdb.ts`.
+- Added injected-fetch/write tests for raw-only SCMDB scraping and version-selection failures.
+- Did not run networked SCMDB scraping or write generated CSV/JSON data.
+
+Verification:
+
+- `node --import tsx/esm --test src/application/use-cases/run-scmdb-scrape.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/application/use-cases/run-scmdb-scrape.ts src/application/use-cases/run-scmdb-scrape.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+- `node --import tsx/esm bin/pipeline.ts --help`
+
+Remaining for #95:
+
+- `runFullPipeline` still shells out through `spawnSync` for non-SCMDB scraper steps:
+  - `bin/scrape-datacore.ts --all`
+  - `bin/scrape-spviewer.ts --all`
+- Add callable application/source entry points for those scraper orchestration paths or document a deliberate boundary if those scrape commands should remain subprocesses.

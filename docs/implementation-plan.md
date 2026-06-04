@@ -1075,6 +1075,53 @@ Next agent instructions:
 4. Avoid networked scraper runs or generated CSV/JSON churn unless explicitly requested.
 5. Keep broad folder cleanup and compatibility export removal for later explicit issues.
 
+### 2026-06-04: Pipeline SCMDB scrape runs in process
+
+Primary issue:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added `src/application/use-cases/run-scmdb-scrape.ts`.
+- Moved SCMDB scraper orchestration into a callable use case:
+  - version selection
+  - raw JSON fetching and optional companion-data fetching
+  - output directory creation
+  - raw JSON writes
+  - schema validation
+  - output row assembly and output file planning
+  - CSV content generation and writes
+  - structured written-file result metadata
+- Updated `bin/scrape-scmdb.ts` to keep CLI parsing, help/list output, user-facing save messages, and error/exit handling while delegating scrape execution to `runScmdbScrape`.
+- Updated `runFullPipeline` to call `runScmdbScrape` in process for SCMDB scrape steps instead of shelling out to `bin/scrape-scmdb.ts`.
+- Added injected-fetch/write tests for raw-only SCMDB scraping and version-selection failures.
+- Did not run networked SCMDB scraping or write generated CSV/JSON data.
+
+Verified:
+
+- `node --import tsx/esm --test src/application/use-cases/run-scmdb-scrape.test.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint bin/scrape-scmdb.ts src/application/use-cases/run-scmdb-scrape.ts src/application/use-cases/run-scmdb-scrape.test.ts src/application/use-cases/run-full-pipeline.ts src/application/use-cases/run-full-pipeline.test.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+- `node --import tsx/esm bin/pipeline.ts --help`
+
+Notes:
+
+- Issue 011 / GitHub #95 remains open because `runFullPipeline` still shells out through `spawnSync` for non-SCMDB scraper steps:
+  - `bin/scrape-datacore.ts --all`
+  - `bin/scrape-spviewer.ts --all`
+- The next #95 slice should target one of those remaining scraper shellout paths, likely DataCore first because its acquisition/parser source modules already exist.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Run pipeline SCMDB scrape in process`.
+2. Continue Issue 011 / GitHub #95 by targeting one remaining scraper shellout path.
+3. Prefer DataCore first because `src/sources/datacore` already owns DCB discovery, XML discovery, parser facade, and acquisition cache extraction.
+4. Avoid DataCore extraction commands that write generated XML/CSV unless explicitly requested.
+5. Keep CLI parse args, progress, user-facing output, file-write messages, and process exits in `bin/*.ts`.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

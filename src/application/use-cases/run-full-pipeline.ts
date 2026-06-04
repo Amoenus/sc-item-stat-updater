@@ -3,6 +3,7 @@ import path from 'node:path';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
+import { runScmdbScrape } from './run-scmdb-scrape';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -15,6 +16,7 @@ export interface RunFullPipelineOptions {
   onStepComplete?: (summary: string) => void;
   runScript?: (scriptArgs: string[]) => number;
   runUpdate?: typeof runBatchUpdate;
+  runScmdb?: typeof runScmdbScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
 }
@@ -40,6 +42,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const repoIniPath = path.join(options.rootDir, 'global.ini');
 
   const runUpdate = options.runUpdate ?? runBatchUpdate;
+  const runScmdb = options.runScmdb ?? runScmdbScrape;
   const refresh = options.refresh ?? refreshGlobalIni;
   const deploy = options.deploy ?? deployGlobalIni;
 
@@ -49,22 +52,20 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
 
   if (options.datacore) {
     log('=== Step 2: Scraping SCMDB ===');
-    let exitCode = runScript(['bin/scrape-scmdb.ts']);
-    if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
+    await runScmdb({ repoRoot: options.rootDir, ptu: options.ptu });
     options.onStepComplete?.('SCMDB scraped');
 
     log('=== Step 2b: Scraping Datacore ===');
-    exitCode = runScript(['bin/scrape-datacore.ts', '--all']);
+    const exitCode = runScript(['bin/scrape-datacore.ts', '--all']);
     if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('Datacore scraped');
   } else if (options.scrape) {
     log('=== Step 2: Scraping SCMDB ===');
-    let exitCode = runScript(['bin/scrape-scmdb.ts']);
-    if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
+    await runScmdb({ repoRoot: options.rootDir, ptu: options.ptu });
     options.onStepComplete?.('SCMDB scraped');
 
     log('=== Step 2b: Scraping SPViewer ===');
-    exitCode = runScript(['bin/scrape-spviewer.ts', '--all']);
+    const exitCode = runScript(['bin/scrape-spviewer.ts', '--all']);
     if (exitCode !== 0) return { exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('SPViewer scraped');
   } else {

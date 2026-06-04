@@ -6,6 +6,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
   const scriptCalls: string[][] = [];
   const completed: string[] = [];
   const updateOptions: unknown[] = [];
+  const scmdbOptions: unknown[] = [];
 
   const result = await runFullPipeline({
     rootDir: 'repo',
@@ -21,6 +22,15 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     runScript: (scriptArgs) => {
       scriptCalls.push(scriptArgs);
       return 0;
+    },
+    runScmdb: async (options) => {
+      scmdbOptions.push(options);
+      return {
+        selected: { version: 'scmdb-live', file: 'merged-scmdb-live.json' },
+        outDir: 'repo/csv/scmdb/scmdb-live',
+        missionsOutDir: 'repo/csv/scmdb/scmdb-live/missions',
+        files: [],
+      };
     },
     runUpdate: async (options) => {
       updateOptions.push(options);
@@ -43,7 +53,8 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     extractedGamePath: 'game/global.ini',
     repoIniPath: 'repo\\global.ini',
   });
-  assert.deepEqual(scriptCalls, [['bin/scrape-scmdb.ts'], ['bin/scrape-spviewer.ts', '--all']]);
+  assert.deepEqual(scriptCalls, [['bin/scrape-spviewer.ts', '--all']]);
+  assert.deepEqual(scmdbOptions, [{ repoRoot: 'repo', ptu: true }]);
   assert.deepEqual(updateOptions, [
     {
       repoRoot: 'repo',
@@ -73,6 +84,12 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
       return { repoIniPath, targetIniPath };
     },
     runScript: () => 0,
+    runScmdb: async () => ({
+      selected: { version: 'scmdb-live', file: 'merged-scmdb-live.json' },
+      outDir: 'repo/csv/scmdb/scmdb-live',
+      missionsOutDir: 'repo/csv/scmdb/scmdb-live/missions',
+      files: [],
+    }),
     runUpdate: async (options) => ({
       exitCode: 1,
       results: [],
