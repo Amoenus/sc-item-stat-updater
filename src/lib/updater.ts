@@ -28,7 +28,7 @@ export function validateRow(row: Record<string, string>, label: string): 'skip' 
   return 'valid';
 }
 
-interface UpdateOptions {
+export interface UpdateOptions {
   iniPath?: string;
   csvDir?: string;
   dryRun?: boolean;
@@ -36,7 +36,7 @@ interface UpdateOptions {
   force?: boolean;
 }
 
-interface ResolvedOptions {
+export interface ResolvedOptions {
   baseDir: string;
   iniPath: string;
   csvDir: string;
@@ -69,7 +69,7 @@ export interface UpdatePlanResult extends UpdateStats {
 }
 
 /** Resolves base paths and option defaults. */
-function resolveOptions(options: UpdateOptions): ResolvedOptions {
+export function resolveOptions(options: UpdateOptions): ResolvedOptions {
   const baseDir = path.resolve(import.meta.dirname, '..', '..');
   return {
     baseDir,
@@ -123,7 +123,7 @@ async function loadCsvSourceData(config: ItemConfig, csvDir: string): Promise<Re
 }
 
 /** Reads and validates CSV or JSON data against the config's required columns. */
-async function loadSourceData(config: ItemConfig, csvDir: string): Promise<Record<string, string>[]> {
+export async function loadSourceData(config: ItemConfig, csvDir: string): Promise<Record<string, string>[]> {
   if (config.resolveJsonFile || config.jsonFile) {
     return loadJsonSourceData(config, csvDir);
   }
@@ -131,7 +131,7 @@ async function loadSourceData(config: ItemConfig, csvDir: string): Promise<Recor
 }
 
 /** Resolves localization keys for SPViewer configs (no Localization Key column in CSV). */
-async function resolveSpviewerKeys(
+export async function resolveSpviewerKeys(
   rows: Record<string, string>[],
   config: ItemConfig,
   lines: string[],
@@ -173,7 +173,7 @@ async function loadLookupMap(lookupCsvFile: string, csvDir: string): Promise<Map
 }
 
 /** Finds the last existing description key index for insertion ordering. */
-function findLastDescIndex(
+export function findLastDescIndex(
   existingKeys: Record<string, number>,
   lowerCaseIndex: Map<string, string>,
   descKeyMatch: (key: string) => boolean,

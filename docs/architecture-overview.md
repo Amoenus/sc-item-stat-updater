@@ -206,6 +206,19 @@ type PatchEntry = {
 
 `existingLineIndex` is a transitional in-memory application hint used while the legacy updater is being split. It lets the planner preserve current duplicate and plural/gender suffix behavior without changing the artifact JSON shape. Future artifact alignment should decide whether this stays as metadata, moves into an application-only type, or disappears when localization variants have a cleaner model.
 
+### Patch Artifact
+
+Patch artifacts currently keep the ADR 002 JSON shape for compatibility:
+
+```ts
+type PatchArtifact = {
+  entries: Record<string, string>;
+  issues: UpdateIssue[];
+};
+```
+
+`entries` is the persisted projection of `PatchPlan.entries`, keyed by localization key. Application-only metadata such as `existingLineIndex` is intentionally not serialized. Code that needs the in-memory pipeline contract can convert artifact entries back into a `PatchPlan` with artifact-level default `source` and `reason` values.
+
 ## Boundary Rules
 
 - Acquisition may read files, call tools, and fetch web data, but it must not mutate `global.ini`.

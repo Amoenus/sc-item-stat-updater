@@ -2,12 +2,17 @@
  * Zod schema for the patch artifact (ADR 002).
  *
  * This is the single source of truth for the shape of `patch-data.json`.
- * Both the generator (`generateArtifact`) and the reader (`readArtifactFile`)
- * derive their TypeScript types from this schema — no hand-maintained
- * interface can silently drift from the runtime shape.
+ * The artifact entries map is the persisted, backward-compatible projection of
+ * `PatchPlan.entries`: each patch entry is serialized as `key -> value`, while
+ * in-memory application metadata such as `existingLineIndex` is intentionally
+ * omitted from JSON.
  *
- * ⚠️  Do NOT modify the shape of `ArtifactSchema` without also updating the
- *     Phase-2 compiler/client that consumes `patch-data.json`.
+ * Both the generator (`generateArtifact`) and the reader (`readArtifactFile`)
+ * derive their TypeScript types from this schema; no hand-maintained interface
+ * can silently drift from the runtime shape.
+ *
+ * Do NOT modify the shape of `ArtifactSchema` without also updating the Phase-2
+ * compiler/client that consumes `patch-data.json`.
  */
 
 import { z } from 'zod';

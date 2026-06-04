@@ -1,66 +1,76 @@
 /**
  * Artifact generator and reader (ADR 002).
  *
- * The artifact is an intermediary JSON manifest that decouples the
- * Extract+Transform phase from the Load (INI-write) phase.  The CI/CD
+ * The artifact is an intermediary JSON projection of a PatchPlan that decouples
+ * the Extract+Transform phase from the Load (INI-write) phase. The CI/CD
  * pipeline (Phase 2) can commit this file to GitHub Pages so the browser
  * client can apply it locally without ever sending user files to a server.
- *
- * Schema:
- * {
- *   "generatedAt": "<ISO 8601>",
- *   "scmdbVersion": "<string>",
- *   "spviewerVersion": "<string>",
- *   "entries": { "<iniKey>": "<iniValue>", ... },
- *   "stats": {
- *     "categoryCount": <n>,
- *     "totalEntries": <n>,
- *     "totalSkipped": <n>,
- *     "totalErrors": <n>
- *   },
- *   "issues": [{ "label": "<string>", "key": "<string>", "reason": "<string>", "type": "<string>" }]
- * }
  */
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { buildPatchPlanResult } from '../application/use-cases/build-patch-plan';
 import type { ItemConfig } from '../lib/types';
-import { buildPatchData } from '../lib/updater';
-import { type ArtifactIssueDTO, ArtifactSchema } from '../schema/artifact.schema';
+import type { PatchPlan } from '../pipeline/types';
+import { ArtifactSchema, type ArtifactDTO } from '../schema/artifact.schema';
 
 export type { ArtifactDTO as Artifact } from '../schema/artifact.schema';
 
+const ARTIFACT_PATCH_SOURCE = 'artifact';
+const ARTIFACT_PATCH_REASON = 'Serialized patch artifact entry';
+
 /**
- * Generates a patch artifact by running the Extract+Transform phase for every
- * supplied config and merging the resulting patches into a single manifest.
+ * Converts an in-memory PatchPlan to the compact artifact entries map.
+ *
+ * The artifact schema intentionally persists only localization key/value pairs
+ * for backward compatibility with existing consumers. In-memory application
+ * hints such as PatchEntry.existingLineIndex are not serialized.
  */
-async function generateArtifact(
+export function patchPlanToArtifactEntries(plan: PatchPlan): Record<string, string> {
+  const entries: Record<string, string> = {};
+  for (const entry of plan.entries) {
+    entries[entry.key] = entry.value;
+  }
+  return entries;
+}
+
+/**
+ * Rehydrates artifact entries into a PatchPlan for code paths that operate on
+ * the pipeline contract. Serialized artifacts do not contain source/reason
+ * fields per entry, so stable artifact defaults are used.
+ */
+export function artifactToPatchPlan(artifact: Pick<ArtifactDTO, 'entries' | 'issues'>): PatchPlan {
+  return {
+    entries: Object.entries(artifact.entries).map(([key, value]) => ({
+      key,
+      value,
+      source: ARTIFACT_PATCH_SOURCE,
+      reason: ARTIFACT_PATCH_REASON,
+    })),
+    issues: artifact.issues,
+  };
+}
+
+/**
+ * Generates a patch artifact by planning every supplied config and merging the
+ * resulting patch-plan entries into a single serialized manifest.
+ */
+export async function generateArtifact(
   categories: Array<{ config: ItemConfig; csvDir: string }>,
   opts: { iniPath: string; scmdbVersion?: string; spviewerVersion?: string },
-): Promise<import('../schema/artifact.schema').ArtifactDTO> {
+): Promise<ArtifactDTO> {
   const entries: Record<string, string> = {};
-  const issues: ArtifactIssueDTO[] = [];
+  const issues: PatchPlan['issues'] = [];
   let totalSkipped = 0;
   let totalErrors = 0;
 
   for (const { config, csvDir } of categories) {
-    const result = await buildPatchData(config, { iniPath: opts.iniPath, csvDir });
+    const result = await buildPatchPlanResult(config, { iniPath: opts.iniPath, csvDir, dryRun: true });
 
-    // Merge key/value patches from this category.
-    Object.assign(entries, result.patches);
+    Object.assign(entries, patchPlanToArtifactEntries(result.plan));
 
-    // Merge new-entry lines (key=value strings) — parse back to structured entries.
-    for (const line of result.newLines) {
-      const eqIdx = line.indexOf('=');
-      if (eqIdx > -1) {
-        const key = line.substring(0, eqIdx);
-        const value = line.substring(eqIdx + 1);
-        entries[key] = value;
-      }
-    }
-
-    totalSkipped += result.stats.skippedCount ?? 0;
-    totalErrors += result.stats.errorCount ?? 0;
+    totalSkipped += result.skippedCount;
+    totalErrors += result.errorCount;
 
     for (const issue of result.issues) {
       issues.push(issue);
@@ -88,23 +98,20 @@ async function generateArtifact(
  * @param artifactPath - Absolute path to write (e.g. patch-data.json)
  * @param artifact - Artifact object returned by {@link generateArtifact}
  */
-export async function writeArtifactFile(
-  artifactPath: string,
-  artifact: import('../schema/artifact.schema').ArtifactDTO,
-): Promise<void> {
+export async function writeArtifactFile(artifactPath: string, artifact: ArtifactDTO): Promise<void> {
   await fs.mkdir(path.dirname(artifactPath), { recursive: true });
   await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf8');
 }
 
 /**
  * Reads and validates a patch artifact from disk against the canonical
- * `ArtifactSchema`.  A `ZodError` is thrown if the file does not conform —
- * this is the system boundary where untyped JSON becomes a fully typed DTO.
+ * `ArtifactSchema`. A `ZodError` is thrown if the file does not conform; this
+ * is the system boundary where untyped JSON becomes a fully typed DTO.
  *
  * @param artifactPath - Absolute path to the JSON artifact
  * @returns The parsed and validated artifact DTO
  */
-export async function readArtifactFile(artifactPath: string): Promise<import('../schema/artifact.schema').ArtifactDTO> {
+export async function readArtifactFile(artifactPath: string): Promise<ArtifactDTO> {
   let raw: string;
   try {
     raw = await fs.readFile(artifactPath, 'utf8');

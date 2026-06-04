@@ -139,6 +139,33 @@ Next agent instructions:
 5. Add tests for artifact generation once it consumes `PatchPlan` directly or formally documents the legacy `patches` map bridge.
 6. Do not rename `src/lib` or `src/items` yet.
 
+### 2026-06-04: Issue 005 artifact alignment started
+
+Implemented:
+
+- `src/application/use-cases/build-patch-plan.ts` now owns the source-row loading, INI context reading, SPViewer key resolution, and planner invocation for patch planning callers.
+- Added `buildPatchPlanResult` for callers that need the planner stats alongside the `PatchPlan`.
+- Artifact generation now consumes `buildPatchPlanResult` and serializes from the resulting `PatchPlan`.
+- Added artifact conversion helpers:
+  - `patchPlanToArtifactEntries`
+  - `artifactToPatchPlan`
+- Kept artifact JSON as the existing compact `entries: Record<string, string>` shape for compatibility.
+- Documented that `PatchEntry.existingLineIndex` is an in-memory application hint and is not serialized to artifact JSON.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint` on the touched source files
+- `npm run update -- --dry-run --provider datacore`
+
+Next agent instructions:
+
+1. Continue moving compatibility callers away from `buildPatchData` where they can consume `PatchPlan` or artifact conversion helpers directly.
+2. Keep `runUpdate` as compatibility glue until CLI callers are moved onto use cases.
+3. Decide whether `existingLineIndex` should move out of the core `PatchEntry` type once localization variants have a cleaner model.
+4. Add focused tests around `generateArtifact` once artifact generation is wired into a CLI path or fixture-driven category setup.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

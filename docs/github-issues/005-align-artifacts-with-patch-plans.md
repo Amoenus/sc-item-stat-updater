@@ -48,6 +48,16 @@ Current `src/artifact` can remain until the final folder cleanup.
 - Existing artifact consumers still work.
 - Artifact schema tests or typecheck coverage verify the expected shape.
 
+## Progress
+
+2026-06-04:
+
+- Kept artifact entries as `Record<string, string>` for backward compatibility.
+- Defined artifact entries as the persisted projection of `PatchPlan.entries`.
+- Added conversion helpers for `PatchPlan -> artifact entries` and `artifact -> PatchPlan`.
+- Updated artifact generation to consume the application `buildPatchPlanResult` use case instead of the legacy `buildPatchData` bridge.
+- Documented that `PatchEntry.existingLineIndex` remains in-memory only and is intentionally omitted from artifact JSON.
+
 ## Test Plan
 
 - Run `npm run typecheck`.
