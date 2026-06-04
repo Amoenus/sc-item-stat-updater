@@ -22,12 +22,6 @@ Current intentional compatibility:
 
 ## Tracked Functional Backlog
 
-### #50: `descKeyMatch` Contract And Overlap Detection
-
-Priority: Medium-High
-
-Add tests and guardrails for item-rule `descKeyMatch` predicates. The current contract is powerful but implicit: overly broad predicates can choose the wrong insertion point or overlap with another category. Add representative positive/negative tests and consider dry-run overlap diagnostics before changing behavior.
-
 ### #48: Parallel SPViewer CSV Lookup Loading
 
 Priority: Low-Medium
@@ -67,9 +61,10 @@ These were split from the additional candidate inventory on 2026-06-04.
 
 ## Recommended Next Slice
 
-Start with #50. It is the next medium-high behavior-preserving guardrail: add representative `descKeyMatch` positive/negative tests and overlap diagnostics before changing broader updater behavior.
+Inspect #112 next. It is behavior-preserving test coverage for downstream SCMDB CSV contracts and should be closeable without generated-data churn.
 
 ## Completed Functional Issues
 
+- #50: `descKeyMatch` guardrails now include representative positive/negative samples for every loadable registered item config, structured overlap detection, and dry-run overlap logging in prepared category runs with explicit INI fixtures.
 - #54: Fixture-driven pipeline integration coverage now copies `test/fixtures/pipeline-integration` into a temporary directory, loads real `sp-coolers` and `dc-powerplants` configs through the registry, plans updates from CSV fixtures, applies the patch plans to a fixture `global.ini`, asserts exact generated INI output, and verifies unrelated keys stay unchanged.
 - #55: Key resolver edge-case coverage now exercises lookup-map hits, reverse-index hits, suffix stripping success and failure, suffix `endsWith` fallback, empty/missing names, no-match unresolved behavior, and debug logging assertions.

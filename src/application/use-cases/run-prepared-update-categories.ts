@@ -1,6 +1,9 @@
 import type { EnrichGlobalIniOptions } from './enrich-global-ini';
 import { enrichGlobalIni } from './enrich-global-ini';
 import type { UpdateCategory } from './prepare-update-categories';
+import { readIniFile } from '../../localization/ini-file';
+import { logDescKeyMatchOverlaps, type DescKeyMatchLogger } from './desc-key-match-diagnostics';
+import { resolveOptions } from './update-planning';
 
 export interface BatchUpdateResult {
   label: string;
@@ -19,6 +22,7 @@ export interface RunPreparedUpdateCategoriesOptions extends Omit<EnrichGlobalIni
   onCategoryStart?: (category: UpdateCategory, index: number) => void;
   onCategoryError?: (error: BatchUpdateError) => void;
   enrich?: (category: UpdateCategory, options: EnrichGlobalIniOptions) => Promise<BatchUpdateResult>;
+  descKeyMatchLogger?: DescKeyMatchLogger;
 }
 
 export interface RunPreparedUpdateCategoriesResult {
@@ -30,9 +34,19 @@ export async function runPreparedUpdateCategories(
   categories: UpdateCategory[],
   options: RunPreparedUpdateCategoriesOptions = {},
 ): Promise<RunPreparedUpdateCategoriesResult> {
-  const { onCategoryStart, onCategoryError, enrich = defaultEnrich, ...sharedOptions } = options;
+  const { onCategoryStart, onCategoryError, enrich = defaultEnrich, descKeyMatchLogger, ...sharedOptions } = options;
   const results: BatchUpdateResult[] = [];
   const errors: BatchUpdateError[] = [];
+
+  if (sharedOptions.dryRun && sharedOptions.iniPath && categories.length > 1) {
+    const resolvedOptions = resolveOptions(sharedOptions);
+    const { index } = await readIniFile(resolvedOptions.iniPath);
+    logDescKeyMatchOverlaps(
+      categories.map(({ config }) => config),
+      Object.keys(index),
+      descKeyMatchLogger,
+    );
+  }
 
   for (let index = 0; index < categories.length; index++) {
     const category = categories[index];
