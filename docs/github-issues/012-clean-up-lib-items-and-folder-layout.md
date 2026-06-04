@@ -115,3 +115,22 @@ Remaining:
 - Continue reducing `src/lib` in small slices, likely CSV infrastructure helpers, formatting/stat-builder, updater compatibility, and enrichment extra steps.
 - Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
 - Update README/project-structure docs once enough folder cleanup has landed.
+
+CSV infrastructure slice on 2026-06-04:
+
+- Moved CSV serialization helper from `src/lib/csv.ts` to `src/infrastructure/csv.ts`.
+- Left `src/lib/csv.ts` as a documented compatibility re-export for older imports.
+- Updated active SCMDB scrape imports to use `src/infrastructure/csv`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/infrastructure/csv.ts src/lib/csv.ts src/application/use-cases/run-scmdb-scrape.ts src/sources/scmdb/mining-locations.ts`
+
+Remaining:
+
+- Continue reducing `src/lib` in small slices, likely formatting/stat-builder, updater compatibility, and enrichment extra steps.
+- Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
+- Update README/project-structure docs once enough folder cleanup has landed.

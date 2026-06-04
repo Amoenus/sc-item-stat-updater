@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { buildLocationQualityNotes, buildMiningLocationRows } from './mining-parser';
-import { toCsv } from '../../lib/csv';
+import { toCsv } from '../../infrastructure/csv';
 import { ScmdbMiningDataSchema } from '../../schema/scmdb.schemas';
 
 export interface RegenMiningLocationsOptions {

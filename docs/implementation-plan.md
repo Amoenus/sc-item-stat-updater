@@ -1463,6 +1463,40 @@ Next agent instructions:
 4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: CSV infrastructure boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved CSV serialization helper from `src/lib/csv.ts` to `src/infrastructure/csv.ts`.
+- Left `src/lib/csv.ts` as a documented compatibility re-export for older imports.
+- Updated active SCMDB scrape imports to use `src/infrastructure/csv`.
+- Confirmed no active `src` or `bin` imports still point at the old CSV helper path.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/infrastructure/csv.ts src/lib/csv.ts src/application/use-cases/run-scmdb-scrape.ts src/sources/scmdb/mining-locations.ts`
+
+Notes:
+
+- GitHub #96 remains open.
+- `src/lib` is reduced by one more infrastructure responsibility, but still contains compatibility exports, formatter/stat-builder, updater compatibility, and enrichment extra steps.
+- README/project-structure updates should wait until more folder cleanup has landed.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move CSV helper to infrastructure`.
+2. Continue Issue 012 / GitHub #96 with another small `src/lib` responsibility move.
+3. Consider formatting/stat-builder next; avoid large `src/items` renames.
+4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
