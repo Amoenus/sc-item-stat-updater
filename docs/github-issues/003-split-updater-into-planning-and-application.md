@@ -78,8 +78,15 @@ Continued on 2026-06-04:
 - Added focused in-memory tests for planner behavior and explicit line-index application.
 - Verified with `npm run typecheck`, `npm test`, and `npm run update -- --dry-run --provider datacore`.
 
+Updated on 2026-06-04:
+
+- Moved row/INI loading and SPViewer key-resolution orchestration into `buildPatchPlanResult`, leaving `runUpdate` as compatibility glue for CLI callers.
+- `buildPatchPlan` remains as the simple `PatchPlan` return API; callers that need counters can use `buildPatchPlanResult`.
+- Artifact generation now consumes the planner result directly, reducing reliance on legacy `patches` maps.
+- Added fixture-driven artifact generation coverage to verify planned entries serialize without application-only metadata.
+
 Remaining:
 
 - Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.
-- Move more orchestration from `src/lib/updater.ts` into `src/application/use-cases/build-patch-plan.ts`; it is currently a deliberate transitional boundary, not a final best-practice abstraction.
-- Align artifacts with `PatchPlan` so `buildPatchData` no longer needs to bridge through legacy `patches` maps.
+- Move update application orchestration out of `runUpdate` once CLI callers can depend on application use cases directly.
+- Keep reducing compatibility usage of `buildPatchData`; it remains for old callers but no longer drives artifact generation.

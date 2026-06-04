@@ -72,7 +72,13 @@ Updated on 2026-06-04:
 - `buildPatchPlan` now returns the actual `PatchPlan` produced by the extracted updater planner.
 - This use case is intentionally thin for the migration: it provides a stable application boundary while orchestration is moved out of `src/lib/updater.ts`.
 
+Continued on 2026-06-04:
+
+- `buildPatchPlanResult` now owns source-row loading, INI context reading, SPViewer key resolution, and planner invocation for patch-plan callers.
+- Artifact generation now consumes the application planning use case instead of calling the legacy `buildPatchData` bridge.
+- `bin/update-all.ts --emit-artifact` now routes through `generateArtifact`, with artifact planning prepared before any non-dry-run INI writes.
+
 Remaining:
 
 - Extract smaller use cases for refresh, scrape, deploy, and batch enrichment once `runUpdate` is split further.
-- Move row/INI loading and key-resolution orchestration into `buildPatchPlan`, or remove the wrapper once callers can depend directly on a stable planning API.
+- Extract `bin/update-all.ts` category/version resolution into an application use case so artifact planning and update execution share less script-local orchestration.

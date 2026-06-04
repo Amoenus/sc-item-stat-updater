@@ -1,7 +1,7 @@
 ﻿import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { type Artifact, writeArtifactFile } from '../src/artifact/artifact';
+import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { findLatestMatchingDirectory } from '../src/io/local/discovery';
 import { backupIniFile } from '../src/io/local/ini-file';
@@ -223,6 +223,24 @@ logger.debug('Starting batch update', { categoryCount: categories.length, dryRun
 console.log('=== Updating all item descriptions ===\n');
 
 const iniPath = options.iniPath || path.join(repoRoot, 'global.ini');
+let plannedArtifact: Artifact | null = null;
+
+if (values['emit-artifact']) {
+  try {
+    plannedArtifact = await generateArtifact(categories, {
+      iniPath,
+      scmdbVersion,
+      spviewerVersion: spviewerVersionDir ? itemVersion : undefined,
+    });
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error('Failed to generate patch artifact', { error: error.message });
+    console.error(`ERROR generating artifact: ${error.message}`);
+    await shutdownLogger();
+    process.exit(1);
+  }
+}
+
 if (!options.dryRun) {
   await backupIniFile(iniPath);
   logger.debug('Created global.ini backup before batch update');
@@ -361,28 +379,15 @@ const totalDuration = Math.round(performance.now() - totalStart);
 // Emit patch artifact if requested (ADR 002).
 if (values['emit-artifact']) {
   const artifactPath = path.resolve(values['emit-artifact']);
-  const mergedEntries: Record<string, string> = {};
-  for (const r of results) {
-    if ('patches' in r && r.patches) Object.assign(mergedEntries, r.patches);
+  if (!plannedArtifact) {
+    throw new Error('Patch artifact was not prepared before emission');
   }
-  const allIssues = results.flatMap((r) =>
-    ((r.issues ?? []) as Array<{ key: string; reason: string; type: string }>).map((i) => ({
-      label: r.label,
-      ...i,
-    })),
-  );
   const artifact: Artifact = {
-    generatedAt: new Date().toISOString(),
-    scmdbVersion: scmdbVersion ?? null,
-    spviewerVersion: spviewerVersionDir ? itemVersion : null,
-    entries: mergedEntries,
+    ...plannedArtifact,
     stats: {
-      categoryCount: categories.length,
-      totalEntries: Object.keys(mergedEntries).length,
-      totalSkipped: 0,
-      totalErrors: errors.length,
+      ...plannedArtifact.stats,
+      totalErrors: plannedArtifact.stats.totalErrors + errors.length,
     },
-    issues: allIssues,
   };
   try {
     await writeArtifactFile(artifactPath, artifact);

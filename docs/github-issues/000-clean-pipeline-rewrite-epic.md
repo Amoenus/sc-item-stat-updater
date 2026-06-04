@@ -61,3 +61,24 @@ Incrementally migrate the project to the Clean Pipeline Architecture accepted in
 - `npm run typecheck` passes.
 - `npm test` passes.
 - The full local pipeline still supports extracting fresh `global.ini`, enriching it, updating the repo copy, and deploying it back to the game folder.
+
+## Progress
+
+2026-06-04:
+
+- Milestone 1 foundation is in place:
+  - core pipeline types
+  - initial application use cases
+  - localization patch planning/application helpers
+  - `runUpdate` composed as load, plan, apply, validate, conditional write
+- Artifact alignment has started:
+  - artifacts are documented as a compact serialized projection of `PatchPlan.entries`
+  - `existingLineIndex` is treated as in-memory metadata only
+  - `generateArtifact` consumes `buildPatchPlanResult`
+  - `bin/update-all.ts --emit-artifact` routes through `generateArtifact`
+- Verified current migration slice with:
+  - `npm run typecheck`
+  - `npm test`
+  - touched-file Biome lint
+  - `npm run update -- --dry-run --provider datacore`
+  - `npm run update -- --dry-run --provider datacore --emit-artifact <temp path>`
