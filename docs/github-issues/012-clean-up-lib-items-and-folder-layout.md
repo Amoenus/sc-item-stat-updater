@@ -69,3 +69,27 @@ src/
 - Run `npm run typecheck`.
 - Run `npm test`.
 - Run `npm run check:ci` if formatting/import churn is large.
+
+## Progress
+
+CLI presentation helper slice on 2026-06-04:
+
+- Moved CLI presentation helpers from `src/lib/cli.ts` to `src/presentation/cli.ts`.
+- Left `src/lib/cli.ts` as a documented compatibility re-export for older imports.
+- Updated `bin/update-item.ts`, `bin/update-all.ts`, and `bin/apply-artifact.ts` to import CLI helpers from `src/presentation/cli`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verification:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/presentation/cli.ts src/lib/cli.ts bin/update-item.ts bin/update-all.ts bin/apply-artifact.ts`
+- `node --import tsx/esm bin/update-item.ts --help`
+- `node --import tsx/esm bin/update-all.ts --help`
+- `node --import tsx/esm bin/apply-artifact.ts --help`
+
+Remaining:
+
+- Continue reducing `src/lib` in small slices, likely infrastructure logging, formatting/stat-builder, updater compatibility, and enrichment extra steps.
+- Keep `src/items` renaming/narrowing separate until enrichment boundaries are explicit.
+- Update README/project-structure docs once enough folder cleanup has landed.

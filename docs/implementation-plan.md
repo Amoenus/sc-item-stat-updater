@@ -1390,6 +1390,42 @@ Next agent instructions:
 4. Avoid broad `src/items` renames unless the slice has explicit acceptance and low churn.
 5. Avoid generated/scraped data churn.
 
+### 2026-06-04: CLI presentation helpers boundary
+
+Primary issue:
+
+- Issue 012 / GitHub #96: Clean Up `lib`, `items`, And Folder Layout
+
+Implemented:
+
+- Moved CLI presentation helpers from `src/lib/cli.ts` to `src/presentation/cli.ts`.
+- Left `src/lib/cli.ts` as a documented compatibility re-export for older imports.
+- Updated `bin/update-item.ts`, `bin/update-all.ts`, and `bin/apply-artifact.ts` to import CLI helpers from `src/presentation/cli`.
+- Did not rename `src/items` or move generated/scraped data.
+
+Verified:
+
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/presentation/cli.ts src/lib/cli.ts bin/update-item.ts bin/update-all.ts bin/apply-artifact.ts`
+- `node --import tsx/esm bin/update-item.ts --help`
+- `node --import tsx/esm bin/update-all.ts --help`
+- `node --import tsx/esm bin/apply-artifact.ts --help`
+
+Notes:
+
+- GitHub #96 remains open.
+- `src/lib` is reduced by one presentation responsibility, but still contains compatibility exports, logging, CSV helpers, formatter/stat-builder, updater compatibility, and enrichment extra steps.
+- README/project-structure updates should wait until more folder cleanup has landed.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Move CLI helpers to presentation`.
+2. Continue Issue 012 / GitHub #96 with another small `src/lib` responsibility move.
+3. Consider infrastructure logging or formatting/stat-builder next; avoid large `src/items` renames.
+4. Keep compatibility re-exports documented until active imports and old callers are fully audited.
+5. Avoid generated/scraped data churn.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.

@@ -16,7 +16,7 @@ import {
   runUpdateExtraSteps,
 } from '../src/application/use-cases/run-update-extra-steps';
 import { backupIniFile } from '../src/io/local/ini-file';
-import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/lib/cli';
+import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/lib/logger';
 import { preflightCheckConfigs } from '../src/lib/updater';
 import { regenMiningLocations } from '../src/sources/scmdb/mining-locations';
