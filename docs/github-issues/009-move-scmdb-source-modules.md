@@ -146,3 +146,32 @@ Remaining:
 
 - Decide whether to compatibility-export or relocate SCMDB mining/mission parser modules under `src/sources/scmdb`.
 - Consider completing Issue 007 / GitHub #91 source dataset contracts before larger source moves.
+
+Closed on 2026-06-04:
+
+- Added SCMDB source-boundary parser facades:
+  - `src/sources/scmdb/mining-parser.ts`
+  - `src/sources/scmdb/mission-parser.ts`
+- Updated `src/sources/scmdb/outputs.ts` to consume SCMDB parser facades instead of importing directly from `src/extractor`.
+- Kept existing `src/extractor/*` modules in place as compatibility exports for old imports and tests until broad folder cleanup.
+- Added facade coverage in `src/sources/scmdb/parser-facades.test.ts`.
+- Reviewed acceptance criteria:
+  - SCMDB source code has a clear `src/sources/scmdb` home for acquisition, version selection, output row assembly, output file planning, parser facades, and normalized dataset contracts.
+  - Mission/mining/commodity enrichment can consume normalized SCMDB rows or compatibility adapters.
+  - `npm run scrape:scmdb` command shape is preserved; non-network `--help` smoke test passed.
+  - Existing SCMDB-related tests pass.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Final verification:
+
+- `node --import tsx/esm --test src/sources/scmdb/parser-facades.test.ts src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/sources/scmdb/mining-parser.ts src/sources/scmdb/mission-parser.ts src/sources/scmdb/parser-facades.test.ts src/sources/scmdb/outputs.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Decision:
+
+- Acceptance criteria are met.
+- GitHub #93 can be closed as completed.
+- Physical relocation of old `src/extractor` files should be handled later under folder cleanup/compatibility cleanup.

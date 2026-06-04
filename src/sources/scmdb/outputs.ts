@@ -2,7 +2,7 @@ import {
   buildMiningElementRows,
   buildMiningJournalRows,
   buildMiningLocationRows,
-} from '../../extractor/mining-parser';
+} from './mining-parser';
 import {
   buildBlueprintPoolRows,
   buildContractBlueprintRows,
@@ -12,7 +12,7 @@ import {
   collectBlueprintChainData,
   toContractRowSource,
   toLegacyContractRowSource,
-} from '../../extractor/mission-parser';
+} from './mission-parser';
 import type { ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
 
 export const SCMDB_MISSION_HEADERS = [

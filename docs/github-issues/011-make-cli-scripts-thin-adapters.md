@@ -179,3 +179,15 @@ Remaining:
 
 - Move DataCore/SPViewer scraper responsibilities behind source/acquisition modules.
 - Reassess #95 once SCMDB source-module boundaries are stable.
+
+Related SCMDB closure on 2026-06-04:
+
+- Added SCMDB parser source facades under `src/sources/scmdb`.
+- Updated SCMDB output assembly to consume those facades.
+- Closed GitHub #93 after verifying SCMDB source behavior now has a stable source boundary while `bin/scrape-scmdb.ts` keeps CLI-specific output/writes/exits.
+
+Remaining for #95:
+
+- Move DataCore scraper responsibilities behind source/acquisition modules.
+- Move/classify SPViewer scraper responsibilities as legacy source behavior.
+- Smoke test CLI help/commands as source boundaries settle.

@@ -716,6 +716,53 @@ Next agent instructions:
 3. Continue #93 with compatibility exports or relocation for SCMDB mining/mission parser modules only if it stays scoped and verified.
 4. Avoid running networked scrapes or committing generated CSV/JSON unless explicitly requested.
 
+### 2026-06-04: SCMDB parser source facades and Issue 009 closure
+
+Primary issue:
+
+- Issue 009 / GitHub #93: Move SCMDB Source Modules
+
+Secondary impact:
+
+- Issue 011 / GitHub #95: Make CLI Scripts Thin Adapters
+
+Implemented:
+
+- Added SCMDB source-boundary parser facades:
+  - `src/sources/scmdb/mining-parser.ts`
+  - `src/sources/scmdb/mission-parser.ts`
+- Updated `src/sources/scmdb/outputs.ts` to consume the SCMDB parser facades instead of importing directly from `src/extractor`.
+- Kept existing `src/extractor/*` modules in place as compatibility exports for old imports and tests until broad folder cleanup.
+- Added facade coverage in `src/sources/scmdb/parser-facades.test.ts`.
+- Reviewed Issue 009/#93 acceptance:
+  - SCMDB acquisition, version selection, output rows, output planning, parser facades, and dataset contracts now have a clear `src/sources/scmdb` home.
+  - Mission/mining/commodity enrichment can consume normalized SCMDB rows or compatibility adapters.
+  - `bin/scrape-scmdb.ts` delegates SCMDB source behavior while retaining CLI output/writes/exits.
+  - Existing SCMDB-related tests pass.
+- Did not run networked SCMDB scraping or write scraped data.
+
+Verified:
+
+- `node --import tsx/esm --test src/sources/scmdb/parser-facades.test.ts src/sources/scmdb/outputs.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/sources/scmdb/mining-parser.ts src/sources/scmdb/mission-parser.ts src/sources/scmdb/parser-facades.test.ts src/sources/scmdb/outputs.ts`
+- `node --import tsx/esm bin/scrape-scmdb.ts --help`
+
+Notes:
+
+- GitHub #93 can be closed as completed.
+- Physical relocation of legacy `src/extractor` files should wait for folder cleanup / compatibility cleanup, not happen inside this issue.
+- Issue 011 / GitHub #95 remains open for DataCore/SPViewer scraper boundaries and final CLI smoke testing.
+
+Next agent instructions:
+
+1. Start from the committed slice named `Add SCMDB parser source facades`.
+2. Continue with Issue 008 / GitHub #92: Move DataCore Source Modules, or Issue 010 / GitHub #94: Classify SPViewer As Legacy Provider.
+3. Prefer DataCore next because source dataset contracts now exist and DataCore scraper code still lives mostly in `bin/scrape-datacore.ts`.
+4. Avoid running scraper commands that write generated CSV/XML unless explicitly requested.
+5. Keep CLI parse args, console output, file writes, progress bars, and process exits in scripts until a stronger use-case result shape exists.
+
 ## Definition Of Done For The Rewrite
 
 - Existing npm scripts still work or have documented replacements.
