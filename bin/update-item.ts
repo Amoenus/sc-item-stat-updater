@@ -1,4 +1,5 @@
 import { parseArgs } from 'node:util';
+import { buildCategoryListing, formatCategoryListing } from '../src/application/use-cases/category-listing';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import { listCategories, loadConfig } from '../src/items/registry';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
@@ -13,6 +14,7 @@ const { values, positionals } = parseArgs({
     'ini-path': { type: 'string', short: 'i' },
     'csv-dir': { type: 'string', short: 'c' },
     'dry-run': { type: 'boolean', default: false },
+    'list-categories': { type: 'boolean', default: false },
     force: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
@@ -24,14 +26,21 @@ const { values, positionals } = parseArgs({
 
 const category = positionals[0];
 
+if (values['list-categories']) {
+  console.log(formatCategoryListing(await buildCategoryListing()));
+  await shutdownLogger();
+  process.exit(0);
+}
+
 if (values.help || !category) {
   const available = await listCategories();
-  const allSlugs = [...available.spviewer, ...available.missions];
+  const allSlugs = [...available.spviewer, ...available.datacore, ...available.missions];
   console.log('Usage: node update-item.js [options] <category>');
   console.log('\nOptions:');
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
   console.log('  -c, --csv-dir <path>   Directory containing CSV files (default: ./csv)');
   console.log('      --dry-run          Preview changes without writing');
+  console.log('      --list-categories  List categories with provider and source file metadata');
   console.log('      --force            Force update even when values are unchanged');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');

@@ -44,15 +44,15 @@ Puppeteer is only needed for scraping, especially SPViewer flows. Consider makin
 
 These were split from the additional candidate inventory on 2026-06-04.
 
-- #110: Add a `--list-categories` or equivalent CLI path that reports categories, supported providers, required source files, and channel/version expectations.
 - #111: Add a provider coverage matrix in docs or command output showing which categories support DataCore, SPViewer, SCMDB, or mixed sources.
 
 ## Recommended Next Slice
 
-Inspect #110 next. It is a CLI discoverability slice for category/provider/source metadata; preserve existing CLI behavior while adding the new listing path.
+Inspect #111 next. It is a provider coverage matrix slice; build on the new category listing metadata where practical.
 
 ## Completed Functional Issues
 
+- #110: Added `update-item --list-categories` for category discovery. The output distinguishes SPViewer, DataCore, SCMDB, and mixed-source batch modes; includes required CSV/JSON source file names or dynamic-source hints; and reports LIVE/PTU source-root expectations. Tests cover representative SPViewer, DataCore, SCMDB, dynamic JSON, and mixed-source output.
 - #109: Added backup coverage for write and deploy paths. `enrichGlobalIni` now has a temp-fixture test proving repository `global.ini.backup.1` is created before writes, and `deployGlobalIni` backs up an existing game target before copying; deployment failure coverage now proves the original fixture target stays intact.
 - #108: Added a large generated-in-test INI update performance budget. The test builds a controlled 2,500-row fixture with 5,000 base/plural INI updates, reports planning and application timings separately, keeps loose CI-friendly budgets, and uses only in-memory fixtures rather than real `global.ini` or generated source data.
 - #107: Added focused localization duplicate/collision coverage. Planner tests now pin duplicate base keys plus plural/gender suffix occurrences with explicit line indexes; patch-application tests prove all occurrence updates preserve actual suffixed line keys; artifact serialization tests prove duplicate occurrence line-index metadata still stays out of persisted artifact entries.

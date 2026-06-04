@@ -52,7 +52,22 @@ test('update-item help exits successfully and lists categories', async () => {
   assert.match(result.stdout, /Usage: node update-item\.js \[options] <category>/);
   assert.match(result.stdout, /Available categories:/);
   assert.match(result.stdout, /sp-coolers/);
+  assert.match(result.stdout, /dc-powerplants/);
   assert.match(result.stdout, /mission-scmdb-descriptions/);
+});
+
+test('update-item list-categories reports provider and source metadata', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--list-categories']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /SPViewer categories:/);
+  assert.match(result.stdout, /sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/);
+  assert.match(result.stdout, /DataCore categories:/);
+  assert.match(result.stdout, /dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/);
+  assert.match(result.stdout, /SCMDB categories:/);
+  assert.match(result.stdout, /mission-scmdb-descriptions \| SCMDB mission descriptions/);
+  assert.match(result.stdout, /Mixed-source batch modes:/);
+  assert.match(result.stdout, /update-all --provider spviewer \| SPViewer \+ SCMDB/);
 });
 
 test('pipeline help exits successfully with orchestration options', async () => {

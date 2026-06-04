@@ -7,6 +7,11 @@ const itemsDir = path.resolve(import.meta.dirname);
 const spviewerDir = path.join(itemsDir, 'spviewer');
 const missionsDir = path.join(itemsDir, 'missions');
 const datacoreDir = path.join(itemsDir, 'datacore');
+const NON_CATEGORY_FILES = new Set(['registry.ts', 'types.ts', 'shared-stat-sections.ts']);
+
+function isCategoryConfigFile(entry: string): boolean {
+  return entry.endsWith('.ts') && !entry.endsWith('.test.ts') && !NON_CATEGORY_FILES.has(entry);
+}
 
 /**
  * Derives a CLI-friendly slug from a config filename.
@@ -27,8 +32,7 @@ async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<stri
   }
   const configs = new Map<string, ItemConfig>();
   for (const entry of entries) {
-    if (!entry.endsWith('.ts') || entry.endsWith('.test.ts') || entry === 'registry.ts' || entry === 'types.ts')
-      continue;
+    if (!isCategoryConfigFile(entry)) continue;
     const slug = toSlug(entry, prefix);
     const fullPath = path.join(dir, entry);
     const { default: config } = await import(pathToFileURL(fullPath).href);
@@ -80,7 +84,7 @@ export async function listCategories(): Promise<{ spviewer: string[]; missions: 
     try {
       const entries = await fs.readdir(dir);
       return entries
-        .filter((e) => e.endsWith('.ts') && !e.endsWith('.test.ts') && e !== 'registry.ts' && e !== 'types.ts')
+        .filter(isCategoryConfigFile)
         .map((e) => toSlug(e, prefix));
     } catch {
       return [];
