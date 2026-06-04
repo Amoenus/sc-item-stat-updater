@@ -294,10 +294,37 @@ Notes:
 - `buildPatchData` remains for old callers and still delegates through `runUpdate`.
 - Optional update dry-runs were intentionally skipped because they can touch generated/local data through the wider update flow.
 
+### 2026-06-04: Patch-data compatibility no longer routes through runUpdate
+
+Primary issue:
+
+- Issue 003 / GitHub #87: Split Updater Into Planning And Application
+
+Implemented:
+
+- Extracted shared in-memory planning/application orchestration inside `src/lib/updater.ts`.
+- Kept `runUpdate` as compatibility glue for old imports, with its write decision and CLI-compatible result shape unchanged.
+- Reworked `buildPatchData` so it no longer delegates through `runUpdate`; it now plans and applies in memory, validates integrity, and returns the legacy dry-run patch-data shape without writing.
+- Updated the `buildPatchData` comment to describe it as a compatibility API now that artifact generation consumes patch-plan use cases directly.
+- Added fixture coverage showing `buildPatchData` returns patches and leaves `global.ini` unchanged.
+
+Verified:
+
+- `node --import tsx/esm --test src/lib/updater.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/lib/updater.ts src/lib/updater.test.ts`
+
+Notes:
+
+- `runUpdate` remains a compatibility export for old imports.
+- `buildPatchData` remains a compatibility export for old imports, but no longer depends on `runUpdate`.
+- No scraped/generated data changes were included.
+
 Next agent instructions:
 
-1. Start from the committed slice named `Move enrichment application use case`.
-2. Continue Issue 003 / GitHub #87 by removing remaining compatibility dependence on `buildPatchData` where callers can consume `PatchPlan`/artifact helpers directly, or by deciding the long-term home of `PatchEntry.existingLineIndex`.
+1. Start from the committed slice named `Stop patch-data compatibility from routing through runUpdate`.
+2. Continue Issue 003 / GitHub #87 by deciding the long-term home of `PatchEntry.existingLineIndex`, or by continuing to shrink `runUpdate` once remaining old imports are known.
 3. Keep `runUpdate` compatibility until no CLI or artifact callers depend on it.
 4. Continue Issue 011 / GitHub #95 only as a separate explicit slice, likely by classifying/extracting remaining `update-all` extra update steps.
 5. Keep preflight, progress rendering, process exits, and user-facing CLI output in scripts unless a use-case result shape is explicit.

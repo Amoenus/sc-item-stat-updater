@@ -115,3 +115,23 @@ Remaining:
 - Keep `runUpdate` as compatibility glue for old imports until no callers need it.
 - Keep reducing compatibility usage of `buildPatchData`; it still delegates through the legacy `runUpdate` path.
 - Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.
+
+Continued on 2026-06-04:
+
+- Extracted shared in-memory planning/application orchestration inside `src/lib/updater.ts`.
+- `runUpdate` now uses that shared helper and remains responsible for compatibility result shaping plus the conditional `global.ini` write.
+- Reworked `buildPatchData` so it no longer delegates through `runUpdate`; it now plans and applies in memory, validates integrity, and returns the legacy dry-run patch-data shape without writing.
+- Added fixture coverage showing `buildPatchData` returns patches and preserves the source `global.ini`.
+
+Verified:
+
+- `node --import tsx/esm --test src/lib/updater.test.ts`
+- `npm run typecheck`
+- `npm test`
+- `npx biome lint src/lib/updater.ts src/lib/updater.test.ts`
+
+Remaining:
+
+- Keep `runUpdate` as compatibility glue for old imports until no callers need it.
+- Keep `buildPatchData` as a compatibility export for old callers, but prefer `buildPatchPlan` / `buildPatchPlanResult` for new planning flows.
+- Decide whether `PatchEntry.existingLineIndex` should remain in the core type, become application-only metadata, or be replaced by a cleaner localization-variant model.

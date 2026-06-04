@@ -525,6 +525,38 @@ function shouldWriteIni(opts: ResolvedOptions, planResult: UpdatePlanResult): bo
   return planResult.updatedCount > 0 || planResult.newCount > 0;
 }
 
+async function planAndApplyUpdate(
+  config: ItemConfig,
+  opts: ResolvedOptions,
+): Promise<{ planResult: UpdatePlanResult; patches: Record<string, string>; lines: string[] }> {
+  const rows = await loadSourceData(config, opts.csvDir);
+  const { lines, index: existingKeys, lowerCaseIndex, allOccurrences } = await readIniFile(opts.iniPath);
+  const originalLineCount = lines.length;
+
+  let resolvedRows = rows;
+  let unresolvedNames: string[] = [];
+  if (config.nameColumn) {
+    const result = await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun);
+    resolvedRows = result.resolvedRows;
+    unresolvedNames = result.unresolved;
+  }
+
+  const lastDescIdx = findLastDescIndex(existingKeys, lowerCaseIndex, config.descKeyMatch);
+
+  const planResult = buildUpdatePlan(
+    config,
+    resolvedRows,
+    { lines, existingKeys, lowerCaseIndex, allOccurrences },
+    unresolvedNames,
+    opts.force,
+  );
+  const application = applyPatchPlanToIniLines(lines, existingKeys, planResult.plan, { insertionIndex: lastDescIdx });
+
+  validateIntegrity(originalLineCount, application.lines);
+
+  return { planResult, patches: application.patches, lines: application.lines };
+}
+
 /** Determines the validation result for a row, bypassing column validation for configs with custom target key logic. */
 function getRowValidation(config: ItemConfig, row: Record<string, string>): 'valid' | 'skip' | 'invalid' {
   if (config.getTargetKeys && !row['Localization Key']) return 'valid';
@@ -543,37 +575,14 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
   }
 
   try {
-    const rows = await loadSourceData(config, opts.csvDir);
-    const { lines, index: existingKeys, lowerCaseIndex, allOccurrences } = await readIniFile(opts.iniPath);
-    const originalLineCount = lines.length;
+    const application = await planAndApplyUpdate(config, opts);
 
-    let resolvedRows = rows;
-    let unresolvedNames: string[] = [];
-    if (config.nameColumn) {
-      const result = await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun);
-      resolvedRows = result.resolvedRows;
-      unresolvedNames = result.unresolved;
-    }
-
-    const lastDescIdx = findLastDescIndex(existingKeys, lowerCaseIndex, config.descKeyMatch);
-
-    const planResult = buildUpdatePlan(
-      config,
-      resolvedRows,
-      { lines, existingKeys, lowerCaseIndex, allOccurrences },
-      unresolvedNames,
-      opts.force,
-    );
-    const application = applyPatchPlanToIniLines(lines, existingKeys, planResult.plan, { insertionIndex: lastDescIdx });
-
-    validateIntegrity(originalLineCount, application.lines);
-
-    if (shouldWriteIni(opts, planResult)) {
+    if (shouldWriteIni(opts, application.planResult)) {
       await writeIniFile(opts.iniPath, application.lines, { skipBackup: opts.skipBackup });
     }
 
     const durationMs = Math.round(performance.now() - start);
-    return buildUpdateResult(planResult, application.patches, opts.dryRun, durationMs);
+    return buildUpdateResult(application.planResult, application.patches, opts.dryRun, durationMs);
   } catch (err) {
     throw new Error(`Failed to update ${config.label}: ${(err as Error).message}`, { cause: err });
   }
@@ -581,11 +590,28 @@ export async function runUpdate(config: ItemConfig, options: UpdateOptions = {})
 
 /**
  * Runs the Extract+Transform phase for one item config and returns a patch manifest
- * (key→value pairs) without writing to global.ini. This is the per-category primitive
- * used by the artifact generator (ADR 002).
+ * (key→value pairs) without writing to global.ini. This compatibility API is
+ * retained for old callers; new planning callers should use the PatchPlan APIs.
  */
 export async function buildPatchData(config: ItemConfig, options: UpdateOptions = {}) {
-  const result = await runUpdate(config, { ...options, dryRun: true, skipBackup: true });
+  const start = performance.now();
+  const opts = resolveOptions({ ...options, dryRun: true, skipBackup: true });
+
+  try {
+    await fs.access(opts.iniPath);
+  } catch {
+    throw new Error(`INI file not found: ${opts.iniPath}`);
+  }
+
+  let result: ReturnType<typeof buildUpdateResult>;
+  try {
+    const application = await planAndApplyUpdate(config, opts);
+    const durationMs = Math.round(performance.now() - start);
+    result = buildUpdateResult(application.planResult, application.patches, true, durationMs);
+  } catch (err) {
+    throw new Error(`Failed to update ${config.label}: ${(err as Error).message}`, { cause: err });
+  }
+
   const { patches, newLines, issues, summary, label, plan, ...stats } = result;
   return { label, patches, newLines, issues, stats, plan, summary };
 }
