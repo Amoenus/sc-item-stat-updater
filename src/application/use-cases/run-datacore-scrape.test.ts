@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as MINING_LASER_TYPE_CONFIG } from '../../items/datacore/mining-lasers';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
@@ -1795,3 +1796,154 @@ function miningParamRow(overrides: Partial<DataCoreMiningParamRecord>): DataCore
     ...overrides,
   };
 }
+
+test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-lasers-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const laserDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+  );
+  await fs.mkdir(laserDir, { recursive: true });
+
+  // Real-shaped XML for the GRIN Arbor MH1 S1 mining laser.
+  await fs.writeFile(
+    path.join(laserDir, 'mining_laser_grin_arbor_s1.xml'),
+    `
+      <EntityClassDefinition.Mining_Laser_GRIN_Arbor_S1 __path="libs/foundry/records/entities/scitem/ships/weapons/mining_laser_grin_arbor_s1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponMining" SubType="Gun" Size="1" Grade="1" Manufacturer="GRIN">
+              <Localization Name="@item_Mining_MiningLaser_Greycat_Default_S1" ShortName="@LOC_EMPTY" Description="@item_Mining_MiningLaser_Greycat_Default_S1_Desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="8000" />
+          <SCItemWeaponComponentParams>
+            <fireActions>
+              <SWeaponActionFireBeamParams hitType="ElectricArc" fullDamageRange="60" zeroDamageRange="180">
+                <damagePerSecond>
+                  <DamageInfo DamageEnergy="1890" />
+                </damagePerSecond>
+              </SWeaponActionFireBeamParams>
+              <SWeaponActionFireBeamParams hitType="Extraction" fullDamageRange="60" zeroDamageRange="180">
+                <damagePerSecond>
+                  <DamageInfo DamageEnergy="1850" />
+                </damagePerSecond>
+              </SWeaponActionFireBeamParams>
+            </fireActions>
+          </SCItemWeaponComponentParams>
+          <SEntityComponentMiningLaserParams throttleLerpSpeed="6.5" throttleMinimum="0.05">
+            <miningLaserModifiers>
+              <laserInstability>
+                <FloatModifierMultiplicative value="-35" />
+              </laserInstability>
+              <optimalChargeWindowSizeModifier>
+                <FloatModifierMultiplicative value="40" />
+              </optimalChargeWindowSizeModifier>
+              <resistanceModifier>
+                <FloatModifierMultiplicative value="25" />
+              </resistanceModifier>
+            </miningLaserModifiers>
+            <filterParams>
+              <filterModifier>
+                <FloatModifierMultiplicative value="30" />
+              </filterModifier>
+            </filterParams>
+          </SEntityComponentMiningLaserParams>
+        </Components>
+      </EntityClassDefinition.Mining_Laser_GRIN_Arbor_S1>
+    `,
+  );
+
+  // Real-shaped XML for the Hofstede S1 — has optimalChargeWindowRateModifier.
+  await fs.writeFile(
+    path.join(laserDir, 'mining_laser_shin_hofstede_s1.xml'),
+    `
+      <EntityClassDefinition.Mining_Laser_SHIN_Hofstede_S1 __path="libs/foundry/records/entities/scitem/ships/weapons/mining_laser_shin_hofstede_s1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponMining" Size="1" Grade="1" Manufacturer="SHIN">
+              <Localization Name="@item_Mining_MiningLaser_Shubin_1_S1" Description="@item_Mining_MiningLaser_Shubin_1_S1_Desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="8000" />
+          <SCItemWeaponComponentParams>
+            <fireActions>
+              <SWeaponActionFireBeamParams hitType="ElectricArc" fullDamageRange="45" zeroDamageRange="135">
+                <damagePerSecond>
+                  <DamageInfo DamageEnergy="2100" />
+                </damagePerSecond>
+              </SWeaponActionFireBeamParams>
+            </fireActions>
+          </SCItemWeaponComponentParams>
+          <SEntityComponentMiningLaserParams throttleMinimum="0.05">
+            <miningLaserModifiers>
+              <laserInstability>
+                <FloatModifierMultiplicative value="10" />
+              </laserInstability>
+              <optimalChargeWindowSizeModifier>
+                <FloatModifierMultiplicative value="60" />
+              </optimalChargeWindowSizeModifier>
+              <resistanceModifier>
+                <FloatModifierMultiplicative value="-30" />
+              </resistanceModifier>
+              <optimalChargeWindowRateModifier>
+                <FloatModifierMultiplicative value="20" />
+              </optimalChargeWindowRateModifier>
+            </miningLaserModifiers>
+            <filterParams>
+              <filterModifier>
+                <FloatModifierMultiplicative value="30" />
+              </filterModifier>
+            </filterParams>
+          </SEntityComponentMiningLaserParams>
+        </Components>
+      </EntityClassDefinition.Mining_Laser_SHIN_Hofstede_S1>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'mining-lasers',
+        csvFile: 'weaponmining.datacore.csv',
+        typeConfig: MINING_LASER_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weaponmining.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'mining-lasers', rows: 2, skipped: 0, csvFile: 'weaponmining.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power Max,Range Max,Range Min,Throttle Min,Power Min,Instability Modifier,Resistance Modifier,Optimal Charge Zone,Optimal Rate,Inert Materials\r?\n/,
+  );
+  // Arbor S1: Power Min = 1890 × 0.05 = 94.5
+  assert.match(
+    csv,
+    /mining_laser_grin_arbor_s1,item_Mining_MiningLaser_Greycat_Default_S1,,item_Mining_MiningLaser_Greycat_Default_S1_Desc,GRIN,1,1,Gun,8000,1890,60,180,0\.05,94\.5,-35,25,40,,30/,
+  );
+  // Hofstede S1: has optimal rate modifier (+20), Power Min = 2100 × 0.05 = 105
+  assert.match(
+    csv,
+    /mining_laser_shin_hofstede_s1,item_Mining_MiningLaser_Shubin_1_S1,,item_Mining_MiningLaser_Shubin_1_S1_Desc,SHIN,1,1,,8000,2100,45,135,0\.05,105,10,-30,60,20,30/,
+  );
+});
