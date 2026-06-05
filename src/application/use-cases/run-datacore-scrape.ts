@@ -1143,7 +1143,14 @@ async function scrapeDataCoreType(
   },
 ): Promise<DataCoreScrapeTypeResult> {
   const { name, csvFile, typeConfig } = entry;
-  const xmlFiles = await collectDataCoreXmlFilesMatching(options.xmlCacheDir, typeConfig.recordFilter);
+  const recordFilters = Array.isArray(typeConfig.recordFilter) ? typeConfig.recordFilter : [typeConfig.recordFilter];
+  const xmlFileSet = new Set<string>();
+  for (const recordFilter of recordFilters) {
+    for (const xmlFile of await collectDataCoreXmlFilesMatching(options.xmlCacheDir, recordFilter)) {
+      xmlFileSet.add(xmlFile);
+    }
+  }
+  const xmlFiles = [...xmlFileSet].sort();
   const typeHeaders = Object.keys(typeConfig.fieldSelectors);
   const headers = [...COMMON_HEADERS, ...typeHeaders];
   const rows: string[][] = [];
@@ -1931,10 +1938,21 @@ function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector
     spec.attr ? (element.attr(spec.attr) ?? '') : '',
   ];
 
+  if (spec.format === 'scaled-number' && values[0]) return formatScaledNumber(values[0], spec.scale ?? 1);
+  if (spec.format === 'number-pair') return values.join(spec.separator ?? ' - ');
+  if (spec.format === 'scaled-number-pair') {
+    return values.map((value) => formatScaledNumber(value, spec.scale ?? 1)).join(spec.separator ?? ' - ');
+  }
   if (spec.format === 'percent' && values[0]) return formatPercent(values[0]);
   if (spec.format === 'percent-pair') return values.map(formatPercent).join(spec.separator ?? ' / ');
 
   return values.join(spec.separator ?? ' / ');
+}
+
+function formatScaledNumber(value: string, scale: number): string {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return value;
+  return String(Number((num * scale).toFixed(6)));
 }
 
 function formatPercent(value: string): string {

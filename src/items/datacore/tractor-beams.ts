@@ -2,21 +2,50 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Tractor beam entity class prefix and DataForge component names are
-// inferred from community data. Verify against real game files.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
-  recordFilter: 'scitem/ships/utility/tractorbeam',
-  // trctr_grin_s1_grapplerS → strip 'trctr_' → 'GRIN_S1_GRAPPLERS'
-  entityClassPrefix: 'trctr_',
-  nameKeyInfix: 'TRCTR_',
+  recordFilter: [
+    'ships/weapons/argo_atls_tractorbeam',
+    'ships/weapons/argo_towingbeam',
+    'ships/weapons/grin_tractorbeam',
+    'ships/weapons/wep_towingbeam',
+    'ships/weapons/wep_tractorbeam',
+  ],
+  entityClassPrefix: 'grin_tractorbeam_',
+  nameKeyInfix: 'GRIN_TRACTORBEAM_',
   fieldSelectors: {
-    Force: 'STractorBeamComponentParams TractorBeamParams MaxForce',
-    Range: 'STractorBeamComponentParams TractorBeamParams MaxRange',
-    'Full Strength Distance': 'STractorBeamComponentParams TractorBeamParams FullStrengthDistance',
-    'Max Angle': 'STractorBeamComponentParams TractorBeamParams MaxAngle',
-    'Max Volume': 'STractorBeamComponentParams TractorBeamParams MaxVolume',
-    'Tow Force': 'STractorBeamComponentParams TractorBeamParams TowingMaxForce',
-    'Tow Max Distance': 'STractorBeamComponentParams TractorBeamParams TowingMaxDistance',
+    Force: {
+      selector: 'SWeaponActionFireTractorBeamParams',
+      attrs: ['minForce', 'maxForce'],
+      format: 'scaled-number-pair',
+      scale: 0.000001,
+    },
+    Range: {
+      selector: 'SWeaponActionFireTractorBeamParams',
+      attrs: ['minDistance', 'maxDistance'],
+      format: 'number-pair',
+    },
+    'Full Strength Distance': {
+      selector: 'SWeaponActionFireTractorBeamParams',
+      attr: 'fullStrengthDistance',
+    },
+    'Max Angle': {
+      selector: 'SWeaponActionFireTractorBeamParams',
+      attr: 'maxAngle',
+    },
+    'Max Volume': {
+      selector: 'SWeaponActionFireTractorBeamParams',
+      attr: 'maxVolume',
+    },
+    'Tow Force': {
+      selector: 'SWeaponActionFireTractorBeamTowingParams',
+      attr: 'towingForce',
+      format: 'scaled-number',
+      scale: 0.000001,
+    },
+    'Tow Max Distance': {
+      selector: 'SWeaponActionFireTractorBeamTowingParams',
+      attr: 'towingMaxDistance',
+    },
   },
 };
 
@@ -25,7 +54,7 @@ export default {
   label: 'DC Tractor Beams',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Force', 'Range', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('tractorbeam'),
-  getTargetKeys: makeGetTargetKeys('trctr_', 'TRCTR_'),
+  getTargetKeys: makeGetTargetKeys('grin_tractorbeam_', 'GRIN_TRACTORBEAM_'),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Tractor Beam')

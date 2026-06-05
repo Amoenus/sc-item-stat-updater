@@ -8,7 +8,8 @@ export type DataCoreFieldSelector =
       attrs?: string[];
       index?: number;
       separator?: string;
-      format?: 'count' | 'percent' | 'percent-pair';
+      format?: 'count' | 'number-pair' | 'percent' | 'percent-pair' | 'scaled-number' | 'scaled-number-pair';
+      scale?: number;
     }
   | {
       derive: (row: Record<string, string>) => string;
@@ -37,7 +38,7 @@ export interface DataCoreItemTypeConfig {
    * ⚠️ These values are best-effort guesses based on expected naming conventions.
    * Verify against the actual unforged directory tree and update if needed.
    */
-  recordFilter: string;
+  recordFilter: string | string[];
 
   /**
    * Prefix to strip from the entity class name before constructing the

@@ -8,6 +8,7 @@ import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape
 import { DATACORE_RAW_FACTS } from './category-listing';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
+import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -263,6 +264,113 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Missile Quantity,Missile Size\r?\n/,
   );
   assert.match(csv, /mrck_test,item_NameMRCK_Test,,item_DescMRCK_Test,AEGS,6,1,,200,3,3/);
+});
+
+test('runDatacoreScrape extracts tractor beam force and towing stats from weapon action params', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-tractor-beams-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const weaponDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+  );
+  const armDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'utility',
+    'tractorbeam',
+  );
+  await fs.mkdir(weaponDir, { recursive: true });
+  await fs.mkdir(armDir, { recursive: true });
+  await fs.writeFile(
+    path.join(weaponDir, 'grin_tractorbeam_s1.xml'),
+    `
+      <EntityClassDefinition.GRIN_TractorBeam_S1 __path="libs/foundry/records/entities/scitem/ships/weapons/grin_tractorbeam_s1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TractorBeam" Size="1" Grade="1" Manufacturer="GRIN">
+              <Localization Name="@item_NameGRIN_TractorBeam_002_S1" Description="@item_DescGRIN_TractorBeam_002_shared" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="1050" />
+          <SWeaponActionFireTractorBeamParams minForce="1500" maxForce="500000" minDistance="0.5" maxDistance="150" fullStrengthDistance="75" maxAngle="60" maxVolume="300000" />
+        </Components>
+      </EntityClassDefinition.GRIN_TractorBeam_S1>
+    `,
+  );
+  await fs.writeFile(
+    path.join(weaponDir, 'argo_towingbeam_s3.xml'),
+    `
+      <EntityClassDefinition.ARGO_TowingBeam_S3 __path="libs/foundry/records/entities/scitem/ships/weapons/argo_towingbeam_s3.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TowingBeam" Size="3" Grade="1" Manufacturer="GRIN">
+              <Localization Name="@item_NameGRIN_TractorBeam_004_S3" Description="@item_DescGRIN_TractorBeam_004_S3" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="1050" />
+          <SWeaponActionFireTractorBeamParams minForce="1500" maxForce="5E+09" minDistance="0.5" maxDistance="300" fullStrengthDistance="200" maxAngle="90" maxVolume="300000">
+            <SWeaponActionFireTractorBeamTowingParams towingForce="120000000" towingMaxDistance="125" />
+          </SWeaponActionFireTractorBeamParams>
+        </Components>
+      </EntityClassDefinition.ARGO_TowingBeam_S3>
+    `,
+  );
+  await fs.writeFile(
+    path.join(armDir, 'rsi_tractor_beam_arm.xml'),
+    `
+      <EntityClassDefinition.RSI_Tractor_Beam_Arm __path="libs/foundry/records/entities/scitem/ships/utility/tractorbeam/rsi_tractor_beam_arm.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TractorBeamArm" Size="2" Grade="1" Manufacturer="RSI" />
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="4000" />
+        </Components>
+      </EntityClassDefinition.RSI_Tractor_Beam_Arm>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'tractor-beams',
+        csvFile: 'tractorbeam.datacore.csv',
+        typeConfig: TRACTOR_BEAM_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'tractorbeam.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'tractor-beams', rows: 2, skipped: 0, csvFile: 'tractorbeam.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Force,Range,Full Strength Distance,Max Angle,Max Volume,Tow Force,Tow Max Distance\r?\n/,
+  );
+  assert.match(csv, /argo_towingbeam_s3,item_NameGRIN_TractorBeam_004_S3,,item_DescGRIN_TractorBeam_004_S3,GRIN,3,1,,1050,0\.0015 - 5000,0\.5 - 300,200,90,300000,120,125/);
+  assert.match(csv, /grin_tractorbeam_s1,item_NameGRIN_TractorBeam_002_S1,,item_DescGRIN_TractorBeam_002_shared,GRIN,1,1,,1050,0\.0015 - 0\.5,0\.5 - 150,75,60,300000,,/);
+  assert.doesNotMatch(csv, /tractor_beam_arm/i);
 });
 
 test('runDatacoreScrape extracts XML cache when cached records are missing', async () => {
