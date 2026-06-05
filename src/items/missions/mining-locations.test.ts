@@ -11,6 +11,10 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Group Probability': '6',
         'Relative Probability': '3',
         'Composition Class': 'CommonShipMineablesAsteroid_Aluminum',
+        'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Harvestable Setup Class': 'ShipRockSetup',
+        'Filled Factor': '0.75',
+        'Clustering Class': 'Asteroid_Lrg_Med_Sml',
       }),
       providerRow({
         Location: 'hpp_stanton1',
@@ -77,6 +81,32 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         Stddev: '125',
       }),
     ],
+    [
+      {
+        'Entity Class': 'AsteroidRock_Aluminum',
+        'Density Class': 'EntityDensityClass_Mineable',
+      },
+    ],
+    [
+      {
+        'Clustering Class': 'Asteroid_Lrg_Med_Sml',
+        'Probability Of Clustering': '10',
+        'Relative Probability': '1',
+        'Min Size': '2',
+        'Max Size': '5',
+        'Min Proximity': '3',
+        'Max Proximity': '12',
+      },
+    ],
+    [
+      {
+        'Setup Class': 'ShipRockSetup',
+        'Respawn In Slot Time': '3600',
+        'Despawn Time Seconds': '600',
+        'Min Scale': '0.75',
+        'Max Scale': '1.5',
+      },
+    ],
   );
 
   const hurston = rows.find((row) => row['Location Name'] === 'Hurston');
@@ -90,6 +120,11 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hurston['DataCore Location Description Keys'], 'AsteroidCluster_MiningBase_Desc');
   assert.equal(hurston['DataCore Location Label Source'], 'class-or-path-mining');
   assert.equal(hurston['DataCore Quality Source'], 'shipmineables');
+  assert.equal(hurston['DataCore Mineable Entity Classes'], 'AsteroidRock_Aluminum');
+  assert.equal(hurston['DataCore Density Classes'], 'EntityDensityClass_Mineable');
+  assert.equal(hurston['DataCore Filled Factors'], '0.75');
+  assert.equal(hurston['DataCore Clustering Summary'], 'Asteroid_Lrg_Med_Sml (prob 10, rel 1, size 2-5, prox 3-12)');
+  assert.equal(hurston['DataCore Setup Summary'], 'ShipRockSetup (respawn 3600, despawn 600s, scale 0.75-1.5)');
 
   const fallback = rows.find((row) => row['Location Name'] === 'SCMDB Only');
   assert.ok(fallback);
@@ -105,6 +140,9 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
         'DataCore Location Name Keys': 'AsteroidCluster_MiningBase_Stanton01_Medium_01',
         'DataCore Location Label Source': 'class-or-path-mining',
         'DataCore Quality Source': 'shipmineables',
+        'DataCore Mineable Entity Classes': 'AsteroidRock_Aluminum',
+        'DataCore Clustering Summary': 'Asteroid_Lrg_Med_Sml (prob 10)',
+        'DataCore Setup Summary': 'ShipRockSetup (respawn 3600)',
       },
       { 'Location Name': 'Pyro I' },
     ],
@@ -120,6 +158,9 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
     datacoreLocationLabelRows: 1,
     datacoreLocationsWithLabelKeys: 1,
     datacoreLocationsWithQualityNotes: 1,
+    datacoreLocationsWithEntityFacts: 1,
+    datacoreLocationsWithClusteringFacts: 1,
+    datacoreLocationsWithSetupFacts: 1,
     common: 1,
     datacoreOnly: ['Pyro I'],
     scmdbOnly: ['Daymar'],
@@ -134,6 +175,10 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
     'Group Probability': '',
     'Relative Probability': '',
     'Composition Class': '',
+    'Harvestable Entity Class': '',
+    'Harvestable Setup Class': '',
+    'Filled Factor': '',
+    'Clustering Class': '',
     ...overrides,
   };
 }
