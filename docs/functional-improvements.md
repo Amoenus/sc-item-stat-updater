@@ -18,7 +18,7 @@ Current intentional compatibility:
 
 - Patch artifacts keep the ADR 002 JSON shape for backward compatibility.
 - Artifact JSON does not serialize localization application metadata such as `existingLineIndex`.
-- SPViewer remains a legacy/fallback provider while DataCore coverage continues to improve.
+- SPViewer remains a legacy comparison/audit source; active batch item-stat selection uses DataCore.
 
 ## Tracked Functional Backlog
 
@@ -33,7 +33,7 @@ No next functional slice is currently listed. Re-audit GitHub issues before crea
 - #51: Moved Puppeteer to `optionalDependencies` and isolated scraper loading behind a dynamic SPViewer browser launcher. Updater-only installs can now use `npm install --omit=optional`, SPViewer scraping reports a clear missing-optional-dependency error, and README documents both install paths.
 - #52: Audited OpenTelemetry usage and removed it. The packages were only used by the local stderr logger with no trace, metrics, OTLP, Jaeger, or collector destination, so `src/infrastructure/logger.ts` now implements the existing text/JSON CLI logging behavior directly and `package.json`/lockfile no longer include `@opentelemetry/*`.
 - #48: Added focused regression coverage for parallel SPViewer lookup loading in `buildLookupFromCsvFiles`. The tests prove independent CSV loaders are all started before earlier reads resolve and that duplicate-key merge precedence still follows filename order.
-- #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy/fallback coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
+- #111: Added `update-item --provider-matrix`, generated from the same registry-backed category metadata as `--list-categories`. The matrix distinguishes DataCore primary coverage, SPViewer legacy comparison coverage, SCMDB mission coverage, unavailable providers, and mixed-source batch modes; README now points to the command.
 - #110: Added `update-item --list-categories` for category discovery. The output distinguishes SPViewer, DataCore, SCMDB, and mixed-source batch modes; includes required CSV/JSON source file names or dynamic-source hints; and reports LIVE/PTU source-root expectations. Tests cover representative SPViewer, DataCore, SCMDB, dynamic JSON, and mixed-source output.
 - #109: Added backup coverage for write and deploy paths. `enrichGlobalIni` now has a temp-fixture test proving repository `global.ini.backup.1` is created before writes, and `deployGlobalIni` backs up an existing game target before copying; deployment failure coverage now proves the original fixture target stays intact.
 - #108: Added a large generated-in-test INI update performance budget. The test builds a controlled 2,500-row fixture with 5,000 base/plural INI updates, reports planning and application timings separately, keeps loose CI-friendly budgets, and uses only in-memory fixtures rather than real `global.ini` or generated source data.

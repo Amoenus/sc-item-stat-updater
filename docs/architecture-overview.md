@@ -29,7 +29,7 @@ SCMDB website
   -> download/scrape enriched web data
 
 Optional legacy sources
-  -> SPViewer fallback data
+  -> SPViewer comparison data
 
 Normalized source datasets
   -> enrichment planners
@@ -47,9 +47,9 @@ Acquisition gets raw data from the outside world.
 Examples:
 
 - Extract `global.ini` from `Data.p4k`.
-- Extract DataCore/game-file records from `Game2.dcb`.
+- Extract `Data/Game2.dcb` from `Data.p4k` into the repo-owned DCB cache, then extract DataCore/game-file records from that cached DCB.
 - Download SCMDB JSON/CSV-derived data.
-- Scrape SPViewer data while it remains useful as a compatibility or fallback provider.
+- Scrape SPViewer data when it is useful as legacy comparison or audit input.
 
 Acquisition code knows about external tools, network access, cache directories, file discovery, and source-specific retrieval mechanics.
 
@@ -61,7 +61,7 @@ Examples:
 
 - DataCore XML becomes typed component-stat records.
 - SCMDB merged JSON becomes typed mission, mining, commodity, and crafting records.
-- SPViewer tables become typed item-stat records for legacy/fallback comparison flows.
+- SPViewer tables become typed item-stat records for legacy comparison flows.
 
 Source quirks belong here. Later stages should not need to know whether a value came from XML attributes, CSV columns, nested SCMDB JSON, or scraped HTML.
 
@@ -119,7 +119,7 @@ src/
   sources/          # DataCore, SCMDB, and SPViewer source acquisition/normalization
 ```
 
-DataCore and SCMDB expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy/fallback source and exposes its HTML parser facade and dataset types under `src/sources/spviewer`.
+DataCore and SCMDB expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy comparison source and exposes its HTML parser facade and dataset types under `src/sources/spviewer`, but it is no longer part of active batch provider selection.
 
 ## Core Concepts
 

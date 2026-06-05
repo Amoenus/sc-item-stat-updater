@@ -12,7 +12,7 @@ The ideal long-term direction is:
 2. Use external sources such as SCMDB for relationship resolution, derived
    summaries, historical comparison, and user-facing insight that is difficult
    to reconstruct directly from game files.
-3. Keep SPViewer as a legacy/fallback comparison source while DataCore coverage
+3. Keep SPViewer as a legacy comparison/audit source while DataCore coverage
    matures.
 
 ## Current Extraction Surface
@@ -21,7 +21,8 @@ The current game-data pipeline does not parse `Data.p4k` by hand. It relies on
 external tools, which is the right boundary:
 
 - `unp4k` extracts files such as `Data/Localization/english/global.ini`.
-- `unforge` expands `Data/Game2.dcb` into DataForge XML records.
+- `unp4k` extracts `Data/Game2.dcb` from `Data.p4k` into the repo-owned DCB cache.
+- `unforge` expands the cached `Game2.dcb` into DataForge XML records.
 - The repo parses the resulting XML cache with source-specific extractors.
 
 Current DataCore item scraping uses only a narrow slice of the XML cache:

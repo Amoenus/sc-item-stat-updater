@@ -18,7 +18,6 @@ function makePrepared(): PreparedUpdateCategories {
     itemVersion: 'items-live',
     itemVersionDir: 'items-dir',
     missionCsvDir: 'missions-dir',
-    spviewerVersionDir: 'spviewer-dir',
   };
 }
 
@@ -30,7 +29,7 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
 
   const result = await runBatchUpdate({
     repoRoot: 'repo',
-    provider: 'spviewer',
+    provider: 'datacore',
     ptu: true,
     now: (() => {
       const values = [100, 125];
@@ -51,6 +50,10 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
         warnings: [],
       };
     },
+    scmdbDependencyAudit: async (options) => {
+      observed.push(`audit:${options?.provider}`);
+      return { sourceHierarchy: [], entries: [] };
+    },
     preflight: async (categories) => {
       observed.push(`preflight:${categories.length}`);
     },
@@ -64,7 +67,7 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
     },
     runExtraSteps: async (options) => {
       options.onStepStart?.('Component Titles', 0);
-      observed.push(`extra:${options.missionCsvDir}:${options.spviewerVersionDir}`);
+      observed.push(`extra:${options.missionCsvDir}:${options.datacoreVersionDir}`);
       return { results: [{ label: 'Component Titles', summary: 'extra ok' }], errors: [] };
     },
     onCategoryStart: (category: UpdateCategory, index) => {
@@ -82,13 +85,14 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
   assert.deepEqual(categoryStarts, ['0:Test category']);
   assert.deepEqual(extraStepStarts, ['0:Component Titles']);
   assert.deepEqual(observed, [
-    'prepare:spviewer:true',
+    'prepare:datacore:true',
     'regen:repo:missions-dir',
-    'diagnostics:items-live:spviewer:true',
+    'diagnostics:items-live:datacore:true',
+    'audit:datacore',
     'preflight:1',
     'backup:repo\\global.ini',
     'categories:repo\\global.ini:true',
-    'extra:missions-dir:spviewer-dir',
+    'extra:missions-dir:items-dir',
   ]);
 });
 
@@ -101,6 +105,7 @@ test('runBatchUpdate skips backup for dry runs and returns nonzero when steps re
     prepare: async () => makePrepared(),
     regenerateMiningLocations: () => ({ outPath: 'out', rowCount: 0, outDir: 'missions-dir' }),
     sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
+    scmdbDependencyAudit: async () => ({ sourceHierarchy: [], entries: [] }),
     preflight: async () => {},
     backupIni: async () => {
       backupCalled = true;

@@ -66,7 +66,7 @@ const { values } = parseArgs({
     ptu: { type: 'boolean', default: false },
     'include-mining-journal': { type: 'boolean', default: false },
     'mining-journal-rarity-report': { type: 'boolean', default: false },
-    provider: { type: 'string', default: 'spviewer' },
+    provider: { type: 'string', default: 'datacore' },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -86,7 +86,7 @@ if (values.help) {
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
   console.log('      --include-mining-journal  Also update mining compendium journal entry');
   console.log('      --mining-journal-rarity-report  Print SCMDB vs DataCore mining journal rarity report and exit');
-  console.log('      --provider <name>  Data provider: "spviewer" (default) or "datacore"');
+  console.log('      --provider datacore  Data provider (default; SPViewer is legacy audit-only)');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
@@ -95,12 +95,11 @@ if (values.help) {
 
 applyLogFlags(values);
 
-const repoRoot = path.resolve(import.meta.dirname, '..');
+const repoRoot = process.cwd();
 
-const providerValue =
-  values['mining-journal-rarity-report'] && values.provider === 'spviewer' ? 'datacore' : values.provider;
-if (providerValue !== 'spviewer' && providerValue !== 'datacore') {
-  console.error(`Unknown --provider "${providerValue}". Valid values: spviewer, datacore`);
+const providerValue = values.provider;
+if (providerValue !== 'datacore') {
+  console.error(`Unknown --provider "${providerValue}". DataCore is the only active batch provider.`);
   process.exit(1);
 }
 const provider: UpdateProvider = providerValue;
@@ -111,7 +110,7 @@ const prepared = await prepareUpdateCategories({
   ptu: values.ptu,
   csvDir: values['csv-dir'],
 });
-const { categories, scmdbVersion, itemVersion, itemVersionDir, missionCsvDir, spviewerVersionDir } = prepared;
+const { categories, scmdbVersion, itemVersion, itemVersionDir, missionCsvDir } = prepared;
 
 if (values['mining-journal-rarity-report']) {
   console.log(
@@ -138,9 +137,7 @@ console.log(`=== Starting update (${channel}, provider: ${provider}) ===`);
 
 const sourceDiagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider, ptu: values.ptu });
 console.log(`${formatSourceFreshnessDiagnostics(sourceDiagnostics)}\n`);
-if (provider === 'datacore') {
-  console.log(`${formatScmdbDependencyAudit(await buildScmdbDependencyAudit({ provider }))}\n`);
-}
+console.log(`${formatScmdbDependencyAudit(await buildScmdbDependencyAudit({ provider }))}\n`);
 
 try {
   logger.info('Regenerating mining-locations.csv', { missionCsvDir });
@@ -159,14 +156,11 @@ try {
 // Preflight: verify every declared static source file exists before touching anything.
 try {
   await preflightCheckConfigs(categories, {
-    rawFacts:
-      provider === 'datacore'
-        ? DATACORE_RAW_FACTS.map((rawFact) => ({
-            rawFact,
-            baseDir: prepared.itemVersionDir,
-            channel,
-          }))
-        : undefined,
+    rawFacts: DATACORE_RAW_FACTS.map((rawFact) => ({
+      rawFact,
+      baseDir: prepared.itemVersionDir,
+      channel,
+    })),
   });
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
@@ -188,7 +182,7 @@ if (values['emit-artifact']) {
     plannedArtifact = await generateArtifact(categories, {
       iniPath,
       scmdbVersion,
-      spviewerVersion: spviewerVersionDir ? itemVersion : undefined,
+      spviewerVersion: undefined,
     });
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
@@ -240,8 +234,7 @@ const extraStepResult = await runUpdateExtraSteps({
   iniPath,
   repoRoot,
   missionCsvDir,
-  spviewerVersionDir,
-  datacoreVersionDir: provider === 'datacore' ? itemVersionDir : undefined,
+  datacoreVersionDir: itemVersionDir,
   dryRun: options.dryRun,
   includeMiningJournal: values['include-mining-journal'],
   onStepStart: (label, index) => {

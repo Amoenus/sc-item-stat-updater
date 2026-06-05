@@ -165,7 +165,7 @@ export async function buildScmdbDependencyAudit(options: { provider?: UpdateProv
     sourceHierarchy: [
       'DataCore/Data.p4k: authoritative source for game-derived raw facts.',
       'SCMDB: temporary bridge for derived/generated mission, blueprint, crafting, and mining aggregations not yet reconstructed from DataCore.',
-      'SPViewer: legacy fallback/comparison provider only.',
+      'SPViewer: legacy comparison/audit source only.',
     ],
     entries,
   };

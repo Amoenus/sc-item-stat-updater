@@ -54,7 +54,7 @@ export interface RunBatchUpdateResult {
 }
 
 export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<RunBatchUpdateResult> {
-  const provider = options.provider ?? 'spviewer';
+  const provider = options.provider ?? 'datacore';
   const dryRun = options.dryRun ?? false;
   const iniPath = options.iniPath || path.join(options.repoRoot, 'global.ini');
   const now = options.now ?? (() => performance.now());
@@ -80,17 +80,14 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   });
 
   const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
-  const scmdbDependencyAudit = provider === 'datacore' ? await buildScmdbAudit({ provider }) : undefined;
+  const scmdbDependencyAudit = await buildScmdbAudit({ provider });
 
   await preflight(prepared.categories, {
-    rawFacts:
-      provider === 'datacore'
-        ? DATACORE_RAW_FACTS.map((rawFact) => ({
-            rawFact,
-            baseDir: prepared.itemVersionDir,
-            channel: options.ptu ? ('PTU' as const) : ('LIVE' as const),
-          }))
-        : undefined,
+    rawFacts: DATACORE_RAW_FACTS.map((rawFact) => ({
+      rawFact,
+      baseDir: prepared.itemVersionDir,
+      channel: options.ptu ? ('PTU' as const) : ('LIVE' as const),
+    })),
   });
 
   if (!dryRun && !options.skipBackup) {
@@ -110,8 +107,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     iniPath,
     repoRoot: options.repoRoot,
     missionCsvDir: prepared.missionCsvDir,
-    spviewerVersionDir: prepared.spviewerVersionDir,
-    datacoreVersionDir: provider === 'datacore' ? prepared.itemVersionDir : undefined,
+    datacoreVersionDir: prepared.itemVersionDir,
     dryRun,
     includeMiningJournal: options.includeMiningJournal,
     onStepStart: options.onExtraStepStart,

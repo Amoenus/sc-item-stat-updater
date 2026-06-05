@@ -64,12 +64,7 @@ test('category listing includes representative provider families and source meta
 
   assert.deepEqual(listing.mixedSources, [
     {
-      command: 'update-all --provider spviewer',
-      description: 'SPViewer item categories plus SCMDB mission categories and extra SCMDB/SPViewer update steps',
-      families: ['SPViewer', 'SCMDB'],
-    },
-    {
-      command: 'update-all --provider datacore',
+      command: 'update-all',
       description: 'DataCore item categories plus SCMDB mission categories',
       families: ['DataCore', 'SCMDB'],
     },
@@ -100,8 +95,8 @@ test('formatted category listing distinguishes provider families and mixed-sourc
     output,
     /datacore-location-labels \| Law and location labels \| files: location-labels\.datacore\.csv \| first-party StarMap labels/,
   );
-  assert.match(output, /Mixed-source batch modes:\n {2}update-all --provider spviewer \| SPViewer \+ SCMDB/);
-  assert.match(output, /update-all --provider datacore \| DataCore \+ SCMDB/);
+  assert.match(output, /Mixed-source batch modes:\n {2}update-all \| DataCore \+ SCMDB/);
+  assert.doesNotMatch(output, /update-all --provider spviewer/);
 });
 
 test('provider coverage matrix distinguishes primary, fallback, and unavailable coverage', async () => {
@@ -111,7 +106,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
   assert.deepEqual(coolers, {
     category: 'Coolers',
     datacore: { status: 'primary', slug: 'dc-coolers' },
-    spviewer: { status: 'legacy/fallback', slug: 'sp-coolers' },
+    spviewer: { status: 'legacy comparison', slug: 'sp-coolers' },
     scmdb: { status: 'unavailable' },
   });
 
@@ -128,7 +123,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     true,
   );
   assert.equal(
-    matrix.rows.some((row) => row.spviewer.status === 'legacy/fallback'),
+    matrix.rows.some((row) => row.spviewer.status === 'legacy comparison'),
     true,
   );
   assert.equal(
@@ -139,18 +134,20 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     matrix.rows.some((row) => row.datacore.status === 'unavailable'),
     true,
   );
-  assert.equal(matrix.mixedSources.length, 2);
+  assert.equal(matrix.mixedSources.length, 1);
 });
 
 test('formatted provider coverage matrix includes provider statuses and mixed-source modes', async () => {
   const output = formatProviderCoverageMatrix(await buildProviderCoverageMatrix());
 
   assert.match(output, /Provider coverage matrix/);
-  assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| legacy\/fallback \(sp-coolers\) \| unavailable \|/);
+  assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| legacy comparison \(sp-coolers\) \| unavailable \|/);
   assert.match(
     output,
     /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
   assert.match(output, /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/);
-  assert.match(output, /\| update-all --provider datacore \| DataCore \+ SCMDB \|/);
+  assert.match(output, /legacy comparison = audit-only comparison source/);
+  assert.match(output, /\| update-all \| DataCore \+ SCMDB \|/);
+  assert.doesNotMatch(output, /update-all --provider spviewer/);
 });

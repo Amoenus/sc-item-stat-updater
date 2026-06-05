@@ -63,11 +63,7 @@ import type {
   DataCoreVehicleRecord,
 } from '../../sources/datacore/types';
 import { extractDataCoreVehicles } from '../../sources/datacore/vehicle-extractor';
-import {
-  collectDataCoreXmlFilesMatching,
-  countDataCoreXmlFiles,
-  findDataCoreDcbFile,
-} from '../../sources/datacore/xml-files';
+import { collectDataCoreXmlFilesMatching, countDataCoreXmlFiles } from '../../sources/datacore/xml-files';
 import {
   extractAttachDef,
   extractEntityClass,
@@ -197,8 +193,10 @@ export interface RunDatacoreScrapeOptions {
   loadTypes?: (repoRoot: string) => Promise<DataCoreTypeEntry[]>;
   resolveLiveDir?: (binDirname: string) => string;
   readGameVersion?: (liveDir: string) => Promise<string>;
+  /** Test-only fallback. Production DataCore acquisition extracts Game2.dcb from Data.p4k. */
   findDcbFile?: (liveDir: string) => Promise<string>;
   ensureTools?: (toolDir: string, log: (message: string) => void) => Promise<Unp4kTools>;
+  extractPackedDcb?: (p4kPath: string, dcbCacheDir: string, tools: Unp4kTools) => void | Promise<void>;
   countXmlFiles?: (xmlCacheDir: string) => Promise<number>;
   extractXmlCache?: typeof extractDataCoreXmlCache;
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
@@ -772,8 +770,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const loadTypes = options.loadTypes ?? loadDataCoreTypeEntries;
   const resolveLive = options.resolveLiveDir ?? resolveLiveDir;
   const readVersion = options.readGameVersion ?? readGameVersion;
-  const findDcbFile = options.findDcbFile ?? findDataCoreDcbFile;
   const ensureTools = options.ensureTools ?? ensureToolsInstalled;
+  const extractPackedDcb = options.extractPackedDcb ?? extractPackedDataCoreDcb;
   const countXmlFiles = options.countXmlFiles ?? countDataCoreXmlFiles;
   const extractXmlCache = options.extractXmlCache ?? extractDataCoreXmlCache;
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
@@ -808,13 +806,25 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const versionTag = `${gameVersion}-${channel}`;
   const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
   const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
+  const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
   const recordGraphPath = path.join(outputBase, 'record-graph.json');
-  const dcbPath = await findDcbFile(liveDir);
+  const fallbackDcbPath = options.findDcbFile ? await options.findDcbFile(liveDir) : undefined;
   const toolDir = path.join(liveDir, 'unp4k');
 
   if (!options.dryRun) {
     await fs.mkdir(outputBase, { recursive: true });
   }
+
+  const tools = await ensureTools(toolDir, (message) => options.onToolsLog?.(message));
+  options.onToolsReady?.(tools);
+  const { dcbPath, refreshed: dcbRefreshed } = await resolveCurrentDcbFile({
+    liveDir,
+    dcbCacheDir,
+    tools,
+    extractPackedDcb,
+    forceExtract: options.forceExtract,
+    fallbackDcbPath,
+  });
 
   options.onPrepared?.({
     gameVersion,
@@ -827,14 +837,12 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     dryRun: Boolean(options.dryRun),
   });
 
-  const tools = await ensureTools(toolDir, (message) => options.onToolsLog?.(message));
-  options.onToolsReady?.(tools);
   const cachedCount = await countXmlFiles(xmlCacheDir);
 
-  if (cachedCount > 0 && !options.forceExtract) {
+  if (cachedCount > 0 && !options.forceExtract && !dcbRefreshed) {
     options.onCacheHit?.(cachedCount, xmlCacheDir);
   } else {
-    const clearExisting = Boolean(options.forceExtract && cachedCount > 0);
+    const clearExisting = cachedCount > 0 && Boolean(options.forceExtract || dcbRefreshed);
     options.onCacheExtractStart?.(dcbPath, xmlCacheDir, clearExisting);
     const { xmlFileCount } = await extractXmlCache({
       dcbPath,
@@ -1142,6 +1150,47 @@ function selectTypes(allTypes: DataCoreTypeEntry[], requestedNames: string[]): D
     if (!found) throw new Error(`Unknown item type: "${name}". Run with --list to see valid types.`);
     return found;
   });
+}
+
+async function fileMtimeMs(filePath: string): Promise<number | null> {
+  try {
+    return (await fs.stat(filePath)).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveCurrentDcbFile(options: {
+  liveDir: string;
+  dcbCacheDir: string;
+  tools: Unp4kTools;
+  extractPackedDcb: (p4kPath: string, dcbCacheDir: string, tools: Unp4kTools) => void | Promise<void>;
+  forceExtract?: boolean;
+  fallbackDcbPath?: string;
+}): Promise<{ dcbPath: string; refreshed: boolean }> {
+  const p4kPath = path.join(options.liveDir, 'Data.p4k');
+  const p4kMtime = await fileMtimeMs(p4kPath);
+
+  if (!p4kMtime) {
+    if (options.fallbackDcbPath) return { dcbPath: options.fallbackDcbPath, refreshed: false };
+    throw new Error(`Data.p4k not found at ${p4kPath}. Set SC_LIVE_DIR to a valid game install.`);
+  }
+
+  const packedDcbPath = path.join(options.dcbCacheDir, 'Data', 'Game2.dcb');
+  const packedDcbMtime = await fileMtimeMs(packedDcbPath);
+  let refreshed = false;
+  if (options.forceExtract || !packedDcbMtime || packedDcbMtime < p4kMtime) {
+    await fs.rm(options.dcbCacheDir, { recursive: true, force: true });
+    await fs.mkdir(options.dcbCacheDir, { recursive: true });
+    await options.extractPackedDcb(p4kPath, options.dcbCacheDir, options.tools);
+    refreshed = true;
+  }
+
+  return { dcbPath: packedDcbPath, refreshed };
+}
+
+function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, tools: Unp4kTools): void {
+  runTool(tools.unp4k, [p4kPath, 'Game2.dcb'], { cwd: dcbCacheDir });
 }
 
 async function scrapeDataCoreType(
@@ -2030,9 +2079,7 @@ function resolveReferencedRecord(
     if (!referenceValue) continue;
 
     const record =
-      candidate.by === 'entityClass'
-        ? graph.getByEntityClass(referenceValue)[0]
-        : graph.getByRef(referenceValue);
+      candidate.by === 'entityClass' ? graph.getByEntityClass(referenceValue)[0] : graph.getByRef(referenceValue);
     if (record) return record;
   }
 

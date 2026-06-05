@@ -2,6 +2,8 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
+const fallbackTargetKeys = makeGetTargetKeys('powr_', 'POWR_');
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/powerplant',
   // powr_amrs_s1_heartbeat -> strip 'powr_' -> 'AMRS_S1_HEARTBEAT' -> item_NamePOWR_AMRS_S1_HEARTBEAT
@@ -9,7 +11,10 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   nameKeyInfix: 'POWR_',
   fieldSelectors: {
     'Power Output': { selector: 'generation[resource="Power"] SPowerSegmentResourceUnit', attr: 'units' },
-    'Cooling Usage': { selector: 'consumption[resource="Coolant"] SStandardResourceUnit', attr: 'standardResourceUnits' },
+    'Cooling Usage': {
+      selector: 'consumption[resource="Coolant"] SStandardResourceUnit',
+      attr: 'standardResourceUnits',
+    },
     'EM Signature': { selector: 'ItemResourceState signatureParams EMSignature', attr: 'nominalSignature' },
     'EM Signature Decay': { selector: 'ItemResourceState signatureParams EMSignature', attr: 'decayRate' },
     'IR Signature': { selector: 'ItemResourceState signatureParams IRSignature', attr: 'nominalSignature' },
@@ -24,7 +29,12 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
         const maximum = Number(row['Distortion Shutdown Damage']);
         const decayDelay = Number(row['Distortion Decay Delay']);
         const decayRate = Number(row['Distortion Decay Rate']);
-        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+        if (
+          !Number.isFinite(maximum) ||
+          !Number.isFinite(decayDelay) ||
+          !Number.isFinite(decayRate) ||
+          decayRate === 0
+        ) {
           return '';
         }
         return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();
@@ -33,12 +43,36 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
+function getPowerPlantAlternateDescKeys(descKey: string): string[] {
+  const altKeys = new Set<string>();
+  const candidates = [descKey];
+  if (/_SCItem$/i.test(descKey)) {
+    candidates.push(descKey.replace(/_SCItem$/i, ''));
+  } else {
+    candidates.push(`${descKey}_SCItem`);
+  }
+  for (const candidate of candidates) {
+    altKeys.add(candidate);
+    if (candidate.includes('item_Desc_POWR_')) {
+      altKeys.add(candidate.replace('item_Desc_POWR_', 'item_DescPOWR_'));
+    }
+    if (candidate.includes('item_DescPOWR_')) {
+      altKeys.add(candidate.replace('item_DescPOWR_', 'item_Desc_POWR_'));
+    }
+  }
+  altKeys.delete(descKey);
+  return [...altKeys];
+}
+
 export default {
   csvFile: 'powerplant.datacore.csv',
   label: 'DC Power Plants',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Power Output', 'Health'],
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
-  getTargetKeys: makeGetTargetKeys('powr_', 'POWR_'),
+  getAlternateDescKeys: getPowerPlantAlternateDescKeys,
+  getTargetKeys(row, deriveDescKey) {
+    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getPowerPlantAlternateDescKeys(key)]);
+  },
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Power Plant')

@@ -4,7 +4,7 @@ import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
 import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
-import { runSpviewerScrape } from './run-spviewer-scrape';
+import type { runSpviewerScrape } from './run-spviewer-scrape';
 import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
 
@@ -38,7 +38,6 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const runUpdate = options.runUpdate ?? runBatchUpdate;
   const runDatacore = options.runDatacore ?? runDatacoreScrape;
   const runScmdb = options.runScmdb ?? runScmdbScrape;
-  const runSpviewer = options.runSpviewer ?? runSpviewerScrape;
   const refresh = options.refresh ?? refreshGlobalIni;
   const deploy = options.deploy ?? deployGlobalIni;
 
@@ -46,32 +45,20 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const { extractedGamePath } = await refresh({ repoIniPath, log });
   options.onStepComplete?.('global.ini extracted & synced to repo');
 
-  if (options.datacore) {
+  if (options.scrape || options.datacore) {
     log('=== Step 2: Scraping SCMDB ===');
     await runScmdb({ repoRoot: options.rootDir, ptu: options.ptu });
     options.onStepComplete?.('SCMDB scraped');
 
-    log('=== Step 2b: Scraping Datacore ===');
+    log('=== Step 2b: Scraping DataCore ===');
     const datacoreResult = await runDatacore({
       repoRoot: options.rootDir,
       ptu: options.ptu,
     });
     if (datacoreResult.exitCode !== 0) return { exitCode: datacoreResult.exitCode, extractedGamePath, repoIniPath };
-    options.onStepComplete?.('Datacore scraped');
-  } else if (options.scrape) {
-    log('=== Step 2: Scraping SCMDB ===');
-    await runScmdb({ repoRoot: options.rootDir, ptu: options.ptu });
-    options.onStepComplete?.('SCMDB scraped');
-
-    log('=== Step 2b: Scraping SPViewer ===');
-    const spviewerResult = await runSpviewer({
-      repoRoot: options.rootDir,
-      ptu: options.ptu,
-    });
-    if (spviewerResult.exitCode !== 0) return { exitCode: spviewerResult.exitCode, extractedGamePath, repoIniPath };
-    options.onStepComplete?.('SPViewer scraped');
+    options.onStepComplete?.('DataCore scraped');
   } else {
-    log('=== Step 2: Skipping scrape (pass --scrape or --datacore to enable) ===');
+    log('=== Step 2: Skipping scrape (pass --scrape to enable) ===');
   }
 
   log('=== Step 3: Applying stat updates ===');
@@ -79,7 +66,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     repoRoot: options.rootDir,
     dryRun: options.dryRun,
     ptu: options.ptu,
-    provider: options.datacore ? 'datacore' : 'spviewer',
+    provider: 'datacore',
   });
   log(formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics));
   if (updateResult.scmdbDependencyAudit) {

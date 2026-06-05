@@ -11,7 +11,10 @@ import {
 import type { PatchPlan } from '../../pipeline/types';
 import { readIniFile } from '../../localization/ini-file';
 
-export type BuildPatchPlanOptions = Pick<UpdateOptions, 'iniPath' | 'csvDir' | 'sourceDirs' | 'dryRun' | 'force'>;
+export type BuildPatchPlanOptions = Pick<
+  UpdateOptions,
+  'baseDir' | 'iniPath' | 'csvDir' | 'sourceDirs' | 'dryRun' | 'force'
+>;
 
 export interface BuildPatchPlanResult extends UpdatePlanResult {
   iniLines: string[];

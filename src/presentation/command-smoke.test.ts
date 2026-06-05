@@ -70,7 +70,8 @@ test('update-item list-categories reports provider and source metadata', async (
   assert.match(result.stdout, /datacore-vehicles \| Vehicles \| files: vehicles\.datacore\.csv/);
   assert.match(result.stdout, /datacore-location-labels \| Law and location labels/);
   assert.match(result.stdout, /Mixed-source batch modes:/);
-  assert.match(result.stdout, /update-all --provider spviewer \| SPViewer \+ SCMDB/);
+  assert.match(result.stdout, /update-all \| DataCore \+ SCMDB/);
+  assert.doesNotMatch(result.stdout, /update-all --provider spviewer/);
 });
 
 test('update-item provider-matrix reports coverage status by provider', async () => {
@@ -80,7 +81,7 @@ test('update-item provider-matrix reports coverage status by provider', async ()
   assert.match(result.stdout, /Provider coverage matrix/);
   assert.match(
     result.stdout,
-    /\| Coolers \| primary \(dc-coolers\) \| legacy\/fallback \(sp-coolers\) \| unavailable \|/,
+    /\| Coolers \| primary \(dc-coolers\) \| legacy comparison \(sp-coolers\) \| unavailable \|/,
   );
   assert.match(
     result.stdout,
@@ -102,12 +103,39 @@ test('update-item scmdb-audit reports remaining SCMDB dependencies', async () =>
   assert.equal(result.stderr, '');
 });
 
+test('update-item spviewer-retirement-audit reports category pairing and decision', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--spviewer-retirement-audit']);
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /SPViewer retirement audit/);
+  assert.match(result.stdout, /Decision: SPViewer can be retired from active provider selection/);
+  assert.match(result.stdout, /SPViewer categories: 22/);
+  assert.match(result.stdout, /Matched DataCore categories: 22/);
+  assert.match(result.stdout, /Missing DataCore categories: 0/);
+  assert.match(result.stdout, /Categories blocking retirement: 0/);
+  assert.match(result.stdout, /Changed values are diagnostic only/);
+  assert.match(
+    result.stdout,
+    /\| Coolers \| dc-coolers \| sp-coolers \| covered \| covered; 84 DataCore keys, 79 SPViewer keys/,
+  );
+  assert.match(
+    result.stdout,
+    /\| Turrets \| dc-turrets \| sp-turrets \| covered \| covered; 50 DataCore keys, 54 SPViewer keys/,
+  );
+  assert.match(result.stdout, /cross-category DataCore coverage=item_DescBEHR_LaserRepeater_PDC_S1 via dc-weapon-guns/);
+  assert.match(result.stdout, /classified non-blocking=item_DescDRAK_Fixed_Mount_S4/);
+  assert.match(
+    result.stdout,
+    /\| Weapon Guns \| dc-weapon-guns \| sp-weapon-guns \| covered \| covered; 147 DataCore keys, 144 SPViewer keys/,
+  );
+});
+
 test('pipeline help exits successfully with orchestration options', async () => {
   const result = await runCommand(['bin/pipeline.ts', '--help']);
 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/pipeline\.ts \[options]/);
-  assert.match(result.stdout, /--scrape\s+Run scrape:scmdb and scrape:spviewer before updating/);
+  assert.match(result.stdout, /--scrape\s+Run scrape:scmdb and scrape:datacore before updating/);
   assert.match(result.stdout, /--dry-run\s+Preview changes without writing/);
 });
 

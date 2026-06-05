@@ -64,7 +64,7 @@ The Star Citizen Metadata Database. This source provides organized and enriched 
 
 ### SPViewer
 
-A third-party source previously used for item stats. It remains useful as a legacy, comparison, or fallback provider while DataCore coverage matures.
+A third-party source previously used for item stats. It remains useful as a legacy comparison/audit source, but DataCore is the active item-stat provider.
 
 ## Localization Terms
 

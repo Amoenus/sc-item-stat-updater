@@ -819,7 +819,17 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
 test('runDatacoreScrape extracts bomb params and skips missile records in shared ordnance folder', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-bombs-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
-  const ordnanceDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons', 'missiles');
+  const ordnanceDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+    'missiles',
+  );
   const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'fski.xml');
   await fs.mkdir(ordnanceDir, { recursive: true });
   await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
@@ -889,7 +899,17 @@ test('runDatacoreScrape extracts bomb params and skips missile records in shared
 test('runDatacoreScrape extracts missile params and skips bomb records in shared ordnance folder', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-missiles-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
-  const ordnanceDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons', 'missiles');
+  const ordnanceDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+    'missiles',
+  );
   const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'fski.xml');
   await fs.mkdir(ordnanceDir, { recursive: true });
   await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
@@ -1298,7 +1318,9 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
     'utf8',
   );
 
-  assert.deepEqual(result.results, [{ type: 'self-destruct', rows: 1, skipped: 0, csvFile: 'selfdestruct.datacore.csv' }]);
+  assert.deepEqual(result.results, [
+    { type: 'self-destruct', rows: 1, skipped: 0, csvFile: 'selfdestruct.datacore.csv' },
+  ]);
   assert.match(
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius\r?\n/,
@@ -1502,8 +1524,32 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
     'turret',
     'aegs_hammerhead_scitem_turret_rear.xml',
   );
+  const bespokeMountPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapon_mounts',
+    'anvl_arrow_turret.xml',
+  );
+  const vehicleTurretPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'vehicles',
+    'turret',
+    'tmbl_storm_main_turret.xml',
+  );
   const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'aegs.xml');
   await fs.mkdir(path.dirname(turretPath), { recursive: true });
+  await fs.mkdir(path.dirname(bespokeMountPath), { recursive: true });
+  await fs.mkdir(path.dirname(vehicleTurretPath), { recursive: true });
   await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
   await fs.writeFile(
     turretPath,
@@ -1535,6 +1581,64 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
     `,
   );
   await fs.writeFile(
+    bespokeMountPath,
+    `
+      <EntityClassDefinition.ANVL_Arrow_Turret __path="libs/foundry/records/entities/scitem/ships/weapon_mounts/anvl_arrow_turret.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TurretBase" SubType="RemoteTurret" Size="3" Grade="1" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+              <Localization Name="@item_NameANVL_Arrow_Turret" ShortName="@LOC_EMPTY" Description="@item_DescANVL_Arrow_Turret" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemTurretParams>
+            <movementParams>
+              <SCItemTurretJointMovementParams jointName="turret_upper_helper">
+                <yawAxis>
+                  <SCItemTurretJointMovementAxisParams speed="50" acceleration_timeToFullSpeed="0.3" accelerationDecay="5" />
+                </yawAxis>
+              </SCItemTurretJointMovementParams>
+              <SCItemTurretJointMovementParams jointName="turret_pitch">
+                <pitchAxis>
+                  <SCItemTurretJointMovementAxisParams speed="50" acceleration_timeToFullSpeed="0.3" accelerationDecay="5" />
+                </pitchAxis>
+              </SCItemTurretJointMovementParams>
+            </movementParams>
+          </SCItemTurretParams>
+          <SHealthComponentParams Health="1000" />
+        </Components>
+      </EntityClassDefinition.ANVL_Arrow_Turret>
+    `,
+  );
+  await fs.writeFile(
+    vehicleTurretPath,
+    `
+      <EntityClassDefinition.TMBL_Storm_Main_Turret __path="libs/foundry/records/entities/scitem/vehicles/turret/tmbl_storm_main_turret.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TurretBase" SubType="TopTurret" Size="3" Grade="1" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+              <Localization Name="@item_NameTMBL_Storm_Turret" ShortName="@item_DescTMBL_Storm_Turret" Description="@item_Desc_Turret_Remote" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemTurretParams>
+            <movementParams>
+              <SCItemTurretJointMovementParams jointName="turret_upper_helper">
+                <yawAxis>
+                  <SCItemTurretJointMovementAxisParams speed="100" acceleration_timeToFullSpeed="0.3" accelerationDecay="5" />
+                </yawAxis>
+              </SCItemTurretJointMovementParams>
+              <SCItemTurretJointMovementParams jointName="turret_pitch">
+                <pitchAxis>
+                  <SCItemTurretJointMovementAxisParams speed="100" acceleration_timeToFullSpeed="0.3" accelerationDecay="5" />
+                </pitchAxis>
+              </SCItemTurretJointMovementParams>
+            </movementParams>
+          </SCItemTurretParams>
+          <SHealthComponentParams Health="14500" />
+        </Components>
+      </EntityClassDefinition.TMBL_Storm_Main_Turret>
+    `,
+  );
+  await fs.writeFile(
     manufacturerPath,
     `<SCItemManufacturer.AEGS Code="AEGS" __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />`,
   );
@@ -1551,7 +1655,7 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
 
   const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'turret.datacore.csv'), 'utf8');
 
-  assert.deepEqual(result.results, [{ type: 'turrets', rows: 1, skipped: 0, csvFile: 'turret.datacore.csv' }]);
+  assert.deepEqual(result.results, [{ type: 'turrets', rows: 3, skipped: 0, csvFile: 'turret.datacore.csv' }]);
   assert.match(
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Yaw Speed,Yaw Time To Full Speed,Yaw Accel Decay,Pitch Speed,Pitch Time To Full Speed,Pitch Accel Decay\r?\n/,
@@ -1559,6 +1663,14 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
   assert.match(
     csv,
     /aegs_hammerhead_scitem_turret_rear,item_Name_Turret_Manned,,,AEGS,5,1,MannedTurret,15000,95,0\.3,18,95,0\.3,18/,
+  );
+  assert.match(
+    csv,
+    /anvl_arrow_turret,item_NameANVL_Arrow_Turret,,item_DescANVL_Arrow_Turret,AEGS,3,1,RemoteTurret,1000,50,0\.3,5,50,0\.3,5/,
+  );
+  assert.match(
+    csv,
+    /tmbl_storm_main_turret,item_NameTMBL_Storm_Turret,item_DescTMBL_Storm_Turret,item_Desc_Turret_Remote,AEGS,3,1,TopTurret,14500,100,0\.3,5,100,0\.3,5/,
   );
 });
 
@@ -1648,16 +1760,7 @@ test('runDatacoreScrape extracts shield generator params from real-shaped DataCo
 test('runDatacoreScrape extracts tractor beam force and towing stats from weapon action params', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-tractor-beams-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
-  const weaponDir = path.join(
-    xmlCacheDir,
-    'libs',
-    'foundry',
-    'records',
-    'entities',
-    'scitem',
-    'ships',
-    'weapons',
-  );
+  const weaponDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons');
   const armDir = path.join(
     xmlCacheDir,
     'libs',
@@ -1747,8 +1850,14 @@ test('runDatacoreScrape extracts tractor beam force and towing stats from weapon
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Force,Range,Full Strength Distance,Max Angle,Max Volume,Tow Force,Tow Max Distance\r?\n/,
   );
-  assert.match(csv, /argo_towingbeam_s3,item_NameGRIN_TractorBeam_004_S3,,item_DescGRIN_TractorBeam_004_S3,GRIN,3,1,,1050,0\.0015 - 5000,0\.5 - 300,200,90,300000,120,125/);
-  assert.match(csv, /grin_tractorbeam_s1,item_NameGRIN_TractorBeam_002_S1,,item_DescGRIN_TractorBeam_002_shared,GRIN,1,1,,1050,0\.0015 - 0\.5,0\.5 - 150,75,60,300000,,/);
+  assert.match(
+    csv,
+    /argo_towingbeam_s3,item_NameGRIN_TractorBeam_004_S3,,item_DescGRIN_TractorBeam_004_S3,GRIN,3,1,,1050,0\.0015 - 5000,0\.5 - 300,200,90,300000,120,125/,
+  );
+  assert.match(
+    csv,
+    /grin_tractorbeam_s1,item_NameGRIN_TractorBeam_002_S1,,item_DescGRIN_TractorBeam_002_shared,GRIN,1,1,,1050,0\.0015 - 0\.5,0\.5 - 150,75,60,300000,,/,
+  );
   assert.doesNotMatch(csv, /tractor_beam_arm/i);
 });
 
@@ -1783,6 +1892,47 @@ test('runDatacoreScrape extracts XML cache when cached records are missing', asy
   assert.equal(result.exitCode, 0);
   assert.deepEqual(result.results, []);
   assert.deepEqual(events, ['tools ready', 'start', 'extract', 'complete:123']);
+});
+
+test('runDatacoreScrape refreshes repo DCB cache from Data.p4k and invalidates XML cache', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-packed-dcb-'));
+  const liveDir = path.join(repoRoot, 'game', 'LIVE');
+  const p4kPath = path.join(liveDir, 'Data.p4k');
+  const cachedDcbPath = path.join(repoRoot, 'csv', 'datacore', '.dcbcache', '4.8.1-live', 'Data', 'Game2.dcb');
+  await fs.mkdir(path.dirname(p4kPath), { recursive: true });
+  await fs.mkdir(path.dirname(cachedDcbPath), { recursive: true });
+  await fs.writeFile(p4kPath, 'new packed data');
+  await fs.writeFile(cachedDcbPath, 'old packed dcb');
+
+  const oldTime = new Date('2026-01-01T00:00:00.000Z');
+  const newTime = new Date('2026-06-01T00:00:00.000Z');
+  await fs.utimes(cachedDcbPath, oldTime, oldTime);
+  await fs.utimes(p4kPath, newTime, newTime);
+
+  const events: string[] = [];
+  const result = await runDatacoreScrape({
+    repoRoot,
+    dryRun: true,
+    loadTypes: async () => [],
+    resolveLiveDir: () => liveDir,
+    readGameVersion: async () => '4.8.1',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 7,
+    extractPackedDcb: async (sourceP4k, dcbCacheDir) => {
+      events.push(`packed:${sourceP4k}`);
+      const target = path.join(dcbCacheDir, 'Data', 'Game2.dcb');
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.writeFile(target, 'fresh packed dcb');
+    },
+    extractXmlCache: async ({ dcbPath, clearExisting }) => {
+      events.push(`xml:${dcbPath}:${clearExisting}`);
+      return { workDcbPath: 'cache/Game2.dcb', monolithicXmlPath: 'cache/Game2.xml', xmlFileCount: 321 };
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.dcbPath, cachedDcbPath);
+  assert.deepEqual(events, [`packed:${p4kPath}`, `xml:${cachedDcbPath}:true`]);
 });
 
 test('runDatacoreScrape writes DataCore commodity CSV after building the record graph', async () => {
@@ -3039,16 +3189,7 @@ function miningParamRow(overrides: Partial<DataCoreMiningParamRecord>): DataCore
 test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-lasers-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
-  const laserDir = path.join(
-    xmlCacheDir,
-    'libs',
-    'foundry',
-    'records',
-    'entities',
-    'scitem',
-    'ships',
-    'weapons',
-  );
+  const laserDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons');
   await fs.mkdir(laserDir, { recursive: true });
 
   // Real-shaped XML for the GRIN Arbor MH1 S1 mining laser.

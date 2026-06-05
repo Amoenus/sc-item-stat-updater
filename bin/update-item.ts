@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
   buildCategoryListing,
@@ -5,11 +6,18 @@ import {
   formatCategoryListing,
   formatProviderCoverageMatrix,
 } from '../src/application/use-cases/category-listing';
-import { buildScmdbDependencyAudit, formatScmdbDependencyAudit } from '../src/application/use-cases/scmdb-dependency-audit';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
+import {
+  buildScmdbDependencyAudit,
+  formatScmdbDependencyAudit,
+} from '../src/application/use-cases/scmdb-dependency-audit';
+import {
+  buildSpviewerRetirementAudit,
+  formatSpviewerRetirementAudit,
+} from '../src/application/use-cases/spviewer-retirement-audit';
+import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 import { listCategories, loadConfig } from '../src/items/registry';
 import { applyLogFlags, printIssues, registerUnhandledRejectionHandler } from '../src/presentation/cli';
-import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 
 const logger = getLogger('update-item');
 
@@ -23,6 +31,10 @@ const { values, positionals } = parseArgs({
     'list-categories': { type: 'boolean', default: false },
     'provider-matrix': { type: 'boolean', default: false },
     'scmdb-audit': { type: 'boolean', default: false },
+    'spviewer-retirement-audit': { type: 'boolean', default: false },
+    'datacore-dir': { type: 'string' },
+    'spviewer-dir': { type: 'string' },
+    ptu: { type: 'boolean', default: false },
     force: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     'json-logs': { type: 'boolean', default: false },
@@ -52,6 +64,23 @@ if (values['scmdb-audit']) {
   process.exit(0);
 }
 
+if (values['spviewer-retirement-audit']) {
+  const repoRoot = path.resolve(import.meta.dirname, '..');
+  console.log(
+    formatSpviewerRetirementAudit(
+      await buildSpviewerRetirementAudit({
+        repoRoot,
+        iniPath: values['ini-path'],
+        datacoreDir: values['datacore-dir'],
+        spviewerDir: values['spviewer-dir'],
+        ptu: values.ptu,
+      }),
+    ),
+  );
+  await shutdownLogger();
+  process.exit(0);
+}
+
 if (values.help || !category) {
   const available = await listCategories();
   const allSlugs = [...available.spviewer, ...available.datacore, ...available.missions];
@@ -63,6 +92,10 @@ if (values.help || !category) {
   console.log('      --list-categories  List categories with provider and source file metadata');
   console.log('      --provider-matrix  List provider coverage by category');
   console.log('      --scmdb-audit      List remaining SCMDB dependencies and migration classifications');
+  console.log('      --spviewer-retirement-audit  Compare all paired SPViewer/DataCore item outputs');
+  console.log('      --datacore-dir <path>  DataCore CSV directory for --spviewer-retirement-audit');
+  console.log('      --spviewer-dir <path>  SPViewer CSV directory for --spviewer-retirement-audit');
+  console.log('      --ptu              Use latest PTU source directories for report commands');
   console.log('      --force            Force update even when values are unchanged');
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');

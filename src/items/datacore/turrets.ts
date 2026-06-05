@@ -4,9 +4,10 @@ import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 const yawAxisSelector = 'SCItemTurretParams yawAxis SCItemTurretJointMovementAxisParams';
 const pitchAxisSelector = 'SCItemTurretParams pitchAxis SCItemTurretJointMovementAxisParams';
+const fallbackTargetKeys = makeGetTargetKeys('turr_', 'TURR_');
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
-  recordFilter: 'scitem/ships/turret',
+  recordFilter: ['scitem/ships', 'scitem/vehicles/turret'],
   recordSelector: 'SCItemTurretParams',
   entityClassPrefix: 'turr_',
   nameKeyInfix: 'TURR_',
@@ -20,12 +21,31 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
+function usableKey(value: string | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';
+}
+
 export default {
   csvFile: 'turret.datacore.csv',
   label: 'DC Turrets',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('turret'),
-  getTargetKeys: makeGetTargetKeys('turr_', 'TURR_'),
+  getTargetKeys(row, deriveDescKey) {
+    const shortNameKey = usableKey(row['Short Name Key']);
+    if (/^item_Desc/i.test(shortNameKey)) return [shortNameKey];
+
+    const descriptionKey = usableKey(row['Description Key']);
+    const nameKey = usableKey(row['Name Key']);
+    if (nameKey) {
+      const derivedDescriptionKey = deriveDescKey(nameKey);
+      if (!descriptionKey || descriptionKey.toLowerCase() !== derivedDescriptionKey.toLowerCase()) {
+        return [derivedDescriptionKey];
+      }
+    }
+
+    return fallbackTargetKeys(row, deriveDescKey);
+  },
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Turret')

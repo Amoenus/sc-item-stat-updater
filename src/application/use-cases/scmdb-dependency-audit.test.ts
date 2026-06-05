@@ -8,7 +8,7 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.deepEqual(audit.sourceHierarchy, [
     'DataCore/Data.p4k: authoritative source for game-derived raw facts.',
     'SCMDB: temporary bridge for derived/generated mission, blueprint, crafting, and mining aggregations not yet reconstructed from DataCore.',
-    'SPViewer: legacy fallback/comparison provider only.',
+    'SPViewer: legacy comparison/audit source only.',
   ]);
 
   const descriptions = audit.entries.find((entry) => entry.slug === 'mission-scmdb-descriptions');

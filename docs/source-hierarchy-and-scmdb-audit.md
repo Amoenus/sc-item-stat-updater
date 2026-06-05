@@ -13,9 +13,27 @@ DataCore/Data.p4k is the authoritative source for game-derived facts:
 - mining facts
 - location labels where available
 
+`Game2.dcb` is an extracted intermediate, not an install-directory source of truth. The scraper extracts `Data/Game2.dcb` from `Data.p4k` into `csv/datacore/.dcbcache/<version>/`, then expands that cached DCB into `csv/datacore/.xmlcache/<version>/`. Loose files under the game install must not be used as authoritative inputs.
+
 SCMDB is a temporary derived-data bridge. Keep it only where the pipeline still needs mission, blueprint, crafting, mining aggregation, or generated joins that have not yet been reconstructed from DataCore records.
 
-SPViewer is a legacy fallback and comparison source. It should not be treated as an authoritative source for facts that can be extracted from DataCore.
+SPViewer is a legacy comparison source. It is no longer part of active batch provider selection and should not be treated as an authoritative source for facts that can be extracted from DataCore.
+
+## SPViewer retirement audit
+
+Run the active-provider retirement audit from the repository root:
+
+```sh
+npm run audit:spviewer-retirement
+```
+
+Current checked-in LIVE data status:
+
+- DataCore has a matching item-stat category for every legacy SPViewer category.
+- SPViewer is retired from active provider selection.
+- Remaining SPViewer-only generated keys are classified non-blocking in `docs/spviewer-retirement-turret-triage.md` and `docs/spviewer-retirement-remaining-triage.md`.
+- Changed generated values are non-blocking review evidence because DataCore is the current game-file authority and SPViewer can lag or miss patches.
+- The checked-in DataCore directory is generated from packed `Data.p4k`; use that as the active game-file authority.
 
 ## Current SCMDB dependencies
 
@@ -25,7 +43,7 @@ Run the live audit from the repository root:
 node --import tsx/esm bin/update-item.ts --scmdb-audit
 ```
 
-For `update-all --provider datacore`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active even when DataCore is selected.
+For `update-all`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
 
 ## Migration slices
 

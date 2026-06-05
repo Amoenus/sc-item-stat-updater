@@ -7,6 +7,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
   const updateOptions: unknown[] = [];
   const scmdbOptions: unknown[] = [];
   const spviewerOptions: unknown[] = [];
+  const datacoreOptions: unknown[] = [];
   const logs: string[] = [];
 
   const result = await runFullPipeline({
@@ -40,6 +41,10 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
         files: [],
         errors: [],
       };
+    },
+    runDatacore: async (options) => {
+      datacoreOptions.push(options);
+      return { exitCode: 0 } as never;
     },
     runUpdate: async (options) => {
       updateOptions.push(options);
@@ -76,19 +81,20 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     repoIniPath: 'repo\\global.ini',
   });
   assert.deepEqual(scmdbOptions, [{ repoRoot: 'repo', ptu: true }]);
-  assert.deepEqual(spviewerOptions, [{ repoRoot: 'repo', ptu: true }]);
+  assert.deepEqual(spviewerOptions, []);
+  assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: true }]);
   assert.deepEqual(updateOptions, [
     {
       repoRoot: 'repo',
       dryRun: true,
       ptu: true,
-      provider: 'spviewer',
+      provider: 'datacore',
     },
   ]);
   assert.deepEqual(completed, [
     'global.ini extracted & synced to repo',
     'SCMDB scraped',
-    'SPViewer scraped',
+    'DataCore scraped',
     'Stat updates applied',
     'global.ini deployed to game directory',
   ]);

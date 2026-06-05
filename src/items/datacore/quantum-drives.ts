@@ -2,6 +2,8 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
+const fallbackTargetKeys = makeGetTargetKeys('qdrv_', 'QDRV_');
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/quantumdrive',
   // qdrv_rsi_s1_atlas -> strip 'qdrv_' -> 'RSI_S1_ATLAS' -> item_NameQDRV_RSI_S1_ATLAS
@@ -19,12 +21,39 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
+function getQuantumDriveAlternateDescKeys(descKey: string): string[] {
+  const altKeys = new Set<string>();
+  const candidates = [descKey];
+
+  if (/_SCItem$/i.test(descKey)) {
+    candidates.push(descKey.replace(/_SCItem$/i, ''));
+  } else {
+    candidates.push(`${descKey}_SCItem`);
+  }
+
+  for (const candidate of candidates) {
+    altKeys.add(candidate);
+    if (candidate.includes('item_Desc_QDRV_')) {
+      altKeys.add(candidate.replace('item_Desc_QDRV_', 'item_DescQDRV_'));
+    }
+    if (candidate.includes('item_DescQDRV_')) {
+      altKeys.add(candidate.replace('item_DescQDRV_', 'item_Desc_QDRV_'));
+    }
+  }
+
+  altKeys.delete(descKey);
+  return [...altKeys];
+}
+
 export default {
   csvFile: 'quantumdrive.datacore.csv',
   label: 'DC Quantum Drives',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Max Speed', 'Spool Time', 'Cooldown', 'Health'],
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),
-  getTargetKeys: makeGetTargetKeys('qdrv_', 'QDRV_'),
+  getAlternateDescKeys: getQuantumDriveAlternateDescKeys,
+  getTargetKeys(row, deriveDescKey) {
+    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getQuantumDriveAlternateDescKeys(key)]);
+  },
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Quantum Drive')

@@ -21,6 +21,8 @@ aegs_retaliator_cml_chaff,item_NameAEGS_Eclipse_CML_Chaff,hud_countermeasure_smo
 aegs_retaliator_cml_flare,item_NameAEGS_Eclipse_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Eclipse_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 aegs_sabre_cml_chaff,item_NameAEGS_Sabre_CML_Chaff,hud_countermeasure_smokescreen,item_DescAEGS_Sabre_CML_Chaff,AEGS,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 aegs_sabre_cml_flare,item_NameAEGS_Sabre_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Sabre_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
+aegs_tiburon_cml_chaff,item_NameAEGS_Hammerhead_CML_Chaff,hud_countermeasure_smokescreen,item_DescAEGS_Hammerhead_CML_Chaff,AEGS,1,1,CountermeasureLauncher,1000,Chaff,12,180,0.8,80000,100000,150000
+aegs_tiburon_cml_flare,item_NameAEGS_Hammerhead_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Hammerhead_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,25,90,12,40000,20000,60000
 anvl_asgard_cml_chaff,item_NameAEGS_Gladius_CML_Chaff,hud_countermeasure_smokescreen,item_DescAEGS_Gladius_CML_Chaff,AEGS,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 anvl_asgard_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 anvl_cml_decoy_small,item_NameANVL_CML_Flare,hud_countermeasure_decoy,item_DescANVL_CML_Flare,ANVL,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
@@ -75,6 +77,8 @@ drak_clipper_cml_decoy,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,
 drak_clipper_cml_noise,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Noise,5,180,0.8,30000,20000,30000
 drak_cml_decoy_small,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 drak_cml_noise_small,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Noise,5,180,0.8,30000,20000,30000
+drak_command_module_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
+drak_command_module_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,DRAK,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 drak_corsair_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,DRAK,2,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 drak_corsair_cml_decoy,item_NameJOKR_Defcon_CML_Flare,hud_countermeasure_decoy,item_DescAmmobox_JOKR_Defcon_Flares,DRAK,2,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 drak_cutter_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
@@ -83,6 +87,10 @@ drak_dragonfly_cml_chaff,LOC_PLACEHOLDER,hud_countermeasure_smokescreen,LOC_PLAC
 drak_dragonfly_cml_flare,LOC_PLACEHOLDER,hud_countermeasure_decoy,LOC_PLACEHOLDER,DRAK,1,1,CountermeasureLauncher,1000,Decoy,5,65,8,20000,6500,20000
 drak_golem_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 drak_golem_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
+drak_ironclad_cml_decoy,item_NameAmmobox_JOKR_Defcon_Flares,hud_countermeasure_decoy,item_DescAmmobox_JOKR_Defcon_Flares,DRAK,2,1,CountermeasureLauncher,1000,Decoy,30,90,12,40000,20000,60000
+drak_ironclad_cml_noise,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,DRAK,2,1,CountermeasureLauncher,1000,Noise,15,180,0.8,80000,100000,150000
+drak_pitbull_cml_chaff,item_NameDRAK_CML_Chaff,hud_countermeasure_smokescreen,item_DescDRAK_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,8,180,0.8,30000,20000,30000
+drak_pitbull_cml_flare,item_NameDRAK_CML_Flare,hud_countermeasure_decoy,item_DescDRAK_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,24,65,8,20000,6500,20000
 drak_vulture_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 drak_vulture_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 espr_cml_decoy_small,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
@@ -107,6 +115,8 @@ misc_fury_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescree
 misc_fury_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 misc_hull_a_cml_chaff,item_NameMISC_Prospector_CML_Chaff,hud_countermeasure_smokescreen,item_DescMISC_Prospector_CML_Chaff,MISC,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 misc_hull_a_cml_flare,item_NameMISC_Prospector_CML_Flare,hud_countermeasure_decoy,item_DescMISC_Prospector_CML_Flare,MISC,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
+misc_hull_b_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
+misc_hull_b_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 misc_hull_c_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,60,180,0.8,80000,100000,150000
 misc_hull_c_cml_flare,item_NameAmmobox_JOKR_Defcon_Flares,hud_countermeasure_decoy,item_DescAmmobox_JOKR_Defcon_Flares,JOKR,1,1,CountermeasureLauncher,1000,Decoy,100,90,12,40000,20000,60000
 misc_prospector_cml_chaff,item_NameMISC_Prospector_CML_Chaff,hud_countermeasure_smokescreen,item_DescMISC_Prospector_CML_Chaff,MISC,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
@@ -117,12 +127,16 @@ misc_reliant_cml_chaff,item_NameMISC_Reliant_CML_Chaff,hud_countermeasure_smokes
 misc_reliant_cml_flare,item_NameMISC_Reliant_CML_Flare,hud_countermeasure_decoy,item_DescMISC_Reliant_CML_Flare,MISC,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 misc_starlancer_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,60,180,0.8,80000,100000,150000
 misc_starlancer_cml_flare,item_NameAmmobox_JOKR_Defcon_Flares,hud_countermeasure_decoy,item_DescAmmobox_JOKR_Defcon_Flares,JOKR,1,1,CountermeasureLauncher,1000,Decoy,100,90,12,40000,20000,60000
+misc_starlite_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
+misc_starlite_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 mrai_guardian_cml_decoy,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,MRAI,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 mrai_guardian_cml_noise,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,MRAI,1,1,CountermeasureLauncher,1000,Noise,5,180,0.8,30000,20000,30000
 orig_cml_decoy_small,item_NameORIG_CML_Chaff,hud_countermeasure_decoy,item_DescORIG_CML_Chaff,ORIG,2,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 orig_cml_noise_small,item_NameORIG_CML_Chaff,hud_countermeasure_smokescreen,item_DescORIG_CML_Chaff,ORIG,2,1,CountermeasureLauncher,1000,Noise,5,180,0.8,30000,20000,30000
 orig_m50_cml_chaff,item_NameORIG_CML_Chaff,hud_countermeasure_smokescreen,item_DescORIG_CML_Chaff,ORIG,1,1,CountermeasureLauncher,1000,Chaff,2,180,0.8,30000,20000,30000
 orig_m50_cml_flare,item_NameORIG_CML_Chaff,hud_countermeasure_decoy,item_DescORIG_CML_Chaff,ORIG,1,1,CountermeasureLauncher,1000,Decoy,24,65,8,20000,6500,20000
+orig_m80_cml_chaff,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smokescreen,item_DescJOKR_Defcon_CML_Chaff,JOKR,1,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
+orig_m80_cml_flare,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 orig_x1_cml_chaff,LOC_PLACEHOLDER,hud_countermeasure_smokescreen,LOC_PLACEHOLDER,ORIG,0,1,CountermeasureLauncher,1000,Chaff,4,180,0.8,30000,20000,30000
 orig_x1_cml_flare,LOC_PLACEHOLDER,hud_countermeasure_decoy,LOC_PLACEHOLDER,ORIG,0,1,CountermeasureLauncher,1000,Decoy,12,65,8,20000,6500,20000
 rsi_apollo_cml_decoy_small,item_NameAEGS_Gladius_CML_Flare,hud_countermeasure_decoy,item_DescAEGS_Gladius_CML_Flare,AEGS,1,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
@@ -158,7 +172,9 @@ tmbl_storm_cml_noise_small,item_NameJOKR_Defcon_CML_Chaff,hud_countermeasure_smo
 vncl_blade_cml_chaff,item_NameVNCL_CML_Chaff,hud_countermeasure_smokescreen,item_DescVNCL_CML_Chaff,VNCL,2,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 vncl_blade_cml_flare,item_NameVNCL_CML_Flare,hud_countermeasure_decoy,item_DescVNCL_CML_Flare,VNCL,2,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 vncl_cml_chaff,item_NameVNCL_CML_Chaff,hud_countermeasure_smokescreen,item_DescVNCL_CML_Chaff,VNCL,2,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
+vncl_cml_chaff_large,item_NameVNCL_CML_Chaff,hud_countermeasure_smokescreen,item_DescVNCL_CML_Chaff,VNCL,1,1,CountermeasureLauncher,1000,Chaff,30,180,0.8,80000,100000,150000
 vncl_cml_flare,item_NameVNCL_CML_Flare,hud_countermeasure_decoy,item_DescVNCL_CML_Flare,VNCL,2,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
+vncl_cml_flare_large,item_NameVNCL_CML_Flare,hud_countermeasure_decoy,item_DescVNCL_CML_Flare,VNCL,1,1,CountermeasureLauncher,1000,Decoy,80,90,12,40000,20000,60000
 vncl_stinger_cml_chaff,item_NameVNCL_CML_Chaff,hud_countermeasure_smokescreen,item_DescVNCL_CML_Chaff,VNCL,2,1,CountermeasureLauncher,1000,Chaff,5,180,0.8,30000,20000,30000
 vncl_stinger_cml_flare,item_NameVNCL_CML_Flare,hud_countermeasure_decoy,item_DescVNCL_CML_Flare,VNCL,2,1,CountermeasureLauncher,1000,Decoy,48,65,8,20000,6500,20000
 xian_nox_cml_chaff,LOC_PLACEHOLDER,hud_countermeasure_smokescreen,LOC_PLACEHOLDER,XIAN,1,1,CountermeasureLauncher,1000,Chaff,1,180,0.8,30000,20000,30000

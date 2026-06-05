@@ -2,6 +2,8 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
+const fallbackTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/cooler',
   // cool_acom_s01_iceplunge -> strip 'cool_' -> 'ACOM_S01_ICEPLUNGE' -> item_NameCOOL_ACOM_S01_ICEPLUNGE
@@ -27,7 +29,12 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
         const maximum = Number(row['Distortion Shutdown Damage']);
         const decayDelay = Number(row['Distortion Decay Delay']);
         const decayRate = Number(row['Distortion Decay Rate']);
-        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+        if (
+          !Number.isFinite(maximum) ||
+          !Number.isFinite(decayDelay) ||
+          !Number.isFinite(decayRate) ||
+          decayRate === 0
+        ) {
           return '';
         }
         return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();
@@ -35,6 +42,27 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
   },
 };
+
+function getCoolerAlternateDescKeys(descKey: string): string[] {
+  const altKeys = new Set<string>();
+  const candidates = [descKey];
+  if (/_SCItem$/i.test(descKey)) {
+    candidates.push(descKey.replace(/_SCItem$/i, ''));
+  } else {
+    candidates.push(`${descKey}_SCItem`);
+  }
+  for (const candidate of candidates) {
+    altKeys.add(candidate);
+    if (candidate.includes('item_Desc_COOL_')) {
+      altKeys.add(candidate.replace('item_Desc_COOL_', 'item_DescCOOL_'));
+    }
+    if (candidate.includes('item_DescCOOL_')) {
+      altKeys.add(candidate.replace('item_DescCOOL_', 'item_Desc_COOL_'));
+    }
+  }
+  altKeys.delete(descKey);
+  return [...altKeys];
+}
 
 export default {
   csvFile: 'cooler.datacore.csv',
@@ -45,17 +73,10 @@ export default {
   nameKeyToDescKey(nameKey) {
     return nameKey.replace(/(item_)(Name|name|NAME)_?(?=COOL_)/i, '$1Desc_');
   },
-  getAlternateDescKeys(descKey) {
-    const altKeys: string[] = [];
-    if (descKey.includes('item_Desc_COOL_')) {
-      altKeys.push(descKey.replace('item_Desc_COOL_', 'item_DescCOOL_'));
-    }
-    if (descKey.includes('item_DescCOOL_')) {
-      altKeys.push(descKey.replace('item_DescCOOL_', 'item_Desc_COOL_'));
-    }
-    return altKeys;
+  getAlternateDescKeys: getCoolerAlternateDescKeys,
+  getTargetKeys(row, deriveDescKey) {
+    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getCoolerAlternateDescKeys(key)]);
   },
-  getTargetKeys: makeGetTargetKeys('cool_', 'COOL_'),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Cooler')

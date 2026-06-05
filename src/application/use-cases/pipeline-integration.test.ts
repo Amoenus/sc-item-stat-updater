@@ -38,7 +38,7 @@ function stripBom(text: string): string {
 
 async function applyFixtureCategory(slug: string, csvDir: string, iniPath: string): Promise<AppliedCategory> {
   const config = await loadConfig(slug);
-  const planResult = await buildPatchPlanResult(config, { csvDir, iniPath, dryRun: true });
+  const planResult = await buildPatchPlanResult(config, { baseDir: tmpDir, csvDir, iniPath, dryRun: true });
   const application = applyPatchPlanToIniLines(planResult.iniLines, planResult.iniIndex, planResult.plan, {
     insertionIndex: planResult.insertionIndex,
   });

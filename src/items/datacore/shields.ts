@@ -2,6 +2,8 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
+const fallbackTargetKeys = makeGetTargetKeys('shld_', 'SHLD_');
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/shieldgenerator',
   // shld_aegs_s04_reclaimer -> strip 'shld_' -> 'AEGS_S04_RECLAIMER' -> item_NameSHLD_AEGS_S04_RECLAIMER
@@ -71,7 +73,12 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
         const maximum = Number(row['Distortion Shutdown Damage']);
         const decayDelay = Number(row['Distortion Decay Delay']);
         const decayRate = Number(row['Distortion Decay Rate']);
-        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+        if (
+          !Number.isFinite(maximum) ||
+          !Number.isFinite(decayDelay) ||
+          !Number.isFinite(decayRate) ||
+          decayRate === 0
+        ) {
           return '';
         }
         return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();
@@ -80,12 +87,26 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
+function getShieldAlternateDescKeys(descKey: string): string[] {
+  const altKeys: string[] = [];
+  if (descKey.includes('item_Desc_SHLD_')) {
+    altKeys.push(descKey.replace('item_Desc_SHLD_', 'item_DescSHLD_'));
+  }
+  if (descKey.includes('item_DescSHLD_')) {
+    altKeys.push(descKey.replace('item_DescSHLD_', 'item_Desc_SHLD_'));
+  }
+  return altKeys;
+}
+
 export default {
   csvFile: 'shield.datacore.csv',
   label: 'DC Shields',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'HP Pool', 'Regen Rate', 'Health'],
   descKeyMatch: (kl) => kl.includes('descshld_') || kl.includes('desc_shld_'),
-  getTargetKeys: makeGetTargetKeys('shld_', 'SHLD_'),
+  getAlternateDescKeys: getShieldAlternateDescKeys,
+  getTargetKeys(row, deriveDescKey) {
+    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getShieldAlternateDescKeys(key)]);
+  },
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Shield Generator')

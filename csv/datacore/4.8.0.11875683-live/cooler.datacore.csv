@@ -67,6 +67,7 @@ cool_tydt_s01_vaporblock,item_NameCOOL_TYDT_S01_VaporBlock,,item_DescCOOL_TYDT_S
 cool_tydt_s02_heatsink,item_NameCOOL_TYDT_S02_HeatSink_SCItem,,item_DescCOOL_TYDT_S02_HeatSink_SCItem,TYDT,2,3,UNDEFINED,300,32,2,500,0.15,3330,0.5,0,250,2500,3,166.6667,18
 cool_tydt_s02_icebox,item_NameCOOL_TYDT_S02_IceBox_SCItem,,item_DescCOOL_TYDT_S02_IceBox_SCItem,TYDT,2,2,UNDEFINED,340,32,2,500,0.15,3330,0.5,0,250,2900,3,193.3333,18
 cool_tydt_s02_nightfall,item_NameCOOL_TYDT_S02_NightFall_SCItem,,item_DescCOOL_TYDT_S02_NightFall_SCItem,TYDT,2,1,UNDEFINED,390,34,2,500,0.15,3670,0.5,0,250,3300,3,220,18
+cool_vncl_s04_mauler,item_NameCOOL_VNCL_S04_Mauler,,item_DescCOOL_VNCL_S04_Mauler,,4,1,UNDEFINED,45000,100,6,2720,0.15,14900,0.5,0,250,10,6,0.6666667,21
 cool_wcpr_s00_fridan,item_NameCOOL_WCPR_S00_Fridan,,item_DescCOOL_WCPR_S00_Fridan,WCPR,0,3,UNDEFINED,46,16,1,375,0.15,2500,0.5,0,250,1250,1.5,83.33334,16.5
 cool_wcpr_s00_kelvid,item_Name_COOL_WCPR_S00_Kelvid,,item_Desc_COOL_WCPR_S00_Kelvid,WCPR,0,2,UNDEFINED,53,16,1,375,0.15,2500,0.5,0,250,1400,1.5,93.33334,16.5
 cool_wcpr_s00_tepilo,item_NameCOOL_WCPR_S00_Tepilo_SCItem,,item_DescCOOL_WCPR_S00_Tepilo_SCItem,WCPR,0,1,UNDEFINED,60,17,1,375,0.15,2750,0.5,0,250,1600,1.5,106.6667,16.5

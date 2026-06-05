@@ -4,7 +4,9 @@ import { isWeaponDescKey } from '../shared/weapon-matchers';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
-const fireActionSelector = 'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
+const fireActionSelector =
+  'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
+const fallbackTargetKeys = makeGetTargetKeys('mgun_', 'MGUN_');
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons',
@@ -15,14 +17,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Damage Alpha': {
       ref: ammoParamsRef,
       selector: 'DamageInfo',
-      attrs: [
-        'DamagePhysical',
-        'DamageEnergy',
-        'DamageDistortion',
-        'DamageThermal',
-        'DamageBiochemical',
-        'DamageStun',
-      ],
+      attrs: ['DamagePhysical', 'DamageEnergy', 'DamageDistortion', 'DamageThermal', 'DamageBiochemical', 'DamageStun'],
       format: 'sum',
     },
     'Rate of Fire': { selector: fireActionSelector, attr: 'fireRate' },
@@ -33,12 +28,36 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
+function usableKey(value: string | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';
+}
+
+function hasSpecificVariantDescription(nameKey: string, descriptionKey: string): boolean {
+  return (
+    /_Shark$/i.test(nameKey) &&
+    descriptionKey.toLowerCase() !== nameKey.replace(/^item_Name/i, 'item_Desc').toLowerCase()
+  );
+}
+
 export default {
   csvFile: 'weapongun.datacore.csv',
   label: 'DC Weapon Guns',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Alpha', 'Rate of Fire', 'Health'],
   descKeyMatch: isWeaponDescKey,
-  getTargetKeys: makeGetTargetKeys('mgun_', 'MGUN_'),
+  getTargetKeys(row, deriveDescKey) {
+    const nameKey = usableKey(row['Name Key']);
+    const descriptionKey = usableKey(row['Description Key']);
+
+    if (nameKey) {
+      const derivedDescriptionKey = deriveDescKey(nameKey);
+      if (/^item_Name/i.test(descriptionKey) || hasSpecificVariantDescription(nameKey, descriptionKey)) {
+        return [derivedDescriptionKey];
+      }
+    }
+
+    return fallbackTargetKeys(row, deriveDescKey);
+  },
   buildValue(r, flavorText) {
     const hasAmmo = r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '';
 

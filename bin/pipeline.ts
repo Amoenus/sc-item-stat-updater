@@ -27,8 +27,8 @@ if (values.help) {
   console.log(`Usage: node --import tsx/esm bin/pipeline.ts [options]
 
 Options:
-  --scrape      Run scrape:scmdb and scrape:spviewer before updating
-  --datacore    Run scrape:scmdb and scrape:datacore before updating (replaces --scrape)
+  --scrape      Run scrape:scmdb and scrape:datacore before updating
+  --datacore    Legacy alias for --scrape
   --dry-run     Preview changes without writing
   --ptu         Use PTU scraped data
   -v, --verbose Enable verbose logging

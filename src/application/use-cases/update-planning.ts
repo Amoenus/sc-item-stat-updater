@@ -35,6 +35,7 @@ export function validateRow(row: Record<string, string>, label: string): 'skip' 
 }
 
 export interface UpdateOptions {
+  baseDir?: string;
   iniPath?: string;
   csvDir?: string;
   sourceDirs?: ItemSourceDataContext['sourceDirs'];
@@ -99,7 +100,7 @@ export interface UpdatePlanResult extends UpdateStats {
 
 /** Resolves base paths and option defaults. */
 export function resolveOptions(options: UpdateOptions): ResolvedOptions {
-  const baseDir = path.resolve(import.meta.dirname, '..', '..');
+  const baseDir = options.baseDir ?? path.resolve(import.meta.dirname, '..', '..', '..');
   return {
     baseDir,
     iniPath: options.iniPath || path.join(baseDir, 'global.ini'),

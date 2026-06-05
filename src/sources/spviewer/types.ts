@@ -1,7 +1,7 @@
 import type { SourceDataset } from '../../pipeline/types';
 
 /**
- * Normalized SPViewer item record. SPViewer remains a legacy/fallback provider,
+ * Normalized SPViewer item record. SPViewer remains a legacy comparison source,
  * so records retain source table columns while adding optional localization
  * resolution metadata for planners that need INI keys.
  */

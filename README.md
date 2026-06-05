@@ -7,7 +7,7 @@ The long-term architecture is a local enrichment pipeline:
 1. Extract a fresh `global.ini` from the game files.
 2. Extract additional game-file data from DataCore/Data.p4k as the authoritative source for raw facts.
 3. Use SCMDB only as a temporary derived-data bridge for mission, blueprint, crafting, mining aggregation, or generated joins not yet reconstructed from DataCore.
-4. Optionally use SPViewer as a legacy or comparison fallback source.
+4. Optionally scrape SPViewer as a legacy comparison source for audits.
 5. Build localization patch plans.
 6. Apply those patches to the repo copy of `global.ini`.
 7. Deploy the enriched `global.ini` back into the game folder.
@@ -46,12 +46,12 @@ npm install puppeteer
 npm run update
 ```
 
-Runs all categories using the selected item-stat provider plus SCMDB missions. SPViewer remains the default legacy/fallback item provider; use `--provider datacore` when DataCore coverage is preferred for supported categories. It automatically detects the latest versioned directories for LIVE data.
+Runs all active categories using DataCore item stats plus SCMDB missions. It automatically detects the latest versioned directories for LIVE data.
 
 Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
 - `--dry-run` to preview changes without modifying `global.ini`.
-- `--provider spviewer|datacore` to choose the item-stat source.
+- `--provider datacore` is accepted for compatibility; DataCore is the only active batch item-stat provider.
 
 > Note: `npm run update` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
 
@@ -61,7 +61,7 @@ Options:
 node --import tsx/esm bin/scrape-spviewer.ts --all
 ```
 
-This legacy/fallback provider command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`.
+This legacy comparison command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`. SPViewer CSVs are retained for diagnostics and retirement audits, not active batch provider selection.
 
 To scrape only specific item types:
 
@@ -180,7 +180,15 @@ To print the remaining SCMDB dependency audit:
 node --import tsx/esm bin/update-item.ts --scmdb-audit
 ```
 
-When `update-all --provider datacore` runs, it also prints this audit before preflight so SCMDB-backed outputs remain visible as a shrinking checklist.
+When `update-all` runs, it also prints this audit before preflight so SCMDB-backed outputs remain visible as a shrinking checklist.
+
+To audit whether SPViewer can be retired from active provider selection:
+
+```sh
+npm run audit:spviewer-retirement
+```
+
+The audit compares every legacy SPViewer item category with its DataCore counterpart using the latest LIVE source directories. A retirement decision requires all SPViewer categories to have DataCore counterparts and no SPViewer-only generated keys that still need classification. Changed generated values are diagnostic only because DataCore is the current game-file authority and SPViewer can lag or miss patches. Use `-- --ptu`, `-- --datacore-dir <path>`, or `-- --spviewer-dir <path>` to compare specific source sets.
 
 ### Type checking
 
@@ -204,11 +212,11 @@ The code is organized around a Clean Pipeline Architecture built around acquisit
 
 ```
 bin/
-  update-all.ts           # Runs full and batch update workflows
+  update-all.ts           # Runs DataCore-first batch update workflows
   update-item.ts          # CLI to run a single category
   scrape-datacore.ts      # DataCore acquisition CLI
   scrape-scmdb.ts         # SCMDB acquisition CLI
-  scrape-spviewer.ts      # Legacy/fallback SPViewer acquisition CLI
+  scrape-spviewer.ts      # Legacy comparison SPViewer acquisition CLI
 src/
   application/            # Use cases and workflow orchestration
   artifact/               # Patch artifact generation/loading/application
@@ -238,7 +246,7 @@ The update flow is split into two clearer steps:
 
 Planning, preflight, and integrity helpers live in `src/application/use-cases/update-planning.ts`; `enrichGlobalIni` applies the resulting patch plan through localization application helpers.
 
-Each item rule module (`src/items/datacore/*.ts`, `src/items/spviewer/*.ts`, or `src/items/missions/*.ts`) provides:
+Each active item rule module (`src/items/datacore/*.ts` or `src/items/missions/*.ts`) provides:
 - `csvFile` or `jsonFile` - which source file to read
 - `buildValue(row, flavorText)` - formats the replacement value
 - `descKeyMatch(key)` - identifies existing keys for insertion point
@@ -294,7 +302,7 @@ The included `global.ini` is based on localization work from:
 CSV component data is sourced from:
 
 - DataCore extracted from local Star Citizen game files
-- SPViewer: [spviewer.eu](https://www.spviewer.eu/)
+- SPViewer: [spviewer.eu](https://www.spviewer.eu/) for legacy comparison/audit CSVs
 - SCMDB: [scmdb.net](https://www.scmdb.net/)
 
 ## Disclaimer

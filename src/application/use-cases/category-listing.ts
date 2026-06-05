@@ -35,7 +35,7 @@ export interface CategoryListing {
   mixedSources: MixedSourceListingEntry[];
 }
 
-export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'legacy/fallback' | 'unavailable';
+export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'legacy comparison' | 'unavailable';
 
 export interface ProviderCoverageCell {
   status: ProviderCoverageStatus;
@@ -162,12 +162,7 @@ export async function buildCategoryListing(): Promise<CategoryListing> {
     rawFacts: DATACORE_RAW_FACTS,
     mixedSources: [
       {
-        command: 'update-all --provider spviewer',
-        description: 'SPViewer item categories plus SCMDB mission categories and extra SCMDB/SPViewer update steps',
-        families: ['SPViewer', 'SCMDB'],
-      },
-      {
-        command: 'update-all --provider datacore',
+        command: 'update-all',
         description: 'DataCore item categories plus SCMDB mission categories',
         families: ['DataCore', 'SCMDB'],
       },
@@ -217,7 +212,7 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
       existing.datacore = coverageCell('primary', entry.slug);
       existing.category = stripProviderPrefix(entry.label);
     } else {
-      existing.spviewer = coverageCell('legacy/fallback', entry.slug);
+      existing.spviewer = coverageCell('legacy comparison', entry.slug);
       if (!itemRows.has(baseSlug)) existing.category = stripProviderPrefix(entry.label);
     }
     itemRows.set(baseSlug, existing);
@@ -295,7 +290,7 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
   const lines = [
     'Provider coverage matrix',
     '',
-    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, legacy/fallback = supported fallback source, unavailable = no category for that provider.',
+    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, legacy comparison = audit-only comparison source, unavailable = no category for that provider.',
     '',
     '| Category | DataCore | SPViewer | SCMDB |',
     '| --- | --- | --- | --- |',

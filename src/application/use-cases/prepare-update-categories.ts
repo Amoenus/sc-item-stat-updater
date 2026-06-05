@@ -1,11 +1,11 @@
 import path from 'node:path';
 import type { ItemSourceDataContext } from '../../enrichment/item-config';
 import { findLatestMatchingDirectory } from '../../io/local/discovery';
-import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../../items/registry';
+import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
 import type { ItemConfig } from '../../enrichment/item-config';
 
-export type UpdateProvider = 'spviewer' | 'datacore';
-export type UpdateSourceProvider = UpdateProvider | 'scmdb';
+export type UpdateProvider = 'datacore';
+export type UpdateSourceProvider = UpdateProvider | 'spviewer' | 'scmdb';
 export type UpdateChannel = 'LIVE' | 'PTU';
 
 export interface UpdateSourceMetadata {
@@ -35,7 +35,6 @@ export interface PreparedUpdateCategories {
   itemVersion: string;
   itemVersionDir: string;
   missionCsvDir: string;
-  spviewerVersionDir?: string;
 }
 
 /**
@@ -43,7 +42,7 @@ export interface PreparedUpdateCategories {
  * requested channel (live or ptu).
  *
  * SCMDB folders: "4.1.1-live.9800000" or "4.2.0-ptu.9900000"
- * SPViewer folders: "4.7.2.11715810-live" or "4.8.0.11768487-ptu"
+ * DataCore folders: "4.7.2.11715810-live" or "4.8.0.11768487-ptu"
  */
 export async function resolveLatestVersionDir(
   base: string,
@@ -81,36 +80,18 @@ export async function prepareUpdateCategories(
     scmdbVersion = path.basename(versionDir);
   }
 
-  let itemVersionDir: string;
-  let itemVersion: string;
+  const datacoreBase = path.join(options.repoRoot, 'csv', 'datacore');
+  const versionDir = await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js');
+  const itemVersionDir = versionDir;
+  const itemVersion = path.basename(versionDir);
 
-  if (options.provider === 'datacore') {
-    const datacoreBase = path.join(options.repoRoot, 'csv', 'datacore');
-    const versionDir = await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js');
-    itemVersionDir = versionDir;
-    itemVersion = path.basename(versionDir);
-  } else {
-    const spviewerBase = path.join(options.repoRoot, 'csv', 'spviewer');
-    const versionDir = await resolveLatestVersionDir(spviewerBase, ptu, 'SPViewer', 'scrape-spviewer.js');
-    itemVersionDir = versionDir;
-    itemVersion = path.basename(versionDir);
-  }
-
-  const spviewerVersionDir = options.provider === 'spviewer' ? itemVersionDir : undefined;
   const missionCsvDir = scmdbDir;
   const channel: UpdateChannel = ptu ? 'PTU' : 'LIVE';
 
-  const spviewerConfigs = options.provider === 'spviewer' ? [...(await loadSpviewerConfigs()).entries()] : [];
-  const datacoreConfigs = options.provider === 'datacore' ? [...(await loadDatacoreConfigs()).entries()] : [];
+  const datacoreConfigs = [...(await loadDatacoreConfigs()).entries()];
   const missionConfigs = [...(await loadMissionConfigs()).entries()].filter(([, config]) => !config.skip);
 
   const categories = [
-    ...spviewerConfigs.map(([category, config]) => ({
-      config,
-      csvDir: itemVersionDir,
-      source: { provider: 'spviewer' as const, channel, category },
-      sourceDirs: { spviewer: itemVersionDir, scmdb: scmdbDir },
-    })),
     ...datacoreConfigs.map(([category, config]) => ({
       config,
       csvDir: itemVersionDir,
@@ -121,10 +102,7 @@ export async function prepareUpdateCategories(
       config,
       csvDir: missionCsvDir,
       source: { provider: 'scmdb' as const, channel, category },
-      sourceDirs:
-        options.provider === 'datacore'
-          ? { datacore: itemVersionDir, scmdb: scmdbDir }
-          : { spviewer: itemVersionDir, scmdb: scmdbDir },
+      sourceDirs: { datacore: itemVersionDir, scmdb: scmdbDir },
     })),
   ];
 
@@ -135,6 +113,5 @@ export async function prepareUpdateCategories(
     itemVersion,
     itemVersionDir,
     missionCsvDir,
-    spviewerVersionDir,
   };
 }
