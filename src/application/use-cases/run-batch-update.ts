@@ -106,6 +106,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     repoRoot: options.repoRoot,
     missionCsvDir: prepared.missionCsvDir,
     spviewerVersionDir: prepared.spviewerVersionDir,
+    datacoreVersionDir: provider === 'datacore' ? prepared.itemVersionDir : undefined,
     dryRun,
     includeMiningJournal: options.includeMiningJournal,
     onStepStart: options.onExtraStepStart,

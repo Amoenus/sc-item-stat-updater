@@ -81,8 +81,13 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
   const dryRun = options.dryRun ?? false;
   return {
     'Component Titles': async () => {
-      if (!options.spviewerVersionDir) return null;
-      return runComponentTitleUpdate({ iniPath: options.iniPath, spviewerDir: options.spviewerVersionDir, dryRun });
+      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
+      return runComponentTitleUpdate({
+        iniPath: options.iniPath,
+        spviewerDir: options.spviewerVersionDir,
+        datacoreDir: options.datacoreVersionDir,
+        dryRun,
+      });
     },
     'FPS title tags': async () => {
       if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;

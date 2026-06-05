@@ -1,5 +1,5 @@
-﻿const NAME_LINE_PATTERN = /^(item_name_?.*?)=(.*)$/i;
-const AUX_NAME_KEY_SUFFIX_PATTERN = /_(short|mag|ammo)$/i;
+const NAME_LINE_PATTERN = /^(item_.*?)=(.*)$/i;
+const AUX_NAME_KEY_SUFFIX_PATTERN = /_(desc|short|mag|ammo)$/i;
 
 const KNOWN_VARIANT_SUFFIX_BASES = new Set([
   'acid',
