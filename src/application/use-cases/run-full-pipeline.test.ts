@@ -141,6 +141,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'factions.datacore.csv',
         },
+        manufacturerResult: {
+          rows: 0,
+          csvFile: 'manufacturers.datacore.csv',
+        },
         miningElementResult: {
           rows: 0,
           csvFile: 'mining-elements.datacore.csv',

@@ -283,6 +283,65 @@ test('runDatacoreScrape writes DataCore faction CSV after building the record gr
   assert.match(csv, /Faction_Reputation_Unlawful_HeadHunters,HeadHunters_RepUI_Name/);
 });
 
+test('runDatacoreScrape writes DataCore manufacturer CSV after building the record graph', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-manufacturers-'));
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    extractCommodities: async () => [],
+    extractVehicles: async () => [],
+    extractFactions: async () => [],
+    extractManufacturers: async () => [
+      {
+        ref: 'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2',
+        path: 'libs/foundry/records/scitemmanufacturer/scitemmanufacturer.aegs.xml',
+        manufacturerClass: 'AEGS',
+        code: 'AEG',
+        nameKey: 'manufacturer_NameAEGS',
+        shortNameKey: '',
+        descriptionKey: 'manufacturer_DescAEGS',
+        logo: 'UI/SharedAssets/ManufacturerLogos/Aegis_256.tif',
+        logoFullColor: 'ui/textures/logos/logo_corp_aegs_square_color.tif',
+        logoSimplifiedWhite: 'ui/textures/logos/logo_corp_aegs_square_white.tif',
+        dashboardCanvasConfigGuid: '3db6a90f-4e32-40b5-b583-da02478b1f69',
+        buildingBlocksStyleGuid: 'bcf008bc-19c3-4fc5-8629-9f18e462dbe0',
+        audioManufacturerTagGuid: '3a4880d2-c4d7-4b78-a5ab-bd9a54fd3e5f',
+        lightAmplificationGuid: '41883412-2a2c-47a0-b5a9-c0f40e3fed63',
+      },
+    ],
+  });
+
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'manufacturers.datacore.csv');
+  const csv = await fs.readFile(csvPath, 'utf8');
+
+  assert.equal(result.manufacturerResult.rows, 1);
+  assert.equal(result.manufacturerResult.csvFile, 'manufacturers.datacore.csv');
+  assert.match(
+    csv,
+    /^Manufacturer Class,Code,Name Key,Short Name Key,Description Key,Logo,Logo Full Color,Logo Simplified White,Dashboard Canvas Config GUID,Building Blocks Style GUID,Audio Manufacturer Tag GUID,Light Amplification GUID,Record GUID,Record Path\r?\n/,
+  );
+  assert.match(csv, /AEGS,AEG,manufacturer_NameAEGS,,manufacturer_DescAEGS/);
+});
+
 test('runDatacoreScrape writes DataCore mining element CSV after building the record graph', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-elements-'));
 

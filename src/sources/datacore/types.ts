@@ -103,6 +103,27 @@ export type DataCoreFactionDataset = SourceDataset<DataCoreFactionRecord> & {
   source: 'datacore';
 };
 
+export interface DataCoreManufacturerRecord {
+  ref: string;
+  path: string;
+  manufacturerClass: string;
+  code: string;
+  nameKey: string;
+  shortNameKey: string;
+  descriptionKey: string;
+  logo: string;
+  logoFullColor: string;
+  logoSimplifiedWhite: string;
+  dashboardCanvasConfigGuid: string;
+  buildingBlocksStyleGuid: string;
+  audioManufacturerTagGuid: string;
+  lightAmplificationGuid: string;
+}
+
+export type DataCoreManufacturerDataset = SourceDataset<DataCoreManufacturerRecord> & {
+  source: 'datacore';
+};
+
 export interface DataCoreMiningElementRecord {
   ref: string;
   path: string;

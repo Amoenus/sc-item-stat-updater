@@ -160,6 +160,11 @@ console.log(
   }${commodityDryNote}`,
 );
 console.log(
+  `  ${'manufacturers'.padEnd(28)} ${String(result.manufacturerResult.rows).padStart(4)} rows -> ${
+    result.manufacturerResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
   `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
     result.miningElementResult.csvFile
   }${commodityDryNote}`,

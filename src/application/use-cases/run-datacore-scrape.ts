@@ -13,6 +13,7 @@ import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../../items/
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
+import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
 import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
 import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
 import { extractDataCoreMiningCompositions } from '../../sources/datacore/mining-composition-extractor';
@@ -34,6 +35,7 @@ import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-g
 import type {
   DataCoreCommodityRecord,
   DataCoreFactionRecord,
+  DataCoreManufacturerRecord,
   DataCoreMineableEntityRecord,
   DataCoreMiningClusteringParamRecord,
   DataCoreMiningCompositionPartRecord,
@@ -87,6 +89,11 @@ export interface DataCoreScrapeVehicleResult {
 }
 
 export interface DataCoreScrapeFactionResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeManufacturerResult {
   rows: number;
   csvFile: string;
 }
@@ -175,6 +182,7 @@ export interface RunDatacoreScrapeOptions {
   extractCommodities?: typeof extractDataCoreCommodities;
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
+  extractManufacturers?: typeof extractDataCoreManufacturers;
   extractMiningElements?: typeof extractDataCoreMiningElements;
   extractMiningCompositions?: typeof extractDataCoreMiningCompositions;
   extractMineableEntities?: typeof extractDataCoreMineableEntities;
@@ -207,6 +215,7 @@ export interface RunDatacoreScrapeOptions {
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onManufacturersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMineableEntitiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -238,6 +247,7 @@ export interface RunDatacoreScrapeResult {
   commodityResult: DataCoreScrapeCommodityResult;
   vehicleResult: DataCoreScrapeVehicleResult;
   factionResult: DataCoreScrapeFactionResult;
+  manufacturerResult: DataCoreScrapeManufacturerResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
   mineableEntityResult: DataCoreScrapeMineableEntityResult;
@@ -258,6 +268,7 @@ const COMMON_HEADERS = ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Class'
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
+const MANUFACTURERS_CSV_FILE = 'manufacturers.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
 const MINEABLE_ENTITIES_CSV_FILE = 'mineable-entities.datacore.csv';
@@ -335,6 +346,22 @@ const FACTION_HEADERS = [
   'Reputation Lawful',
   'Allied Faction GUIDs',
   'Enemy Faction GUIDs',
+  'Record GUID',
+  'Record Path',
+];
+const MANUFACTURER_HEADERS = [
+  'Manufacturer Class',
+  'Code',
+  'Name Key',
+  'Short Name Key',
+  'Description Key',
+  'Logo',
+  'Logo Full Color',
+  'Logo Simplified White',
+  'Dashboard Canvas Config GUID',
+  'Building Blocks Style GUID',
+  'Audio Manufacturer Tag GUID',
+  'Light Amplification GUID',
   'Record GUID',
   'Record Path',
 ];
@@ -669,6 +696,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
+  const extractManufacturers = options.extractManufacturers ?? extractDataCoreManufacturers;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
   const extractMiningCompositions = options.extractMiningCompositions ?? extractDataCoreMiningCompositions;
   const extractMineableEntities = options.extractMineableEntities ?? extractDataCoreMineableEntities;
@@ -767,6 +795,16 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     dryRun: options.dryRun,
   });
   options.onFactionsExtracted?.(factionResult.rows, factionResult.csvFile, Boolean(options.dryRun));
+
+  const manufacturerRows = await extractManufacturers({
+    xmlCacheDir,
+    graph: graphLookup,
+  });
+  const manufacturerResult = await writeManufacturerCsv(manufacturerRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onManufacturersExtracted?.(manufacturerResult.rows, manufacturerResult.csvFile, Boolean(options.dryRun));
 
   const miningElementRows = await extractMiningElements({
     xmlCacheDir,
@@ -960,6 +998,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     commodityResult,
     vehicleResult,
     factionResult,
+    manufacturerResult,
     miningElementResult,
     miningCompositionResult,
     mineableEntityResult,
@@ -1170,6 +1209,37 @@ async function writeFactionCsv(
   }
 
   return { rows: rows.length, csvFile: FACTIONS_CSV_FILE };
+}
+
+async function writeManufacturerCsv(
+  rows: DataCoreManufacturerRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeManufacturerResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.manufacturerClass,
+      row.code,
+      row.nameKey,
+      row.shortNameKey,
+      row.descriptionKey,
+      row.logo,
+      row.logoFullColor,
+      row.logoSimplifiedWhite,
+      row.dashboardCanvasConfigGuid,
+      row.buildingBlocksStyleGuid,
+      row.audioManufacturerTagGuid,
+      row.lightAmplificationGuid,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MANUFACTURERS_CSV_FILE),
+      stringify([MANUFACTURER_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MANUFACTURERS_CSV_FILE };
 }
 
 async function writeMiningElementCsv(
