@@ -9,7 +9,11 @@ import {
   runTool,
   type Unp4kTools,
 } from '../../io/local/unp4k-tool';
-import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../../items/datacore/types';
+import type {
+  DataCoreFieldReferenceSelector,
+  DataCoreFieldSelector,
+  DataCoreItemTypeConfig,
+} from '../../items/datacore/types';
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
@@ -1986,26 +1990,53 @@ async function resolveField(
 
 async function loadReferencedXml(
   $: ReturnType<typeof loadXml>,
-  ref: { selector: string; attr: string },
+  ref: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[],
   context: {
     graph?: DataCoreRecordGraphLookup;
     xmlCacheDir: string;
     referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
   },
 ): Promise<ReturnType<typeof loadXml> | undefined> {
-  const guid = $(ref.selector).first().attr(ref.attr)?.trim();
-  if (!guid || !context.graph) return undefined;
+  if (!context.graph) return undefined;
 
-  const record = context.graph.getByRef(guid);
-  if (!record) return undefined;
+  let source = $;
+  for (const step of Array.isArray(ref) ? ref : [ref]) {
+    const record = resolveReferencedRecord(source, step, context.graph);
+    if (!record) return undefined;
 
-  const cached = context.referencedXmlCache.get(record.path);
-  if (cached) return cached;
+    const cached = context.referencedXmlCache.get(record.path);
+    if (cached) {
+      source = cached;
+      continue;
+    }
 
-  const xml = await fs.readFile(path.join(context.xmlCacheDir, record.path), 'utf8');
-  const loaded = loadXml(xml);
-  context.referencedXmlCache.set(record.path, loaded);
-  return loaded;
+    const xml = await fs.readFile(path.join(context.xmlCacheDir, record.path), 'utf8');
+    source = loadXml(xml);
+    context.referencedXmlCache.set(record.path, source);
+  }
+
+  return source;
+}
+
+function resolveReferencedRecord(
+  source: ReturnType<typeof loadXml>,
+  step: DataCoreFieldReferenceSelector,
+  graph: DataCoreRecordGraphLookup,
+): ReturnType<DataCoreRecordGraphLookup['getByRef']> {
+  const candidates = [step, ...(Array.isArray(step.fallback) ? step.fallback : step.fallback ? [step.fallback] : [])];
+
+  for (const candidate of candidates) {
+    const referenceValue = source(candidate.selector).first().attr(candidate.attr)?.trim();
+    if (!referenceValue) continue;
+
+    const record =
+      candidate.by === 'entityClass'
+        ? graph.getByEntityClass(referenceValue)[0]
+        : graph.getByRef(referenceValue);
+    if (record) return record;
+  }
+
+  return undefined;
 }
 
 function formatProduct(values: string[]): string {

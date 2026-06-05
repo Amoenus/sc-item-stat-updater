@@ -1,5 +1,12 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 
+export interface DataCoreFieldReferenceSelector {
+  selector: string;
+  attr: string;
+  by?: 'entityClass' | 'ref';
+  fallback?: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[];
+}
+
 export type DataCoreFieldSelector =
   | string
   | {
@@ -18,10 +25,7 @@ export type DataCoreFieldSelector =
         | 'scaled-number-pair'
         | 'sum';
       scale?: number;
-      ref?: {
-        selector: string;
-        attr: string;
-      };
+      ref?: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[];
     }
   | {
       derive: (row: Record<string, string>) => string;

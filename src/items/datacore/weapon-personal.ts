@@ -1,26 +1,44 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
+import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 
-// ⚠️ FPS weapon entity class prefixes are highly variable (pistol_, smg_, rifle_,
-// sniper_, shotgun_, lmg_, etc.). No single prefix pattern covers all types.
-// getTargetKeys uses a best-effort approach that attempts prefix stripping.
-// Verify all fields and prefixes against real unforged game files.
+const defaultMagazineRef = {
+  selector: 'SEntityComponentDefaultLoadoutParams SItemPortLoadoutEntryParams[itemPortName="magazine_attach"]',
+  attr: 'entityClassName',
+  by: 'entityClass' as const,
+  fallback: {
+    selector: 'SEntityComponentDefaultLoadoutParams SItemPortLoadoutEntryParams[itemPortName="magazine_attach"]',
+    attr: 'entityClassReference',
+  },
+};
+const defaultMagazineAmmoRef = [defaultMagazineRef, { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' }];
+const fireActionSelector =
+  'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/weapons/fps_weapons',
-  // No consistent prefix — use empty string to uppercase the full class name.
-  // This will only produce correct keys for types where the INI key matches
-  // the uppercased entity class directly.
+  recordSelector: 'SAttachableComponentParams AttachDef[Type="WeaponPersonal"]',
   entityClassPrefix: '',
   nameKeyInfix: '',
   fieldSelectors: {
-    'Damage Alpha':
-      'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams DamageInfo DamageEntry damage',
-    'Rate of Fire': 'SWeaponComponentParams SWeaponActionFireSingleParams fireRate',
-    'Fire Mode': 'SWeaponComponentParams SWeaponActionFireSingleParams fireMode',
-    'Projectile Speed': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams speed',
-    'Ammo Range': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams range',
-    'Ammo Quantity': 'SAmmoContainerComponentParams capacity',
+    'Damage Alpha': {
+      ref: defaultMagazineAmmoRef,
+      selector: 'DamageInfo',
+      attrs: [
+        'DamagePhysical',
+        'DamageEnergy',
+        'DamageDistortion',
+        'DamageThermal',
+        'DamageBiochemical',
+        'DamageStun',
+      ],
+      format: 'sum',
+    },
+    'Rate of Fire': { selector: fireActionSelector, attr: 'fireRate' },
+    'Fire Mode': { selector: fireActionSelector, attr: 'aiShootingMode' },
+    'Projectile Speed': { ref: defaultMagazineAmmoRef, selector: ':root', attr: 'speed' },
+    'Ammo Range': { ref: defaultMagazineAmmoRef, selector: ':root', attrs: ['speed', 'lifetime'], format: 'product' },
+    'Ammo Quantity': { ref: defaultMagazineRef, selector: 'SAmmoContainerComponentParams', attr: 'maxAmmoCount' },
   },
 };
 
@@ -39,19 +57,7 @@ export default {
     ((kl.includes('descgmni_') || kl.includes('descbehr_') || kl.includes('descklwe_') || kl.includes('descksar_')) &&
       !kl.includes('optics') &&
       !kl.includes('barrel')),
-  // ⚠️ Personal weapon key derivation: entity class names vary greatly.
-  // This implementation strips common FPS weapon prefixes. Items whose entity
-  // class doesn't match any known pattern will produce empty target key lists
-  // (skipped silently). Expand the prefix list as real data is available.
-  getTargetKeys: makeGetTargetKeysFromPrefixMap([
-    // Known FPS weapon prefixes and their INI key mappings
-    ['pistol_', 'PISTOL_'],
-    ['smg_', 'SMG_'],
-    ['rifle_', 'RIFLE_'],
-    ['sniper_', 'SNIPER_'],
-    ['shotgun_', 'SHOTGUN_'],
-    ['lmg_', 'LMG_'],
-  ]),
+  getTargetKeys: (row, deriveDescKey) => getRawDataCoreTargetKeys(row, deriveDescKey),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', r['Type'] || 'Personal Weapon')
