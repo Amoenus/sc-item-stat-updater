@@ -123,6 +123,22 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Max Scale': '1.5',
       },
     ],
+    [
+      {
+        'Config Class': 'AsteroidSubHarvestables',
+        'Config Type': 'single',
+        'Tagged Config Name': 'Ship rocks',
+        'Initial Slots Probability': '0.8',
+        'Config Respawn Time Multiplier': '1.5',
+        'Harvestable Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Harvestable Setup Class': 'ShipRockSetup',
+        'Relative Probability': '0.25',
+        'Deepest Relative Probability': '0.1',
+        'Harvestable Respawn Time Multiplier': '2',
+        'Geometry Tags': 'asteroid;large',
+      },
+    ],
   );
 
   const hurston = rows.find((row) => row['Location Name'] === 'Hurston');
@@ -146,6 +162,10 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     'AsteroidRockPreset_Aluminum (respawn 1800, special rare-rock)',
   );
   assert.equal(hurston['DataCore Setup Summary'], 'ShipRockSetup (respawn 3600, despawn 600s, scale 0.75-1.5)');
+  assert.equal(
+    hurston['DataCore Sub-Harvestable Summary'],
+    'AsteroidSubHarvestables/Ship rocks (single, rel 0.25, deep 0.1, slots 0.8, config respawn x1.5, harvest respawn x2, geometry asteroid;large)',
+  );
 
   const fallback = rows.find((row) => row['Location Name'] === 'SCMDB Only');
   assert.ok(fallback);
@@ -166,6 +186,7 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
         'DataCore Clustering Summary': 'Asteroid_Lrg_Med_Sml (prob 10)',
         'DataCore Harvestable Preset Summary': 'AsteroidRockPreset_Aluminum (respawn 1800)',
         'DataCore Setup Summary': 'ShipRockSetup (respawn 3600)',
+        'DataCore Sub-Harvestable Summary': 'AsteroidSubHarvestables/Ship rocks (single)',
       },
       { 'Location Name': 'Pyro I' },
     ],
@@ -186,6 +207,7 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
     datacoreLocationsWithClusteringFacts: 1,
     datacoreLocationsWithHarvestablePresetFacts: 1,
     datacoreLocationsWithSetupFacts: 1,
+    datacoreLocationsWithSubHarvestableFacts: 1,
     common: 1,
     datacoreOnly: ['Pyro I'],
     scmdbOnly: ['Daymar'],

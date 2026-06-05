@@ -18,6 +18,7 @@ const DATACORE_MINING_DENSITY_OVERRIDES_CSV = 'mining-density-overrides.datacore
 const DATACORE_MINING_CLUSTERING_CSV = 'mining-clustering.datacore.csv';
 const DATACORE_MINING_HARVESTABLE_PRESETS_CSV = 'mining-harvestable-presets.datacore.csv';
 const DATACORE_MINING_HARVESTABLE_SETUPS_CSV = 'mining-harvestable-setups.datacore.csv';
+const DATACORE_MINING_SUB_HARVESTABLE_CONFIGS_CSV = 'mining-sub-harvestable-configs.datacore.csv';
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
 const INI_NEWLINE = String.raw`\n`;
@@ -81,6 +82,7 @@ export interface MiningLocationCoverageDiagnostics {
   datacoreLocationsWithClusteringFacts: number;
   datacoreLocationsWithHarvestablePresetFacts: number;
   datacoreLocationsWithSetupFacts: number;
+  datacoreLocationsWithSubHarvestableFacts: number;
   common: number;
   datacoreOnly: string[];
   scmdbOnly: string[];
@@ -107,6 +109,7 @@ export function compareMiningLocationCoverage(
     datacoreLocationsWithClusteringFacts: datacoreRows.filter((row) => row['DataCore Clustering Summary']).length,
     datacoreLocationsWithHarvestablePresetFacts: datacoreRows.filter((row) => row['DataCore Harvestable Preset Summary']).length,
     datacoreLocationsWithSetupFacts: datacoreRows.filter((row) => row['DataCore Setup Summary']).length,
+    datacoreLocationsWithSubHarvestableFacts: datacoreRows.filter((row) => row['DataCore Sub-Harvestable Summary']).length,
     common: common.length,
     datacoreOnly: [...datacoreLocations].filter((name) => !scmdbLocations.has(name)).sort((a, b) => a.localeCompare(b)),
     scmdbOnly: [...scmdbLocations].filter((name) => !datacoreLocations.has(name)).sort((a, b) => a.localeCompare(b)),
@@ -124,6 +127,7 @@ export function buildMiningLocationRowsFromSources(
   datacoreClusteringRows: Record<string, string>[] = [],
   datacoreHarvestablePresetRows: Record<string, string>[] = [],
   datacoreHarvestableSetupRows: Record<string, string>[] = [],
+  datacoreSubHarvestableConfigRows: Record<string, string>[] = [],
 ): Record<string, string>[] {
   const datacoreRows = buildDatacoreMiningLocationRows(
     datacoreProviderRows,
@@ -136,6 +140,7 @@ export function buildMiningLocationRowsFromSources(
     datacoreClusteringRows,
     datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
+    datacoreSubHarvestableConfigRows,
   );
   const datacoreLocations = new Set(datacoreRows.map((row) => row['Location Name']));
   const mergedRows: Record<string, string>[] = [
@@ -159,6 +164,7 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreClusteringRows,
     datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
+    datacoreSubHarvestableConfigRows,
   ] = await Promise.all([
     loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_PROVIDER_PRESETS_CSV, 'DataCore mining provider presets'),
     loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions'),
@@ -185,6 +191,11 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
       DATACORE_MINING_HARVESTABLE_SETUPS_CSV,
       'DataCore mining harvestable setups',
     ),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_SUB_HARVESTABLE_CONFIGS_CSV,
+      'DataCore mining sub-harvestable configs',
+    ),
   ]);
   const rows = buildMiningLocationRowsFromSources(
     datacoreProviderRows,
@@ -197,6 +208,7 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreClusteringRows,
     datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
+    datacoreSubHarvestableConfigRows,
   );
   const coverage = compareMiningLocationCoverage(
     rows.filter((row) => row.Source?.startsWith('DataCore')),
@@ -214,6 +226,7 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreLocationsWithClusteringFacts: coverage.datacoreLocationsWithClusteringFacts,
     datacoreLocationsWithHarvestablePresetFacts: coverage.datacoreLocationsWithHarvestablePresetFacts,
     datacoreLocationsWithSetupFacts: coverage.datacoreLocationsWithSetupFacts,
+    datacoreLocationsWithSubHarvestableFacts: coverage.datacoreLocationsWithSubHarvestableFacts,
     common: coverage.common,
     datacoreOnly: coverage.datacoreOnly.length,
     scmdbOnly: coverage.scmdbOnly.length,
@@ -254,6 +267,7 @@ function buildDatacoreMiningLocationRows(
   clusteringRows: Record<string, string>[],
   harvestablePresetRows: Record<string, string>[],
   harvestableSetupRows: Record<string, string>[],
+  subHarvestableConfigRows: Record<string, string>[],
 ): Record<string, string>[] {
   const compositionNames = buildCompositionNameMap(compositionRows);
   const mineableEntitiesByClass = new Map(mineableEntityRows.map((row) => [row['Entity Class'], row]));
@@ -261,6 +275,7 @@ function buildDatacoreMiningLocationRows(
   const clusteringSummaries = buildClusteringSummaryMap(clusteringRows);
   const harvestablePresetSummaries = buildHarvestablePresetSummaryMap(harvestablePresetRows);
   const setupSummaries = buildSetupSummaryMap(harvestableSetupRows);
+  const subHarvestableSummaries = buildSubHarvestableSummaryMap(subHarvestableConfigRows);
   const scmdbQualityNotes = new Map(scmdbRows.map((row) => [row['Location Name'], row['Quality Note'] || '']));
   const factsByLocation = new Map<
     string,
@@ -277,6 +292,7 @@ function buildDatacoreMiningLocationRows(
       clusteringSummaries: Map<string, string>;
       harvestablePresetSummaries: Map<string, string>;
       setupSummaries: Map<string, string>;
+      subHarvestableSummaries: Map<string, string>;
     }
   >();
 
@@ -301,6 +317,7 @@ function buildDatacoreMiningLocationRows(
         clusteringSummaries: new Map(),
         harvestablePresetSummaries: new Map(),
         setupSummaries: new Map(),
+        subHarvestableSummaries: new Map(),
       };
       factsByLocation.set(locationName, facts);
     }
@@ -347,6 +364,13 @@ function buildDatacoreMiningLocationRows(
     const setupClass = row['Harvestable Setup Class'];
     const setupSummary = setupSummaries.get(setupClass);
     if (setupClass && setupSummary) facts.setupSummaries.set(setupClass, setupSummary);
+
+    for (const subHarvestableKey of [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']]) {
+      const subHarvestableSummary = subHarvestableSummaries.get(subHarvestableKey);
+      if (subHarvestableKey && subHarvestableSummary) {
+        facts.subHarvestableSummaries.set(subHarvestableKey, subHarvestableSummary);
+      }
+    }
   }
 
   return [...factsByLocation.entries()]
@@ -369,6 +393,7 @@ function buildDatacoreMiningLocationRows(
         'DataCore Clustering Summary': sortedJoined(new Set(facts.clusteringSummaries.values())),
         'DataCore Harvestable Preset Summary': sortedJoined(new Set(facts.harvestablePresetSummaries.values())),
         'DataCore Setup Summary': sortedJoined(new Set(facts.setupSummaries.values())),
+        'DataCore Sub-Harvestable Summary': sortedJoined(new Set(facts.subHarvestableSummaries.values())),
         Source: 'DataCore+SCMDB',
       };
     })
@@ -564,6 +589,36 @@ function buildSetupSummaryMap(rows: Record<string, string>[]): Map<string, strin
     summaries.set(setupClass, details.length ? `${setupClass} (${details.join(', ')})` : setupClass);
   }
   return summaries;
+}
+
+function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<string, string> {
+  const summaries = new Map<string, string[]>();
+  for (const row of rows) {
+    const keys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(Boolean);
+    if (keys.length === 0) continue;
+
+    const configLabel = [row['Config Class'], row['Tagged Config Name']].filter(Boolean).join('/');
+    const details = [
+      row['Config Type'] || '',
+      row['Relative Probability'] ? `rel ${row['Relative Probability']}` : '',
+      row['Deepest Relative Probability'] ? `deep ${row['Deepest Relative Probability']}` : '',
+      row['Initial Slots Probability'] ? `slots ${row['Initial Slots Probability']}` : '',
+      row['Config Respawn Time Multiplier'] ? `config respawn x${row['Config Respawn Time Multiplier']}` : '',
+      row['Harvestable Respawn Time Multiplier'] ? `harvest respawn x${row['Harvestable Respawn Time Multiplier']}` : '',
+      row['Geometry Tags'] ? `geometry ${row['Geometry Tags']}` : '',
+    ].filter(Boolean);
+    const summary = details.length ? `${configLabel} (${details.join(', ')})` : configLabel;
+
+    for (const key of keys) {
+      const values = summaries.get(key) ?? [];
+      values.push(summary);
+      summaries.set(key, values);
+    }
+  }
+
+  return new Map(
+    [...summaries.entries()].map(([key, values]) => [key, [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | ')]),
+  );
 }
 
 function rangeLabel(min: string | undefined, max: string | undefined): string {
