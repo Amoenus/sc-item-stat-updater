@@ -45,6 +45,10 @@ export interface DataCoreItemIdentityDiagnostic {
   rowsWithNameKey: number;
   rowsWithDescriptionKey: number;
   rowsWithRawTargetKey: number;
+  requiredColumns: number;
+  fullyPopulatedRequiredColumns: number;
+  emptyRequiredColumns: string[];
+  partialRequiredColumns: Array<{ column: string; rows: number }>;
   csvFile: string;
   path: string;
 }
@@ -214,6 +218,7 @@ async function collectDataCoreItemIdentityDiagnostic(
     const rows = await readCsvFile(sourcePath);
     const rowsWithNameKey = rows.filter((row) => isUsableLocalizationKey(row['Name Key'])).length;
     const rowsWithDescriptionKey = rows.filter((row) => isUsableLocalizationKey(row['Description Key'])).length;
+    const requiredColumnCoverage = collectRequiredColumnCoverage(rows, category.config.requiredColumns ?? []);
     return {
       category: category.source.category,
       label: category.config.label,
@@ -224,12 +229,32 @@ async function collectDataCoreItemIdentityDiagnostic(
       rowsWithRawTargetKey: rows.filter(
         (row) => isUsableLocalizationKey(row['Name Key']) || isUsableLocalizationKey(row['Description Key']),
       ).length,
+      ...requiredColumnCoverage,
       csvFile: category.config.csvFile,
       path: sourcePath,
     };
   } catch {
     return null;
   }
+}
+
+function collectRequiredColumnCoverage(
+  rows: Record<string, string>[],
+  requiredColumns: string[],
+): Pick<
+  DataCoreItemIdentityDiagnostic,
+  'requiredColumns' | 'fullyPopulatedRequiredColumns' | 'emptyRequiredColumns' | 'partialRequiredColumns'
+> {
+  const coverage = requiredColumns.map((column) => ({
+    column,
+    rows: rows.filter((row) => hasValue(row[column])).length,
+  }));
+  return {
+    requiredColumns: coverage.length,
+    fullyPopulatedRequiredColumns: coverage.filter((entry) => entry.rows === rows.length).length,
+    emptyRequiredColumns: coverage.filter((entry) => entry.rows === 0).map((entry) => entry.column),
+    partialRequiredColumns: coverage.filter((entry) => entry.rows > 0 && entry.rows < rows.length),
+  };
 }
 
 function collectDataCoreItemIdentityWarnings(diagnostics: DataCoreItemIdentityDiagnostic[]): SourceFreshnessWarning[] {
@@ -257,6 +282,10 @@ function countCsvDataRows(contents: string): number {
 function isUsableLocalizationKey(value: string | undefined): boolean {
   const trimmed = value?.trim() ?? '';
   return trimmed.length > 0 && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED';
+}
+
+function hasValue(value: string | undefined): boolean {
+  return (value?.trim() ?? '').length > 0;
 }
 
 function dedupeWarningsByPath(warnings: SourceFreshnessWarning[]): SourceFreshnessWarning[] {
@@ -353,6 +382,17 @@ export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDia
         `  ${item.category} | ${item.label} | ${item.rowsWithRawTargetKey}/${item.rows} rows with raw keys | ${item.csvFile}`,
       );
       lines.push(`    Name Key rows: ${item.rowsWithNameKey}; Description Key rows: ${item.rowsWithDescriptionKey}`);
+      lines.push(`    Required columns fully populated: ${item.fullyPopulatedRequiredColumns}/${item.requiredColumns}`);
+      if (item.emptyRequiredColumns.length > 0) {
+        lines.push(`    Empty required columns: ${item.emptyRequiredColumns.join(', ')}`);
+      }
+      if (item.partialRequiredColumns.length > 0) {
+        lines.push(
+          `    Partially populated required columns: ${item.partialRequiredColumns
+            .map((entry) => `${entry.column} ${entry.rows}/${item.rows}`)
+            .join(', ')}`,
+        );
+      }
       lines.push(`    Path: ${item.path}`);
     }
   }

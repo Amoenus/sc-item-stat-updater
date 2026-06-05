@@ -11,7 +11,7 @@ import { buildSourceFreshnessDiagnostics, formatSourceFreshnessDiagnostics } fro
 const config: ItemConfig = {
   label: 'DataCore Coolers',
   csvFile: 'coolers.datacore.csv',
-  requiredColumns: [],
+  requiredColumns: ['Entity Class', 'Manufacturer', 'Cooling Rate', 'Grade'],
   descKeyMatch: () => false,
 };
 
@@ -49,7 +49,12 @@ test('source freshness diagnostics summarize selected provider versions', async 
     await fs.mkdir(itemVersionDir, { recursive: true });
     await fs.writeFile(
       path.join(itemVersionDir, 'coolers.datacore.csv'),
-      'Entity Class,Name Key,Description Key\ncool_test,item_Name_COOL_Test,item_Desc_COOL_Test\n',
+      [
+        'Entity Class,Name Key,Description Key,Manufacturer,Cooling Rate,Grade',
+        'cool_test_a,item_Name_COOL_Test_A,item_Desc_COOL_Test_A,ACOM,100,',
+        'cool_test_b,item_Name_COOL_Test_B,item_Desc_COOL_Test_B,ACOM,,',
+        '',
+      ].join('\n'),
       'utf8',
     );
     await writeDataCoreRawFactFiles(itemVersionDir);
@@ -75,15 +80,21 @@ test('source freshness diagnostics summarize selected provider versions', async 
     );
     assert.deepEqual(
       diagnostics.itemIdentity?.map((entry) => [entry.category, entry.rowsWithRawTargetKey]),
-      [['dc-coolers', 1]],
+      [['dc-coolers', 2]],
     );
+    assert.deepEqual(diagnostics.itemIdentity?.[0].fullyPopulatedRequiredColumns, 2);
+    assert.deepEqual(diagnostics.itemIdentity?.[0].emptyRequiredColumns, ['Grade']);
+    assert.deepEqual(diagnostics.itemIdentity?.[0].partialRequiredColumns, [{ column: 'Cooling Rate', rows: 1 }]);
     assert.deepEqual(diagnostics.warnings, []);
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /DataCore \(LIVE\): 4\.8\.1-live/);
     assert.match(formatted, /DataCore raw fact datasets:/);
     assert.match(formatted, /datacore-vehicles \| Vehicles \| 1 rows \| vehicles\.datacore\.csv/);
     assert.match(formatted, /DataCore item identity coverage:/);
-    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 1\/1 rows with raw keys \| coolers\.datacore\.csv/);
+    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 2\/2 rows with raw keys \| coolers\.datacore\.csv/);
+    assert.match(formatted, /Required columns fully populated: 2\/4/);
+    assert.match(formatted, /Empty required columns: Grade/);
+    assert.match(formatted, /Partially populated required columns: Cooling Rate 1\/2/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
