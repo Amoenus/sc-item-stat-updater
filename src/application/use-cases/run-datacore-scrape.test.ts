@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as COOLER_TYPE_CONFIG } from '../../items/datacore/coolers';
 import { DATACORE_TYPE_CONFIG as EMP_TYPE_CONFIG } from '../../items/datacore/emps';
 import { DATACORE_TYPE_CONFIG as JUMP_DRIVE_TYPE_CONFIG } from '../../items/datacore/jump-drives';
 import { DATACORE_TYPE_CONFIG as MINING_LASER_TYPE_CONFIG } from '../../items/datacore/mining-lasers';
@@ -157,6 +158,16 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
             </AttachDef>
           </SAttachableComponentParams>
           <SHealthComponentParams Health="140" />
+          <SDistortionParams DecayDelay="1.5" DecayRate="136.6667" Maximum="2050" />
+          <SEntityPhysicsControllerParams>
+            <PhysType>
+              <SEntityRigidPhysicsControllerParams>
+                <temperature>
+                  <signatureParams minimumTemperatureForIR="311" temperatureToIR="9" />
+                </temperature>
+              </SEntityRigidPhysicsControllerParams>
+            </PhysType>
+          </SEntityPhysicsControllerParams>
           <ItemResourceComponentParams>
             <states>
               <ItemResourceState name="Online">
@@ -167,8 +178,17 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
                         <SPowerSegmentResourceUnit units="16" />
                       </resourceAmountPerSecond>
                     </generation>
+                    <consumption resource="Coolant">
+                      <resourceAmountPerSecond>
+                        <SStandardResourceUnit standardResourceUnits="0" />
+                      </resourceAmountPerSecond>
+                    </consumption>
                   </ItemResourceDeltaGeneration>
                 </deltas>
+                <signatureParams>
+                  <EMSignature nominalSignature="750" decayRate="0.15" />
+                  <IRSignature nominalSignature="4055" decayRate="0.5" />
+                </signatureParams>
               </ItemResourceState>
             </states>
           </ItemResourceComponentParams>
@@ -201,9 +221,106 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
   assert.deepEqual(result.results, [{ type: 'powerplants', rows: 1, skipped: 0, csvFile: 'powerplant.datacore.csv' }]);
   assert.match(
     csv,
-    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power Output,EM Per Segment\r?\n/,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power Output,Cooling Usage,EM Signature,EM Signature Decay,IR Signature,IR Signature Decay,Temperature to IR,Minimum Temperature for IR,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
   );
-  assert.match(csv, /powr_test,item_Name_POWR_Test,,item_Desc_POWR_Test,ACOM,1,2,,140,16,/);
+  assert.match(
+    csv,
+    /powr_test,item_Name_POWR_Test,,item_Desc_POWR_Test,ACOM,1,2,,140,16,0,750,0\.15,4055,0\.5,9,311,2050,1\.5,136\.6667,16\.5/,
+  );
+});
+
+test('runDatacoreScrape extracts cooler resource and signature params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-coolers-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'cooler',
+    'cool_acom_s01_iceplunge_scitem.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.COOL_ACOM_S01_IcePlunge_SCItem __path="libs/foundry/records/entities/scitem/ships/cooler/cool_acom_s01_iceplunge_scitem.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Cooler" SubType="UNDEFINED" Size="1" Grade="3" Manufacturer="ACOM">
+              <Localization Name="@item_NameCOOL_ACOM_S01_IcePlunge" Description="@item_DescCOOL_ACOM_S01_IcePlunge" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SEntityPhysicsControllerParams>
+            <PhysType>
+              <SEntityRigidPhysicsControllerParams>
+                <temperature>
+                  <signatureParams minimumTemperatureForIR="250" temperatureToIR="0" />
+                </temperature>
+              </SEntityRigidPhysicsControllerParams>
+            </PhysType>
+          </SEntityPhysicsControllerParams>
+          <SHealthComponentParams Health="69" />
+          <ItemResourceComponentParams>
+            <states>
+              <ItemResourceState name="Online">
+                <deltas>
+                  <ItemResourceDeltaConversion>
+                    <consumption resource="Power">
+                      <resourceAmountPerSecond>
+                        <SPowerSegmentResourceUnit units="2" />
+                      </resourceAmountPerSecond>
+                    </consumption>
+                    <generation resource="Coolant">
+                      <resourceAmountPerSecond>
+                        <SStandardResourceUnit standardResourceUnits="34" />
+                      </resourceAmountPerSecond>
+                    </generation>
+                  </ItemResourceDeltaConversion>
+                </deltas>
+                <signatureParams>
+                  <EMSignature nominalSignature="818" decayRate="0.15" />
+                  <IRSignature nominalSignature="5890" decayRate="0.5" />
+                </signatureParams>
+              </ItemResourceState>
+            </states>
+          </ItemResourceComponentParams>
+          <SDistortionParams DecayDelay="1.5" DecayRate="70" Maximum="1050" />
+        </Components>
+      </EntityClassDefinition.COOL_ACOM_S01_IcePlunge_SCItem>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'coolers',
+        csvFile: 'cooler.datacore.csv',
+        typeConfig: COOLER_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'cooler.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'coolers', rows: 1, skipped: 0, csvFile: 'cooler.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Cooling Rate,Power Usage,EM Signature,EM Signature Decay,IR Signature,IR Signature Decay,Temperature to IR,Minimum Temperature for IR,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
+  );
+  assert.match(
+    csv,
+    /cool_acom_s01_iceplunge,item_NameCOOL_ACOM_S01_IcePlunge,,item_DescCOOL_ACOM_S01_IcePlunge,ACOM,1,3,UNDEFINED,69,34,2,818,0\.15,5890,0\.5,0,250,1050,1\.5,70,16\.5/,
+  );
 });
 
 test('runDatacoreScrape extracts missile launcher carriage from item ports', async () => {

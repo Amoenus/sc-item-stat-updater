@@ -1,4 +1,4 @@
-Entity Class,Manufacturer,Size,Grade,Class,Power Output,EM Per Segment,Health
-powr_amrs_s1_heartbeat,AMRS,1,B,Military,3100,17,150
-powr_aegs_s2_sunflare,AEGS,2,A,Industrial,5500,25,300
-powr_tars_s1_nightfall,TARS,1,C,Stealth,2700,9,140
+Entity Class,Manufacturer,Size,Grade,Class,Power Output,Cooling Usage,EM Signature,EM Signature Decay,IR Signature,IR Signature Decay,Temperature to IR,Minimum Temperature for IR,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time,Health
+powr_amrs_s1_heartbeat,AMRS,1,B,Military,3100,0,850,0.15,4200,0.5,9,311,2050,1.5,136.6667,16.5,150
+powr_aegs_s2_sunflare,AEGS,2,A,Industrial,5500,0,1200,0.15,6200,0.5,9,311,2600,3,173.3333,18,300
+powr_tars_s1_nightfall,TARS,1,C,Stealth,2700,0,500,0.15,3000,0.5,8,318,1800,1.5,120,16.5,140

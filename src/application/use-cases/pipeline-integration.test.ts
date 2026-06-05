@@ -76,7 +76,7 @@ test('fixture pipeline updates SPViewer and DataCore category output without tou
   );
   assert.equal(
     lines[index.item_DescPOWR_AMRS_S1_HEARTBEAT],
-    String.raw`item_DescPOWR_AMRS_S1_HEARTBEAT=Item Type: Power Plant\nManufacturer: AMRS\nSize: 1\nGrade: B\nClass: Military\n\n-- Power Stats --\nPower Output: 3100\n\n-- Emission --\nEM Per Segment: 17\n\n-- Durability --\nHealth: 150`,
+    String.raw`item_DescPOWR_AMRS_S1_HEARTBEAT=Item Type: Power Plant\nManufacturer: AMRS\nSize: 1\nGrade: B\nClass: Military\n\n-- Power Stats --\nPower Output: 3100\n\n-- Signatures --\nEM: 850\nEM Decay: 0.15\nIR: 4200\nIR Decay: 0.5\nTemperature to IR: 9\nMinimum Temperature for IR: 311\n\n-- Distortion --\nShutdown Damage: 2050\nDecay Delay: 1.5\nDecay Rate: 136.6667\nShutdown Time: 16.5\n\n-- Durability --\nHealth: 150`,
   );
 
   assert.match(afterText, /item_Desc_COOL_ACOM_S02_WINTERSTAR=Item Type: Cooler/);
