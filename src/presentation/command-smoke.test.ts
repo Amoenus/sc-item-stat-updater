@@ -66,6 +66,9 @@ test('update-item list-categories reports provider and source metadata', async (
   assert.match(result.stdout, /dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/);
   assert.match(result.stdout, /SCMDB categories:/);
   assert.match(result.stdout, /mission-scmdb-descriptions \| SCMDB mission descriptions/);
+  assert.match(result.stdout, /DataCore raw fact datasets:/);
+  assert.match(result.stdout, /datacore-vehicles \| Vehicles \| files: vehicles\.datacore\.csv/);
+  assert.match(result.stdout, /datacore-location-labels \| Law and location labels/);
   assert.match(result.stdout, /Mixed-source batch modes:/);
   assert.match(result.stdout, /update-all --provider spviewer \| SPViewer \+ SCMDB/);
 });

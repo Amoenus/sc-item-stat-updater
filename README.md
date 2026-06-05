@@ -79,6 +79,35 @@ Options:
 - `--live` uses the LIVE version label (default).
 - `--json` saves outputs as JSON instead of CSV.
 
+### Scrape DataCore game-file data
+
+```sh
+npm run scrape:datacore
+```
+
+DataCore extracts first-party game-file facts from the local Star Citizen DataForge database and writes versioned CSV outputs under `csv/datacore/<version>-live/` or `csv/datacore/<version>-ptu/`. It is the authoritative source for raw facts that are exposed directly in game files.
+
+The scraper emits component item-stat CSVs plus standalone raw fact datasets for:
+
+- item identity and component stats
+- commodity identity and cargo/trade flags
+- vehicle labels, manufacturer refs, roles, and vehicle metadata
+- manufacturer identity, localization, logo, and style refs
+- faction flags, reputation UI keys, and relationship refs
+- StarMap law/location labels and mining-scoped location labels
+
+To list supported DataCore item-stat types:
+
+```sh
+npm run scrape:datacore -- --list
+```
+
+Options:
+- `--ptu` tags output as PTU data.
+- `--live` tags output as LIVE data (default).
+- `--dry-run` parses cached XML records without writing CSV files.
+- `--force-extract` rebuilds the XML cache before writing outputs.
+
 ### Scrape SCMDB mission data
 
 ```sh
@@ -212,6 +241,12 @@ Scripts are idempotent - running them multiple times produces no duplicates.
 
 | CSV | Category | Source |
 |-----|----------|--------|
+| `datacore/<version>-[live\|ptu]/commodities.datacore.csv` | Raw commodity identity and trade flags | DataCore |
+| `datacore/<version>-[live\|ptu]/vehicles.datacore.csv` | Raw vehicle metadata | DataCore |
+| `datacore/<version>-[live\|ptu]/manufacturers.datacore.csv` | Raw manufacturer metadata | DataCore |
+| `datacore/<version>-[live\|ptu]/factions.datacore.csv` | Raw faction and reputation metadata | DataCore |
+| `datacore/<version>-[live\|ptu]/location-labels.datacore.csv` | Raw law and location labels | DataCore |
+| `datacore/<version>-[live\|ptu]/mining-location-labels.datacore.csv` | Raw mining location labels | DataCore |
 | `spviewer/<version>-[live\|ptu]/bomb.spviewer.csv` | Bombs | SPViewer |
 | `spviewer/<version>-[live\|ptu]/cooler.spviewer.csv` | Coolers | SPViewer |
 | `spviewer/<version>-[live\|ptu]/emp.spviewer.csv` | EMPs | SPViewer |
