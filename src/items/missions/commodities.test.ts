@@ -195,4 +195,40 @@ describe('commodities parseJson', () => {
     assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_silver')?.Source, 'SCMDB');
     assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_silver')?.Name, 'Silver');
   });
+
+  it('loads dynamic SCMDB commodity JSON when source dirs are relative', async () => {
+    assert.ok(config.loadSourceData, 'loadSourceData must be defined on the commodities config');
+    const dir = await fs.mkdtemp(path.join(process.cwd(), '.tmp-commodity-relative-'));
+    try {
+      const scmdbDir = path.join(dir, 'scmdb');
+      const datacoreDir = path.join(dir, 'datacore');
+      await fs.mkdir(scmdbDir, { recursive: true });
+      await fs.mkdir(datacoreDir, { recursive: true });
+      await fs.writeFile(
+        path.join(scmdbDir, 'merged-test.json'),
+        JSON.stringify({
+          resourcePools: {
+            gold: { nameKey: 'items_commodities_gold', name: 'Gold' },
+          },
+        }),
+        'utf8',
+      );
+      await fs.writeFile(
+        path.join(datacoreDir, 'commodities.datacore.csv'),
+        ['Entity Class,Name Key,Description Key,Display Name Key,Display Description Key,Display Type Key'].join('\n'),
+        'utf8',
+      );
+
+      const relativeScmdbDir = path.relative(process.cwd(), scmdbDir);
+      const relativeDatacoreDir = path.relative(process.cwd(), datacoreDir);
+      const rows = await config.loadSourceData({
+        csvDir: relativeScmdbDir,
+        sourceDirs: { datacore: relativeDatacoreDir, scmdb: relativeScmdbDir },
+      });
+
+      assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold')?.Name, 'Gold');
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
 });

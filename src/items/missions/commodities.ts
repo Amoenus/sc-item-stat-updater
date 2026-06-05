@@ -108,9 +108,21 @@ async function loadCommoditySourceData(context: ItemSourceDataContext): Promise<
 
 async function loadScmdbCommodityRows(csvDir: string): Promise<Record<string, string>[]> {
   const rawJsonPath = await resolveJsonFile(csvDir);
-  const normalizedJsonPath = path.isAbsolute(rawJsonPath) ? path.relative(csvDir, rawJsonPath) : rawJsonPath;
+  const normalizedJsonPath = normalizeResolvedSourcePath(csvDir, rawJsonPath);
   const data = await readJsonFile(resolveChildPath(csvDir, normalizedJsonPath, 'Commodities SCMDB JSON filename'));
   return parseCommodityJson(data);
+}
+
+function normalizeResolvedSourcePath(baseDir: string, sourcePath: string): string {
+  if (path.isAbsolute(sourcePath)) return path.relative(baseDir, sourcePath);
+
+  const normalizedBase = path.normalize(baseDir);
+  const normalizedSource = path.normalize(sourcePath);
+  if (normalizedSource === normalizedBase || normalizedSource.startsWith(`${normalizedBase}${path.sep}`)) {
+    return path.relative(normalizedBase, normalizedSource);
+  }
+
+  return sourcePath;
 }
 
 async function loadDatacoreCommodityRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
