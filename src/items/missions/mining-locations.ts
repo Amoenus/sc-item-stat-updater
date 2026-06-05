@@ -14,7 +14,9 @@ const DATACORE_MINING_COMPOSITIONS_CSV = 'mining-compositions.datacore.csv';
 const DATACORE_MINING_LOCATION_LABELS_CSV = 'mining-location-labels.datacore.csv';
 const DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV = 'mining-quality-distributions.datacore.csv';
 const DATACORE_MINEABLE_ENTITIES_CSV = 'mineable-entities.datacore.csv';
+const DATACORE_MINING_DENSITY_OVERRIDES_CSV = 'mining-density-overrides.datacore.csv';
 const DATACORE_MINING_CLUSTERING_CSV = 'mining-clustering.datacore.csv';
+const DATACORE_MINING_HARVESTABLE_PRESETS_CSV = 'mining-harvestable-presets.datacore.csv';
 const DATACORE_MINING_HARVESTABLE_SETUPS_CSV = 'mining-harvestable-setups.datacore.csv';
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
@@ -75,7 +77,9 @@ export interface MiningLocationCoverageDiagnostics {
   datacoreLocationsWithLabelKeys: number;
   datacoreLocationsWithQualityNotes: number;
   datacoreLocationsWithEntityFacts: number;
+  datacoreLocationsWithDensityOverrideFacts: number;
   datacoreLocationsWithClusteringFacts: number;
+  datacoreLocationsWithHarvestablePresetFacts: number;
   datacoreLocationsWithSetupFacts: number;
   common: number;
   datacoreOnly: string[];
@@ -99,7 +103,9 @@ export function compareMiningLocationCoverage(
     ).length,
     datacoreLocationsWithQualityNotes: datacoreRows.filter((row) => row['DataCore Quality Source']).length,
     datacoreLocationsWithEntityFacts: datacoreRows.filter((row) => row['DataCore Mineable Entity Classes']).length,
+    datacoreLocationsWithDensityOverrideFacts: datacoreRows.filter((row) => row['DataCore Density Override Summary']).length,
     datacoreLocationsWithClusteringFacts: datacoreRows.filter((row) => row['DataCore Clustering Summary']).length,
+    datacoreLocationsWithHarvestablePresetFacts: datacoreRows.filter((row) => row['DataCore Harvestable Preset Summary']).length,
     datacoreLocationsWithSetupFacts: datacoreRows.filter((row) => row['DataCore Setup Summary']).length,
     common: common.length,
     datacoreOnly: [...datacoreLocations].filter((name) => !scmdbLocations.has(name)).sort((a, b) => a.localeCompare(b)),
@@ -114,7 +120,9 @@ export function buildMiningLocationRowsFromSources(
   datacoreLocationLabelRows: Record<string, string>[] = [],
   datacoreQualityDistributionRows: Record<string, string>[] = [],
   datacoreMineableEntityRows: Record<string, string>[] = [],
+  datacoreDensityOverrideRows: Record<string, string>[] = [],
   datacoreClusteringRows: Record<string, string>[] = [],
+  datacoreHarvestablePresetRows: Record<string, string>[] = [],
   datacoreHarvestableSetupRows: Record<string, string>[] = [],
 ): Record<string, string>[] {
   const datacoreRows = buildDatacoreMiningLocationRows(
@@ -124,7 +132,9 @@ export function buildMiningLocationRowsFromSources(
     datacoreLocationLabelRows,
     datacoreQualityDistributionRows,
     datacoreMineableEntityRows,
+    datacoreDensityOverrideRows,
     datacoreClusteringRows,
+    datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
   );
   const datacoreLocations = new Set(datacoreRows.map((row) => row['Location Name']));
@@ -145,25 +155,37 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreLocationLabelRows,
     datacoreQualityDistributionRows,
     datacoreMineableEntityRows,
+    datacoreDensityOverrideRows,
     datacoreClusteringRows,
+    datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
   ] = await Promise.all([
-      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_PROVIDER_PRESETS_CSV, 'DataCore mining provider presets'),
-      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions'),
-      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_LOCATION_LABELS_CSV, 'DataCore mining location labels'),
-      loadDatacoreCsv(
-        context.sourceDirs?.datacore,
-        DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV,
-        'DataCore mining quality distributions',
-      ),
-      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINEABLE_ENTITIES_CSV, 'DataCore mineable entities'),
-      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_CLUSTERING_CSV, 'DataCore mining clustering'),
-      loadDatacoreCsv(
-        context.sourceDirs?.datacore,
-        DATACORE_MINING_HARVESTABLE_SETUPS_CSV,
-        'DataCore mining harvestable setups',
-      ),
-    ]);
+    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_PROVIDER_PRESETS_CSV, 'DataCore mining provider presets'),
+    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions'),
+    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_LOCATION_LABELS_CSV, 'DataCore mining location labels'),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV,
+      'DataCore mining quality distributions',
+    ),
+    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINEABLE_ENTITIES_CSV, 'DataCore mineable entities'),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_DENSITY_OVERRIDES_CSV,
+      'DataCore mining density overrides',
+    ),
+    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_CLUSTERING_CSV, 'DataCore mining clustering'),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_HARVESTABLE_PRESETS_CSV,
+      'DataCore mining harvestable presets',
+    ),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_HARVESTABLE_SETUPS_CSV,
+      'DataCore mining harvestable setups',
+    ),
+  ]);
   const rows = buildMiningLocationRowsFromSources(
     datacoreProviderRows,
     datacoreCompositionRows,
@@ -171,7 +193,9 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreLocationLabelRows,
     datacoreQualityDistributionRows,
     datacoreMineableEntityRows,
+    datacoreDensityOverrideRows,
     datacoreClusteringRows,
+    datacoreHarvestablePresetRows,
     datacoreHarvestableSetupRows,
   );
   const coverage = compareMiningLocationCoverage(
@@ -186,7 +210,9 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreLocationsWithLabelKeys: coverage.datacoreLocationsWithLabelKeys,
     datacoreLocationsWithQualityNotes: coverage.datacoreLocationsWithQualityNotes,
     datacoreLocationsWithEntityFacts: coverage.datacoreLocationsWithEntityFacts,
+    datacoreLocationsWithDensityOverrideFacts: coverage.datacoreLocationsWithDensityOverrideFacts,
     datacoreLocationsWithClusteringFacts: coverage.datacoreLocationsWithClusteringFacts,
+    datacoreLocationsWithHarvestablePresetFacts: coverage.datacoreLocationsWithHarvestablePresetFacts,
     datacoreLocationsWithSetupFacts: coverage.datacoreLocationsWithSetupFacts,
     common: coverage.common,
     datacoreOnly: coverage.datacoreOnly.length,
@@ -224,12 +250,16 @@ function buildDatacoreMiningLocationRows(
   locationLabelRows: Record<string, string>[],
   qualityDistributionRows: Record<string, string>[],
   mineableEntityRows: Record<string, string>[],
+  densityOverrideRows: Record<string, string>[],
   clusteringRows: Record<string, string>[],
+  harvestablePresetRows: Record<string, string>[],
   harvestableSetupRows: Record<string, string>[],
 ): Record<string, string>[] {
   const compositionNames = buildCompositionNameMap(compositionRows);
   const mineableEntitiesByClass = new Map(mineableEntityRows.map((row) => [row['Entity Class'], row]));
+  const densityOverrideSummaries = buildDensityOverrideSummaryMap(densityOverrideRows);
   const clusteringSummaries = buildClusteringSummaryMap(clusteringRows);
+  const harvestablePresetSummaries = buildHarvestablePresetSummaryMap(harvestablePresetRows);
   const setupSummaries = buildSetupSummaryMap(harvestableSetupRows);
   const scmdbQualityNotes = new Map(scmdbRows.map((row) => [row['Location Name'], row['Quality Note'] || '']));
   const factsByLocation = new Map<
@@ -242,8 +272,10 @@ function buildDatacoreMiningLocationRows(
       qualityRows: Map<string, Record<string, string>>;
       mineableEntityClasses: Set<string>;
       densityClasses: Set<string>;
+      densityOverrideSummaries: Map<string, string>;
       filledFactors: Set<string>;
       clusteringSummaries: Map<string, string>;
+      harvestablePresetSummaries: Map<string, string>;
       setupSummaries: Map<string, string>;
     }
   >();
@@ -264,8 +296,10 @@ function buildDatacoreMiningLocationRows(
         qualityRows: new Map(),
         mineableEntityClasses: new Set(),
         densityClasses: new Set(),
+        densityOverrideSummaries: new Map(),
         filledFactors: new Set(),
         clusteringSummaries: new Map(),
+        harvestablePresetSummaries: new Map(),
         setupSummaries: new Map(),
       };
       factsByLocation.set(locationName, facts);
@@ -293,11 +327,22 @@ function buildDatacoreMiningLocationRows(
     addIfPresent(facts.mineableEntityClasses, row['Harvestable Entity Class']);
 
     const mineableEntity = mineableEntitiesByClass.get(row['Harvestable Entity Class']);
-    addIfPresent(facts.densityClasses, mineableEntity?.['Density Class']);
+    const densityClass = mineableEntity?.['Density Class'];
+    addIfPresent(facts.densityClasses, densityClass);
+
+    const densityOverrideSummary = densityClass ? densityOverrideSummaries.get(densityClass) : undefined;
+    if (densityClass && densityOverrideSummary) facts.densityOverrideSummaries.set(densityClass, densityOverrideSummary);
 
     const clusteringClass = row['Clustering Class'];
     const clusteringSummary = clusteringSummaries.get(clusteringClass);
     if (clusteringClass && clusteringSummary) facts.clusteringSummaries.set(clusteringClass, clusteringSummary);
+
+    for (const harvestableKey of [row['Harvestable Class'], row['Harvestable Entity Class']]) {
+      const harvestablePresetSummary = harvestablePresetSummaries.get(harvestableKey);
+      if (harvestableKey && harvestablePresetSummary) {
+        facts.harvestablePresetSummaries.set(harvestableKey, harvestablePresetSummary);
+      }
+    }
 
     const setupClass = row['Harvestable Setup Class'];
     const setupSummary = setupSummaries.get(setupClass);
@@ -319,8 +364,10 @@ function buildDatacoreMiningLocationRows(
         'DataCore Quality Source': datacoreQualityNote ? sortedJoined(new Set([...facts.qualityRows.keys()])) : '',
         'DataCore Mineable Entity Classes': sortedJoined(facts.mineableEntityClasses),
         'DataCore Density Classes': sortedJoined(facts.densityClasses),
+        'DataCore Density Override Summary': sortedJoined(new Set(facts.densityOverrideSummaries.values())),
         'DataCore Filled Factors': sortedJoined(facts.filledFactors),
         'DataCore Clustering Summary': sortedJoined(new Set(facts.clusteringSummaries.values())),
+        'DataCore Harvestable Preset Summary': sortedJoined(new Set(facts.harvestablePresetSummaries.values())),
         'DataCore Setup Summary': sortedJoined(new Set(facts.setupSummaries.values())),
         Source: 'DataCore+SCMDB',
       };
@@ -421,6 +468,29 @@ function addIfPresent(values: Set<string>, value: string | undefined): void {
   if (value?.trim()) values.add(value.trim());
 }
 
+function buildDensityOverrideSummaryMap(rows: Record<string, string>[]): Map<string, string> {
+  const summaries = new Map<string, string[]>();
+  for (const row of rows) {
+    const densityClass = row['Density Class'];
+    if (!densityClass) continue;
+
+    const lifetime = row['Lifetime Total Seconds'];
+    const overrideClass = row['Override Class'];
+    const label = overrideClass || densityClass;
+    const normalized = lifetime ? `${label} (lifetime ${lifetime}s)` : label;
+    const values = summaries.get(densityClass) ?? [];
+    values.push(normalized);
+    summaries.set(densityClass, values);
+  }
+
+  return new Map(
+    [...summaries.entries()].map(([densityClass, values]) => [
+      densityClass,
+      values.toSorted((a, b) => a.localeCompare(b)).join(' | '),
+    ]),
+  );
+}
+
 function buildClusteringSummaryMap(rows: Record<string, string>[]): Map<string, string> {
   const partsByClass = new Map<string, string[]>();
   for (const row of rows) {
@@ -447,6 +517,30 @@ function buildClusteringSummaryMap(rows: Record<string, string>[]): Map<string, 
       clusteringClass,
       parts.toSorted((a, b) => a.localeCompare(b)).join(' | '),
     ]),
+  );
+}
+
+function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): Map<string, string> {
+  const summaries = new Map<string, string[]>();
+  for (const row of rows) {
+    const keys = [row['Harvestable Preset Class'], row['Harvestable Entity Class']].filter(Boolean);
+    if (keys.length === 0) continue;
+
+    const details = [
+      row['Respawn In Slot Time'] ? `respawn ${row['Respawn In Slot Time']}` : '',
+      row['Special Harvestable String'] ? `special ${row['Special Harvestable String']}` : '',
+    ].filter(Boolean);
+    const summary = details.length ? `${row['Harvestable Preset Class']} (${details.join(', ')})` : row['Harvestable Preset Class'];
+
+    for (const key of keys) {
+      const values = summaries.get(key) ?? [];
+      values.push(summary);
+      summaries.set(key, values);
+    }
+  }
+
+  return new Map(
+    [...summaries.entries()].map(([key, values]) => [key, [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | ')]),
   );
 }
 

@@ -11,6 +11,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Group Probability': '6',
         'Relative Probability': '3',
         'Composition Class': 'CommonShipMineablesAsteroid_Aluminum',
+        'Harvestable Class': 'AsteroidRockPreset_Aluminum',
         'Harvestable Entity Class': 'AsteroidRock_Aluminum',
         'Harvestable Setup Class': 'ShipRockSetup',
         'Filled Factor': '0.75',
@@ -89,6 +90,13 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     ],
     [
       {
+        'Override Class': 'Stanton_HighTechMiningOutpost',
+        'Density Class': 'EntityDensityClass_Mineable',
+        'Lifetime Total Seconds': '72000',
+      },
+    ],
+    [
+      {
         'Clustering Class': 'Asteroid_Lrg_Med_Sml',
         'Probability Of Clustering': '10',
         'Relative Probability': '1',
@@ -96,6 +104,14 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Max Size': '5',
         'Min Proximity': '3',
         'Max Proximity': '12',
+      },
+    ],
+    [
+      {
+        'Harvestable Preset Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Respawn In Slot Time': '1800',
+        'Special Harvestable String': 'rare-rock',
       },
     ],
     [
@@ -122,8 +138,13 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hurston['DataCore Quality Source'], 'shipmineables');
   assert.equal(hurston['DataCore Mineable Entity Classes'], 'AsteroidRock_Aluminum');
   assert.equal(hurston['DataCore Density Classes'], 'EntityDensityClass_Mineable');
+  assert.equal(hurston['DataCore Density Override Summary'], 'Stanton_HighTechMiningOutpost (lifetime 72000s)');
   assert.equal(hurston['DataCore Filled Factors'], '0.75');
   assert.equal(hurston['DataCore Clustering Summary'], 'Asteroid_Lrg_Med_Sml (prob 10, rel 1, size 2-5, prox 3-12)');
+  assert.equal(
+    hurston['DataCore Harvestable Preset Summary'],
+    'AsteroidRockPreset_Aluminum (respawn 1800, special rare-rock)',
+  );
   assert.equal(hurston['DataCore Setup Summary'], 'ShipRockSetup (respawn 3600, despawn 600s, scale 0.75-1.5)');
 
   const fallback = rows.find((row) => row['Location Name'] === 'SCMDB Only');
@@ -141,7 +162,9 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
         'DataCore Location Label Source': 'class-or-path-mining',
         'DataCore Quality Source': 'shipmineables',
         'DataCore Mineable Entity Classes': 'AsteroidRock_Aluminum',
+        'DataCore Density Override Summary': 'Stanton_HighTechMiningOutpost (lifetime 72000s)',
         'DataCore Clustering Summary': 'Asteroid_Lrg_Med_Sml (prob 10)',
+        'DataCore Harvestable Preset Summary': 'AsteroidRockPreset_Aluminum (respawn 1800)',
         'DataCore Setup Summary': 'ShipRockSetup (respawn 3600)',
       },
       { 'Location Name': 'Pyro I' },
@@ -159,7 +182,9 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
     datacoreLocationsWithLabelKeys: 1,
     datacoreLocationsWithQualityNotes: 1,
     datacoreLocationsWithEntityFacts: 1,
+    datacoreLocationsWithDensityOverrideFacts: 1,
     datacoreLocationsWithClusteringFacts: 1,
+    datacoreLocationsWithHarvestablePresetFacts: 1,
     datacoreLocationsWithSetupFacts: 1,
     common: 1,
     datacoreOnly: ['Pyro I'],
@@ -175,6 +200,7 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
     'Group Probability': '',
     'Relative Probability': '',
     'Composition Class': '',
+    'Harvestable Class': '',
     'Harvestable Entity Class': '',
     'Harvestable Setup Class': '',
     'Filled Factor': '',
