@@ -8,7 +8,7 @@ export type DataCoreFieldSelector =
       attrs?: string[];
       index?: number;
       separator?: string;
-      format?: 'percent' | 'percent-pair';
+      format?: 'count' | 'percent' | 'percent-pair';
     }
   | {
       derive: (row: Record<string, string>) => string;

@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 
 const typeEntry: DataCoreTypeEntry = {
@@ -193,6 +194,75 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power Output,EM Per Segment\r?\n/,
   );
   assert.match(csv, /powr_test,item_Name_POWR_Test,,item_Desc_POWR_Test,ACOM,1,2,,140,16,/);
+});
+
+test('runDatacoreScrape extracts missile launcher carriage from item ports', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-missile-launcher-carriage-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'missile_racks',
+    'mrck_test.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.MRCK_Test __path="libs/foundry/records/entities/scitem/ships/missile_racks/mrck_test.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="MissileLauncher" Size="6" Grade="1" Manufacturer="AEGS">
+              <Localization Name="@item_NameMRCK_Test" Description="@item_DescMRCK_Test" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="200" />
+          <SItemPortContainerComponentParams>
+            <Ports>
+              <SItemPortDef Name="missile_01_attach" MinSize="3" MaxSize="3" />
+              <SItemPortDef Name="missile_02_attach" MinSize="3" MaxSize="3" />
+              <SItemPortDef Name="missile_03_attach" MinSize="3" MaxSize="3" />
+            </Ports>
+          </SItemPortContainerComponentParams>
+        </Components>
+      </EntityClassDefinition.MRCK_Test>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'missile-launchers',
+        csvFile: 'missilelauncher.datacore.csv',
+        typeConfig: MISSILE_LAUNCHER_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'missilelauncher.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'missile-launchers', rows: 1, skipped: 0, csvFile: 'missilelauncher.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Missile Quantity,Missile Size\r?\n/,
+  );
+  assert.match(csv, /mrck_test,item_NameMRCK_Test,,item_DescMRCK_Test,AEGS,6,1,,200,3,3/);
 });
 
 test('runDatacoreScrape extracts XML cache when cached records are missing', async () => {

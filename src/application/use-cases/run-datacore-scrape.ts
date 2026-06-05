@@ -1923,7 +1923,10 @@ function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector
   if (typeof spec === 'object' && 'derive' in spec) return spec.derive(row);
   if (typeof spec === 'string') return xmlVal($, spec);
 
-  const element = spec.index === undefined ? $(spec.selector).first() : $(spec.selector).eq(spec.index);
+  const selection = $(spec.selector);
+  if (spec.format === 'count') return selection.length > 0 ? String(selection.length) : '';
+
+  const element = spec.index === undefined ? selection.first() : selection.eq(spec.index);
   const values = spec.attrs?.map((attr) => element.attr(attr) ?? '') ?? [
     spec.attr ? (element.attr(spec.attr) ?? '') : '',
   ];

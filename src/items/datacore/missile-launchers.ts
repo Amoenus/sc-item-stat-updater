@@ -11,8 +11,14 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'mssl_',
   nameKeyInfix: 'MRCK_',
   fieldSelectors: {
-    'Missile Quantity': 'SMissileRackComponentParams MissileRackParams MaxMissiles',
-    'Missile Size': 'SMissileRackComponentParams MissileRackParams MissileSize',
+    'Missile Quantity': {
+      selector: 'SItemPortContainerComponentParams SItemPortDef',
+      format: 'count',
+    },
+    'Missile Size': {
+      selector: 'SItemPortContainerComponentParams SItemPortDef',
+      attr: 'MaxSize',
+    },
   },
 };
 
