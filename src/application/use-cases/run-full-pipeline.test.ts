@@ -125,6 +125,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
         xmlCacheDir: 'repo/csv/datacore/.xmlcache/4.8.0-live',
         allTypes: [],
         selectedTypes: [],
+        recordGraph: {
+          recordCount: 0,
+          outputPath: 'repo/csv/datacore/4.8.0-live/record-graph.json',
+        },
         results: [],
         errors: [],
       };

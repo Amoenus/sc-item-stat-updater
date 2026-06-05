@@ -12,6 +12,12 @@ import {
 import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../../items/datacore/types';
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import {
+  type BuildDataCoreRecordGraphOptions,
+  buildDataCoreRecordGraph,
+  writeDataCoreRecordGraph,
+} from '../../sources/datacore/record-graph';
+import type { DataCoreRecordGraph } from '../../sources/datacore/types';
+import {
   collectDataCoreXmlFilesMatching,
   countDataCoreXmlFiles,
   findDataCoreDcbFile,
@@ -56,6 +62,8 @@ export interface RunDatacoreScrapeOptions {
   ensureTools?: (toolDir: string, log: (message: string) => void) => Promise<Unp4kTools>;
   countXmlFiles?: (xmlCacheDir: string) => Promise<number>;
   extractXmlCache?: typeof extractDataCoreXmlCache;
+  buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
+  writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
   onPrepared?: (context: {
     gameVersion: string;
     channel: 'live' | 'ptu';
@@ -72,6 +80,7 @@ export interface RunDatacoreScrapeOptions {
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractComplete?: (count: number) => void;
+  onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
 }
 
 export interface RunDatacoreScrapeResult {
@@ -84,6 +93,10 @@ export interface RunDatacoreScrapeResult {
   xmlCacheDir: string;
   allTypes: DataCoreTypeEntry[];
   selectedTypes: DataCoreTypeEntry[];
+  recordGraph: {
+    recordCount: number;
+    outputPath: string;
+  };
   results: DataCoreScrapeTypeResult[];
   errors: DataCoreScrapeTypeError[];
 }
@@ -117,6 +130,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const ensureTools = options.ensureTools ?? ensureToolsInstalled;
   const countXmlFiles = options.countXmlFiles ?? countDataCoreXmlFiles;
   const extractXmlCache = options.extractXmlCache ?? extractDataCoreXmlCache;
+  const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
+  const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
   const allTypes = await loadTypes(options.repoRoot);
   const selectedTypes = selectTypes(allTypes, options.types ?? []);
   const binDirname = options.binDirname ?? path.join(options.repoRoot, 'bin');
@@ -126,6 +141,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const versionTag = `${gameVersion}-${channel}`;
   const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
   const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
+  const recordGraphPath = path.join(outputBase, 'record-graph.json');
   const dcbPath = await findDcbFile(liveDir);
   const toolDir = path.join(liveDir, 'unp4k');
 
@@ -162,6 +178,12 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     options.onCacheExtractComplete?.(xmlFileCount);
   }
 
+  const recordGraph = await buildRecordGraph({ xmlCacheDir });
+  if (!options.dryRun) {
+    await writeRecordGraph(recordGraph, recordGraphPath);
+  }
+  options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
+
   const results: DataCoreScrapeTypeResult[] = [];
   const errors: DataCoreScrapeTypeError[] = [];
 
@@ -187,6 +209,10 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     xmlCacheDir,
     allTypes,
     selectedTypes,
+    recordGraph: {
+      recordCount: recordGraph.recordCount,
+      outputPath: recordGraphPath,
+    },
     results,
     errors,
   };

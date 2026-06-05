@@ -15,3 +15,10 @@ csv/datacore/.xmlcache/
 # Local environment overrides — not committed
 .env.local
 Engine/*
+
+# Generated DataCore graph artifacts
+csv/datacore/*/record-graph.json
+csv/datacore/*/record-graph-inventory.json
+
+# Generated local analysis outputs
+docs/scmdb-datacore-overlap-assessment.json
