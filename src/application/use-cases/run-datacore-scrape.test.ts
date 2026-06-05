@@ -12,6 +12,7 @@ import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../item
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
+import { DATACORE_TYPE_CONFIG as RADAR_TYPE_CONFIG } from '../../items/datacore/radars';
 import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../items/datacore/salvage-modifiers';
 import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
@@ -406,6 +407,88 @@ test('runDatacoreScrape extracts QED params from DataCore item records', async (
   assert.match(
     csv,
     /qed_wetk_s03_reynie,item_NameQED_WETK_S03_Reynie,item_NameQED_WETK_S03_Reynie,item_DescQED_WETK_S03_Reynie,WETK,1,1,,1100,12000,20000,90,3,1/,
+  );
+});
+
+test('runDatacoreScrape extracts radar stats from signature detection and aim assist params', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-radars-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const radarPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'radar',
+    'radr_bltr_s01_prophet.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'bltr.xml');
+  await fs.mkdir(path.dirname(radarPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    radarPath,
+    `
+      <EntityClassDefinition.RADR_BLTR_S01_Prophet __path="libs/foundry/records/entities/scitem/ships/radar/radr_bltr_s01_prophet.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Radar" SubType="MidRangeRadar" Size="1" Grade="1" Manufacturer="bcea197e-ac9d-49f4-a692-d77c6927077f">
+              <Localization Name="@item_NameRADR_BLTR_S01_Prophet" Description="@item_DescRADR_BLTR_S01_Prophet" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="460" />
+          <signatureParams enable="1" minimumTemperatureForIR="318" temperatureToIR="8" />
+          <SDistortionParams DecayDelay="1.5" DecayRate="0.6666667" Maximum="10" />
+          <SCItemRadarComponentParams forceActiveAIControlled="0">
+            <signatureDetection>
+              <SCItemRadarSignatureDetection sensitivity="0.8" piercing="0.25" />
+              <SCItemRadarSignatureDetection sensitivity="0.8" piercing="0.25" />
+              <SCItemRadarSignatureDetection sensitivity="0.8" piercing="0.25" />
+              <SCItemRadarSignatureDetection sensitivity="0" piercing="0.25" />
+              <SCItemRadarSignatureDetection sensitivity="1" piercing="1" />
+            </signatureDetection>
+            <aimAssist distanceMinAssignment="780" distanceMaxAssignment="1122" outsideRangeBufferDistance="60" />
+          </SCItemRadarComponentParams>
+        </Components>
+      </EntityClassDefinition.RADR_BLTR_S01_Prophet>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.BLTR Code="BLTR" __type="SCItemManufacturer" __ref="bcea197e-ac9d-49f4-a692-d77c6927077f" __path="libs/foundry/records/scitemmanufacturer/bltr.xml">
+        <Localization Name="@manufacturer_NameBLTR" Description="@manufacturer_DescBLTR" />
+      </SCItemManufacturer.BLTR>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'radars',
+        csvFile: 'radar.datacore.csv',
+        typeConfig: RADAR_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'radar.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'radars', rows: 1, skipped: 0, csvFile: 'radar.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Aim Assist Distance \(PiP\) Min,Aim Assist Distance \(PiP\) Max,Aim Assist Distance \(PiP\) Buffer,Sensitivity IR,Sensitivity CS,Sensitivity EM,Sensitivity RS,Sensitivity dB,Piercing IR,Piercing CS,Piercing EM,Piercing RS,Piercing dB,Temperature to IR,Minimum Temperature for IR,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
+  );
+  assert.match(
+    csv,
+    /radr_bltr_s01_prophet,item_NameRADR_BLTR_S01_Prophet,,item_DescRADR_BLTR_S01_Prophet,BLTR,1,1,MidRangeRadar,460,780,1122,60,0\.8,0\.8,0\.8,1,0,0\.25,0\.25,0\.25,1,0\.25,8,318,10,1\.5,0\.6666667,16\.5/,
   );
 });
 

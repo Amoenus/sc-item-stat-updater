@@ -2,23 +2,46 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. The radar component type name and field
-// names (sensitivity, piercing) are inferred from community data.
+const radarSignatureSelector = 'SCItemRadarComponentParams signatureDetection SCItemRadarSignatureDetection';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/radar',
-  // rdar_orig_s1_scan → strip 'rdar_' → 'ORIG_S1_SCAN' → item_NameRDAR_ORIG_S1_SCAN
+  // rdar_orig_s1_scan -> strip 'rdar_' -> 'ORIG_S1_SCAN' -> item_NameRADR_ORIG_S1_SCAN
   entityClassPrefix: 'rdar_',
   nameKeyInfix: 'RADR_',
   fieldSelectors: {
-    'Sensitivity IR': 'SRadarComponentParams RadarParams SensitivityIR',
-    'Sensitivity CS': 'SRadarComponentParams RadarParams SensitivityCS',
-    'Sensitivity EM': 'SRadarComponentParams RadarParams SensitivityEM',
-    'Sensitivity RS': 'SRadarComponentParams RadarParams SensitivityRS',
-    'Sensitivity dB': 'SRadarComponentParams RadarParams SensitivitydB',
-    'Piercing IR': 'SRadarComponentParams RadarParams PiercingIR',
-    'Piercing CS': 'SRadarComponentParams RadarParams PiercingCS',
-    'Piercing EM': 'SRadarComponentParams RadarParams PiercingEM',
+    'Aim Assist Distance (PiP) Min': { selector: 'SCItemRadarComponentParams aimAssist', attr: 'distanceMinAssignment' },
+    'Aim Assist Distance (PiP) Max': { selector: 'SCItemRadarComponentParams aimAssist', attr: 'distanceMaxAssignment' },
+    'Aim Assist Distance (PiP) Buffer': {
+      selector: 'SCItemRadarComponentParams aimAssist',
+      attr: 'outsideRangeBufferDistance',
+    },
+    'Sensitivity IR': { selector: radarSignatureSelector, index: 0, attr: 'sensitivity' },
+    'Sensitivity CS': { selector: radarSignatureSelector, index: 1, attr: 'sensitivity' },
+    'Sensitivity EM': { selector: radarSignatureSelector, index: 2, attr: 'sensitivity' },
+    'Sensitivity RS': { selector: radarSignatureSelector, index: 4, attr: 'sensitivity' },
+    'Sensitivity dB': { selector: radarSignatureSelector, index: 3, attr: 'sensitivity' },
+    'Piercing IR': { selector: radarSignatureSelector, index: 0, attr: 'piercing' },
+    'Piercing CS': { selector: radarSignatureSelector, index: 1, attr: 'piercing' },
+    'Piercing EM': { selector: radarSignatureSelector, index: 2, attr: 'piercing' },
+    'Piercing RS': { selector: radarSignatureSelector, index: 4, attr: 'piercing' },
+    'Piercing dB': { selector: radarSignatureSelector, index: 3, attr: 'piercing' },
+    'Temperature to IR': { selector: 'signatureParams', attr: 'temperatureToIR' },
+    'Minimum Temperature for IR': { selector: 'signatureParams', attr: 'minimumTemperatureForIR' },
+    'Distortion Shutdown Damage': { selector: 'SDistortionParams', attr: 'Maximum' },
+    'Distortion Decay Delay': { selector: 'SDistortionParams', attr: 'DecayDelay' },
+    'Distortion Decay Rate': { selector: 'SDistortionParams', attr: 'DecayRate' },
+    'Distortion Shutdown Time': {
+      derive: (row) => {
+        const maximum = Number(row['Distortion Shutdown Damage']);
+        const decayDelay = Number(row['Distortion Decay Delay']);
+        const decayRate = Number(row['Distortion Decay Rate']);
+        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+          return '';
+        }
+        return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();
+      },
+    },
   },
 };
 
@@ -35,6 +58,10 @@ export default {
       .raw('Size', 'Size')
       .raw('Grade', 'Grade')
       .lineIf('Class', r['Class'])
+      .section('-- Aim Assist (PiP) --')
+      .rawIf('Min', 'Aim Assist Distance (PiP) Min')
+      .rawIf('Max', 'Aim Assist Distance (PiP) Max')
+      .rawIf('Buffer', 'Aim Assist Distance (PiP) Buffer')
       .section('-- Sensitivity --')
       .rawIf('IR', 'Sensitivity IR')
       .rawIf('CS', 'Sensitivity CS')
@@ -45,6 +72,16 @@ export default {
       .rawIf('IR', 'Piercing IR')
       .rawIf('CS', 'Piercing CS')
       .rawIf('EM', 'Piercing EM')
+      .rawIf('RS', 'Piercing RS')
+      .rawIf('dB', 'Piercing dB')
+      .section('-- Signature Params --')
+      .rawIf('Temperature to IR', 'Temperature to IR')
+      .rawIf('Minimum Temperature for IR', 'Minimum Temperature for IR')
+      .section('-- Distortion --')
+      .rawIf('Shutdown Damage', 'Distortion Shutdown Damage')
+      .rawIf('Decay Delay', 'Distortion Decay Delay')
+      .rawIf('Decay Rate', 'Distortion Decay Rate')
+      .rawIf('Shutdown Time', 'Distortion Shutdown Time')
       .section('-- Durability --')
       .raw('Health', 'Health')
       .build(flavorText);
