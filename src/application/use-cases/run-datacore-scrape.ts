@@ -1976,6 +1976,7 @@ async function resolveField(
     if (!values.some(Boolean)) return '';
     return values.map((value) => formatScaledNumber(value, spec.scale ?? 1)).join(spec.separator ?? ' - ');
   }
+  if (spec.format === 'product') return formatProduct(values);
   if (spec.format === 'sum') return formatSum(values);
   if (spec.format === 'percent' && values[0]) return formatPercent(values[0]);
   if (spec.format === 'percent-pair') return values.map(formatPercent).join(spec.separator ?? ' / ');
@@ -2005,6 +2006,18 @@ async function loadReferencedXml(
   const loaded = loadXml(xml);
   context.referencedXmlCache.set(record.path, loaded);
   return loaded;
+}
+
+function formatProduct(values: string[]): string {
+  const presentValues = values.filter(Boolean);
+  if (presentValues.length === 0) return '';
+  let total = 1;
+  for (const value of presentValues) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return '';
+    total *= num;
+  }
+  return String(Number(total.toFixed(6)));
 }
 
 function formatSum(values: string[]): string {

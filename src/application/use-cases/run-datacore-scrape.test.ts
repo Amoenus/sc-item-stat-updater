@@ -26,6 +26,7 @@ import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datac
 import { DATACORE_TYPE_CONFIG as TURRET_TYPE_CONFIG } from '../../items/datacore/turrets';
 import { DATACORE_TYPE_CONFIG as WEAPON_ATTACHMENT_TYPE_CONFIG } from '../../items/datacore/weapon-attachments';
 import { DATACORE_TYPE_CONFIG as WEAPON_DEFENSIVE_TYPE_CONFIG } from '../../items/datacore/weapon-defensive';
+import { DATACORE_TYPE_CONFIG as WEAPON_GUN_TYPE_CONFIG } from '../../items/datacore/weapon-guns';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -569,6 +570,114 @@ test('runDatacoreScrape extracts weapon attachment modifiers from real-shaped Da
   assert.match(
     csv,
     /behr_optics_test,item_Namebehr_optics_test,,item_Descbehr_optics_test,BEHR,2,1,IronSight,,IronSight,1\.05,1\.35,0\.75,4 \/ 6,1\.25,0\.66/,
+  );
+});
+
+test('runDatacoreScrape extracts vehicle gun combat stats through linked ammo params', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-guns-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const gunPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+    'mgun_test_laser_s1.xml',
+  );
+  const ammoPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'ammoparams',
+    'vehicle',
+    'ammoparams.mgun_test_laser_s1.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'amrs.xml');
+  await fs.mkdir(path.dirname(gunPath), { recursive: true });
+  await fs.mkdir(path.dirname(ammoPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    gunPath,
+    `
+      <EntityClassDefinition.MGUN_Test_Laser_S1 __path="libs/foundry/records/entities/scitem/ships/weapons/mgun_test_laser_s1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponGun" SubType="Gun" Size="1" Grade="1" Manufacturer="eccba58a-f6d9-42e8-95c6-d0a65763e583">
+              <Localization Name="@item_NameMGUN_Test_Laser_S1" ShortName="@item_NameMGUN_Test_Laser_S1_short" Description="@item_DescMGUN_Test_Laser_S1" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SAmmoContainerComponentParams maxAmmoCount="0" ammoParamsRecord="20661f50-2ba8-46bb-81c7-039c60e84e7c" />
+          <SHealthComponentParams Health="550" />
+          <SCItemWeaponComponentParams>
+            <fireActions>
+              <SWeaponActionSequenceParams>
+                <sequenceEntries>
+                  <SWeaponSequenceEntryParams>
+                    <weaponAction>
+                      <SWeaponActionFireSingleParams fireRate="150" heatPerShot="2">
+                        <launchParams>
+                          <SProjectileLauncher ammoCost="1" pelletCount="1" />
+                        </launchParams>
+                      </SWeaponActionFireSingleParams>
+                    </weaponAction>
+                  </SWeaponSequenceEntryParams>
+                </sequenceEntries>
+              </SWeaponActionSequenceParams>
+            </fireActions>
+          </SCItemWeaponComponentParams>
+        </Components>
+      </EntityClassDefinition.MGUN_Test_Laser_S1>
+    `,
+  );
+  await fs.writeFile(
+    ammoPath,
+    `
+      <AmmoParams.MGUN_Test_Laser_S1 __type="AmmoParams" __ref="20661f50-2ba8-46bb-81c7-039c60e84e7c" __path="libs/foundry/records/ammoparams/vehicle/ammoparams.mgun_test_laser_s1.xml" lifetime="1.43" speed="1400">
+        <projectileParams>
+          <BulletProjectileParams>
+            <damage>
+              <DamageInfo DamagePhysical="0" DamageEnergy="97.2" DamageDistortion="3" DamageThermal="0" DamageBiochemical="0" DamageStun="0" />
+            </damage>
+          </BulletProjectileParams>
+        </projectileParams>
+      </AmmoParams.MGUN_Test_Laser_S1>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.AMRS Code="AMRS" __ref="eccba58a-f6d9-42e8-95c6-d0a65763e583" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'weapon-guns',
+        csvFile: 'weapongun.datacore.csv',
+        typeConfig: WEAPON_GUN_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weapongun.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'weapon-guns', rows: 1, skipped: 0, csvFile: 'weapongun.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Alpha,Rate of Fire,Projectile Speed,Ammo Range,Ammo Quantity,Heat Per Shot\r?\n/,
+  );
+  assert.match(
+    csv,
+    /mgun_test_laser_s1,item_NameMGUN_Test_Laser_S1,item_NameMGUN_Test_Laser_S1_short,item_DescMGUN_Test_Laser_S1,AMRS,1,1,Gun,550,100\.2,150,1400,2002,0,2/,
   );
 });
 

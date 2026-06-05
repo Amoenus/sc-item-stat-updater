@@ -3,23 +3,33 @@ import type { ItemConfig } from '../../enrichment/item-config';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. Vehicle gun entity class prefixes vary —
-// common prefixes include 'mgun_', 'gun_', and manufacturer codes directly.
-// The nameKeyInfix is the most uncertain value here.
+const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
+const fireActionSelector = 'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons',
-  // mgun_kbar_s3_talon → strip 'mgun_' → 'KBAR_S3_TALON'
+  recordSelector: 'SAttachableComponentParams AttachDef[Type="WeaponGun"]',
   entityClassPrefix: 'mgun_',
   nameKeyInfix: 'MGUN_',
   fieldSelectors: {
-    'Damage Alpha':
-      'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams DamageInfo DamageEntry damage',
-    'Rate of Fire': 'SWeaponComponentParams SWeaponActionFireSingleParams fireRate',
-    'Projectile Speed': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams speed',
-    'Ammo Range': 'SWeaponComponentParams SWeaponActionFireSingleParams ProjectileLaunchParams range',
-    'Ammo Quantity': 'SAmmoContainerComponentParams capacity',
-    'Heat Per Shot': 'SWeaponComponentParams SWeaponActionFireSingleParams heatPerShot',
+    'Damage Alpha': {
+      ref: ammoParamsRef,
+      selector: 'DamageInfo',
+      attrs: [
+        'DamagePhysical',
+        'DamageEnergy',
+        'DamageDistortion',
+        'DamageThermal',
+        'DamageBiochemical',
+        'DamageStun',
+      ],
+      format: 'sum',
+    },
+    'Rate of Fire': { selector: fireActionSelector, attr: 'fireRate' },
+    'Projectile Speed': { ref: ammoParamsRef, selector: ':root', attr: 'speed' },
+    'Ammo Range': { ref: ammoParamsRef, selector: ':root', attrs: ['speed', 'lifetime'], format: 'product' },
+    'Ammo Quantity': { selector: 'SAmmoContainerComponentParams', attr: 'maxAmmoCount' },
+    'Heat Per Shot': { selector: fireActionSelector, attr: 'heatPerShot' },
   },
 };
 
@@ -28,9 +38,6 @@ export default {
   label: 'DC Weapon Guns',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Alpha', 'Rate of Fire', 'Health'],
   descKeyMatch: isWeaponDescKey,
-  // Vehicle weapon INI key derivation: entity class varies widely.
-  // ⚠️ This pattern only works for entities with 'mgun_' prefix.
-  // Weapon types with other prefixes will produce no-op updates.
   getTargetKeys: makeGetTargetKeys('mgun_', 'MGUN_'),
   buildValue(r, flavorText) {
     const hasAmmo = r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '';

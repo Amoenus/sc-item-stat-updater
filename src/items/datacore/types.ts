@@ -8,7 +8,15 @@ export type DataCoreFieldSelector =
       attrs?: string[];
       index?: number;
       separator?: string;
-      format?: 'count' | 'number-pair' | 'percent' | 'percent-pair' | 'scaled-number' | 'scaled-number-pair' | 'sum';
+      format?:
+        | 'count'
+        | 'number-pair'
+        | 'percent'
+        | 'percent-pair'
+        | 'product'
+        | 'scaled-number'
+        | 'scaled-number-pair'
+        | 'sum';
       scale?: number;
       ref?: {
         selector: string;
