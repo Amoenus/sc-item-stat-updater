@@ -48,3 +48,14 @@ export interface DataCoreRecordGraph {
     byReferencedGuid: Record<string, string[]>;
   };
 }
+
+export interface DataCoreRecordGraphLookup {
+  readonly graph: DataCoreRecordGraph;
+  getByRef(ref: string): DataCoreRecordNode | undefined;
+  getByPath(recordPath: string): DataCoreRecordNode | undefined;
+  getByRootType(rootType: string): DataCoreRecordNode[];
+  getByEntityClass(entityClass: string): DataCoreRecordNode[];
+  getByLocalizationKey(key: string): DataCoreRecordNode[];
+  getByReferencedGuid(guid: string): DataCoreRecordNode[];
+  getByPathPrefix(pathPrefix: string): DataCoreRecordNode[];
+}
