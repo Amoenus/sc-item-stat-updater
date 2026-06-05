@@ -20,8 +20,18 @@ export interface MixedSourceListingEntry {
   families: CategoryListingFamily[];
 }
 
+export interface RawFactListingEntry {
+  slug: string;
+  label: string;
+  family: 'DataCore';
+  sourceRoot: string;
+  sourceFiles: string[];
+  description: string;
+}
+
 export interface CategoryListing {
   categories: CategoryListingEntry[];
+  rawFacts: RawFactListingEntry[];
   mixedSources: MixedSourceListingEntry[];
 }
 
@@ -45,7 +55,9 @@ export interface ProviderCoverageMatrix {
 }
 
 function sourceFiles(config: ItemConfig): string[] {
-  const primaryFiles = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter((file): file is string => Boolean(file));
+  const primaryFiles = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter((file): file is string =>
+    Boolean(file),
+  );
   const companionFiles = (config.sourceFiles ?? []).map((sourceFile) =>
     sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
       ? `${sourceFile.sourceDir}:${sourceFile.file}`
@@ -83,6 +95,57 @@ function toEntries(
     .sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
+const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
+  {
+    slug: 'datacore-commodities',
+    label: 'Commodities',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['commodities.datacore.csv'],
+    description: 'first-party commodity identity, cargo occupancy, and trade flags',
+  },
+  {
+    slug: 'datacore-vehicles',
+    label: 'Vehicles',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['vehicles.datacore.csv'],
+    description: 'first-party vehicle labels, manufacturer refs, roles, and vehicle metadata',
+  },
+  {
+    slug: 'datacore-manufacturers',
+    label: 'Manufacturers',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['manufacturers.datacore.csv'],
+    description: 'first-party manufacturer identity, localization, logo, and style refs',
+  },
+  {
+    slug: 'datacore-factions',
+    label: 'Factions and reputation',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['factions.datacore.csv'],
+    description: 'first-party faction flags, reputation UI keys, and relationship refs',
+  },
+  {
+    slug: 'datacore-location-labels',
+    label: 'Law and location labels',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['location-labels.datacore.csv'],
+    description: 'first-party StarMap labels, affiliation refs, and jurisdiction refs',
+  },
+  {
+    slug: 'datacore-mining-location-labels',
+    label: 'Mining location labels',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['mining-location-labels.datacore.csv'],
+    description: 'mining-scoped StarMap labels linked to mining quality and location facts',
+  },
+];
+
 export async function buildCategoryListing(): Promise<CategoryListing> {
   const [spviewer, datacore, missions] = await Promise.all([
     loadSpviewerConfigs(),
@@ -96,6 +159,7 @@ export async function buildCategoryListing(): Promise<CategoryListing> {
       ...toEntries(datacore, 'DataCore', 'csv/datacore'),
       ...toEntries(missions, 'SCMDB', 'csv/scmdb'),
     ],
+    rawFacts: DATACORE_RAW_FACTS,
     mixedSources: [
       {
         command: 'update-all --provider spviewer',
@@ -169,10 +233,9 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
 }
 
 function formatSource(entry: CategoryListingEntry): string {
-  const parts = [
-    entry.sourceFiles.length > 0 ? entry.sourceFiles.join(', ') : undefined,
-    entry.sourceHint,
-  ].filter(Boolean);
+  const parts = [entry.sourceFiles.length > 0 ? entry.sourceFiles.join(', ') : undefined, entry.sourceHint].filter(
+    Boolean,
+  );
   return parts.length > 0 ? parts.join('; ') : 'none declared';
 }
 
@@ -187,14 +250,34 @@ function formatSection(title: CategoryListingFamily, entries: CategoryListingEnt
   return lines;
 }
 
+function formatRawFactSection(entries: RawFactListingEntry[]): string[] {
+  const lines = ['DataCore raw fact datasets:'];
+  for (const entry of entries) {
+    lines.push(
+      `  ${entry.slug} | ${entry.label} | files: ${entry.sourceFiles.join(', ')} | ${entry.description} | source: ${
+        entry.sourceRoot
+      }/<latest LIVE or PTU version>`,
+    );
+  }
+  return lines;
+}
+
 export function formatCategoryListing(listing: CategoryListing): string {
   const lines = ['Available update categories', ''];
   const families: CategoryListingFamily[] = ['SPViewer', 'DataCore', 'SCMDB'];
 
   for (const family of families) {
-    lines.push(...formatSection(family, listing.categories.filter((entry) => entry.family === family)));
+    lines.push(
+      ...formatSection(
+        family,
+        listing.categories.filter((entry) => entry.family === family),
+      ),
+    );
     lines.push('');
   }
+
+  lines.push(...formatRawFactSection(listing.rawFacts));
+  lines.push('');
 
   lines.push('Mixed-source batch modes:');
   for (const entry of listing.mixedSources) {
