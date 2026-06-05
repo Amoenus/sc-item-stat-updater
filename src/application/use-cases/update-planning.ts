@@ -17,6 +17,7 @@ import type {
   ItemSourceFileDeclaration,
 } from '../../enrichment/item-config';
 import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
+import type { RawFactListingEntry } from './category-listing';
 
 const logger = getLogger('updater');
 
@@ -73,6 +74,21 @@ interface PreflightCategory {
   csvDir: string;
   source?: UpdateSourceMetadata;
   sourceDirs?: ItemSourceDataContext['sourceDirs'];
+}
+
+export interface PreflightRawFactSource {
+  rawFact: RawFactListingEntry;
+  baseDir: string;
+  channel: UpdateChannel;
+}
+
+export interface PreflightOptions {
+  rawFacts?: PreflightRawFactSource[];
+}
+
+interface MissingSourceFile {
+  key: string;
+  message: string;
 }
 
 export interface UpdatePlanResult extends UpdateStats {
@@ -227,7 +243,10 @@ function inferChannel(csvDir: string): UpdateChannel | undefined {
   return undefined;
 }
 
-function scrapeCommand(provider: UpdateSourceProvider | undefined, channel: UpdateChannel | undefined): string | undefined {
+function scrapeCommand(
+  provider: UpdateSourceProvider | undefined,
+  channel: UpdateChannel | undefined,
+): string | undefined {
   if (!provider) return undefined;
   const command =
     provider === 'datacore'
@@ -257,6 +276,20 @@ function formatMissingSource(
     lines.splice(1, 0, `    Config: ${category.config.label}`);
   }
   return lines.join('\n');
+}
+
+function formatMissingRawFactSource(
+  rawFact: RawFactListingEntry,
+  filename: string,
+  filePath: string,
+  channel: UpdateChannel,
+): string {
+  return [
+    `  [DataCore | ${channel} | ${rawFact.slug}] ${filename}`,
+    `    Config: ${rawFact.label}`,
+    `    Expected: ${filePath}`,
+    `    Generate with: ${scrapeCommand('datacore', channel)}`,
+  ].join('\n');
 }
 
 function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
@@ -391,7 +424,10 @@ function planRow(
  * All missing paths are collected before throwing so users see every problem
  * at once rather than discovering them one run at a time.
  */
-export async function preflightCheckConfigs(categories: PreflightCategory[]): Promise<void> {
+export async function preflightCheckConfigs(
+  categories: PreflightCategory[],
+  options: PreflightOptions = {},
+): Promise<void> {
   const perConfig = await Promise.all(
     categories.map(async (category) => {
       const sourceFiles = resolveDeclaredSourceFiles(category);
@@ -402,15 +438,41 @@ export async function preflightCheckConfigs(categories: PreflightCategory[]): Pr
             await fs.access(filePath);
             return null;
           } catch {
-            return formatMissingSource(category, filename, filePath, provider);
+            const missing: MissingSourceFile = {
+              key: `${provider ?? category.source?.provider ?? inferProvider(category.config, category.csvDir) ?? 'unknown'}:${filePath}`,
+              message: formatMissingSource(category, filename, filePath, provider),
+            };
+            return missing;
           }
         }),
       );
-      return missingResults.filter((m): m is string => m !== null);
+      return missingResults.filter((m): m is MissingSourceFile => m !== null);
     }),
   );
 
-  const missing = perConfig.flat();
+  const rawFactMissing = await Promise.all(
+    (options.rawFacts ?? []).flatMap(({ rawFact, baseDir, channel }) =>
+      rawFact.sourceFiles.map(async (filename) => {
+        const filePath = resolveChildPath(baseDir, filename, 'DataCore raw fact source file');
+        try {
+          await fs.access(filePath);
+          return null;
+        } catch {
+          const missing: MissingSourceFile = {
+            key: `datacore:${filePath}`,
+            message: formatMissingRawFactSource(rawFact, filename, filePath, channel),
+          };
+          return missing;
+        }
+      }),
+    ),
+  );
+
+  const missingByPath = new Map<string, MissingSourceFile>();
+  for (const missing of [...perConfig.flat(), ...rawFactMissing]) {
+    if (missing) missingByPath.set(missing.key, missing);
+  }
+  const missing = [...missingByPath.values()].map((entry) => entry.message);
   if (missing.length > 0) {
     throw new Error(
       `Preflight check failed — ${missing.length} source file(s) not found:\n${missing.join('\n')}\n\nRun the scrapers first to populate the missing files.`,

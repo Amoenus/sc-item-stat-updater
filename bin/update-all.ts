@@ -2,19 +2,13 @@
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
-import {
-  prepareUpdateCategories,
-  type UpdateProvider,
-} from '../src/application/use-cases/prepare-update-categories';
+import { prepareUpdateCategories, type UpdateProvider } from '../src/application/use-cases/prepare-update-categories';
 import {
   type BatchUpdateError,
   type BatchUpdateResult,
   runPreparedUpdateCategories,
 } from '../src/application/use-cases/run-prepared-update-categories';
-import {
-  getUpdateExtraStepLabels,
-  runUpdateExtraSteps,
-} from '../src/application/use-cases/run-update-extra-steps';
+import { getUpdateExtraStepLabels, runUpdateExtraSteps } from '../src/application/use-cases/run-update-extra-steps';
 import { backupIniFile } from '../src/localization/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
@@ -24,6 +18,7 @@ import {
   buildSourceFreshnessDiagnostics,
   formatSourceFreshnessDiagnostics,
 } from '../src/application/use-cases/source-freshness-diagnostics';
+import { DATACORE_RAW_FACTS } from '../src/application/use-cases/category-listing';
 
 const logger = getLogger('update-all');
 
@@ -136,7 +131,16 @@ try {
 
 // Preflight: verify every declared static source file exists before touching anything.
 try {
-  await preflightCheckConfigs(categories);
+  await preflightCheckConfigs(categories, {
+    rawFacts:
+      provider === 'datacore'
+        ? DATACORE_RAW_FACTS.map((rawFact) => ({
+            rawFact,
+            baseDir: prepared.itemVersionDir,
+            channel,
+          }))
+        : undefined,
+  });
 } catch (err) {
   const error = err instanceof Error ? err : new Error(String(err));
   logger.error('Preflight check failed', { error: error.message });

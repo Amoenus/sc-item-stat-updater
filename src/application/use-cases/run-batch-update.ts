@@ -13,15 +13,9 @@ import {
   type BatchUpdateResult,
   runPreparedUpdateCategories,
 } from './run-prepared-update-categories';
-import {
-  getUpdateExtraStepLabels,
-  runUpdateExtraSteps,
-  type UpdateExtraStepLabel,
-} from './run-update-extra-steps';
-import {
-  buildSourceFreshnessDiagnostics,
-  type SourceFreshnessDiagnostics,
-} from './source-freshness-diagnostics';
+import { getUpdateExtraStepLabels, runUpdateExtraSteps, type UpdateExtraStepLabel } from './run-update-extra-steps';
+import { buildSourceFreshnessDiagnostics, type SourceFreshnessDiagnostics } from './source-freshness-diagnostics';
+import { DATACORE_RAW_FACTS } from './category-listing';
 
 export interface RunBatchUpdateOptions {
   repoRoot: string;
@@ -83,7 +77,16 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
 
   const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
 
-  await preflight(prepared.categories);
+  await preflight(prepared.categories, {
+    rawFacts:
+      provider === 'datacore'
+        ? DATACORE_RAW_FACTS.map((rawFact) => ({
+            rawFact,
+            baseDir: prepared.itemVersionDir,
+            channel: options.ptu ? ('PTU' as const) : ('LIVE' as const),
+          }))
+        : undefined,
+  });
 
   if (!dryRun && !options.skipBackup) {
     await backupIni(iniPath);
@@ -123,6 +126,9 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   };
 }
 
-export function getBatchUpdateStepCount(categoryCount: number, options: { includeMiningJournal?: boolean } = {}): number {
+export function getBatchUpdateStepCount(
+  categoryCount: number,
+  options: { includeMiningJournal?: boolean } = {},
+): number {
   return categoryCount + getUpdateExtraStepLabels(options).length;
 }
