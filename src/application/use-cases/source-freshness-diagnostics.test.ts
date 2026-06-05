@@ -65,8 +65,15 @@ test('source freshness diagnostics summarize selected provider versions', async 
       diagnostics.versions.map((entry) => `${entry.label}:${entry.channel}:${entry.version}`),
       ['SCMDB:LIVE:4.8.1-live.11875683', 'DataCore:LIVE:4.8.1-live'],
     );
+    assert.deepEqual(
+      diagnostics.rawFacts?.map((entry) => [entry.slug, entry.rows, entry.csvFile]),
+      DATACORE_RAW_FACTS.map((entry) => [entry.slug, 1, entry.sourceFiles[0]]),
+    );
     assert.deepEqual(diagnostics.warnings, []);
-    assert.match(formatSourceFreshnessDiagnostics(diagnostics), /DataCore \(LIVE\): 4\.8\.1-live/);
+    const formatted = formatSourceFreshnessDiagnostics(diagnostics);
+    assert.match(formatted, /DataCore \(LIVE\): 4\.8\.1-live/);
+    assert.match(formatted, /DataCore raw fact datasets:/);
+    assert.match(formatted, /datacore-vehicles \| Vehicles \| 1 rows \| vehicles\.datacore\.csv/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
@@ -157,6 +164,10 @@ test('source freshness diagnostics warn for missing standalone DataCore raw fact
     assert.equal(diagnostics.warnings[0].category, 'datacore-vehicles');
     assert.equal(diagnostics.warnings[0].path, expectedPath);
     assert.match(diagnostics.warnings[0].message, /DataCore raw fact data appears incomplete/);
+    assert.equal(
+      diagnostics.rawFacts?.some((entry) => entry.slug === 'datacore-vehicles'),
+      false,
+    );
 
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /WARNING DataCore LIVE datacore-vehicles/);
@@ -181,6 +192,7 @@ test('source freshness diagnostics warn for header-only DataCore raw fact files'
     assert.equal(diagnostics.warnings[0].category, 'datacore-factions');
     assert.equal(diagnostics.warnings[0].path, expectedPath);
     assert.match(diagnostics.warnings[0].message, /expected at least one data row/);
+    assert.equal(diagnostics.rawFacts?.find((entry) => entry.slug === 'datacore-factions')?.rows, 0);
 
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /WARNING DataCore LIVE datacore-factions/);

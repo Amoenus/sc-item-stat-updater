@@ -27,9 +27,19 @@ export interface SourceFreshnessWarning {
   message: string;
 }
 
+export interface DataCoreRawFactDiagnostic {
+  slug: string;
+  label: string;
+  channel: UpdateChannel;
+  rows: number;
+  csvFile: string;
+  path: string;
+}
+
 export interface SourceFreshnessDiagnostics {
   versions: SourceVersionDiagnostic[];
   warnings: SourceFreshnessWarning[];
+  rawFacts?: DataCoreRawFactDiagnostic[];
 }
 
 function providerLabel(provider: UpdateSourceProvider): string {
@@ -129,7 +139,7 @@ async function collectRawFactWarnings(
       const sourcePath = resolveChildPath(options.baseDir, filename, 'DataCore raw fact source file');
       try {
         const contents = await fs.readFile(sourcePath, 'utf8');
-        if (hasCsvDataRows(contents)) return null;
+        if (countCsvDataRows(contents) > 0) return null;
         const warning: SourceFreshnessWarning = {
           provider: 'datacore',
           label: 'DataCore',
@@ -155,13 +165,37 @@ async function collectRawFactWarnings(
   return warnings.filter((warning): warning is SourceFreshnessWarning => warning !== null);
 }
 
-function hasCsvDataRows(contents: string): boolean {
-  return (
-    contents
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean).length > 1
+async function collectRawFactDiagnostics(
+  rawFact: RawFactListingEntry,
+  options: { baseDir: string; channel: UpdateChannel },
+): Promise<DataCoreRawFactDiagnostic[]> {
+  const diagnostics = await Promise.all(
+    rawFact.sourceFiles.map(async (filename) => {
+      const sourcePath = resolveChildPath(options.baseDir, filename, 'DataCore raw fact source file');
+      try {
+        const contents = await fs.readFile(sourcePath, 'utf8');
+        return {
+          slug: rawFact.slug,
+          label: rawFact.label,
+          channel: options.channel,
+          rows: countCsvDataRows(contents),
+          csvFile: filename,
+          path: sourcePath,
+        };
+      } catch {
+        return null;
+      }
+    }),
   );
+  return diagnostics.filter((diagnostic): diagnostic is DataCoreRawFactDiagnostic => diagnostic !== null);
+}
+
+function countCsvDataRows(contents: string): number {
+  const nonEmptyLines = contents
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return Math.max(0, nonEmptyLines.length - 1);
 }
 
 function dedupeWarningsByPath(warnings: SourceFreshnessWarning[]): SourceFreshnessWarning[] {
@@ -217,8 +251,18 @@ export async function buildSourceFreshnessDiagnostics(
           )
         ).flat()
       : [];
+  const rawFacts =
+    options.provider === 'datacore'
+      ? (
+          await Promise.all(
+            DATACORE_RAW_FACTS.map((rawFact) =>
+              collectRawFactDiagnostics(rawFact, { baseDir: prepared.itemVersionDir, channel }),
+            ),
+          )
+        ).flat()
+      : undefined;
   const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings]);
-  return { versions, warnings: [...staleWarnings, ...incompleteWarnings] };
+  return { versions, warnings: [...staleWarnings, ...incompleteWarnings], rawFacts };
 }
 
 export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDiagnostics): string {
@@ -226,6 +270,13 @@ export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDia
   for (const source of diagnostics.versions) {
     lines.push(`  ${source.label} (${source.channel}): ${source.version}`);
     lines.push(`    Path: ${source.path}`);
+  }
+  if ((diagnostics.rawFacts ?? []).length > 0) {
+    lines.push('DataCore raw fact datasets:');
+    for (const rawFact of diagnostics.rawFacts ?? []) {
+      lines.push(`  ${rawFact.slug} | ${rawFact.label} | ${rawFact.rows} rows | ${rawFact.csvFile}`);
+      lines.push(`    Path: ${rawFact.path}`);
+    }
   }
   if (diagnostics.warnings.length > 0) {
     lines.push('Source warnings:');
