@@ -5,14 +5,15 @@ Enriches Star Citizen's `global.ini` with additional quality-of-life information
 The long-term architecture is a local enrichment pipeline:
 
 1. Extract a fresh `global.ini` from the game files.
-2. Extract additional game-file data, primarily DataCore where possible.
-3. Extract enriched web data from SCMDB.
-4. Optionally use SPViewer as a legacy or fallback source.
+2. Extract additional game-file data from DataCore/Data.p4k as the authoritative source for raw facts.
+3. Use SCMDB only as a temporary derived-data bridge for mission, blueprint, crafting, mining aggregation, or generated joins not yet reconstructed from DataCore.
+4. Optionally use SPViewer as a legacy or comparison fallback source.
 5. Build localization patch plans.
 6. Apply those patches to the repo copy of `global.ini`.
 7. Deploy the enriched `global.ini` back into the game folder.
 
 See [docs/architecture-overview.md](docs/architecture-overview.md) for the current architecture direction.
+See [docs/source-hierarchy-and-scmdb-audit.md](docs/source-hierarchy-and-scmdb-audit.md) for the DataCore-first source hierarchy and current SCMDB migration checklist.
 
 ## Requirements
 
@@ -172,6 +173,14 @@ To print the provider coverage matrix:
 ```sh
 node --import tsx/esm bin/update-item.ts --provider-matrix
 ```
+
+To print the remaining SCMDB dependency audit:
+
+```sh
+node --import tsx/esm bin/update-item.ts --scmdb-audit
+```
+
+When `update-all --provider datacore` runs, it also prints this audit before preflight so SCMDB-backed outputs remain visible as a shrinking checklist.
 
 ### Type checking
 

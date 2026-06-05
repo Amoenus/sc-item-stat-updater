@@ -35,7 +35,7 @@ export interface CategoryListing {
   mixedSources: MixedSourceListingEntry[];
 }
 
-export type ProviderCoverageStatus = 'primary' | 'legacy/fallback' | 'unavailable';
+export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'legacy/fallback' | 'unavailable';
 
 export interface ProviderCoverageCell {
   status: ProviderCoverageStatus;
@@ -198,7 +198,7 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
         category: entry.label,
         datacore: unavailableCell(),
         spviewer: unavailableCell(),
-        scmdb: coverageCell('primary', entry.slug),
+        scmdb: coverageCell('derived bridge', entry.slug),
       });
       continue;
     }
@@ -295,7 +295,7 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
   const lines = [
     'Provider coverage matrix',
     '',
-    'Legend: primary = preferred source, legacy/fallback = supported fallback source, unavailable = no category for that provider.',
+    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, legacy/fallback = supported fallback source, unavailable = no category for that provider.',
     '',
     '| Category | DataCore | SPViewer | SCMDB |',
     '| --- | --- | --- | --- |',

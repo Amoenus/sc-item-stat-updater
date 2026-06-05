@@ -84,9 +84,22 @@ test('update-item provider-matrix reports coverage status by provider', async ()
   );
   assert.match(
     result.stdout,
-    /\| SCMDB mission descriptions \| unavailable \| unavailable \| primary \(mission-scmdb-descriptions\) \|/,
+    /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
   assert.match(result.stdout, /Mixed-source batch modes:/);
+});
+
+test('update-item scmdb-audit reports remaining SCMDB dependencies', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--scmdb-audit']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /SCMDB dependency audit/);
+  assert.match(result.stdout, /DataCore\/Data\.p4k: authoritative source/);
+  assert.match(
+    result.stdout,
+    /\| update category \| mission-scmdb-descriptions \(SCMDB mission descriptions\) \| missions\/scmdb-missions\.csv \| Probably extractable from DataCore with new graph traversal \| yes \|/,
+  );
+  assert.equal(result.stderr, '');
 });
 
 test('pipeline help exits successfully with orchestration options', async () => {

@@ -2,7 +2,7 @@
 import { pathExists } from '../../io/local/discovery';
 import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { resolveMissionCsvPath } from '../../io/local/path-conventions';
-import { buildJournalValue } from '../../items/missions/mining-journal';
+import { buildJournalValue, hasRenderableRarityRows, loadDataCoreMiningJournalRows } from '../../items/missions/mining-journal';
 import { getLogger } from '../../infrastructure/logger';
 import { buildScannedUpdateResult } from './update-result';
 
@@ -26,20 +26,24 @@ const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
 export async function runMiningJournalUpdate({
   iniPath,
   missionCsvDir,
+  datacoreDir,
   dryRun,
 }: {
   iniPath: string;
   missionCsvDir: string;
+  datacoreDir?: string;
   dryRun: boolean;
 }) {
   const journalCsvPath = resolveMissionCsvPath(missionCsvDir, 'mining-journal.csv');
+  const datacoreRows = await loadDataCoreMiningJournalRows(datacoreDir);
+  const useDatacoreRows = hasRenderableRarityRows(datacoreRows);
 
-  if (!(await pathExists(journalCsvPath))) {
+  if (!useDatacoreRows && !(await pathExists(journalCsvPath))) {
     return null;
   }
 
   const start = performance.now();
-  const journalRows = await readCsvFile(journalCsvPath);
+  const journalRows = useDatacoreRows ? datacoreRows : await readCsvFile(journalCsvPath);
   const iniData = await readIniFile(iniPath);
   const { lines: journalLines, index: journalIdx, lowerCaseIndex: journalLowerIdx } = iniData;
   const matchKey = findIniKey(journalIdx, journalLowerIdx, JOURNAL_KEY);
@@ -63,7 +67,12 @@ export async function runMiningJournalUpdate({
   await writeIniFileIfChanged(iniPath, journalLines, { dryRun, updatedCount: updated ? 1 : 0, skipBackup: true });
 
   const durationMs = Math.round(performance.now() - start);
-  logger.info('Mining journal update complete', { updated, durationMs, dryRun });
+  logger.info('Mining journal update complete', {
+    updated,
+    source: useDatacoreRows ? 'DataCore-inferred' : 'SCMDB',
+    durationMs,
+    dryRun,
+  });
 
   return buildScannedUpdateResult({
     label: 'Mining journal',

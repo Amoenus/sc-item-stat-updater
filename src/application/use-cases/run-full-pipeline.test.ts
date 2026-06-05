@@ -98,6 +98,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
 test('runFullPipeline returns the in-process update exit code and skips deployment on update errors', async () => {
   let deployed = false;
   const datacoreOptions: unknown[] = [];
+  const logs: string[] = [];
 
   const result = await runFullPipeline({
     rootDir: 'repo',
@@ -211,12 +212,30 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
         versions: [],
         warnings: [],
       },
+      scmdbDependencyAudit: {
+        sourceHierarchy: ['DataCore/Data.p4k: authoritative source for game-derived raw facts.'],
+        entries: [
+          {
+            kind: 'update category',
+            slug: 'mission-scmdb-descriptions',
+            label: 'SCMDB mission descriptions',
+            sourceFiles: ['missions/scmdb-missions.csv'],
+            classification: 'Probably extractable from DataCore with new graph traversal',
+            reason: 'mission contract joins still come from SCMDB',
+            migrationSlice: 'Build a first-party mission/contract extractor.',
+            activeForDatacoreProvider: true,
+          },
+        ],
+      },
       iniPath: `${options.repoRoot}\\global.ini`,
       totalDurationMs: 0,
     }),
+    log: (message) => logs.push(message),
   });
 
   assert.equal(result.exitCode, 1);
   assert.equal(deployed, false);
   assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: undefined }]);
+  assert.ok(logs.some((message) => message.includes('SCMDB dependency audit')));
+  assert.ok(logs.some((message) => message.includes('mission-scmdb-descriptions')));
 });

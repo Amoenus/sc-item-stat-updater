@@ -116,3 +116,42 @@ test('runBatchUpdate skips backup for dry runs and returns nonzero when steps re
   assert.equal(result.exitCode, 1);
   assert.deepEqual(result.errors, [{ label: 'Test category', message: 'missing csv' }]);
 });
+
+test('runBatchUpdate exposes SCMDB dependency audit for datacore provider', async () => {
+  const observed: string[] = [];
+
+  const result = await runBatchUpdate({
+    repoRoot: 'repo',
+    provider: 'datacore',
+    dryRun: true,
+    prepare: async () => makePrepared(),
+    regenerateMiningLocations: () => ({ outPath: 'out', rowCount: 0, outDir: 'missions-dir' }),
+    sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
+    scmdbDependencyAudit: async (options) => {
+      observed.push(`audit:${options?.provider}`);
+      return {
+        sourceHierarchy: ['DataCore/Data.p4k: authoritative source for game-derived raw facts.'],
+        entries: [
+          {
+            kind: 'update category',
+            slug: 'mission-scmdb-descriptions',
+            label: 'SCMDB mission descriptions',
+            sourceFiles: ['missions/scmdb-missions.csv'],
+            classification: 'Probably extractable from DataCore with new graph traversal',
+            reason: 'mission contract joins still come from SCMDB',
+            migrationSlice: 'Build a first-party mission/contract extractor.',
+            activeForDatacoreProvider: true,
+          },
+        ],
+      };
+    },
+    preflight: async () => {},
+    backupIni: async () => {},
+    runCategories: async () => ({ results: [], errors: [] }),
+    runExtraSteps: async () => ({ results: [], errors: [] }),
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(observed, ['audit:datacore']);
+  assert.equal(result.scmdbDependencyAudit?.entries[0].slug, 'mission-scmdb-descriptions');
+});

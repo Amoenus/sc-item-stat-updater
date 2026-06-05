@@ -109,7 +109,12 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
       });
     },
     'Mining journal': () =>
-      runMiningJournalUpdate({ iniPath: options.iniPath, missionCsvDir: options.missionCsvDir, dryRun }),
+      runMiningJournalUpdate({
+        iniPath: options.iniPath,
+        missionCsvDir: options.missionCsvDir,
+        datacoreDir: options.datacoreVersionDir,
+        dryRun,
+      }),
     'Raw commodity labels': () => runRawCommodityLabelFixUpdate({ iniPath: options.iniPath, dryRun }),
     'Adagio location tags (experimental)': () => runAdagioLocationTagUpdate({ iniPath: options.iniPath, dryRun }),
   };

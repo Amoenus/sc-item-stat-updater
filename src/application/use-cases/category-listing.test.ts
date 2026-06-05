@@ -120,7 +120,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     category: 'SCMDB mission descriptions',
     datacore: { status: 'unavailable' },
     spviewer: { status: 'unavailable' },
-    scmdb: { status: 'primary', slug: 'mission-scmdb-descriptions' },
+    scmdb: { status: 'derived bridge', slug: 'mission-scmdb-descriptions' },
   });
 
   assert.equal(
@@ -132,7 +132,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     true,
   );
   assert.equal(
-    matrix.rows.some((row) => row.scmdb.status === 'primary'),
+    matrix.rows.some((row) => row.scmdb.status === 'derived bridge'),
     true,
   );
   assert.equal(
@@ -149,8 +149,8 @@ test('formatted provider coverage matrix includes provider statuses and mixed-so
   assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| legacy\/fallback \(sp-coolers\) \| unavailable \|/);
   assert.match(
     output,
-    /\| SCMDB mission descriptions \| unavailable \| unavailable \| primary \(mission-scmdb-descriptions\) \|/,
+    /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
-  assert.match(output, /Legend: primary = preferred source, legacy\/fallback = supported fallback source/);
+  assert.match(output, /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/);
   assert.match(output, /\| update-all --provider datacore \| DataCore \+ SCMDB \|/);
 });

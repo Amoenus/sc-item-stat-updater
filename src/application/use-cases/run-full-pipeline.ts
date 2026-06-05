@@ -6,6 +6,7 @@ import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
 import { runSpviewerScrape } from './run-spviewer-scrape';
 import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
+import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
@@ -81,6 +82,9 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     provider: options.datacore ? 'datacore' : 'spviewer',
   });
   log(formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics));
+  if (updateResult.scmdbDependencyAudit) {
+    log(formatScmdbDependencyAudit(updateResult.scmdbDependencyAudit));
+  }
   if (updateResult.exitCode !== 0) return { exitCode: updateResult.exitCode, extractedGamePath, repoIniPath };
   options.onStepComplete?.('Stat updates applied');
 

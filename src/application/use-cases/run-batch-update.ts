@@ -16,6 +16,7 @@ import {
 import { getUpdateExtraStepLabels, runUpdateExtraSteps, type UpdateExtraStepLabel } from './run-update-extra-steps';
 import { buildSourceFreshnessDiagnostics, type SourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { buildScmdbDependencyAudit, type ScmdbDependencyAudit } from './scmdb-dependency-audit';
 
 export interface RunBatchUpdateOptions {
   repoRoot: string;
@@ -33,6 +34,7 @@ export interface RunBatchUpdateOptions {
   runCategories?: typeof runPreparedUpdateCategories;
   runExtraSteps?: typeof runUpdateExtraSteps;
   sourceDiagnostics?: typeof buildSourceFreshnessDiagnostics;
+  scmdbDependencyAudit?: typeof buildScmdbDependencyAudit;
   now?: () => number;
   onCategoryStart?: (category: UpdateCategory, index: number) => void;
   onCategoryError?: (error: BatchUpdateError) => void;
@@ -46,6 +48,7 @@ export interface RunBatchUpdateResult {
   errors: BatchUpdateError[];
   prepared: PreparedUpdateCategories;
   sourceDiagnostics: SourceFreshnessDiagnostics;
+  scmdbDependencyAudit?: ScmdbDependencyAudit;
   iniPath: string;
   totalDurationMs: number;
 }
@@ -62,6 +65,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   const runCategories = options.runCategories ?? runPreparedUpdateCategories;
   const runExtraSteps = options.runExtraSteps ?? runUpdateExtraSteps;
   const sourceDiagnostics = options.sourceDiagnostics ?? buildSourceFreshnessDiagnostics;
+  const buildScmdbAudit = options.scmdbDependencyAudit ?? buildScmdbDependencyAudit;
 
   const prepared = await prepare({
     repoRoot: options.repoRoot,
@@ -76,6 +80,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   });
 
   const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
+  const scmdbDependencyAudit = provider === 'datacore' ? await buildScmdbAudit({ provider }) : undefined;
 
   await preflight(prepared.categories, {
     rawFacts:
@@ -122,6 +127,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     errors,
     prepared,
     sourceDiagnostics: diagnostics,
+    scmdbDependencyAudit,
     iniPath,
     totalDurationMs: Math.round(now() - totalStart),
   };
