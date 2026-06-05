@@ -46,7 +46,7 @@ const DIFFICULTY_SCORE: Record<string, number> = {
   Extreme: 5,
 };
 
-function deriveVolatilityNote(el: { instability?: number; explosionMultiplier?: number }): string {
+export function deriveVolatilityNote(el: { instability?: number; explosionMultiplier?: number }): string {
   const instability = el.instability ?? 0;
   const explosion = el.explosionMultiplier ?? 0;
   if (explosion >= 8 || instability >= 650) return 'Extreme fracture risk';
@@ -55,7 +55,7 @@ function deriveVolatilityNote(el: { instability?: number; explosionMultiplier?: 
   return 'Low volatility';
 }
 
-function deriveClusterNote(clusterFactor: number | undefined): string {
+export function deriveClusterNote(clusterFactor: number | undefined): string {
   if (clusterFactor === undefined) return '';
   if (clusterFactor >= 0.65) return 'Cluster-prone';
   if (clusterFactor >= 0.3) return 'Occasional clusters';

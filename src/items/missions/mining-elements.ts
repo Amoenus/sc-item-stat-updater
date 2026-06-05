@@ -1,6 +1,7 @@
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { getLogger } from '../../infrastructure/logger';
+import { deriveClusterNote, deriveMiningDifficulty, deriveVolatilityNote } from '../../extractor/mining-parser';
 import type { ItemConfig } from '../../enrichment/item-config';
 import type { ItemSourceDataContext } from '../../enrichment/item-config';
 
@@ -111,6 +112,7 @@ async function loadDatacoreMiningElementRows(datacoreDir: string | undefined): P
 }
 
 function toMiningElementRow(datacoreRow: Record<string, string>, scmdbRow: Record<string, string> | undefined): Record<string, string> {
+  const behaviorFacts = toDatacoreBehaviorFacts(datacoreRow);
   return {
     'Element Name': datacoreRow['Element Name'] || scmdbRow?.['Element Name'] || '',
     Rarity: scmdbRow?.Rarity || '',
@@ -127,13 +129,41 @@ function toMiningElementRow(datacoreRow: Record<string, string>, scmdbRow: Recor
     'Cluster Factor': datacoreRow['Cluster Factor'] || scmdbRow?.['Cluster Factor'] || '',
     'Quality Bands': scmdbRow?.['Quality Bands'] || '',
     'Material Name': scmdbRow?.['Material Name'] || '',
-    'Mining Difficulty': scmdbRow?.['Mining Difficulty'] || '',
-    'Volatility Note': scmdbRow?.['Volatility Note'] || '',
-    'Cluster Note': scmdbRow?.['Cluster Note'] || '',
+    'Mining Difficulty': behaviorFacts ? deriveMiningDifficulty(behaviorFacts) : scmdbRow?.['Mining Difficulty'] || '',
+    'Volatility Note': behaviorFacts ? deriveVolatilityNote(behaviorFacts) : scmdbRow?.['Volatility Note'] || '',
+    'Cluster Note':
+      behaviorFacts?.clusterFactor !== undefined ? deriveClusterNote(behaviorFacts.clusterFactor) : scmdbRow?.['Cluster Note'] || '',
     'Best Refinery': scmdbRow?.['Best Refinery'] || '',
     'Localization Key': datacoreRow['Inferred Description Key'] || '',
     Source: scmdbRow ? 'DataCore+SCMDB' : 'DataCore',
   };
+}
+
+function toDatacoreBehaviorFacts(row: Record<string, string>):
+  | {
+      resistance?: number;
+      instability?: number;
+      optimalWindowThinness?: number;
+      optimalWindowRandomness?: number;
+      explosionMultiplier?: number;
+      clusterFactor?: number;
+    }
+  | undefined {
+  const facts = {
+    resistance: parseOptionalNumber(row.Resistance),
+    instability: parseOptionalNumber(row.Instability),
+    optimalWindowThinness: parseOptionalNumber(row['Optimal Window Thinness']),
+    optimalWindowRandomness: parseOptionalNumber(row['Optimal Window Randomness']),
+    explosionMultiplier: parseOptionalNumber(row['Explosion Multiplier']),
+    clusterFactor: parseOptionalNumber(row['Cluster Factor']),
+  };
+  return Object.values(facts).some((value) => value !== undefined) ? facts : undefined;
+}
+
+function parseOptionalNumber(value: string | undefined): number | undefined {
+  if (value === undefined || value.trim() === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function inferTargetKeys(row: Record<string, string>): string[] {

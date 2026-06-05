@@ -53,7 +53,7 @@ describe('mining element updater', () => {
     assert.match(first, /Best Refinery: ARC-L1 Wide Forest Station \(\+5\)/);
   });
 
-  it('overlays DataCore raw behavior fields while preserving SCMDB derived insight fields', () => {
+  it('derives behavior insight from DataCore raw behavior fields when available', () => {
     const rows = buildMiningElementRowsFromSources(
       [
         {
@@ -75,6 +75,9 @@ describe('mining element updater', () => {
           'Scan Signature': '3885',
           Resistance: 'old',
           Instability: 'old',
+          'Mining Difficulty': 'Easy',
+          'Volatility Note': 'Low volatility',
+          'Cluster Note': 'Cluster-prone',
           'Best Refinery': 'ARC-L1 Wide Forest Station (+5)',
         },
         {
@@ -92,6 +95,9 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium.Source, 'DataCore+SCMDB');
     assert.strictEqual(agricium.Resistance, '0.5');
     assert.strictEqual(agricium.Instability, '350');
+    assert.strictEqual(agricium['Mining Difficulty'], 'Difficult');
+    assert.strictEqual(agricium['Volatility Note'], 'Unstable charge behavior');
+    assert.strictEqual(agricium['Cluster Note'], 'Isolated');
     assert.strictEqual(agricium.Rarity, 'uncommon');
     assert.strictEqual(agricium['Scan Signature'], '3885');
     assert.strictEqual(agricium['Best Refinery'], 'ARC-L1 Wide Forest Station (+5)');
