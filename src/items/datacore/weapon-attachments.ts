@@ -2,20 +2,27 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
-// ⚠️ Weapon attachment entity classes vary greatly (optic_, barrel_, under_, etc.).
-// The p4kFilter and key derivation are speculative — verify against real game files.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/weapons/weapon_modifier',
+  recordSelector: 'SWeaponModifierComponentParams',
   entityClassPrefix: '',
   nameKeyInfix: '',
   fieldSelectors: {
-    Slot: 'SItemPortComponentParams itemPortParams type',
-    'Damage Modifier': 'SWeaponAttachmentComponentParams attachmentParams damageModifier',
-    'Projectile Speed Modifier': 'SWeaponAttachmentComponentParams attachmentParams projectileSpeedModifier',
-    'Heat Modifier': 'SWeaponAttachmentComponentParams attachmentParams heatModifier',
-    Magnification: 'SWeaponAttachmentComponentParams attachmentParams magnification',
-    'Aim Time Modifier': 'SWeaponAttachmentComponentParams attachmentParams adsAimTimeModifier',
-    'Sound Radius Modifier': 'SWeaponAttachmentComponentParams attachmentParams soundRadiusModifier',
+    Slot: { derive: (row) => row['Class'] },
+    'Damage Modifier': { selector: 'SWeaponModifierComponentParams weaponStats', attr: 'damageMultiplier' },
+    'Projectile Speed Modifier': {
+      selector: 'SWeaponModifierComponentParams weaponStats',
+      attr: 'projectileSpeedMultiplier',
+    },
+    'Heat Modifier': { selector: 'SWeaponModifierComponentParams weaponStats', attr: 'heatGenerationMultiplier' },
+    Magnification: {
+      selector: 'SWeaponModifierComponentParams aimModifier',
+      attrs: ['zoomScale', 'secondZoomScale'],
+      format: 'number-pair',
+      separator: ' / ',
+    },
+    'Aim Time Modifier': { selector: 'SWeaponModifierComponentParams aimModifier', attr: 'zoomTimeScale' },
+    'Sound Radius Modifier': { selector: 'SWeaponModifierComponentParams weaponStats', attr: 'soundRadiusMultiplier' },
   },
 };
 
@@ -26,9 +33,6 @@ export default {
   descKeyMatch: (kl) =>
     kl.includes('desc') &&
     (kl.includes('barrel') || kl.includes('scope') || kl.includes('attachment') || kl.includes('optics')),
-  // ⚠️ Attachment INI key derivation requires knowing the attachment-type prefix.
-  // Common prefixes: optic_, barrel_, under_, stock_. No single rule covers all.
-  // This implementation attempts prefix matching; expand as real data is available.
   getTargetKeys: makeGetTargetKeysFromPrefixMap([
     ['optic_', 'OPTIC_'],
     ['barrel_', 'BARREL_'],

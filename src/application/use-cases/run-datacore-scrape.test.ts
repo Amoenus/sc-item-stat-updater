@@ -24,6 +24,7 @@ import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datacore/throwables';
 import { DATACORE_TYPE_CONFIG as TURRET_TYPE_CONFIG } from '../../items/datacore/turrets';
+import { DATACORE_TYPE_CONFIG as WEAPON_ATTACHMENT_TYPE_CONFIG } from '../../items/datacore/weapon-attachments';
 import { DATACORE_TYPE_CONFIG as WEAPON_DEFENSIVE_TYPE_CONFIG } from '../../items/datacore/weapon-defensive';
 
 const typeEntry: DataCoreTypeEntry = {
@@ -491,6 +492,83 @@ test('runDatacoreScrape follows countermeasure ammo param refs from defensive we
   assert.match(
     csv,
     /aegs_test_cml_chaff,item_NameAEGS_Test_CML_Chaff,hud_countermeasure_smokescreen,item_DescAEGS_Test_CML_Chaff,AEGS,1,1,CountermeasureLauncher,1000,Chaff,12,180,0\.8,80000,100000,150000/,
+  );
+});
+
+test('runDatacoreScrape extracts weapon attachment modifiers from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-attachments-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const attachmentPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'weapons',
+    'weapon_modifier',
+    'behr_optics_test.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'behr.xml');
+  await fs.mkdir(path.dirname(attachmentPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    attachmentPath,
+    `
+      <EntityClassDefinition.behr_optics_test __path="libs/foundry/records/entities/scitem/weapons/weapon_modifier/behr_optics_test.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponAttachment" SubType="IronSight" Size="2" Grade="1" Manufacturer="65a5d887-3b21-4046-a718-6912c0c7c3be">
+              <Localization Name="@item_Namebehr_optics_test" Description="@item_Descbehr_optics_test" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SWeaponModifierComponentParams>
+            <modifier>
+              <weaponStats damageMultiplier="1.05" projectileSpeedMultiplier="1.35" heatGenerationMultiplier="0.75" soundRadiusMultiplier="0.66">
+                <aimModifier zoomScale="4" secondZoomScale="6" zoomTimeScale="1.25" />
+              </weaponStats>
+            </modifier>
+          </SWeaponModifierComponentParams>
+        </Components>
+      </EntityClassDefinition.behr_optics_test>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.BEHR Code="BEHR" __ref="65a5d887-3b21-4046-a718-6912c0c7c3be" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'weapon-attachments',
+        csvFile: 'weaponattachment.datacore.csv',
+        typeConfig: WEAPON_ATTACHMENT_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weaponattachment.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'weapon-attachments', rows: 1, skipped: 0, csvFile: 'weaponattachment.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Slot,Damage Modifier,Projectile Speed Modifier,Heat Modifier,Magnification,Aim Time Modifier,Sound Radius Modifier\r?\n/,
+  );
+  assert.match(
+    csv,
+    /behr_optics_test,item_Namebehr_optics_test,,item_Descbehr_optics_test,BEHR,2,1,IronSight,,IronSight,1\.05,1\.35,0\.75,4 \/ 6,1\.25,0\.66/,
   );
 });
 
