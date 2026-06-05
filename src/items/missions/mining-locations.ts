@@ -20,6 +20,11 @@ const DATACORE_MINING_HARVESTABLE_PRESETS_CSV = 'mining-harvestable-presets.data
 const DATACORE_MINING_HARVESTABLE_SETUPS_CSV = 'mining-harvestable-setups.datacore.csv';
 const DATACORE_MINING_SUB_HARVESTABLE_CONFIGS_CSV = 'mining-sub-harvestable-configs.datacore.csv';
 const DATACORE_MINING_PARAMS_CSV = 'mining-params.datacore.csv';
+const LEGACY_SCMDB_ONLY_MINING_LOCATION_NAMES = new Set([
+  'Breaker Stations Interior',
+  'Breaker Stations Large Geode',
+  'Hathor Caves',
+]);
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
 const INI_NEWLINE = String.raw`\n`;
@@ -156,8 +161,11 @@ export function buildMiningLocationRowsFromSources(
   const mergedRows: Record<string, string>[] = [
     ...datacoreRows,
     ...scmdbRows
-      .filter((row) => !datacoreLocations.has(row['Location Name']))
-      .map((row) => ({ ...row, Source: row.Source || 'SCMDB' })),
+      .filter(
+        (row) =>
+          !datacoreLocations.has(row['Location Name']) && LEGACY_SCMDB_ONLY_MINING_LOCATION_NAMES.has(row['Location Name']),
+      )
+      .map((row) => ({ ...row, Source: row.Source || 'SCMDB legacy special-site fallback' })),
   ];
   return mergedRows.sort((a, b) => (a['Location Name'] || '').localeCompare(b['Location Name'] || ''));
 }

@@ -56,8 +56,15 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Quality Note': 'Rare ship rocks: quality floor 60.0%',
       },
       {
-        'Location Name': 'SCMDB Only',
+        'Location Name': 'Hathor Caves',
         'Ship Mineables': 'Legacy rock - 100%',
+        'Hand Mineables': '',
+        'Ground Vehicle Mineables': '',
+        'Quality Note': '',
+      },
+      {
+        'Location Name': 'Unknown SCMDB Only',
+        'Ship Mineables': 'Should not leak into DataCore output',
         'Hand Mineables': '',
         'Ground Vehicle Mineables': '',
         'Quality Note': '',
@@ -212,10 +219,11 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     'EntityDensityClass_Mineable (cluster radius 1200, DGS max 20, persistent max 8, timeout 300, resetOnMove 1)',
   );
 
-  const fallback = rows.find((row) => row['Location Name'] === 'SCMDB Only');
+  const fallback = rows.find((row) => row['Location Name'] === 'Hathor Caves');
   assert.ok(fallback);
-  assert.equal(fallback.Source, 'SCMDB');
+  assert.equal(fallback.Source, 'SCMDB legacy special-site fallback');
   assert.equal(fallback['Ship Mineables'], 'Legacy rock - 100%');
+  assert.equal(rows.some((row) => row['Location Name'] === 'Unknown SCMDB Only'), false);
 });
 
 test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap', () => {

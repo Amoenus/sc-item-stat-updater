@@ -45,8 +45,9 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-mining-locations': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'DataCore mining provider, composition, quality, entity, density, clustering, setup, and parameter CSVs now drive most location summaries; SCMDB remains a fallback aggregation layer.',
-    migrationSlice: 'Finish DataCore location label/quality joins, then remove SCMDB fallback rows from mining location rendering.',
+      'DataCore mining provider, composition, quality, entity, clustering, sub-harvestable, and parameter CSVs now drive normal location summaries; SCMDB remains only for quality-note fallback text and three explicit special-site rows not yet reconstructed from DataCore.',
+    migrationSlice:
+      'Reconstruct Breaker Station and Hathor special-site pools plus remaining quality notes from DataCore, then remove the SCMDB mining-location CSV input.',
   },
   'mission-mining-journal': {
     classification: 'SCMDB-only derived/generated',

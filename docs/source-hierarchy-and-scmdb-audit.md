@@ -47,6 +47,8 @@ For `update-all`, the same audit is printed at startup before preflight. The `Da
 
 `update-all` does not refresh SCMDB-generated `mining-locations.csv` by default. Pass `--refresh-scmdb-mining-locations` only when you intentionally want to rebuild that legacy bridge from cached SCMDB `mining_data`; otherwise DataCore-first updates consume the existing CSV as a fallback input until the DataCore mining-location aggregation fully replaces it.
 
+Mining location rendering no longer imports arbitrary SCMDB-only location rows. DataCore rows are authoritative for normal locations; the SCMDB bridge is limited to quality-note fallback text plus three explicit special-site rows: `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`.
+
 ## Migration slices
 
 The current high-value replacement targets are:
