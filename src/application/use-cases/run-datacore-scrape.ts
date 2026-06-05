@@ -13,6 +13,7 @@ import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../../items/
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
+import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
 import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
 import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
@@ -35,6 +36,7 @@ import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-g
 import type {
   DataCoreCommodityRecord,
   DataCoreFactionRecord,
+  DataCoreLocationLabelRecord,
   DataCoreManufacturerRecord,
   DataCoreMineableEntityRecord,
   DataCoreMiningClusteringParamRecord,
@@ -94,6 +96,11 @@ export interface DataCoreScrapeFactionResult {
 }
 
 export interface DataCoreScrapeManufacturerResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeLocationLabelResult {
   rows: number;
   csvFile: string;
 }
@@ -183,6 +190,7 @@ export interface RunDatacoreScrapeOptions {
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
   extractManufacturers?: typeof extractDataCoreManufacturers;
+  extractLocationLabels?: typeof extractDataCoreLocationLabels;
   extractMiningElements?: typeof extractDataCoreMiningElements;
   extractMiningCompositions?: typeof extractDataCoreMiningCompositions;
   extractMineableEntities?: typeof extractDataCoreMineableEntities;
@@ -216,6 +224,7 @@ export interface RunDatacoreScrapeOptions {
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onManufacturersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMineableEntitiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -248,6 +257,7 @@ export interface RunDatacoreScrapeResult {
   vehicleResult: DataCoreScrapeVehicleResult;
   factionResult: DataCoreScrapeFactionResult;
   manufacturerResult: DataCoreScrapeManufacturerResult;
+  locationLabelResult: DataCoreScrapeLocationLabelResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
   mineableEntityResult: DataCoreScrapeMineableEntityResult;
@@ -269,6 +279,7 @@ const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
 const MANUFACTURERS_CSV_FILE = 'manufacturers.datacore.csv';
+const LOCATION_LABELS_CSV_FILE = 'location-labels.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
 const MINEABLE_ENTITIES_CSV_FILE = 'mineable-entities.datacore.csv';
@@ -362,6 +373,52 @@ const MANUFACTURER_HEADERS = [
   'Building Blocks Style GUID',
   'Audio Manufacturer Tag GUID',
   'Light Amplification GUID',
+  'Record GUID',
+  'Record Path',
+];
+const LOCATION_LABEL_HEADERS = [
+  'Location Class',
+  'Name Key',
+  'Description Key',
+  'Callout 1 Key',
+  'Callout 2 Key',
+  'Callout 3 Key',
+  'Type GUID',
+  'Parent GUID',
+  'Parent Class',
+  'Parent Path',
+  'Affiliation GUID',
+  'Affiliation Class',
+  'Affiliation Path',
+  'Affiliation Name Key',
+  'Jurisdiction GUID',
+  'Jurisdiction Class',
+  'Jurisdiction Path',
+  'Jurisdiction Name Key',
+  'Respawn Location Type',
+  'Location Hierarchy Tag',
+  'Nav Icon',
+  'Size',
+  'Hide In Starmap',
+  'Hide In World',
+  'Hide When In Adoption Radius',
+  'Only Show When Parent Selected',
+  'Override Show In All Zones',
+  'Override Permanent',
+  'Minimum Display Size',
+  'Block Travel',
+  'Is Scannable',
+  'Show Orbit Line',
+  'Use Holo Material',
+  'No Auto Body Recovery',
+  'Arrival Radius',
+  'Adoption Radius',
+  'Set Entity Location On Enter',
+  'Expose For Player Created Missions',
+  'StarMap Geom Path',
+  'StarMap Material Path',
+  'StarMap Shape Path',
+  'Location Image Path',
   'Record GUID',
   'Record Path',
 ];
@@ -697,6 +754,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
   const extractManufacturers = options.extractManufacturers ?? extractDataCoreManufacturers;
+  const extractLocationLabels = options.extractLocationLabels ?? extractDataCoreLocationLabels;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
   const extractMiningCompositions = options.extractMiningCompositions ?? extractDataCoreMiningCompositions;
   const extractMineableEntities = options.extractMineableEntities ?? extractDataCoreMineableEntities;
@@ -805,6 +863,16 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     dryRun: options.dryRun,
   });
   options.onManufacturersExtracted?.(manufacturerResult.rows, manufacturerResult.csvFile, Boolean(options.dryRun));
+
+  const locationLabelRows = await extractLocationLabels({
+    xmlCacheDir,
+    graph: graphLookup,
+  });
+  const locationLabelResult = await writeLocationLabelCsv(locationLabelRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onLocationLabelsExtracted?.(locationLabelResult.rows, locationLabelResult.csvFile, Boolean(options.dryRun));
 
   const miningElementRows = await extractMiningElements({
     xmlCacheDir,
@@ -999,6 +1067,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     vehicleResult,
     factionResult,
     manufacturerResult,
+    locationLabelResult,
     miningElementResult,
     miningCompositionResult,
     mineableEntityResult,
@@ -1240,6 +1309,67 @@ async function writeManufacturerCsv(
   }
 
   return { rows: rows.length, csvFile: MANUFACTURERS_CSV_FILE };
+}
+
+async function writeLocationLabelCsv(
+  rows: DataCoreLocationLabelRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeLocationLabelResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.locationClass,
+      row.nameKey,
+      row.descriptionKey,
+      row.callout1Key,
+      row.callout2Key,
+      row.callout3Key,
+      row.typeGuid,
+      row.parentGuid,
+      row.parentClass,
+      row.parentPath,
+      row.affiliationGuid,
+      row.affiliationClass,
+      row.affiliationPath,
+      row.affiliationNameKey,
+      row.jurisdictionGuid,
+      row.jurisdictionClass,
+      row.jurisdictionPath,
+      row.jurisdictionNameKey,
+      row.respawnLocationType,
+      row.locationHierarchyTag,
+      row.navIcon,
+      row.size,
+      row.hideInStarmap,
+      row.hideInWorld,
+      row.hideWhenInAdoptionRadius,
+      row.onlyShowWhenParentSelected,
+      row.overrideShowInAllZones,
+      row.overridePermanent,
+      row.minimumDisplaySize,
+      row.blockTravel,
+      row.isScannable,
+      row.showOrbitLine,
+      row.useHoloMaterial,
+      row.noAutoBodyRecovery,
+      row.arrivalRadius,
+      row.adoptionRadius,
+      row.setEntityLocationOnEnter,
+      row.exposeForPlayerCreatedMissions,
+      row.starMapGeomPath,
+      row.starMapMaterialPath,
+      row.starMapShapePath,
+      row.locationImagePath,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, LOCATION_LABELS_CSV_FILE),
+      stringify([LOCATION_LABEL_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: LOCATION_LABELS_CSV_FILE };
 }
 
 async function writeMiningElementCsv(

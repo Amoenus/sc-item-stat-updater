@@ -165,6 +165,11 @@ console.log(
   }${commodityDryNote}`,
 );
 console.log(
+  `  ${'location-labels'.padEnd(28)} ${String(result.locationLabelResult.rows).padStart(4)} rows -> ${
+    result.locationLabelResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
   `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
     result.miningElementResult.csvFile
   }${commodityDryNote}`,

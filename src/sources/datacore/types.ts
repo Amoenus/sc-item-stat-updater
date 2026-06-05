@@ -349,6 +349,57 @@ export type DataCoreMiningLocationLabelDataset = SourceDataset<DataCoreMiningLoc
   source: 'datacore';
 };
 
+export interface DataCoreLocationLabelRecord {
+  ref: string;
+  path: string;
+  locationClass: string;
+  nameKey: string;
+  descriptionKey: string;
+  callout1Key: string;
+  callout2Key: string;
+  callout3Key: string;
+  typeGuid: string;
+  parentGuid: string;
+  parentClass: string;
+  parentPath: string;
+  affiliationGuid: string;
+  affiliationClass: string;
+  affiliationPath: string;
+  affiliationNameKey: string;
+  jurisdictionGuid: string;
+  jurisdictionClass: string;
+  jurisdictionPath: string;
+  jurisdictionNameKey: string;
+  respawnLocationType: string;
+  locationHierarchyTag: string;
+  navIcon: string;
+  size: string;
+  hideInStarmap: string;
+  hideInWorld: string;
+  hideWhenInAdoptionRadius: string;
+  onlyShowWhenParentSelected: string;
+  overrideShowInAllZones: string;
+  overridePermanent: string;
+  minimumDisplaySize: string;
+  blockTravel: string;
+  isScannable: string;
+  showOrbitLine: string;
+  useHoloMaterial: string;
+  noAutoBodyRecovery: string;
+  arrivalRadius: string;
+  adoptionRadius: string;
+  setEntityLocationOnEnter: string;
+  exposeForPlayerCreatedMissions: string;
+  starMapGeomPath: string;
+  starMapMaterialPath: string;
+  starMapShapePath: string;
+  locationImagePath: string;
+}
+
+export type DataCoreLocationLabelDataset = SourceDataset<DataCoreLocationLabelRecord> & {
+  source: 'datacore';
+};
+
 export interface DataCoreMiningParamRecord {
   ref: string;
   path: string;

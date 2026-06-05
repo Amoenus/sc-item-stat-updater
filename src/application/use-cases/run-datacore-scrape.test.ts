@@ -342,6 +342,97 @@ test('runDatacoreScrape writes DataCore manufacturer CSV after building the reco
   assert.match(csv, /AEGS,AEG,manufacturer_NameAEGS,,manufacturer_DescAEGS/);
 });
 
+test('runDatacoreScrape writes DataCore location label CSV after building the record graph', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-location-labels-'));
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    extractCommodities: async () => [],
+    extractVehicles: async () => [],
+    extractFactions: async () => [],
+    extractManufacturers: async () => [],
+    extractLocationLabels: async () => [
+      {
+        ref: '407847a6-4aae-4c3c-9a36-b80108d776f0',
+        path: 'libs/foundry/records/starmap/pu/pyro3_outpost.xml',
+        locationClass: 'Pyro3_Outpost',
+        nameKey: 'Pyro3_Outpost',
+        descriptionKey: 'Pyro3_Outpost_desc',
+        callout1Key: 'Pyro3_Outpost_callout1',
+        callout2Key: '',
+        callout3Key: '',
+        typeGuid: 'e207a1ec-1395-4c1c-8e51-b38c4420784c',
+        parentGuid: '59637d5a-c67a-47eb-96dc-b648298f0023',
+        parentClass: 'Pyro3',
+        parentPath: 'libs/foundry/records/starmap/pu/system/pyro/pyro3.xml',
+        affiliationGuid: '6f3699dd-123e-4f1a-82da-51207b073fe0',
+        affiliationClass: 'HeadHunters',
+        affiliationPath: 'libs/foundry/records/factions_legacy/headhunters.xml',
+        affiliationNameKey: 'HeadHunters_RepUI_Name',
+        jurisdictionGuid: '0d2e5d5e-a3d3-4a6d-869f-58dc705e7020',
+        jurisdictionClass: 'XenoThreat',
+        jurisdictionPath: 'libs/foundry/records/lawsystem/jurisdictions/pyro/xenothreat.xml',
+        jurisdictionNameKey: 'Xenothreat_RepUI_Name',
+        respawnLocationType: 'None',
+        locationHierarchyTag: 'cd99a4ac-aeba-43f1-8edd-4f050d50b1bc',
+        navIcon: 'Outpost',
+        size: '1',
+        hideInStarmap: '0',
+        hideInWorld: '0',
+        hideWhenInAdoptionRadius: '0',
+        onlyShowWhenParentSelected: '1',
+        overrideShowInAllZones: 'NoOverride',
+        overridePermanent: 'NoOverride',
+        minimumDisplaySize: '0',
+        blockTravel: '0',
+        isScannable: '0',
+        showOrbitLine: '0',
+        useHoloMaterial: '1',
+        noAutoBodyRecovery: '0',
+        arrivalRadius: '2500',
+        adoptionRadius: '1500',
+        setEntityLocationOnEnter: '1',
+        exposeForPlayerCreatedMissions: '0',
+        starMapGeomPath: 'objects/ui/starmap/icon_nav_marker_outpost_1_a.cgf',
+        starMapMaterialPath: 'objects/ui/starmap/icon_nav_marker_outpost.mtl',
+        starMapShapePath: 'UI/Textures/Vector/General/MarkerIcons/ui_icon_general_01.svg',
+        locationImagePath: 'UI/Frontend/assets/TIF/Locations/Pyro_Outpost.tif',
+      },
+    ],
+  });
+
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'location-labels.datacore.csv');
+  const csv = await fs.readFile(csvPath, 'utf8');
+
+  assert.equal(result.locationLabelResult.rows, 1);
+  assert.equal(result.locationLabelResult.csvFile, 'location-labels.datacore.csv');
+  assert.match(
+    csv,
+    /^Location Class,Name Key,Description Key,Callout 1 Key,Callout 2 Key,Callout 3 Key,Type GUID,Parent GUID,Parent Class,Parent Path,Affiliation GUID,Affiliation Class,Affiliation Path,Affiliation Name Key,Jurisdiction GUID,Jurisdiction Class,Jurisdiction Path,Jurisdiction Name Key,Respawn Location Type,Location Hierarchy Tag,Nav Icon,Size,Hide In Starmap,Hide In World,Hide When In Adoption Radius,Only Show When Parent Selected,Override Show In All Zones,Override Permanent,Minimum Display Size,Block Travel,Is Scannable,Show Orbit Line,Use Holo Material,No Auto Body Recovery,Arrival Radius,Adoption Radius,Set Entity Location On Enter,Expose For Player Created Missions,StarMap Geom Path,StarMap Material Path,StarMap Shape Path,Location Image Path,Record GUID,Record Path\r?\n/,
+  );
+  assert.match(csv, /Pyro3_Outpost,Pyro3_Outpost,Pyro3_Outpost_desc/);
+  assert.match(csv, /XenoThreat,libs\/foundry\/records\/lawsystem\/jurisdictions\/pyro\/xenothreat\.xml/);
+});
+
 test('runDatacoreScrape writes DataCore mining element CSV after building the record graph', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-elements-'));
 
