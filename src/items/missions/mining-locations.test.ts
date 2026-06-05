@@ -16,6 +16,8 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Harvestable Setup Class': 'ShipRockSetup',
         'Filled Factor': '0.75',
         'Clustering Class': 'Asteroid_Lrg_Med_Sml',
+        'Global Params GUID': 'global-guid',
+        'Audio Params GUID': 'audio-guid',
       }),
       providerRow({
         Location: 'hpp_stanton1',
@@ -139,6 +141,37 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Geometry Tags': 'asteroid;large',
       },
     ],
+    [
+      miningParamRow({
+        'Record GUID': 'global-guid',
+        'Param Type': 'MiningGlobalParams',
+        'Param Class': 'MiningGlobalParams_Ship',
+        'Power Capacity Per Mass': '0.5',
+        'Decay Per Mass': '0.2',
+        'Optimal Window Size': '0.3',
+        'CSCU Per Volume': '12',
+        'Default Mass': '1000',
+      }),
+      miningParamRow({
+        'Record GUID': 'audio-guid',
+        'Param Type': 'MiningAudioParams',
+        'Param Class': 'MiningAudioParams_Ship',
+        'Mineable Power Increasing Fall Off': '0.7',
+        'Mining Start Trigger': 'start_mining',
+        'Mining Stop Trigger': 'stop_mining',
+        'Extracted Trigger': 'extracted',
+      }),
+      miningParamRow({
+        'Record GUID': 'density-guid',
+        'Param Type': 'SEntityDensityClass',
+        'Param Class': 'EntityDensityClass_Mineable',
+        'Cluster Detection Radius': '1200',
+        'Cluster Upper Object Count DGS': '20',
+        'Cluster Upper Object Count Persistence': '8',
+        'Cluster Persistence Timeout': '300',
+        'Reset Lifetime On Move': '1',
+      }),
+    ],
   );
 
   const hurston = rows.find((row) => row['Location Name'] === 'Hurston');
@@ -166,6 +199,18 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     hurston['DataCore Sub-Harvestable Summary'],
     'AsteroidSubHarvestables/Ship rocks (single, rel 0.25, deep 0.1, slots 0.8, config respawn x1.5, harvest respawn x2, geometry asteroid;large)',
   );
+  assert.equal(
+    hurston['DataCore Global Param Summary'],
+    'MiningGlobalParams_Ship (power/mass 0.5, decay/mass 0.2, window 0.3, cSCU/vol 12, mass 1000)',
+  );
+  assert.equal(
+    hurston['DataCore Audio Param Summary'],
+    'MiningAudioParams_Ship (falloff 0.7, start start_mining, stop stop_mining, extracted extracted)',
+  );
+  assert.equal(
+    hurston['DataCore Density Param Summary'],
+    'EntityDensityClass_Mineable (cluster radius 1200, DGS max 20, persistent max 8, timeout 300, resetOnMove 1)',
+  );
 
   const fallback = rows.find((row) => row['Location Name'] === 'SCMDB Only');
   assert.ok(fallback);
@@ -187,6 +232,7 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
         'DataCore Harvestable Preset Summary': 'AsteroidRockPreset_Aluminum (respawn 1800)',
         'DataCore Setup Summary': 'ShipRockSetup (respawn 3600)',
         'DataCore Sub-Harvestable Summary': 'AsteroidSubHarvestables/Ship rocks (single)',
+        'DataCore Global Param Summary': 'MiningGlobalParams_Ship (power/mass 0.5)',
       },
       { 'Location Name': 'Pyro I' },
     ],
@@ -208,6 +254,7 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
     datacoreLocationsWithHarvestablePresetFacts: 1,
     datacoreLocationsWithSetupFacts: 1,
     datacoreLocationsWithSubHarvestableFacts: 1,
+    datacoreLocationsWithParamFacts: 1,
     common: 1,
     datacoreOnly: ['Pyro I'],
     scmdbOnly: ['Daymar'],
@@ -227,6 +274,8 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
     'Harvestable Setup Class': '',
     'Filled Factor': '',
     'Clustering Class': '',
+    'Global Params GUID': '',
+    'Audio Params GUID': '',
     ...overrides,
   };
 }
@@ -251,6 +300,29 @@ function qualityDistributionRow(overrides: Record<string, string>): Record<strin
     'Max Quality': '',
     Mean: '',
     Stddev: '',
+    ...overrides,
+  };
+}
+
+function miningParamRow(overrides: Record<string, string>): Record<string, string> {
+  return {
+    'Record GUID': '',
+    'Param Type': '',
+    'Param Class': '',
+    'Power Capacity Per Mass': '',
+    'Decay Per Mass': '',
+    'Optimal Window Size': '',
+    'CSCU Per Volume': '',
+    'Default Mass': '',
+    'Mineable Power Increasing Fall Off': '',
+    'Mining Start Trigger': '',
+    'Mining Stop Trigger': '',
+    'Extracted Trigger': '',
+    'Cluster Detection Radius': '',
+    'Cluster Upper Object Count DGS': '',
+    'Cluster Upper Object Count Persistence': '',
+    'Cluster Persistence Timeout': '',
+    'Reset Lifetime On Move': '',
     ...overrides,
   };
 }
