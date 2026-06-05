@@ -8,7 +8,7 @@ export type DataCoreFieldSelector =
       attrs?: string[];
       index?: number;
       separator?: string;
-      format?: 'count' | 'number-pair' | 'percent' | 'percent-pair' | 'scaled-number' | 'scaled-number-pair';
+      format?: 'count' | 'number-pair' | 'percent' | 'percent-pair' | 'scaled-number' | 'scaled-number-pair' | 'sum';
       scale?: number;
     }
   | {
@@ -39,6 +39,13 @@ export interface DataCoreItemTypeConfig {
    * Verify against the actual unforged directory tree and update if needed.
    */
   recordFilter: string | string[];
+
+  /**
+   * Optional selector that must match within a path-matched XML record before
+   * the row is emitted. Useful when multiple item types share one DataCore
+   * directory but have distinct component parameter blocks.
+   */
+  recordSelector?: string;
 
   /**
    * Prefix to strip from the entity class name before constructing the

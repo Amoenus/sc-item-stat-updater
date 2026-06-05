@@ -6,12 +6,14 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as BOMB_TYPE_CONFIG } from '../../items/datacore/bombs';
 import { DATACORE_TYPE_CONFIG as COOLER_TYPE_CONFIG } from '../../items/datacore/coolers';
 import { DATACORE_TYPE_CONFIG as EMP_TYPE_CONFIG } from '../../items/datacore/emps';
 import { DATACORE_TYPE_CONFIG as JUMP_DRIVE_TYPE_CONFIG } from '../../items/datacore/jump-drives';
 import { DATACORE_TYPE_CONFIG as MINING_LASER_TYPE_CONFIG } from '../../items/datacore/mining-lasers';
 import { DATACORE_TYPE_CONFIG as MINING_MODIFIER_TYPE_CONFIG } from '../../items/datacore/mining-modifiers';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
+import { DATACORE_TYPE_CONFIG as MISSILE_TYPE_CONFIG } from '../../items/datacore/missiles';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
@@ -392,6 +394,148 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Missile Quantity,Missile Size\r?\n/,
   );
   assert.match(csv, /mrck_test,item_NameMRCK_Test,,item_DescMRCK_Test,AEGS,6,1,,200,3,3/);
+});
+
+test('runDatacoreScrape extracts bomb params and skips missile records in shared ordnance folder', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-bombs-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const ordnanceDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons', 'missiles');
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'fski.xml');
+  await fs.mkdir(ordnanceDir, { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    path.join(ordnanceDir, 'bomb_s03_fski_thunderball.xml'),
+    `
+      <EntityClassDefinition.BOMB_S03_FSKI_Thunderball __path="libs/foundry/records/entities/scitem/ships/weapons/missiles/bomb_s03_fski_thunderball.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Bomb" SubType="Utility" Size="3" Grade="1" Manufacturer="5f81335d-44e6-4104-841e-c5af9df06829">
+              <Localization Name="@item_NameBOMB_S03_FSKI_Thunderball" ShortName="@item_NameBOMB_S03_FSKI_Thunderball_short" Description="@item_DescBOMB_S03_FSKI_Thunderball" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemBombParams armTime="0.5" igniteTime="0.1" projectileProximity="0.5">
+            <explosionParams minRadius="40" maxRadius="40">
+              <damage>
+                <DamageInfo DamagePhysical="12500" DamageEnergy="14500" DamageDistortion="0" />
+              </damage>
+            </explosionParams>
+          </SCItemBombParams>
+          <SHealthComponentParams Health="1000" />
+        </Components>
+      </EntityClassDefinition.BOMB_S03_FSKI_Thunderball>
+    `,
+  );
+  await fs.writeFile(
+    path.join(ordnanceDir, 'gmisl_s01_cs_fski_spark.xml'),
+    `
+      <EntityClassDefinition.GMISL_S01_CS_FSKI_Spark __path="libs/foundry/records/entities/scitem/ships/weapons/missiles/gmisl_s01_cs_fski_spark.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Missile" SubType="GroundVehicleMissile" Size="1" Grade="1" Manufacturer="5f81335d-44e6-4104-841e-c5af9df06829" />
+          </SAttachableComponentParams>
+          <SCItemMissileParams />
+        </Components>
+      </EntityClassDefinition.GMISL_S01_CS_FSKI_Spark>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.FSKI Code="FSKI" __ref="5f81335d-44e6-4104-841e-c5af9df06829" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [{ name: 'bombs', csvFile: 'bomb.datacore.csv', typeConfig: BOMB_TYPE_CONFIG }],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'bomb.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'bombs', rows: 1, skipped: 1, csvFile: 'bomb.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Physical,Damage Energy,Damage Distortion,Arm Delay,Ignite Delay,Explosion Radius,Explosion Proximity\r?\n/,
+  );
+  assert.match(
+    csv,
+    /bomb_s03_fski_thunderball,item_NameBOMB_S03_FSKI_Thunderball,item_NameBOMB_S03_FSKI_Thunderball_short,item_DescBOMB_S03_FSKI_Thunderball,FSKI,3,1,Utility,1000,27000,12500,14500,0,0\.5,0\.1,40,0\.5/,
+  );
+});
+
+test('runDatacoreScrape extracts missile params and skips bomb records in shared ordnance folder', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-missiles-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const ordnanceDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons', 'missiles');
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'fski.xml');
+  await fs.mkdir(ordnanceDir, { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    path.join(ordnanceDir, 'gmisl_s01_cs_fski_spark.xml'),
+    `
+      <EntityClassDefinition.GMISL_S01_CS_FSKI_Spark __path="libs/foundry/records/entities/scitem/ships/weapons/missiles/gmisl_s01_cs_fski_spark.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Missile" SubType="GroundVehicleMissile" Size="1" Grade="1" Manufacturer="5f81335d-44e6-4104-841e-c5af9df06829">
+              <Localization Name="@item_NameGMISL_S01_CS_FSKI_Spark" ShortName="@item_NameGMISL_S01_CS_FSKI_Spark_short" Description="@item_DescGMISL_S01_CS_FSKI_Spark" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemMissileParams armTime="0.8">
+            <explosionParams minRadius="1" maxRadius="2">
+              <damage>
+                <DamageInfo DamagePhysical="1150" DamageEnergy="0" DamageDistortion="0" />
+              </damage>
+            </explosionParams>
+            <GCSParams linearSpeed="1372" />
+            <targetingParams trackingSignalType="CrossSection" lockTime="0.4" lockRangeMin="50" lockRangeMax="10000" lockingAngle="60" />
+          </SCItemMissileParams>
+          <SHealthComponentParams Health="25" />
+        </Components>
+      </EntityClassDefinition.GMISL_S01_CS_FSKI_Spark>
+    `,
+  );
+  await fs.writeFile(
+    path.join(ordnanceDir, 'bomb_s03_fski_thunderball.xml'),
+    `
+      <EntityClassDefinition.BOMB_S03_FSKI_Thunderball __path="libs/foundry/records/entities/scitem/ships/weapons/missiles/bomb_s03_fski_thunderball.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Bomb" SubType="Utility" Size="3" Grade="1" Manufacturer="5f81335d-44e6-4104-841e-c5af9df06829" />
+          </SAttachableComponentParams>
+          <SCItemBombParams />
+        </Components>
+      </EntityClassDefinition.BOMB_S03_FSKI_Thunderball>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.FSKI Code="FSKI" __ref="5f81335d-44e6-4104-841e-c5af9df06829" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [{ name: 'missiles', csvFile: 'missile.datacore.csv', typeConfig: MISSILE_TYPE_CONFIG }],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'missile.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'missiles', rows: 1, skipped: 1, csvFile: 'missile.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Tracking Signal,Damage Total,Damage Physical,Damage Energy,Damage Distortion,Speed,Arm Delay,Lock Delay,Lock Range,Lock Angle,Explosion Radius\r?\n/,
+  );
+  assert.match(
+    csv,
+    /gmisl_s01_cs_fski_spark,item_NameGMISL_S01_CS_FSKI_Spark,item_NameGMISL_S01_CS_FSKI_Spark_short,item_DescGMISL_S01_CS_FSKI_Spark,FSKI,1,1,GroundVehicleMissile,25,CrossSection,1150,1150,0,0,1372,0\.8,0\.4,50 - 10000,60,1 - 2/,
+  );
 });
 
 test('runDatacoreScrape extracts quantum drive params from DataCore item records', async () => {

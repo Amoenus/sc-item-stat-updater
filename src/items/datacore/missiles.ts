@@ -1,27 +1,42 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. Missiles may live under scitemweapon_missile
-// or scitemvehicle_weaponmissile. Field names inferred from community data.
+const missileSelector = 'SCItemMissileParams';
+const explosionSelector = `${missileSelector} explosionParams`;
+const damageSelector = `${explosionSelector} DamageInfo`;
+const targetingSelector = `${missileSelector} targetingParams`;
+const gcsSelector = `${missileSelector} GCSParams`;
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons/missiles',
-  // msil_behr_s1_javelinII → strip 'msil_' → 'BEHR_S1_JAVELINII' → item_NameMISL_BEHR_S1_JAVELINII
+  recordSelector: missileSelector,
   entityClassPrefix: 'msil_',
   nameKeyInfix: 'MISL_',
   fieldSelectors: {
-    'Tracking Signal': 'SMissileComponentParams MissileParams TrackingType',
-    'Damage Total': 'SProjectileComponentParams BulletParams DamageTotal',
-    'Damage Physical': 'SProjectileComponentParams BulletParams DamagePhysical',
-    'Damage Energy': 'SProjectileComponentParams BulletParams DamageEnergy',
-    'Damage Distortion': 'SProjectileComponentParams BulletParams DamageDistortion',
-    Speed: 'SMissileComponentParams MissileParams MaxSpeed',
-    'Arm Delay': 'SMissileComponentParams MissileParams ArmTime',
-    'Lock Delay': 'SMissileComponentParams MissileParams LockTime',
-    'Lock Range': 'SMissileComponentParams MissileParams TrackingDistanceMax',
-    'Lock Angle': 'SMissileComponentParams MissileParams TrackingAngle',
-    'Explosion Radius': 'SMissileComponentParams MissileParams ExplosionRadius',
+    'Tracking Signal': { selector: targetingSelector, attr: 'trackingSignalType' },
+    'Damage Total': {
+      selector: damageSelector,
+      attrs: ['DamagePhysical', 'DamageEnergy', 'DamageDistortion'],
+      format: 'sum',
+    },
+    'Damage Physical': { selector: damageSelector, attr: 'DamagePhysical' },
+    'Damage Energy': { selector: damageSelector, attr: 'DamageEnergy' },
+    'Damage Distortion': { selector: damageSelector, attr: 'DamageDistortion' },
+    Speed: { selector: gcsSelector, attr: 'linearSpeed' },
+    'Arm Delay': { selector: missileSelector, attr: 'armTime' },
+    'Lock Delay': { selector: targetingSelector, attr: 'lockTime' },
+    'Lock Range': {
+      selector: targetingSelector,
+      attrs: ['lockRangeMin', 'lockRangeMax'],
+      format: 'number-pair',
+    },
+    'Lock Angle': { selector: targetingSelector, attr: 'lockingAngle' },
+    'Explosion Radius': {
+      selector: explosionSelector,
+      attrs: ['minRadius', 'maxRadius'],
+      format: 'number-pair',
+    },
   },
 };
 
@@ -30,7 +45,10 @@ export default {
   label: 'DC Missiles',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Total', 'Speed', 'Arm Delay', 'Health'],
   descKeyMatch: (kl) => kl.includes('descmisl_') || kl.includes('descgmisl_'),
-  getTargetKeys: makeGetTargetKeys('msil_', 'MISL_'),
+  getTargetKeys: makeGetTargetKeysFromPrefixMap([
+    ['msil_', 'MISL_'],
+    ['gmisl_', 'GMISL_'],
+  ]),
   buildValue(r, flavorText) {
     const TORPEDO_MIN_SIZE = 7;
     const isTorpedo = Number.parseInt(r['Size'], 10) >= TORPEDO_MIN_SIZE;

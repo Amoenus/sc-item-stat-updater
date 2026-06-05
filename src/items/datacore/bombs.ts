@@ -2,22 +2,28 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files.
+const bombSelector = 'SCItemBombParams';
+const explosionSelector = `${bombSelector} explosionParams`;
+const damageSelector = `${explosionSelector} DamageInfo`;
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons/missiles',
-  // bomb_behr_s2_caterpillar → strip 'bomb_' → 'BEHR_S2_CATERPILLAR'
+  recordSelector: bombSelector,
   entityClassPrefix: 'bomb_',
   nameKeyInfix: 'BOMB_',
   fieldSelectors: {
-    'Damage Total': 'SProjectileComponentParams BulletParams DamageTotal',
-    'Damage Physical': 'SProjectileComponentParams BulletParams DamagePhysical',
-    'Damage Energy': 'SProjectileComponentParams BulletParams DamageEnergy',
-    'Damage Distortion': 'SProjectileComponentParams BulletParams DamageDistortion',
-    'Arm Delay': 'SBombComponentParams BombParams ArmTime',
-    'Ignite Delay': 'SBombComponentParams BombParams IgniteTime',
-    'Explosion Radius': 'SBombComponentParams BombParams ExplosionRadius',
-    'Explosion Proximity': 'SBombComponentParams BombParams ProximityTriggerRadius',
+    'Damage Total': {
+      selector: damageSelector,
+      attrs: ['DamagePhysical', 'DamageEnergy', 'DamageDistortion'],
+      format: 'sum',
+    },
+    'Damage Physical': { selector: damageSelector, attr: 'DamagePhysical' },
+    'Damage Energy': { selector: damageSelector, attr: 'DamageEnergy' },
+    'Damage Distortion': { selector: damageSelector, attr: 'DamageDistortion' },
+    'Arm Delay': { selector: bombSelector, attr: 'armTime' },
+    'Ignite Delay': { selector: bombSelector, attr: 'igniteTime' },
+    'Explosion Radius': { selector: explosionSelector, attr: 'maxRadius' },
+    'Explosion Proximity': { selector: bombSelector, attr: 'projectileProximity' },
   },
 };
 

@@ -1166,6 +1166,11 @@ async function scrapeDataCoreType(
       continue;
     }
 
+    if (typeConfig.recordSelector && $(typeConfig.recordSelector).length === 0) {
+      skipped++;
+      continue;
+    }
+
     let entityClass = extractEntityClass($);
     if (!entityClass) {
       entityClass = path.basename(xmlPath, path.extname(xmlPath));
@@ -1944,10 +1949,23 @@ function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector
     if (!values.some(Boolean)) return '';
     return values.map((value) => formatScaledNumber(value, spec.scale ?? 1)).join(spec.separator ?? ' - ');
   }
+  if (spec.format === 'sum') return formatSum(values);
   if (spec.format === 'percent' && values[0]) return formatPercent(values[0]);
   if (spec.format === 'percent-pair') return values.map(formatPercent).join(spec.separator ?? ' / ');
 
   return values.join(spec.separator ?? ' / ');
+}
+
+function formatSum(values: string[]): string {
+  const presentValues = values.filter(Boolean);
+  if (presentValues.length === 0) return '';
+  let total = 0;
+  for (const value of presentValues) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return '';
+    total += num;
+  }
+  return String(Number(total.toFixed(6)));
 }
 
 function formatScaledNumber(value: string, scale: number): string {
