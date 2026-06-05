@@ -1,13 +1,15 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser';
-import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
+import { readCsvFile } from '../../io/local/csv-parser';
 import { readJsonFile } from '../../io/local/json-file';
-import { resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
+import { resolveChildPath, resolveMappingJsonPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
 import { getLogger } from '../../infrastructure/logger';
+import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { buildLookupMapFromRows, buildMappedKeyLookup } from './lookup-utils';
 import { normalizeSpaces } from './title-tag-utils';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('missile-title-tags-update');
+
+const DATACORE_MISSILE_CSV = 'missile.datacore.csv';
 
 const MISSILE_SIGNAL_TAG = {
   CrossSection: 'CS',
@@ -15,7 +17,7 @@ const MISSILE_SIGNAL_TAG = {
   Infrared: 'IR',
 };
 
-const MISSILE_KEY_PATTERN = /^(item_nameg?misl_.*?)(_short)?$/i;
+const MISSILE_KEY_PATTERN = /^(item_name_?g?misl_.*?)(_short)?$/i;
 const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
 
 async function buildMissileSignalLookup(spviewerDir: string, repoRoot: string) {
@@ -33,11 +35,25 @@ async function buildMissileSignalLookup(spviewerDir: string, repoRoot: string) {
     if (!name || !tag) return null;
     return [name, tag];
   });
-  const keyToTag = buildMappedKeyLookup(mappingData as Record<string, string>, nameToTag, (localizationKey) =>
-    localizationKey.toLowerCase(),
-  );
+  const keyToTag = buildMappedKeyLookup(mappingData as Record<string, string>, nameToTag, normalizeLocalizationKey);
 
   return { keyToTag, nameCount: nameToTag.size };
+}
+
+async function buildMissileSignalLookupFromDataCore(datacoreDir: string) {
+  const missileCsvPath = resolveChildPath(datacoreDir, DATACORE_MISSILE_CSV, 'DataCore missile CSV filename');
+  const rows = await readCsvFile(missileCsvPath);
+  return buildLookupMapFromRows(rows, (row) => {
+    const key = normalizeLocalizationKey(row['Name Key']);
+    const signal = normalizeSpaces(row['Tracking Signal'] || '');
+    const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
+    if (!key || !tag) return null;
+    return [key, tag];
+  });
+}
+
+function normalizeLocalizationKey(value: unknown): string {
+  return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
 }
 
 function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) {
@@ -62,7 +78,7 @@ function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) 
     }
 
     scannedCount++;
-    const baseKey = keyMatch[1].toLowerCase();
+    const baseKey = normalizeLocalizationKey(keyMatch[1]);
     const tag = keyToTag.get(baseKey);
     if (!tag) {
       updatedLines.push(line);
@@ -87,27 +103,35 @@ function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) 
 /**
  * @param {object} params
  * @param {string} params.iniPath
- * @param {string} params.spviewerDir
- * @param {string} params.repoRoot
+ * @param {string} [params.spviewerDir]
+ * @param {string} [params.repoRoot]
+ * @param {string} [params.datacoreDir]
  * @param {boolean} params.dryRun
  */
 export async function runMissileTitleTagUpdate({
   iniPath,
   spviewerDir,
   repoRoot,
+  datacoreDir,
   dryRun,
 }: {
   iniPath: string;
-  spviewerDir: string;
-  repoRoot: string;
+  spviewerDir?: string;
+  repoRoot?: string;
+  datacoreDir?: string;
   dryRun: boolean;
 }) {
   const start = performance.now();
-  const { keyToTag, nameCount } = await buildMissileSignalLookup(spviewerDir, repoRoot);
+  const spviewerLookup =
+    spviewerDir && repoRoot
+      ? await buildMissileSignalLookup(spviewerDir, repoRoot)
+      : { keyToTag: new Map<string, string>(), nameCount: 0 };
+  const dataCoreKeyToTag = datacoreDir ? await buildMissileSignalLookupFromDataCore(datacoreDir) : new Map<string, string>();
+  const keyToTag = new Map([...spviewerLookup.keyToTag, ...dataCoreKeyToTag]);
 
   logger.info('Loaded missile signal lookup data', {
     localizationKeyCount: keyToTag.size,
-    missileNameCount: nameCount,
+    missileNameCount: spviewerLookup.nameCount,
   });
 
   const { lines } = await readIniFile(iniPath);

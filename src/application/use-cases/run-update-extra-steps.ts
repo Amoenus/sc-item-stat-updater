@@ -99,11 +99,12 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
       });
     },
     'Missile title tags': async () => {
-      if (!options.spviewerVersionDir) return null;
+      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
       return runMissileTitleTagUpdate({
         iniPath: options.iniPath,
         spviewerDir: options.spviewerVersionDir,
         repoRoot: options.repoRoot,
+        datacoreDir: options.datacoreVersionDir,
         dryRun,
       });
     },
