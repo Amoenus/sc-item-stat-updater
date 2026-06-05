@@ -1,9 +1,15 @@
+import { readCsvFile } from '../../io/local/csv-parser';
+import { resolveChildPath } from '../../io/local/path-conventions';
+import { getLogger } from '../../infrastructure/logger';
 import type { ItemConfig } from '../../enrichment/item-config';
+import type { ItemSourceDataContext } from '../../enrichment/item-config';
 
 const SUFFIXLESS_TARGETS: Record<string, string> = {};
 const COMMODITY_SLUG_ALIASES: Record<string, string> = {
   aluminium: 'aluminum',
 };
+const DATACORE_MINING_ELEMENTS_CSV = 'mining-elements.datacore.csv';
+const logger = getLogger('mining-elements-config');
 
 function toCommoditySlug(name: string): string {
   const slug = name.toLowerCase().replace(/[\s-]/g, '');
@@ -14,8 +20,145 @@ function appendIfPresent(lines: string[], label: string, value: string | undefin
   if (value && value.trim() !== '') lines.push(`${label}: ${value}`);
 }
 
+export interface MiningElementCoverageDiagnostics {
+  datacoreKeys: number;
+  scmdbKeys: number;
+  common: number;
+  datacoreOnly: string[];
+  scmdbOnly: string[];
+}
+
+export function compareMiningElementCoverage(
+  datacoreRows: Record<string, string>[],
+  scmdbRows: Record<string, string>[],
+): MiningElementCoverageDiagnostics {
+  const datacoreKeys = new Set(datacoreRows.map((row) => row['Inferred Description Key']).filter(Boolean).map((key) => key.toLowerCase()));
+  const scmdbKeys = new Set(scmdbRows.flatMap((row) => inferTargetKeys(row)).map((key) => key.toLowerCase()));
+  const common = [...datacoreKeys].filter((key) => scmdbKeys.has(key));
+  const datacoreOnly = [...datacoreKeys].filter((key) => !scmdbKeys.has(key)).sort((a, b) => a.localeCompare(b));
+  const scmdbOnly = [...scmdbKeys].filter((key) => !datacoreKeys.has(key)).sort((a, b) => a.localeCompare(b));
+
+  return {
+    datacoreKeys: datacoreKeys.size,
+    scmdbKeys: scmdbKeys.size,
+    common: common.length,
+    datacoreOnly,
+    scmdbOnly,
+  };
+}
+
+export function buildMiningElementRowsFromSources(
+  datacoreRows: Record<string, string>[],
+  scmdbRows: Record<string, string>[],
+): Record<string, string>[] {
+  const scmdbByTarget = new Map<string, Record<string, string>>();
+  const mergedRows: Record<string, string>[] = [];
+
+  for (const row of scmdbRows) {
+    const targetKey = inferTargetKeys(row)[0];
+    if (targetKey) scmdbByTarget.set(targetKey.toLowerCase(), row);
+    mergedRows.push({ ...row, Source: row.Source || 'SCMDB' });
+  }
+
+  for (const datacoreRow of datacoreRows) {
+    const targetKey = datacoreRow['Inferred Description Key']?.trim();
+    if (!targetKey) continue;
+
+    const scmdbRow = scmdbByTarget.get(targetKey.toLowerCase());
+    const merged = toMiningElementRow(datacoreRow, scmdbRow);
+    const existingIndex = mergedRows.findIndex((row) => inferTargetKeys(row)[0]?.toLowerCase() === targetKey.toLowerCase());
+    if (existingIndex === -1) {
+      mergedRows.push(merged);
+    } else {
+      mergedRows[existingIndex] = merged;
+    }
+  }
+
+  return mergedRows;
+}
+
+async function loadMiningElementSourceData(context: ItemSourceDataContext): Promise<Record<string, string>[]> {
+  const scmdbRows = await readCsvFile(resolveChildPath(context.csvDir, 'mining-elements.csv', 'SCMDB mining elements CSV filename'));
+  const datacoreRows = await loadDatacoreMiningElementRows(context.sourceDirs?.datacore);
+  const coverage = compareMiningElementCoverage(datacoreRows, scmdbRows);
+
+  logger.info('Mining element source coverage', {
+    datacoreKeys: coverage.datacoreKeys,
+    scmdbKeys: coverage.scmdbKeys,
+    common: coverage.common,
+    datacoreOnly: coverage.datacoreOnly.length,
+    scmdbOnly: coverage.scmdbOnly.length,
+  });
+
+  return buildMiningElementRowsFromSources(datacoreRows, scmdbRows);
+}
+
+async function loadDatacoreMiningElementRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
+  if (!datacoreDir) return [];
+
+  try {
+    return await readCsvFile(resolveChildPath(datacoreDir, DATACORE_MINING_ELEMENTS_CSV, 'DataCore mining elements CSV filename'));
+  } catch (err) {
+    if (isFileNotFound(err)) {
+      logger.warn('DataCore mining elements CSV missing; using SCMDB mining element fallback only', {
+        datacoreDir,
+        csvFile: DATACORE_MINING_ELEMENTS_CSV,
+      });
+      return [];
+    }
+    throw err;
+  }
+}
+
+function toMiningElementRow(datacoreRow: Record<string, string>, scmdbRow: Record<string, string> | undefined): Record<string, string> {
+  return {
+    'Element Name': datacoreRow['Element Name'] || scmdbRow?.['Element Name'] || '',
+    Rarity: scmdbRow?.Rarity || '',
+    'Ground Scan Signature': scmdbRow?.['Ground Scan Signature'] || '',
+    'FPS Scan Signature': scmdbRow?.['FPS Scan Signature'] || '',
+    'Scan Signature': scmdbRow?.['Scan Signature'] || '',
+    Resistance: datacoreRow.Resistance || scmdbRow?.Resistance || '',
+    Instability: datacoreRow.Instability || scmdbRow?.Instability || '',
+    Density: scmdbRow?.Density || '',
+    'Optimal Window Midpoint': datacoreRow['Optimal Window Midpoint'] || scmdbRow?.['Optimal Window Midpoint'] || '',
+    'Optimal Window Randomness': datacoreRow['Optimal Window Randomness'] || scmdbRow?.['Optimal Window Randomness'] || '',
+    'Optimal Window Thinness': datacoreRow['Optimal Window Thinness'] || scmdbRow?.['Optimal Window Thinness'] || '',
+    'Explosion Multiplier': datacoreRow['Explosion Multiplier'] || scmdbRow?.['Explosion Multiplier'] || '',
+    'Cluster Factor': datacoreRow['Cluster Factor'] || scmdbRow?.['Cluster Factor'] || '',
+    'Quality Bands': scmdbRow?.['Quality Bands'] || '',
+    'Material Name': scmdbRow?.['Material Name'] || '',
+    'Mining Difficulty': scmdbRow?.['Mining Difficulty'] || '',
+    'Volatility Note': scmdbRow?.['Volatility Note'] || '',
+    'Cluster Note': scmdbRow?.['Cluster Note'] || '',
+    'Best Refinery': scmdbRow?.['Best Refinery'] || '',
+    'Localization Key': datacoreRow['Inferred Description Key'] || '',
+    Source: scmdbRow ? 'DataCore+SCMDB' : 'DataCore',
+  };
+}
+
+function inferTargetKeys(row: Record<string, string>): string[] {
+  const elementName = row['Element Name'];
+  if (!elementName) return [];
+
+  const suffixMatch = /^(.+?)\s*\((\w+)\)\s*$/.exec(elementName);
+  if (suffixMatch) {
+    const baseName = suffixMatch[1];
+    const suffix = suffixMatch[2].toLowerCase();
+    if (suffix !== 'ore' && suffix !== 'raw') return [];
+    return [`items_commodities_${toCommoditySlug(baseName)}_${suffix}_desc`];
+  }
+
+  const mappedTarget = SUFFIXLESS_TARGETS[elementName] ?? SUFFIXLESS_TARGETS[toCommoditySlug(elementName)];
+  return mappedTarget ? [mappedTarget] : [];
+}
+
+function isFileNotFound(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
+}
+
 export default {
   csvFile: 'mining-elements.csv',
+  loadSourceData: loadMiningElementSourceData,
   label: 'Mining element stats',
   requiredColumns: ['Element Name', 'Rarity', 'Scan Signature', 'Resistance', 'Instability'],
   noInsert: true,
@@ -23,19 +166,7 @@ export default {
     kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
 
   getTargetKeys(row, _deriveDescKey) {
-    const elementName = row['Element Name'];
-    if (!elementName) return [];
-
-    const suffixMatch = /^(.+?)\s*\((\w+)\)\s*$/.exec(elementName);
-    if (suffixMatch) {
-      const baseName = suffixMatch[1];
-      const suffix = suffixMatch[2].toLowerCase();
-      if (suffix !== 'ore' && suffix !== 'raw') return [];
-      return [`items_commodities_${toCommoditySlug(baseName)}_${suffix}_desc`];
-    }
-
-    const mappedTarget = SUFFIXLESS_TARGETS[elementName] ?? SUFFIXLESS_TARGETS[toCommoditySlug(elementName)];
-    return mappedTarget ? [mappedTarget] : [];
+    return inferTargetKeys(row);
   },
 
   buildValue(row, _flavorText, oldValue, _targetKey) {

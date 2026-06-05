@@ -143,6 +143,72 @@ if (selectedTypes.length > 0) {
 }
 
 console.log('\n=== Results ===');
+const commodityDryNote = values['dry-run'] ? ' (dry run, not written)' : '';
+console.log(
+  `  ${'commodities'.padEnd(28)} ${String(result.commodityResult.rows).padStart(4)} rows -> ${
+    result.commodityResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
+    result.miningElementResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-compositions'.padEnd(28)} ${String(result.miningCompositionResult.rows).padStart(4)} rows -> ${
+    result.miningCompositionResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mineable-entities'.padEnd(28)} ${String(result.mineableEntityResult.rows).padStart(4)} rows -> ${
+    result.mineableEntityResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-density-overrides'.padEnd(28)} ${String(result.miningDensityOverrideResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningDensityOverrideResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-clustering'.padEnd(28)} ${String(result.miningClusteringResult.rows).padStart(4)} rows -> ${
+    result.miningClusteringResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-harvestable-presets'.padEnd(28)} ${String(result.miningHarvestablePresetResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningHarvestablePresetResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-harvestable-setups'.padEnd(28)} ${String(result.miningHarvestableSetupResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningHarvestableSetupResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-sub-harvestable-configs'.padEnd(28)} ${String(
+    result.miningSubHarvestableConfigResult.rows,
+  ).padStart(4)} rows -> ${result.miningSubHarvestableConfigResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-quality-distributions'.padEnd(28)} ${String(
+    result.miningQualityDistributionResult.rows,
+  ).padStart(4)} rows -> ${result.miningQualityDistributionResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-location-labels'.padEnd(28)} ${String(result.miningLocationLabelResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningLocationLabelResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-params'.padEnd(28)} ${String(result.miningParamResult.rows).padStart(4)} rows -> ${
+    result.miningParamResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-provider-presets'.padEnd(28)} ${String(result.miningProviderPresetResult.rows).padStart(4)} rows -> ${
+    result.miningProviderPresetResult.csvFile
+  }${commodityDryNote}`,
+);
 for (const row of result.results) {
   const dryNote = values['dry-run'] ? ' (dry run, not written)' : '';
   const skippedNote = row.skipped > 0 ? ` (${row.skipped} skipped)` : '';

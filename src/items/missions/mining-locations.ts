@@ -1,17 +1,456 @@
+import { readCsvFile } from '../../io/local/csv-parser';
 import { readJsonRelative } from '../../io/local/json-file';
+import { resolveChildPath } from '../../io/local/path-conventions';
+import { getLogger } from '../../infrastructure/logger';
 import type { ItemConfig } from '../../enrichment/item-config';
+import type { ItemSourceDataContext } from '../../enrichment/item-config';
 
 const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
   string,
   unknown
 >;
+const DATACORE_MINING_PROVIDER_PRESETS_CSV = 'mining-provider-presets.datacore.csv';
+const DATACORE_MINING_COMPOSITIONS_CSV = 'mining-compositions.datacore.csv';
+const DATACORE_MINING_LOCATION_LABELS_CSV = 'mining-location-labels.datacore.csv';
+const DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV = 'mining-quality-distributions.datacore.csv';
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
 const INI_NEWLINE = String.raw`\n`;
+const logger = getLogger('mining-locations-config');
+
+const DATACORE_LOCATION_NAMES: Record<string, string> = {
+  hpp_stanton1: 'Hurston',
+  hpp_stanton1a: 'Arial',
+  hpp_stanton1b: 'Aberdeen',
+  hpp_stanton1c: 'Magda',
+  hpp_stanton1d: 'Ita',
+  hpp_stanton2a: 'Cellin',
+  hpp_stanton2b: 'Daymar',
+  hpp_stanton2c: 'Yela',
+  hpp_stanton2c_belt: 'Yela Asteroid Belt',
+  hpp_stanton3a: 'Lyria',
+  hpp_stanton3b: 'Wala',
+  hpp_stanton4: 'microTech',
+  hpp_stanton4a: 'Clio',
+  hpp_stanton4b: 'Euterpe',
+  hpp_stanton4c: 'Calliope',
+  hpp_pyro1: 'Pyro I',
+  hpp_pyro2: 'Pyro II (Monox)',
+  hpp_pyro3: 'Pyro III (Bloom)',
+  hpp_pyro4: 'Pyro IV',
+  hpp_pyro5a: 'Pyro V-a (Ignis)',
+  hpp_pyro5b: 'Pyro V-b (Vatra)',
+  hpp_pyro5c: 'Pyro V-c (Adir)',
+  hpp_pyro5d: 'Pyro V-d (Fairo)',
+  hpp_pyro5e: 'Pyro V-e (Fuego)',
+  hpp_pyro5f: 'Pyro V-f (Vuur)',
+  hpp_pyro6: 'Pyro VI (Terminus)',
+  asteroidcluster_low_yield: 'Asteroid Cluster (Low Yield)',
+  asteroidcluster_medium_yield: 'Asteroid Cluster (Medium Yield)',
+  hpp_aaronhalo: 'Aaron Halo',
+  hpp_lagrange_occupied: 'Lagrange (Occupied)',
+  hpp_nyx_glaciemring: 'Glaciem Ring',
+  hpp_nyx_keegerbelt: 'Keeger Belt',
+  hpp_pyro_akirocluster: 'Akiro Cluster',
+  hpp_pyro_cool01: 'Pyro Belt (Cool 1)',
+  hpp_pyro_cool02: 'Pyro Belt (Cool 2)',
+  hpp_pyro_deepspaceasteroids: 'Pyro Deep Space Asteroids',
+  hpp_pyro_warm01: 'Pyro Belt (Warm 1)',
+  hpp_pyro_warm02: 'Pyro Belt (Warm 2)',
+};
 
 // Roman numeral -> digit substitution (longest match first to avoid partial replacements)
 const ROMAN_MAP: Record<string, string> = { VIII: '8', VII: '7', VI: '6', IV: '4', V: '5', III: '3', II: '2', I: '1' };
 const ROMAN_RE = /\b(VIII|VII|VI|IV|V|III|II|I)\b/g;
+type MiningType = 'ship' | 'hand' | 'ground';
+type LocationWeights = Record<MiningType, Record<string, number>>;
+
+export interface MiningLocationCoverageDiagnostics {
+  datacoreLocations: number;
+  scmdbLocations: number;
+  datacoreLocationLabelRows: number;
+  datacoreLocationsWithLabelKeys: number;
+  datacoreLocationsWithQualityNotes: number;
+  common: number;
+  datacoreOnly: string[];
+  scmdbOnly: string[];
+}
+
+export function compareMiningLocationCoverage(
+  datacoreRows: Record<string, string>[],
+  scmdbRows: Record<string, string>[],
+): MiningLocationCoverageDiagnostics {
+  const datacoreLocations = new Set(datacoreRows.map((row) => row['Location Name']).filter(Boolean));
+  const scmdbLocations = new Set(scmdbRows.map((row) => row['Location Name']).filter(Boolean));
+  const common = [...datacoreLocations].filter((name) => scmdbLocations.has(name));
+
+  return {
+    datacoreLocations: datacoreLocations.size,
+    scmdbLocations: scmdbLocations.size,
+    datacoreLocationLabelRows: datacoreRows.filter((row) => row['DataCore Location Label Source']).length,
+    datacoreLocationsWithLabelKeys: datacoreRows.filter(
+      (row) => row['DataCore Location Name Keys'] || row['DataCore Location Description Keys'],
+    ).length,
+    datacoreLocationsWithQualityNotes: datacoreRows.filter((row) => row['DataCore Quality Source']).length,
+    common: common.length,
+    datacoreOnly: [...datacoreLocations].filter((name) => !scmdbLocations.has(name)).sort((a, b) => a.localeCompare(b)),
+    scmdbOnly: [...scmdbLocations].filter((name) => !datacoreLocations.has(name)).sort((a, b) => a.localeCompare(b)),
+  };
+}
+
+export function buildMiningLocationRowsFromSources(
+  datacoreProviderRows: Record<string, string>[],
+  datacoreCompositionRows: Record<string, string>[],
+  scmdbRows: Record<string, string>[],
+  datacoreLocationLabelRows: Record<string, string>[] = [],
+  datacoreQualityDistributionRows: Record<string, string>[] = [],
+): Record<string, string>[] {
+  const datacoreRows = buildDatacoreMiningLocationRows(
+    datacoreProviderRows,
+    datacoreCompositionRows,
+    scmdbRows,
+    datacoreLocationLabelRows,
+    datacoreQualityDistributionRows,
+  );
+  const datacoreLocations = new Set(datacoreRows.map((row) => row['Location Name']));
+  const mergedRows: Record<string, string>[] = [
+    ...datacoreRows,
+    ...scmdbRows
+      .filter((row) => !datacoreLocations.has(row['Location Name']))
+      .map((row) => ({ ...row, Source: row.Source || 'SCMDB' })),
+  ];
+  return mergedRows.sort((a, b) => (a['Location Name'] || '').localeCompare(b['Location Name'] || ''));
+}
+
+async function loadMiningLocationSourceData(context: ItemSourceDataContext): Promise<Record<string, string>[]> {
+  const scmdbRows = await readCsvFile(resolveChildPath(context.csvDir, 'mining-locations.csv', 'SCMDB mining locations CSV filename'));
+  const [datacoreProviderRows, datacoreCompositionRows, datacoreLocationLabelRows, datacoreQualityDistributionRows] =
+    await Promise.all([
+      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_PROVIDER_PRESETS_CSV, 'DataCore mining provider presets'),
+      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions'),
+      loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_LOCATION_LABELS_CSV, 'DataCore mining location labels'),
+      loadDatacoreCsv(
+        context.sourceDirs?.datacore,
+        DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV,
+        'DataCore mining quality distributions',
+      ),
+    ]);
+  const rows = buildMiningLocationRowsFromSources(
+    datacoreProviderRows,
+    datacoreCompositionRows,
+    scmdbRows,
+    datacoreLocationLabelRows,
+    datacoreQualityDistributionRows,
+  );
+  const coverage = compareMiningLocationCoverage(
+    rows.filter((row) => row.Source?.startsWith('DataCore')),
+    scmdbRows,
+  );
+
+  logger.info('Mining location source coverage', {
+    datacoreLocations: coverage.datacoreLocations,
+    scmdbLocations: coverage.scmdbLocations,
+    datacoreLocationLabelRows: coverage.datacoreLocationLabelRows,
+    datacoreLocationsWithLabelKeys: coverage.datacoreLocationsWithLabelKeys,
+    datacoreLocationsWithQualityNotes: coverage.datacoreLocationsWithQualityNotes,
+    common: coverage.common,
+    datacoreOnly: coverage.datacoreOnly.length,
+    scmdbOnly: coverage.scmdbOnly.length,
+  });
+
+  return rows;
+}
+
+async function loadDatacoreCsv(
+  datacoreDir: string | undefined,
+  csvFile: string,
+  label: string,
+): Promise<Record<string, string>[]> {
+  if (!datacoreDir) return [];
+
+  try {
+    return await readCsvFile(resolveChildPath(datacoreDir, csvFile, `${label} CSV filename`));
+  } catch (err) {
+    if (isFileNotFound(err)) {
+      logger.warn(`${label} CSV missing; using SCMDB mining location fallback where needed`, {
+        datacoreDir,
+        csvFile,
+      });
+      return [];
+    }
+    throw err;
+  }
+}
+
+function buildDatacoreMiningLocationRows(
+  providerRows: Record<string, string>[],
+  compositionRows: Record<string, string>[],
+  scmdbRows: Record<string, string>[],
+  locationLabelRows: Record<string, string>[],
+  qualityDistributionRows: Record<string, string>[],
+): Record<string, string>[] {
+  const compositionNames = buildCompositionNameMap(compositionRows);
+  const scmdbQualityNotes = new Map(scmdbRows.map((row) => [row['Location Name'], row['Quality Note'] || '']));
+  const factsByLocation = new Map<
+    string,
+    {
+      weights: LocationWeights;
+      locationNameKeys: Set<string>;
+      locationDescriptionKeys: Set<string>;
+      labelSources: Set<string>;
+      qualityRows: Map<string, Record<string, string>>;
+    }
+  >();
+
+  for (const row of providerRows) {
+    const locationName = toDisplayLocationName(row);
+    const miningType = classifyMiningGroup(row['Group Name'] || '');
+    const compositionName = compositionNames.get(row['Composition Class']) || cleanCompositionClass(row['Composition Class']);
+    if (!locationName || !miningType || !compositionName) continue;
+
+    let facts = factsByLocation.get(locationName);
+    if (!facts) {
+      facts = {
+        weights: { ship: {}, hand: {}, ground: {} },
+        locationNameKeys: new Set(),
+        locationDescriptionKeys: new Set(),
+        labelSources: new Set(),
+        qualityRows: new Map(),
+      };
+      factsByLocation.set(locationName, facts);
+    }
+    facts.weights[miningType][compositionName] =
+      (facts.weights[miningType][compositionName] ?? 0) +
+      parseWeight(row['Group Probability'], 1) * parseWeight(row['Relative Probability'], 1);
+
+    for (const labelRow of relatedLocationLabelRows(row, locationLabelRows)) {
+      if (labelRow['Name Key']) facts.locationNameKeys.add(labelRow['Name Key']);
+      if (labelRow['Description Key'] && labelRow['Description Key'] !== 'LOC_UNINITIALIZED') {
+        facts.locationDescriptionKeys.add(labelRow['Description Key']);
+      }
+      for (const sourceReason of (labelRow['Source Reason'] || '').split(';')) {
+        if (sourceReason) facts.labelSources.add(sourceReason);
+      }
+    }
+
+    for (const qualityRow of relatedQualityDistributionRows(row, qualityDistributionRows)) {
+      const family = qualityRow['Mineable Family'] || qualityRow.mineableFamily;
+      if (family) facts.qualityRows.set(family, qualityRow);
+    }
+  }
+
+  return [...factsByLocation.entries()]
+    .map(([locationName, facts]) => {
+      const datacoreQualityNote = toQualityNote(facts.qualityRows);
+      return {
+        'Location Name': locationName,
+        'Ship Mineables': toWeightedMineableList(facts.weights.ship),
+        'Hand Mineables': toWeightedMineableList(facts.weights.hand),
+        'Ground Vehicle Mineables': toWeightedMineableList(facts.weights.ground),
+        'Quality Note': datacoreQualityNote || scmdbQualityNotes.get(locationName) || '',
+        'DataCore Location Name Keys': sortedJoined(facts.locationNameKeys),
+        'DataCore Location Description Keys': sortedJoined(facts.locationDescriptionKeys),
+        'DataCore Location Label Source': sortedJoined(facts.labelSources),
+        'DataCore Quality Source': datacoreQualityNote ? sortedJoined(new Set([...facts.qualityRows.keys()])) : '',
+        Source: 'DataCore+SCMDB',
+      };
+    })
+    .filter((row) => row['Ship Mineables'] || row['Hand Mineables'] || row['Ground Vehicle Mineables'])
+    .sort((a, b) => a['Location Name'].localeCompare(b['Location Name']));
+}
+
+function relatedLocationLabelRows(
+  providerRow: Record<string, string>,
+  labelRows: Record<string, string>[],
+): Record<string, string>[] {
+  if (labelRows.length === 0) return [];
+
+  const providerSlug = (providerRow.Location || providerRow['Provider Class'] || '').split('/').at(-1) ?? '';
+  const terms = new Set(locationLabelMatchTerms(providerSlug));
+  const trimmedProviderSlug = providerSlug.replace(/^hpp[_-]/i, '');
+  for (const term of locationLabelMatchTerms(trimmedProviderSlug)) terms.add(term);
+
+  return labelRows.filter((labelRow) => {
+    const haystack = [
+      labelRow['Location Class'],
+      labelRow['Name Key'],
+      labelRow['Description Key'],
+      labelRow['Parent Class'],
+      labelRow['Record Path'],
+    ]
+      .join(' ')
+      .toLowerCase();
+    return [...terms].some((term) => term.length >= 4 && hasLabelToken(haystack, term));
+  });
+}
+
+function relatedQualityDistributionRows(
+  providerRow: Record<string, string>,
+  qualityRows: Record<string, string>[],
+): Record<string, string>[] {
+  if (qualityRows.length === 0) return [];
+
+  const terms = new Set(locationQualityMatchTerms(providerRow));
+  return qualityRows.filter((qualityRow) => {
+    const distributionType = qualityRow['Distribution Type'] || qualityRow.distributionType;
+    if (distributionType && distributionType !== 'location-override') return false;
+
+    const haystack = [
+      qualityRow['Location Class'],
+      qualityRow.locationClass,
+      qualityRow['Location Path'],
+      qualityRow.locationPath,
+      qualityRow['Distribution Class'],
+      qualityRow.distributionClass,
+    ]
+      .join(' ')
+      .toLowerCase();
+    return [...terms].some((term) => term.length >= 4 && hasLabelToken(haystack, term));
+  });
+}
+
+function locationLabelMatchTerms(providerSlug: string): string[] {
+  const terms = [providerSlug.replace(/^hpp[_-]/i, '').toLowerCase()].filter(Boolean);
+  const expanded = new Set(terms);
+
+  for (const term of terms) {
+    const stanton = /^stanton([1-4])([a-z])?$/i.exec(term);
+    if (stanton && !stanton[2]) expanded.add(`stanton0${stanton[1]}`);
+  }
+
+  return [...expanded];
+}
+
+function locationQualityMatchTerms(providerRow: Record<string, string>): string[] {
+  const providerSlug = (providerRow.Location || providerRow['Provider Class'] || '').split('/').at(-1) ?? '';
+  const baseTerms = locationLabelMatchTerms(providerSlug.replace(/^hpp[_-]/i, ''));
+  const expanded = new Set(baseTerms);
+
+  for (const term of baseTerms) {
+    if (term.startsWith('pyro')) expanded.add('pyro');
+    if (term.startsWith('stanton')) expanded.add('stanton');
+    if (term.startsWith('nyx')) expanded.add('nyx');
+  }
+
+  return [...expanded];
+}
+
+function hasLabelToken(haystack: string, term: string): boolean {
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(term)}([^a-z0-9]|$)`, 'i').test(haystack);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function sortedJoined(values: Set<string>): string {
+  return [...values].sort((a, b) => a.localeCompare(b)).join(';');
+}
+
+function toQualityNote(qualityRows: Map<string, Record<string, string>>): string {
+  const lines = [...qualityRows.entries()]
+    .toSorted((a, b) => familyLabel(a[0]).localeCompare(familyLabel(b[0])))
+    .map(([family, row]) => {
+      const min = qualityPercent(row['Min Quality'] || row.minQuality);
+      const max = qualityPercent(row['Max Quality'] || row.maxQuality);
+      const mean = qualityPercent(row.Mean || row.mean);
+      const stddev = qualityPercent(row.Stddev || row.stddev);
+      const spread = min && max ? `${min}-${max}` : '';
+      const details = [mean ? `mean ${mean}` : '', stddev ? `stddev ${stddev}` : ''].filter(Boolean).join(', ');
+      return [familyLabel(family), spread, details ? `(${details})` : ''].filter(Boolean).join(' ');
+    })
+    .filter(Boolean);
+  return lines.join('\n');
+}
+
+function qualityPercent(value: string | undefined): string {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '';
+  return `${Math.round((numeric / 10) * 10) / 10}%`;
+}
+
+function familyLabel(family: string): string {
+  const normalized = family.toLowerCase();
+  if (normalized === 'shipmineables') return 'Ship quality';
+  if (normalized === 'fpsmineables') return 'Hand quality';
+  if (normalized === 'groundmineables') return 'Ground vehicle quality';
+  return family;
+}
+
+function buildCompositionNameMap(compositionRows: Record<string, string>[]): Map<string, string> {
+  const scores = new Map<string, Map<string, number>>();
+  for (const row of compositionRows) {
+    const compositionClass = row['Composition Class'];
+    const elementName = row['Mineable Element Name'];
+    if (!compositionClass || !elementName) continue;
+
+    const byElement = scores.get(compositionClass) ?? new Map<string, number>();
+    const min = parseWeight(row['Min Percentage'], 0);
+    const max = parseWeight(row['Max Percentage'], min);
+    const probability = parseWeight(row.Probability, 1);
+    byElement.set(elementName, (byElement.get(elementName) ?? 0) + ((min + max) / 2) * probability);
+    scores.set(compositionClass, byElement);
+  }
+
+  const names = new Map<string, string>();
+  for (const [compositionClass, byElement] of scores) {
+    const best = [...byElement.entries()].toSorted((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+    if (best) names.set(compositionClass, best[0]);
+  }
+  return names;
+}
+
+function toDisplayLocationName(row: Record<string, string>): string {
+  const slug = (row.Location || row['Provider Class'] || '').split('/').at(-1)?.toLowerCase() ?? '';
+  return DATACORE_LOCATION_NAMES[slug] ?? cleanProviderLocation(row.Location || row['Provider Class'] || '');
+}
+
+function classifyMiningGroup(groupName: string): MiningType | null {
+  if (/FPS/i.test(groupName)) return 'hand';
+  if (/GroundVehicle/i.test(groupName)) return 'ground';
+  if (/SpaceShip|Ship/i.test(groupName)) return 'ship';
+  return null;
+}
+
+function toWeightedMineableList(weightMap: Record<string, number>): string {
+  const entries = Object.entries(weightMap);
+  if (entries.length === 0) return '';
+  const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
+  return entries
+    .toSorted((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([name, weight]) => `${name} - ${Math.round((weight / total) * 1000) / 10}%`)
+    .join('\n');
+}
+
+function cleanCompositionClass(value: string | undefined): string {
+  if (!value) return '';
+  return value
+    .replace(/^CommonShipMineablesAsteroid_/i, '')
+    .replace(/^Asteroid_[A-Z]Type_/i, '')
+    .replace(/^FPS_/i, '')
+    .replace(/^GroundVehicle_/i, '')
+    .replace(/_/g, ' ')
+    .trim();
+}
+
+function cleanProviderLocation(value: string): string {
+  const base = value.split('/').at(-1) || value;
+  return base
+    .replace(/^HPP[_-]/i, '')
+    .replace(/^hpp[_-]/i, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim();
+}
+
+function parseWeight(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function isFileNotFound(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
+}
 
 /**
  * Normalises a Location Name to a lowercase slug for INI key matching.
@@ -26,6 +465,7 @@ function toLocationSlug(name: string): string {
 
 export default {
   csvFile: 'mining-locations.csv',
+  loadSourceData: loadMiningLocationSourceData,
   label: 'Mining locations',
   requiredColumns: ['Location Name', 'Ship Mineables', 'Hand Mineables'],
   // Optional columns (added by enriched scraper): 'Ground Vehicle Mineables', 'Quality Note'

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { ItemSourceDataContext } from '../../enrichment/item-config';
 import { findLatestMatchingDirectory } from '../../io/local/discovery';
 import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../../items/registry';
 import type { ItemConfig } from '../../enrichment/item-config';
@@ -17,6 +18,7 @@ export interface UpdateCategory {
   config: ItemConfig;
   csvDir: string;
   source?: UpdateSourceMetadata;
+  sourceDirs?: ItemSourceDataContext['sourceDirs'];
 }
 
 export interface PrepareUpdateCategoriesOptions {
@@ -107,16 +109,22 @@ export async function prepareUpdateCategories(
       config,
       csvDir: itemVersionDir,
       source: { provider: 'spviewer' as const, channel, category },
+      sourceDirs: { spviewer: itemVersionDir, scmdb: scmdbDir },
     })),
     ...datacoreConfigs.map(([category, config]) => ({
       config,
       csvDir: itemVersionDir,
       source: { provider: 'datacore' as const, channel, category },
+      sourceDirs: { datacore: itemVersionDir, scmdb: scmdbDir },
     })),
     ...missionConfigs.map(([category, config]) => ({
       config,
       csvDir: missionCsvDir,
       source: { provider: 'scmdb' as const, channel, category },
+      sourceDirs:
+        options.provider === 'datacore'
+          ? { datacore: itemVersionDir, scmdb: scmdbDir }
+          : { spviewer: itemVersionDir, scmdb: scmdbDir },
     })),
   ];
 

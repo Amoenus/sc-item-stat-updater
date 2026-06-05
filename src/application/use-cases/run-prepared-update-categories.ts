@@ -53,7 +53,7 @@ export async function runPreparedUpdateCategories(
     onCategoryStart?.(category, index);
 
     try {
-      results.push(await enrich(category, { ...sharedOptions, csvDir: category.csvDir }));
+      results.push(await enrich(category, { ...sharedOptions, csvDir: category.csvDir, sourceDirs: category.sourceDirs }));
     } catch (err) {
       const error = toBatchUpdateError(category, err);
       errors.push(error);

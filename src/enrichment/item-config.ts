@@ -12,6 +12,8 @@ export interface BaseItemConfig {
   parseJson?: (json: unknown) => Array<Record<string, string>>;
   /** Resolves JSON source file path at runtime */
   resolveJsonFile?: (csvDir: string) => Promise<string>;
+  /** Loads source rows when a config needs richer provider context than one CSV/JSON file */
+  loadSourceData?: (context: ItemSourceDataContext) => Promise<Array<Record<string, string>>>;
   /** Display label for logging */
   label: string;
   /** CSV/JSON columns required by buildValue (validated at parse time) */
@@ -30,6 +32,15 @@ export interface BaseItemConfig {
   nameKeyToDescKey?: (nameKey: string) => string;
   /** Extra keys to check for existing entries */
   getAlternateDescKeys?: (descKey: string) => string[];
+}
+
+export interface ItemSourceDataContext {
+  csvDir: string;
+  sourceDirs?: {
+    datacore?: string;
+    scmdb?: string;
+    spviewer?: string;
+  };
 }
 
 export interface ItemConfig extends BaseItemConfig {

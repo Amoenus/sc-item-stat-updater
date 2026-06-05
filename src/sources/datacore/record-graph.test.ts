@@ -17,6 +17,8 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     `
       <EntityClassDefinition.AEGS_Avenger __ref="11111111-1111-1111-1111-111111111111" __type="EntityClassDefinition" __path="libs/foundry/records/entities/spaceships/aegs_avenger.xml" vehicleName="@vehicle_Name_AEGS_Avenger">
         <Vehicle vehicleDescription="vehicle_Desc_AEGS_Avenger" />
+        <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
+        <SCItemPurchasableParams displayType="@items_commodities_type_alloy" />
         <Fallback Name="Raw entity name is not a localization reference" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
@@ -48,6 +50,15 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.deepEqual(graph.indexes.byLocalizationKey.vehicle_Name_AEGS_Avenger, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_atlasium, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_atlasium_desc, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_type_alloy, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);

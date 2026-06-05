@@ -9,10 +9,12 @@ import { loadXml } from './xml-parser';
 const LOCALIZATION_ATTRIBUTES = [
   'Name',
   'Description',
+  'name',
+  'description',
   'displayName',
   'displayDescription',
+  'displayType',
   'title',
-  'description',
   'vehicleName',
   'vehicleDescription',
 ] as const;

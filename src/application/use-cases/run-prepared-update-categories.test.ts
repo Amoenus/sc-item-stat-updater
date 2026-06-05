@@ -25,10 +25,16 @@ function matchingConfig(label: string, descKeyMatch: ItemConfig['descKeyMatch'])
 
 test('runPreparedUpdateCategories enriches each category with its prepared source directory', async () => {
   const categories: UpdateCategory[] = [
-    { config: config('Weapons'), csvDir: 'csv/weapons' },
+    { config: config('Weapons'), csvDir: 'csv/weapons', sourceDirs: { datacore: 'csv/datacore', scmdb: 'csv/scmdb' } },
     { config: config('Missions'), csvDir: 'csv/missions' },
   ];
-  const calls: Array<{ label: string; csvDir?: string; dryRun?: boolean; skipBackup?: boolean }> = [];
+  const calls: Array<{
+    label: string;
+    csvDir?: string;
+    datacoreDir?: string;
+    dryRun?: boolean;
+    skipBackup?: boolean;
+  }> = [];
   const started: string[] = [];
 
   const result = await runPreparedUpdateCategories(categories, {
@@ -39,6 +45,7 @@ test('runPreparedUpdateCategories enriches each category with its prepared sourc
       calls.push({
         label: config.label,
         csvDir: options.csvDir,
+        datacoreDir: options.sourceDirs?.datacore,
         dryRun: options.dryRun,
         skipBackup: options.skipBackup,
       });
@@ -48,8 +55,8 @@ test('runPreparedUpdateCategories enriches each category with its prepared sourc
 
   assert.deepEqual(started, ['Weapons', 'Missions']);
   assert.deepEqual(calls, [
-    { label: 'Weapons', csvDir: 'csv/weapons', dryRun: true, skipBackup: true },
-    { label: 'Missions', csvDir: 'csv/missions', dryRun: true, skipBackup: true },
+    { label: 'Weapons', csvDir: 'csv/weapons', datacoreDir: 'csv/datacore', dryRun: true, skipBackup: true },
+    { label: 'Missions', csvDir: 'csv/missions', datacoreDir: undefined, dryRun: true, skipBackup: true },
   ]);
   assert.deepEqual(
     result.results.map((entry) => entry.summary),

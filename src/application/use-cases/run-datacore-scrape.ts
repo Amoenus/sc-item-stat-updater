@@ -11,12 +11,41 @@ import {
 } from '../../io/local/unp4k-tool';
 import type { DataCoreFieldSelector, DataCoreItemTypeConfig } from '../../items/datacore/types';
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
+import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
+import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
+import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
+import { extractDataCoreMiningCompositions } from '../../sources/datacore/mining-composition-extractor';
+import { extractDataCoreMiningElements } from '../../sources/datacore/mining-element-extractor';
+import { extractDataCoreMiningHarvestablePresets } from '../../sources/datacore/mining-harvestable-preset-extractor';
+import { extractDataCoreMiningHarvestableSetups } from '../../sources/datacore/mining-harvestable-setup-extractor';
+import { extractDataCoreMiningLocationLabels } from '../../sources/datacore/mining-location-label-extractor';
+import { extractDataCoreMiningParams } from '../../sources/datacore/mining-param-extractor';
+import { extractDataCoreMiningProviderPresets } from '../../sources/datacore/mining-provider-preset-extractor';
+import { extractDataCoreMiningQualityDistributions } from '../../sources/datacore/mining-quality-distribution-extractor';
+import { extractDataCoreMiningSubHarvestableConfigs } from '../../sources/datacore/mining-sub-harvestable-config-extractor';
+import { extractDataCoreMineableEntities } from '../../sources/datacore/mineable-entity-extractor';
 import {
   type BuildDataCoreRecordGraphOptions,
   buildDataCoreRecordGraph,
   writeDataCoreRecordGraph,
 } from '../../sources/datacore/record-graph';
-import type { DataCoreRecordGraph } from '../../sources/datacore/types';
+import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
+import type {
+  DataCoreCommodityRecord,
+  DataCoreMineableEntityRecord,
+  DataCoreMiningClusteringParamRecord,
+  DataCoreMiningCompositionPartRecord,
+  DataCoreMiningDensityOverrideRecord,
+  DataCoreMiningElementRecord,
+  DataCoreMiningHarvestablePresetRecord,
+  DataCoreMiningHarvestableSetupRecord,
+  DataCoreMiningLocationLabelRecord,
+  DataCoreMiningParamRecord,
+  DataCoreMiningProviderPresetRecord,
+  DataCoreMiningQualityDistributionRecord,
+  DataCoreMiningSubHarvestableConfigRecord,
+  DataCoreRecordGraph,
+} from '../../sources/datacore/types';
 import {
   collectDataCoreXmlFilesMatching,
   countDataCoreXmlFiles,
@@ -43,6 +72,71 @@ export interface DataCoreScrapeTypeResult {
   csvFile: string;
 }
 
+export interface DataCoreScrapeCommodityResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningElementResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningCompositionResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMineableEntityResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningDensityOverrideResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningClusteringResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningHarvestablePresetResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningHarvestableSetupResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningSubHarvestableConfigResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningQualityDistributionResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningLocationLabelResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningParamResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningProviderPresetResult {
+  rows: number;
+  csvFile: string;
+}
+
 export interface DataCoreScrapeTypeError {
   type: string;
   message: string;
@@ -64,6 +158,19 @@ export interface RunDatacoreScrapeOptions {
   extractXmlCache?: typeof extractDataCoreXmlCache;
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
+  extractCommodities?: typeof extractDataCoreCommodities;
+  extractMiningElements?: typeof extractDataCoreMiningElements;
+  extractMiningCompositions?: typeof extractDataCoreMiningCompositions;
+  extractMineableEntities?: typeof extractDataCoreMineableEntities;
+  extractMiningDensityOverrides?: typeof extractDataCoreMiningDensityOverrides;
+  extractMiningClustering?: typeof extractDataCoreMiningClustering;
+  extractMiningHarvestablePresets?: typeof extractDataCoreMiningHarvestablePresets;
+  extractMiningHarvestableSetups?: typeof extractDataCoreMiningHarvestableSetups;
+  extractMiningSubHarvestableConfigs?: typeof extractDataCoreMiningSubHarvestableConfigs;
+  extractMiningQualityDistributions?: typeof extractDataCoreMiningQualityDistributions;
+  extractMiningLocationLabels?: typeof extractDataCoreMiningLocationLabels;
+  extractMiningParams?: typeof extractDataCoreMiningParams;
+  extractMiningProviderPresets?: typeof extractDataCoreMiningProviderPresets;
   onPrepared?: (context: {
     gameVersion: string;
     channel: 'live' | 'ptu';
@@ -81,6 +188,19 @@ export interface RunDatacoreScrapeOptions {
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
+  onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMineableEntitiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningDensityOverridesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningClusteringExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningHarvestablePresetsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningHarvestableSetupsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningSubHarvestableConfigsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningQualityDistributionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningParamsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningProviderPresetsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
 }
 
 export interface RunDatacoreScrapeResult {
@@ -97,11 +217,354 @@ export interface RunDatacoreScrapeResult {
     recordCount: number;
     outputPath: string;
   };
+  commodityResult: DataCoreScrapeCommodityResult;
+  miningElementResult: DataCoreScrapeMiningElementResult;
+  miningCompositionResult: DataCoreScrapeMiningCompositionResult;
+  mineableEntityResult: DataCoreScrapeMineableEntityResult;
+  miningDensityOverrideResult: DataCoreScrapeMiningDensityOverrideResult;
+  miningClusteringResult: DataCoreScrapeMiningClusteringResult;
+  miningHarvestablePresetResult: DataCoreScrapeMiningHarvestablePresetResult;
+  miningHarvestableSetupResult: DataCoreScrapeMiningHarvestableSetupResult;
+  miningSubHarvestableConfigResult: DataCoreScrapeMiningSubHarvestableConfigResult;
+  miningQualityDistributionResult: DataCoreScrapeMiningQualityDistributionResult;
+  miningLocationLabelResult: DataCoreScrapeMiningLocationLabelResult;
+  miningParamResult: DataCoreScrapeMiningParamResult;
+  miningProviderPresetResult: DataCoreScrapeMiningProviderPresetResult;
   results: DataCoreScrapeTypeResult[];
   errors: DataCoreScrapeTypeError[];
 }
 
 const COMMON_HEADERS = ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Class', 'Health'];
+const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
+const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
+const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
+const MINEABLE_ENTITIES_CSV_FILE = 'mineable-entities.datacore.csv';
+const MINING_DENSITY_OVERRIDES_CSV_FILE = 'mining-density-overrides.datacore.csv';
+const MINING_CLUSTERING_CSV_FILE = 'mining-clustering.datacore.csv';
+const MINING_HARVESTABLE_PRESETS_CSV_FILE = 'mining-harvestable-presets.datacore.csv';
+const MINING_HARVESTABLE_SETUPS_CSV_FILE = 'mining-harvestable-setups.datacore.csv';
+const MINING_SUB_HARVESTABLE_CONFIGS_CSV_FILE = 'mining-sub-harvestable-configs.datacore.csv';
+const MINING_QUALITY_DISTRIBUTIONS_CSV_FILE = 'mining-quality-distributions.datacore.csv';
+const MINING_LOCATION_LABELS_CSV_FILE = 'mining-location-labels.datacore.csv';
+const MINING_PARAMS_CSV_FILE = 'mining-params.datacore.csv';
+const MINING_PROVIDER_PRESETS_CSV_FILE = 'mining-provider-presets.datacore.csv';
+const COMMODITY_HEADERS = [
+  'Entity Class',
+  'Name Key',
+  'Description Key',
+  'Display Name Key',
+  'Display Description Key',
+  'Display Type Key',
+  'Type GUID',
+  'Subtype GUID',
+  'Cargo Occupancy Unit',
+  'Cargo Occupancy Value',
+  'Cargo Occupancy SCU',
+  'Boxable',
+  'Unrefined',
+  'Raw',
+  'Refined',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_ELEMENT_HEADERS = [
+  'Element Class',
+  'Element Name',
+  'Inferred Description Key',
+  'Resource Type GUID',
+  'Instability',
+  'Resistance',
+  'Optimal Window Midpoint',
+  'Optimal Window Randomness',
+  'Optimal Window Thinness',
+  'Explosion Multiplier',
+  'Cluster Factor',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_COMPOSITION_HEADERS = [
+  'Composition Class',
+  'Deposit Name Key',
+  'Minimum Distinct Elements',
+  'Part Index',
+  'Mineable Element GUID',
+  'Mineable Element Class',
+  'Mineable Element Name',
+  'Min Percentage',
+  'Max Percentage',
+  'Probability',
+  'Curve Exponent',
+  'Quality Scale',
+  'Record GUID',
+  'Record Path',
+];
+const MINEABLE_ENTITY_HEADERS = [
+  'Entity Class',
+  'Composition GUID',
+  'Composition Class',
+  'Global Params GUID',
+  'Global Params Class',
+  'Audio Params GUID',
+  'Audio Params Class',
+  'Density Class GUID',
+  'Density Class',
+  'Filled Factor',
+  'Glow Curve Power',
+  'Glow Lerp Speed',
+  'Allow Auto Respawning',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_DENSITY_OVERRIDE_HEADERS = [
+  'Override Class',
+  'Density Class GUID',
+  'Density Class',
+  'Density Class Path',
+  'Lifetime Days',
+  'Lifetime Hours',
+  'Lifetime Minutes',
+  'Lifetime Seconds',
+  'Lifetime Total Seconds',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_CLUSTERING_HEADERS = [
+  'Clustering Class',
+  'Probability Of Clustering',
+  'Param Index',
+  'Relative Probability',
+  'Min Size',
+  'Max Size',
+  'Min Proximity',
+  'Max Proximity',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_HARVESTABLE_PRESET_HEADERS = [
+  'Harvestable Preset Class',
+  'Harvestable Entity GUID',
+  'Harvestable Entity Class',
+  'Harvestable Entity Path',
+  'Respawn In Slot Time',
+  'Special Harvestable String',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_HARVESTABLE_SETUP_HEADERS = [
+  'Setup Class',
+  'Respawn In Slot Time',
+  'Special Harvestable String',
+  'Harvest Condition Types',
+  'Health Ratio',
+  'Include Attached Children',
+  'All Interactions Clear Spawn Point',
+  'Movement Distance',
+  'Despawn Time Seconds',
+  'Additional Wait For Nearby Players Seconds',
+  'Min Scale',
+  'Max Scale',
+  'Terrain Normal Alignment',
+  'Min Z Offset',
+  'Max Z Offset',
+  'Min Slope',
+  'Max Slope',
+  'Min Elevation',
+  'Max Elevation',
+  'Local Rotation Offset',
+  'Rotation Range',
+  'Position Offset',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_SUB_HARVESTABLE_CONFIG_HEADERS = [
+  'Config Class',
+  'Config Type',
+  'Tagged Config Name',
+  'Tag GUIDs',
+  'Initial Slots Probability',
+  'Config Respawn Time Multiplier',
+  'Slot Index',
+  'Harvestable GUID',
+  'Harvestable Class',
+  'Harvestable Path',
+  'Harvestable Entity GUID',
+  'Harvestable Entity Class',
+  'Harvestable Entity Path',
+  'Harvestable Setup GUID',
+  'Harvestable Setup Class',
+  'Relative Probability',
+  'Deepest Relative Probability',
+  'Harvestable Respawn Time Multiplier',
+  'Geometry Tags',
+  'Referenced Config GUID',
+  'Referenced Config Class',
+  'Referenced Config Path',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_QUALITY_DISTRIBUTION_HEADERS = [
+  'Distribution Class',
+  'Distribution Type',
+  'Mineable Family',
+  'Location GUID',
+  'Location Class',
+  'Location Path',
+  'Min Quality',
+  'Max Quality',
+  'Mean',
+  'Stddev',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_LOCATION_LABEL_HEADERS = [
+  'Location Class',
+  'Source Reason',
+  'Name Key',
+  'Description Key',
+  'Callout 1 Key',
+  'Callout 2 Key',
+  'Callout 3 Key',
+  'Type GUID',
+  'Parent GUID',
+  'Parent Class',
+  'Parent Path',
+  'Location Hierarchy Tag',
+  'Nav Icon',
+  'Size',
+  'Hide In Starmap',
+  'Hide In World',
+  'Is Scannable',
+  'Block Travel',
+  'Arrival Radius',
+  'Adoption Radius',
+  'Set Entity Location On Enter',
+  'Expose For Player Created Missions',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_PARAM_HEADERS = [
+  'Param Type',
+  'Param Class',
+  'Highlight Occluded Alpha',
+  'Highlight Outline Width',
+  'Highlight Distant Mineables Range',
+  'Show Child Rock Radar Icon',
+  'Scale Power Graph Min',
+  'No Progress Hint Time',
+  'No Progress Hint Power',
+  'Fracture Done Feedback Duration',
+  'Max Scan Raycast Distance',
+  'Highlight Color',
+  'Highlight Color Absorbable',
+  'Highlight Color Distant',
+  'Highlight Color Distant Scanned',
+  'Camera Shake Enabled',
+  'Camera Shake Time Period',
+  'Camera Shake Frequency Noise Factor',
+  'Camera Shake Translation Noise',
+  'Camera Shake Rotation Noise',
+  'Camera Shake Max Under Optimal Window',
+  'Camera Shake In Optimal Window',
+  'Camera Shake Min In Danger Window',
+  'Camera Shake Change Lerp Speed',
+  'Camera Shake Offset Position',
+  'Camera Shake Offset Angle',
+  'Block Throttle Change When Not Firing',
+  'Throttle Reset On Stop Fire',
+  'Throttle Change Per Action',
+  'Throttle Acc Period',
+  'Throttle Acc Factor',
+  'Throttle Hold Acc Factor',
+  'Throttle RTPC',
+  'Power Capacity Per Mass',
+  'Decay Per Mass',
+  'Optimal Window Size',
+  'Optimal Window Factor',
+  'Resistance Curve Factor',
+  'Optimal Window Thinness Curve Factor',
+  'Optimal Window Max Size',
+  'Controlled Breaking Fill Rate',
+  'Controlled Breaking Fill Rate Danger',
+  'Controlled Breaking Decay Rate',
+  'Danger Breaking Fill Rate',
+  'Danger Breaking Fill Rate Exponent',
+  'Danger Breaking Decay Rate',
+  'Absorbable Volume Threshold',
+  'Child Rock Invulnerability Time',
+  'CSCU Per Volume',
+  'Default Mass',
+  'Modifier Persistence Time',
+  'Child Rock Life Timer',
+  'Child Rock Zero G Damping',
+  'Terrain Factor Static Threshold',
+  'Show Explosion FX For Surplus Child',
+  'Child Rock Inactivity Lifetime',
+  'Gadget Detach Threshold',
+  'Gadget Destroy Threshold',
+  'Danger To Gadget Damage',
+  'Waste Resource Type',
+  'Instability Wave Period',
+  'Instability Wave Variance',
+  'Instability Curve Factor',
+  'Danger Pool Factor',
+  'Explosion Default Volume',
+  'Hit History Window',
+  'Standard Deviation Multiplier',
+  'Time Exponent',
+  'Min Deviation',
+  'Extraction Magnitude',
+  'Max Effect On Instability',
+  'Fracture Particle Effect',
+  'Explosion Particle Effect',
+  'Center Rock Destroy Particle Effect',
+  'Fully Extracted Rock Particle Effect',
+  'Mineable Power Increasing Fall Off',
+  'Mineable Power Level RTPC',
+  'Mineable Danger Breaking RTPC',
+  'Mineable Optimal Breaking RTPC',
+  'Mineable Mass RTPC',
+  'Mineable Crack Glow Strength RTPC',
+  'Mining Start Trigger',
+  'Mining Stop Trigger',
+  'Good Fractured Trigger',
+  'Bad Fractured Trigger',
+  'Extracted Trigger',
+  'Cluster Detection Radius',
+  'Cluster Upper Object Count DGS',
+  'Cluster Upper Object Count Persistence',
+  'Cluster Persistence Timeout',
+  'Reset Lifetime On Move',
+  'Entity Idle Bury Only',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_PROVIDER_PRESET_HEADERS = [
+  'Provider Class',
+  'System',
+  'Location',
+  'Group Name',
+  'Group Probability',
+  'Entry Index',
+  'Harvestable GUID',
+  'Harvestable Class',
+  'Harvestable Path',
+  'Harvestable Entity GUID',
+  'Harvestable Entity Class',
+  'Harvestable Entity Path',
+  'Harvestable Setup GUID',
+  'Harvestable Setup Class',
+  'Composition GUID',
+  'Composition Class',
+  'Global Params GUID',
+  'Audio Params GUID',
+  'Filled Factor',
+  'Clustering GUID',
+  'Clustering Class',
+  'Relative Probability',
+  'Geometry Tags',
+  'Record GUID',
+  'Record Path',
+];
 
 export async function loadDataCoreTypeEntries(repoRoot: string): Promise<DataCoreTypeEntry[]> {
   const datacoreItemsDir = path.join(repoRoot, 'src', 'items', 'datacore');
@@ -132,6 +595,24 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractXmlCache = options.extractXmlCache ?? extractDataCoreXmlCache;
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
+  const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
+  const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
+  const extractMiningCompositions = options.extractMiningCompositions ?? extractDataCoreMiningCompositions;
+  const extractMineableEntities = options.extractMineableEntities ?? extractDataCoreMineableEntities;
+  const extractMiningDensityOverrides =
+    options.extractMiningDensityOverrides ?? extractDataCoreMiningDensityOverrides;
+  const extractMiningClustering = options.extractMiningClustering ?? extractDataCoreMiningClustering;
+  const extractMiningHarvestablePresets =
+    options.extractMiningHarvestablePresets ?? extractDataCoreMiningHarvestablePresets;
+  const extractMiningHarvestableSetups =
+    options.extractMiningHarvestableSetups ?? extractDataCoreMiningHarvestableSetups;
+  const extractMiningSubHarvestableConfigs =
+    options.extractMiningSubHarvestableConfigs ?? extractDataCoreMiningSubHarvestableConfigs;
+  const extractMiningQualityDistributions =
+    options.extractMiningQualityDistributions ?? extractDataCoreMiningQualityDistributions;
+  const extractMiningLocationLabels = options.extractMiningLocationLabels ?? extractDataCoreMiningLocationLabels;
+  const extractMiningParams = options.extractMiningParams ?? extractDataCoreMiningParams;
+  const extractMiningProviderPresets = options.extractMiningProviderPresets ?? extractDataCoreMiningProviderPresets;
   const allTypes = await loadTypes(options.repoRoot);
   const selectedTypes = selectTypes(allTypes, options.types ?? []);
   const binDirname = options.binDirname ?? path.join(options.repoRoot, 'bin');
@@ -184,6 +665,175 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
 
+  const commodityRows = await extractCommodities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const commodityResult = await writeCommodityCsv(commodityRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onCommoditiesExtracted?.(commodityResult.rows, commodityResult.csvFile, Boolean(options.dryRun));
+
+  const miningElementRows = await extractMiningElements({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningElementResult = await writeMiningElementCsv(miningElementRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningElementsExtracted?.(miningElementResult.rows, miningElementResult.csvFile, Boolean(options.dryRun));
+
+  const miningCompositionRows = await extractMiningCompositions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningCompositionResult = await writeMiningCompositionCsv(miningCompositionRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningCompositionsExtracted?.(
+    miningCompositionResult.rows,
+    miningCompositionResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const mineableEntityRows = await extractMineableEntities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const mineableEntityResult = await writeMineableEntityCsv(mineableEntityRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMineableEntitiesExtracted?.(mineableEntityResult.rows, mineableEntityResult.csvFile, Boolean(options.dryRun));
+
+  const miningDensityOverrideRows = await extractMiningDensityOverrides({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningDensityOverrideResult = await writeMiningDensityOverrideCsv(miningDensityOverrideRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningDensityOverridesExtracted?.(
+    miningDensityOverrideResult.rows,
+    miningDensityOverrideResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningClusteringRows = await extractMiningClustering({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningClusteringResult = await writeMiningClusteringCsv(miningClusteringRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningClusteringExtracted?.(
+    miningClusteringResult.rows,
+    miningClusteringResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningHarvestablePresetRows = await extractMiningHarvestablePresets({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningHarvestablePresetResult = await writeMiningHarvestablePresetCsv(miningHarvestablePresetRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningHarvestablePresetsExtracted?.(
+    miningHarvestablePresetResult.rows,
+    miningHarvestablePresetResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningHarvestableSetupRows = await extractMiningHarvestableSetups({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningHarvestableSetupResult = await writeMiningHarvestableSetupCsv(miningHarvestableSetupRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningHarvestableSetupsExtracted?.(
+    miningHarvestableSetupResult.rows,
+    miningHarvestableSetupResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningSubHarvestableConfigRows = await extractMiningSubHarvestableConfigs({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningSubHarvestableConfigResult = await writeMiningSubHarvestableConfigCsv(
+    miningSubHarvestableConfigRows,
+    {
+      outputBase,
+      dryRun: options.dryRun,
+    },
+  );
+  options.onMiningSubHarvestableConfigsExtracted?.(
+    miningSubHarvestableConfigResult.rows,
+    miningSubHarvestableConfigResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningQualityDistributionRows = await extractMiningQualityDistributions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningQualityDistributionResult = await writeMiningQualityDistributionCsv(miningQualityDistributionRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningQualityDistributionsExtracted?.(
+    miningQualityDistributionResult.rows,
+    miningQualityDistributionResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningLocationLabelRows = await extractMiningLocationLabels({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningLocationLabelResult = await writeMiningLocationLabelCsv(miningLocationLabelRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningLocationLabelsExtracted?.(
+    miningLocationLabelResult.rows,
+    miningLocationLabelResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningParamRows = await extractMiningParams({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningParamResult = await writeMiningParamCsv(miningParamRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningParamsExtracted?.(miningParamResult.rows, miningParamResult.csvFile, Boolean(options.dryRun));
+
+  const miningProviderPresetRows = await extractMiningProviderPresets({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(recordGraph),
+  });
+  const miningProviderPresetResult = await writeMiningProviderPresetCsv(miningProviderPresetRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningProviderPresetsExtracted?.(
+    miningProviderPresetResult.rows,
+    miningProviderPresetResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
   const results: DataCoreScrapeTypeResult[] = [];
   const errors: DataCoreScrapeTypeError[] = [];
 
@@ -213,6 +863,19 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       recordCount: recordGraph.recordCount,
       outputPath: recordGraphPath,
     },
+    commodityResult,
+    miningElementResult,
+    miningCompositionResult,
+    mineableEntityResult,
+    miningDensityOverrideResult,
+    miningClusteringResult,
+    miningHarvestablePresetResult,
+    miningHarvestableSetupResult,
+    miningSubHarvestableConfigResult,
+    miningQualityDistributionResult,
+    miningLocationLabelResult,
+    miningParamResult,
+    miningProviderPresetResult,
     results,
     errors,
   };
@@ -298,6 +961,514 @@ async function scrapeDataCoreType(
   }
 
   return { type: name, rows: rows.length, skipped, csvFile };
+}
+
+async function writeCommodityCsv(
+  rows: DataCoreCommodityRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeCommodityResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.entityClass,
+      row.nameKey,
+      row.descriptionKey,
+      row.displayNameKey,
+      row.displayDescriptionKey,
+      row.displayTypeKey,
+      row.typeGuid,
+      row.subtypeGuid,
+      row.cargoOccupancyUnit,
+      row.cargoOccupancyValue,
+      row.cargoOccupancySCU,
+      row.boxable,
+      row.isUnrefinedElement,
+      row.isRaw,
+      row.isRefined,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(path.join(options.outputBase, COMMODITY_CSV_FILE), stringify([COMMODITY_HEADERS, ...csvRows]), 'utf8');
+  }
+
+  return { rows: rows.length, csvFile: COMMODITY_CSV_FILE };
+}
+
+async function writeMiningElementCsv(
+  rows: DataCoreMiningElementRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningElementResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.elementClass,
+      row.elementName,
+      row.inferredDescriptionKey,
+      row.resourceTypeGuid,
+      row.instability,
+      row.resistance,
+      row.optimalWindowMidpoint,
+      row.optimalWindowRandomness,
+      row.optimalWindowThinness,
+      row.explosionMultiplier,
+      row.clusterFactor,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_ELEMENTS_CSV_FILE),
+      stringify([MINING_ELEMENT_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_ELEMENTS_CSV_FILE };
+}
+
+async function writeMiningCompositionCsv(
+  rows: DataCoreMiningCompositionPartRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningCompositionResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.compositionClass,
+      row.depositNameKey,
+      row.minimumDistinctElements,
+      row.partIndex,
+      row.mineableElementGuid,
+      row.mineableElementClass,
+      row.mineableElementName,
+      row.minPercentage,
+      row.maxPercentage,
+      row.probability,
+      row.curveExponent,
+      row.qualityScale,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_COMPOSITIONS_CSV_FILE),
+      stringify([MINING_COMPOSITION_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_COMPOSITIONS_CSV_FILE };
+}
+
+async function writeMineableEntityCsv(
+  rows: DataCoreMineableEntityRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMineableEntityResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.entityClass,
+      row.compositionGuid,
+      row.compositionClass,
+      row.globalParamsGuid,
+      row.globalParamsClass,
+      row.audioParamsGuid,
+      row.audioParamsClass,
+      row.densityClassGuid,
+      row.densityClass,
+      row.filledFactor,
+      row.glowCurvePower,
+      row.glowLerpSpeed,
+      row.allowAutoRespawning,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINEABLE_ENTITIES_CSV_FILE),
+      stringify([MINEABLE_ENTITY_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINEABLE_ENTITIES_CSV_FILE };
+}
+
+async function writeMiningDensityOverrideCsv(
+  rows: DataCoreMiningDensityOverrideRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningDensityOverrideResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.overrideClass,
+      row.densityClassGuid,
+      row.densityClass,
+      row.densityClassPath,
+      row.lifetimeDays,
+      row.lifetimeHours,
+      row.lifetimeMinutes,
+      row.lifetimeSeconds,
+      row.lifetimeTotalSeconds,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_DENSITY_OVERRIDES_CSV_FILE),
+      stringify([MINING_DENSITY_OVERRIDE_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_DENSITY_OVERRIDES_CSV_FILE };
+}
+
+async function writeMiningClusteringCsv(
+  rows: DataCoreMiningClusteringParamRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningClusteringResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.clusteringClass,
+      row.probabilityOfClustering,
+      row.paramIndex,
+      row.relativeProbability,
+      row.minSize,
+      row.maxSize,
+      row.minProximity,
+      row.maxProximity,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_CLUSTERING_CSV_FILE),
+      stringify([MINING_CLUSTERING_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_CLUSTERING_CSV_FILE };
+}
+
+async function writeMiningHarvestablePresetCsv(
+  rows: DataCoreMiningHarvestablePresetRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningHarvestablePresetResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.harvestablePresetClass,
+      row.harvestableEntityGuid,
+      row.harvestableEntityClass,
+      row.harvestableEntityPath,
+      row.respawnInSlotTime,
+      row.specialHarvestableString,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_HARVESTABLE_PRESETS_CSV_FILE),
+      stringify([MINING_HARVESTABLE_PRESET_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_HARVESTABLE_PRESETS_CSV_FILE };
+}
+
+async function writeMiningHarvestableSetupCsv(
+  rows: DataCoreMiningHarvestableSetupRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningHarvestableSetupResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.setupClass,
+      row.respawnInSlotTime,
+      row.specialHarvestableString,
+      row.harvestConditionTypes,
+      row.healthRatio,
+      row.includeAttachedChildren,
+      row.allInteractionsClearSpawnPoint,
+      row.movementDistance,
+      row.despawnTimeSeconds,
+      row.additionalWaitForNearbyPlayersSeconds,
+      row.minScale,
+      row.maxScale,
+      row.terrainNormalAlignment,
+      row.minZOffset,
+      row.maxZOffset,
+      row.minSlope,
+      row.maxSlope,
+      row.minElevation,
+      row.maxElevation,
+      row.localRotationOffset,
+      row.rotationRange,
+      row.positionOffset,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_HARVESTABLE_SETUPS_CSV_FILE),
+      stringify([MINING_HARVESTABLE_SETUP_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_HARVESTABLE_SETUPS_CSV_FILE };
+}
+
+async function writeMiningSubHarvestableConfigCsv(
+  rows: DataCoreMiningSubHarvestableConfigRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningSubHarvestableConfigResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.configClass,
+      row.configType,
+      row.taggedConfigName,
+      row.tagGuids,
+      row.initialSlotsProbability,
+      row.configRespawnTimeMultiplier,
+      row.slotIndex,
+      row.harvestableGuid,
+      row.harvestableClass,
+      row.harvestablePath,
+      row.harvestableEntityGuid,
+      row.harvestableEntityClass,
+      row.harvestableEntityPath,
+      row.harvestableSetupGuid,
+      row.harvestableSetupClass,
+      row.relativeProbability,
+      row.deepestRelativeProbability,
+      row.harvestableRespawnTimeMultiplier,
+      row.geometryTags,
+      row.referencedConfigGuid,
+      row.referencedConfigClass,
+      row.referencedConfigPath,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_SUB_HARVESTABLE_CONFIGS_CSV_FILE),
+      stringify([MINING_SUB_HARVESTABLE_CONFIG_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_SUB_HARVESTABLE_CONFIGS_CSV_FILE };
+}
+
+async function writeMiningQualityDistributionCsv(
+  rows: DataCoreMiningQualityDistributionRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningQualityDistributionResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.distributionClass,
+      row.distributionType,
+      row.mineableFamily,
+      row.locationGuid,
+      row.locationClass,
+      row.locationPath,
+      row.minQuality,
+      row.maxQuality,
+      row.mean,
+      row.stddev,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_QUALITY_DISTRIBUTIONS_CSV_FILE),
+      stringify([MINING_QUALITY_DISTRIBUTION_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_QUALITY_DISTRIBUTIONS_CSV_FILE };
+}
+
+async function writeMiningLocationLabelCsv(
+  rows: DataCoreMiningLocationLabelRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningLocationLabelResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.locationClass,
+      row.sourceReason,
+      row.nameKey,
+      row.descriptionKey,
+      row.callout1Key,
+      row.callout2Key,
+      row.callout3Key,
+      row.typeGuid,
+      row.parentGuid,
+      row.parentClass,
+      row.parentPath,
+      row.locationHierarchyTag,
+      row.navIcon,
+      row.size,
+      row.hideInStarmap,
+      row.hideInWorld,
+      row.isScannable,
+      row.blockTravel,
+      row.arrivalRadius,
+      row.adoptionRadius,
+      row.setEntityLocationOnEnter,
+      row.exposeForPlayerCreatedMissions,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_LOCATION_LABELS_CSV_FILE),
+      stringify([MINING_LOCATION_LABEL_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_LOCATION_LABELS_CSV_FILE };
+}
+
+async function writeMiningParamCsv(
+  rows: DataCoreMiningParamRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningParamResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.paramType,
+      row.paramClass,
+      row.highlightOccludedAlpha,
+      row.highlightOutlineWidth,
+      row.highlightDistantMineablesRange,
+      row.showChildRockRadarIcon,
+      row.scalePowerGraphMin,
+      row.noProgressHintTime,
+      row.noProgressHintPower,
+      row.fractureDoneFeedbackDuration,
+      row.maxScanRaycastDistance,
+      row.highlightColor,
+      row.highlightColorAbsorbable,
+      row.highlightColorDistant,
+      row.highlightColorDistantScanned,
+      row.cameraShakeEnabled,
+      row.cameraShakeTimePeriod,
+      row.cameraShakeFrequencyNoiseFactor,
+      row.cameraShakeTranslationNoise,
+      row.cameraShakeRotationNoise,
+      row.cameraShakeMaxUnderOptimalWindow,
+      row.cameraShakeInOptimalWindow,
+      row.cameraShakeMinInDangerWindow,
+      row.cameraShakeChangeLerpSpeed,
+      row.cameraShakeOffsetPosition,
+      row.cameraShakeOffsetAngle,
+      row.blockThrottleChangeWhenNotFiring,
+      row.throttleResetOnStopFire,
+      row.throttleChangePerAction,
+      row.throttleAccPeriod,
+      row.throttleAccFactor,
+      row.throttleHoldAccFactor,
+      row.throttleRtpc,
+      row.powerCapacityPerMass,
+      row.decayPerMass,
+      row.optimalWindowSize,
+      row.optimalWindowFactor,
+      row.resistanceCurveFactor,
+      row.optimalWindowThinnessCurveFactor,
+      row.optimalWindowMaxSize,
+      row.controlledBreakingFillRate,
+      row.controlledBreakingFillRateDanger,
+      row.controlledBreakingDecayRate,
+      row.dangerBreakingFillRate,
+      row.dangerBreakingFillRateExponent,
+      row.dangerBreakingDecayRate,
+      row.absorbableVolumeThreshold,
+      row.childRockInvulnerabilityTime,
+      row.cSCUPerVolume,
+      row.defaultMass,
+      row.modifierPersistenceTime,
+      row.childRockLifeTimer,
+      row.childRockZeroGDamping,
+      row.terrainFactorStaticThreshold,
+      row.showExplosionFXForSurplusChild,
+      row.childRockInactivityLifetime,
+      row.gadgetDetachThreshold,
+      row.gadgetDestroyThreshold,
+      row.dangerToGadgetDamage,
+      row.wasteResourceType,
+      row.instabilityWavePeriod,
+      row.instabilityWaveVariance,
+      row.instabilityCurveFactor,
+      row.dangerPoolFactor,
+      row.explosionDefaultVolume,
+      row.hitHistoryWindow,
+      row.standardDeviationMultiplier,
+      row.timeExponent,
+      row.minDeviation,
+      row.extractionMagnitude,
+      row.maxEffectOnInstability,
+      row.fractureParticleEffect,
+      row.explosionParticleEffect,
+      row.centerRockDestroyParticleEffect,
+      row.fullyExtractedRockParticleEffect,
+      row.mineablePowerIncreasingFallOff,
+      row.mineablePowerLevelRtpc,
+      row.mineableDangerBreakingRtpc,
+      row.mineableOptimalBreakingRtpc,
+      row.mineableMassRtpc,
+      row.mineableCrackGlowStrengthRtpc,
+      row.miningStartTrigger,
+      row.miningStopTrigger,
+      row.goodFracturedTrigger,
+      row.badFracturedTrigger,
+      row.extractedTrigger,
+      row.clusterDetectionRadius,
+      row.clusterUpperObjectCountDGS,
+      row.clusterUpperObjectCountPersistence,
+      row.clusterPersistenceTimeout,
+      row.resetLifetimeOnMove,
+      row.entityIdleBuryOnly,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_PARAMS_CSV_FILE),
+      stringify([MINING_PARAM_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_PARAMS_CSV_FILE };
+}
+
+async function writeMiningProviderPresetCsv(
+  rows: DataCoreMiningProviderPresetRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningProviderPresetResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.providerClass,
+      row.system,
+      row.location,
+      row.groupName,
+      row.groupProbability,
+      row.entryIndex,
+      row.harvestableGuid,
+      row.harvestableClass,
+      row.harvestablePath,
+      row.harvestableEntityGuid,
+      row.harvestableEntityClass,
+      row.harvestableEntityPath,
+      row.harvestableSetupGuid,
+      row.harvestableSetupClass,
+      row.compositionGuid,
+      row.compositionClass,
+      row.globalParamsGuid,
+      row.audioParamsGuid,
+      row.filledFactor,
+      row.clusteringGuid,
+      row.clusteringClass,
+      row.relativeProbability,
+      row.geometryTags,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_PROVIDER_PRESETS_CSV_FILE),
+      stringify([MINING_PROVIDER_PRESET_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_PROVIDER_PRESETS_CSV_FILE };
 }
 
 function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector, row: Record<string, string>): string {

@@ -1,6 +1,9 @@
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, it } from 'node:test';
-import config from './commodities';
+import config, { buildCommodityRowsFromSources, compareCommodityCoverage } from './commodities';
 
 // The illegal keys that are always injected when absent from the JSON.
 const ILLEGAL_KEYS = [
@@ -113,5 +116,83 @@ describe('commodities parseJson', () => {
     const rows = parseJson(data);
     const widowRows = rows.filter((r) => r['Localization Key'].toLowerCase() === 'items_commodities_widow');
     assert.strictEqual(widowRows.length, 1, 'Illegal key should appear exactly once');
+  });
+
+  it('prefers DataCore commodity keys and keeps SCMDB rows only as fallback', () => {
+    const rows = buildCommodityRowsFromSources(
+      [
+        {
+          'Name Key': 'items_commodities_gold',
+          'Description Key': 'items_commodities_gold_desc',
+          'Display Type Key': 'items_commodities_type_metal',
+        },
+      ],
+      [
+        { 'Localization Key': 'items_commodities_gold', Name: 'SCMDB Gold' },
+        { 'Localization Key': 'items_commodities_silver', Name: 'Silver' },
+      ],
+    );
+
+    assert.deepStrictEqual(
+      rows.map((row) => [row['Localization Key'], row.Source, row.Name]),
+      [
+        ['items_commodities_gold', 'DataCore', ''],
+        ['items_commodities_gold_desc', 'DataCore', ''],
+        ['items_commodities_type_metal', 'DataCore', ''],
+        ['items_commodities_silver', 'SCMDB', 'Silver'],
+      ],
+    );
+  });
+
+  it('compares DataCore and SCMDB commodity coverage for diagnostics', () => {
+    const coverage = compareCommodityCoverage(
+      [{ 'Name Key': 'items_commodities_gold', 'Display Type Key': 'items_commodities_type_metal' }],
+      [
+        { 'Localization Key': 'items_commodities_gold', Name: 'Gold' },
+        { 'Localization Key': 'items_commodities_silver', Name: 'Silver' },
+      ],
+    );
+
+    assert.strictEqual(coverage.datacoreKeys, 2);
+    assert.strictEqual(coverage.scmdbKeys, 2);
+    assert.strictEqual(coverage.common, 1);
+    assert.deepStrictEqual(coverage.datacoreOnly, ['items_commodities_type_metal']);
+    assert.deepStrictEqual(coverage.scmdbOnly, ['items_commodities_silver']);
+  });
+
+  it('loads DataCore commodities beside SCMDB resource-pool fallback rows', async () => {
+    assert.ok(config.loadSourceData, 'loadSourceData must be defined on the commodities config');
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'commodity-sources-'));
+    const scmdbDir = path.join(dir, 'scmdb');
+    const datacoreDir = path.join(dir, 'datacore');
+    await fs.mkdir(scmdbDir, { recursive: true });
+    await fs.mkdir(datacoreDir, { recursive: true });
+    await fs.writeFile(
+      path.join(scmdbDir, 'merged-test.json'),
+      JSON.stringify({
+        resourcePools: {
+          gold: { nameKey: 'items_commodities_gold', name: 'SCMDB Gold' },
+          silver: { nameKey: 'items_commodities_silver', name: 'Silver' },
+        },
+      }),
+      'utf8',
+    );
+    await fs.writeFile(
+      path.join(datacoreDir, 'commodities.datacore.csv'),
+      [
+        'Entity Class,Name Key,Description Key,Display Name Key,Display Description Key,Display Type Key',
+        'gold,items_commodities_gold,items_commodities_gold_desc,,,items_commodities_type_metal',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const rows = await config.loadSourceData({ csvDir: scmdbDir, sourceDirs: { datacore: datacoreDir, scmdb: scmdbDir } });
+
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold')?.Source, 'DataCore');
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold')?.Name, '');
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold_desc')?.Source, 'DataCore');
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_type_metal')?.Source, 'DataCore');
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_silver')?.Source, 'SCMDB');
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_silver')?.Name, 'Silver');
   });
 });

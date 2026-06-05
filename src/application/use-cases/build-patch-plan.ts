@@ -11,7 +11,7 @@ import {
 import type { PatchPlan } from '../../pipeline/types';
 import { readIniFile } from '../../localization/ini-file';
 
-export type BuildPatchPlanOptions = Pick<UpdateOptions, 'iniPath' | 'csvDir' | 'dryRun' | 'force'>;
+export type BuildPatchPlanOptions = Pick<UpdateOptions, 'iniPath' | 'csvDir' | 'sourceDirs' | 'dryRun' | 'force'>;
 
 export interface BuildPatchPlanResult extends UpdatePlanResult {
   iniLines: string[];
@@ -24,7 +24,7 @@ export async function buildPatchPlanResult(
   options: BuildPatchPlanOptions = {},
 ): Promise<BuildPatchPlanResult> {
   const opts = resolveOptions({ ...options, dryRun: options.dryRun ?? true });
-  const rows = await loadSourceData(config, opts.csvDir);
+  const rows = await loadSourceData(config, opts.csvDir, options.sourceDirs);
   const { lines, index: existingKeys, lowerCaseIndex, allOccurrences } = await readIniFile(opts.iniPath);
 
   let resolvedRows = rows;

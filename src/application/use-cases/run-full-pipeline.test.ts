@@ -129,6 +129,58 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           recordCount: 0,
           outputPath: 'repo/csv/datacore/4.8.0-live/record-graph.json',
         },
+        commodityResult: {
+          rows: 0,
+          csvFile: 'commodities.datacore.csv',
+        },
+        miningElementResult: {
+          rows: 0,
+          csvFile: 'mining-elements.datacore.csv',
+        },
+        miningCompositionResult: {
+          rows: 0,
+          csvFile: 'mining-compositions.datacore.csv',
+        },
+        mineableEntityResult: {
+          rows: 0,
+          csvFile: 'mineable-entities.datacore.csv',
+        },
+        miningDensityOverrideResult: {
+          rows: 0,
+          csvFile: 'mining-density-overrides.datacore.csv',
+        },
+        miningClusteringResult: {
+          rows: 0,
+          csvFile: 'mining-clustering.datacore.csv',
+        },
+        miningHarvestablePresetResult: {
+          rows: 0,
+          csvFile: 'mining-harvestable-presets.datacore.csv',
+        },
+        miningHarvestableSetupResult: {
+          rows: 0,
+          csvFile: 'mining-harvestable-setups.datacore.csv',
+        },
+        miningSubHarvestableConfigResult: {
+          rows: 0,
+          csvFile: 'mining-sub-harvestable-configs.datacore.csv',
+        },
+        miningQualityDistributionResult: {
+          rows: 0,
+          csvFile: 'mining-quality-distributions.datacore.csv',
+        },
+        miningLocationLabelResult: {
+          rows: 0,
+          csvFile: 'mining-location-labels.datacore.csv',
+        },
+        miningParamResult: {
+          rows: 0,
+          csvFile: 'mining-params.datacore.csv',
+        },
+        miningProviderPresetResult: {
+          rows: 0,
+          csvFile: 'mining-provider-presets.datacore.csv',
+        },
         results: [],
         errors: [],
       };

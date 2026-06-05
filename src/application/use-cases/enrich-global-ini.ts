@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import type { ItemConfig } from '../../enrichment/item-config';
+import type { ItemSourceDataContext } from '../../enrichment/item-config';
 import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
 import { getLogger } from '../../infrastructure/logger';
@@ -10,6 +11,7 @@ import { buildPatchPlanResult } from './build-patch-plan';
 export interface EnrichGlobalIniOptions {
   iniPath?: string;
   csvDir?: string;
+  sourceDirs?: ItemSourceDataContext['sourceDirs'];
   dryRun?: boolean;
   skipBackup?: boolean;
   force?: boolean;

@@ -10,7 +10,7 @@ import { sanitizeIniValue } from '../../enrichment/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
 import { getLogger } from '../../infrastructure/logger';
-import type { IssueRecord, ItemConfig } from '../../enrichment/item-config';
+import type { IssueRecord, ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
 import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
 
 const logger = getLogger('updater');
@@ -31,6 +31,7 @@ export function validateRow(row: Record<string, string>, label: string): 'skip' 
 export interface UpdateOptions {
   iniPath?: string;
   csvDir?: string;
+  sourceDirs?: ItemSourceDataContext['sourceDirs'];
   dryRun?: boolean;
   skipBackup?: boolean;
   force?: boolean;
@@ -129,7 +130,14 @@ async function loadCsvSourceData(config: ItemConfig, csvDir: string): Promise<Re
 }
 
 /** Reads and validates CSV or JSON data against the config's required columns. */
-export async function loadSourceData(config: ItemConfig, csvDir: string): Promise<Record<string, string>[]> {
+export async function loadSourceData(
+  config: ItemConfig,
+  csvDir: string,
+  sourceDirs?: ItemSourceDataContext['sourceDirs'],
+): Promise<Record<string, string>[]> {
+  if (config.loadSourceData) {
+    return config.loadSourceData({ csvDir, sourceDirs });
+  }
   if (config.resolveJsonFile || config.jsonFile) {
     return loadJsonSourceData(config, csvDir);
   }
