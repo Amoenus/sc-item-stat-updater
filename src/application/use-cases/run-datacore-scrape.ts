@@ -55,6 +55,7 @@ import type {
   DataCoreMiningQualityDistributionRecord,
   DataCoreMiningSubHarvestableConfigRecord,
   DataCoreRecordGraph,
+  DataCoreRecordGraphLookup,
   DataCoreVehicleRecord,
 } from '../../sources/datacore/types';
 import { extractDataCoreVehicles } from '../../sources/datacore/vehicle-extractor';
@@ -1067,7 +1068,13 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
     try {
       results.push(
-        await scrapeDataCoreType(entry, { xmlCacheDir, outputBase, dryRun: options.dryRun, manufacturerResolver }),
+        await scrapeDataCoreType(entry, {
+          xmlCacheDir,
+          outputBase,
+          dryRun: options.dryRun,
+          manufacturerResolver,
+          graph: graphLookup,
+        }),
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -1140,6 +1147,7 @@ async function scrapeDataCoreType(
     outputBase: string;
     dryRun?: boolean;
     manufacturerResolver?: DataCoreManufacturerResolver;
+    graph?: DataCoreRecordGraphLookup;
   },
 ): Promise<DataCoreScrapeTypeResult> {
   const { name, csvFile, typeConfig } = entry;
@@ -1154,6 +1162,7 @@ async function scrapeDataCoreType(
   const typeHeaders = Object.keys(typeConfig.fieldSelectors);
   const headers = [...COMMON_HEADERS, ...typeHeaders];
   const rows: string[][] = [];
+  const referencedXmlCache = new Map<string, ReturnType<typeof loadXml>>();
   let skipped = 0;
 
   for (const xmlPath of xmlFiles) {
@@ -1197,16 +1206,22 @@ async function scrapeDataCoreType(
       Health: health,
     };
 
-    const typeFields = typeHeaders.map((col) => {
+    const typeFields: string[] = [];
+    for (const col of typeHeaders) {
       const spec = typeConfig.fieldSelectors[col];
       if (!spec) {
         rowRecord[col] = '';
-        return '';
+        typeFields.push('');
+        continue;
       }
-      const value = resolveField($, spec, rowRecord);
+      const value = await resolveField($, spec, rowRecord, {
+        graph: options.graph,
+        xmlCacheDir: options.xmlCacheDir,
+        referencedXmlCache,
+      });
       rowRecord[col] = value;
-      return value;
-    });
+      typeFields.push(value);
+    }
 
     rows.push([
       entityClass,
@@ -1931,11 +1946,23 @@ function buildRawFactResults(
   });
 }
 
-function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector, row: Record<string, string>): string {
+async function resolveField(
+  $: ReturnType<typeof loadXml>,
+  spec: DataCoreFieldSelector,
+  row: Record<string, string>,
+  context: {
+    graph?: DataCoreRecordGraphLookup;
+    xmlCacheDir: string;
+    referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
+  },
+): Promise<string> {
   if (typeof spec === 'object' && 'derive' in spec) return spec.derive(row);
   if (typeof spec === 'string') return xmlVal($, spec);
 
-  const selection = $(spec.selector);
+  const source = spec.ref ? await loadReferencedXml($, spec.ref, context) : $;
+  if (!source) return '';
+
+  const selection = source(spec.selector);
   if (spec.format === 'count') return selection.length > 0 ? String(selection.length) : '';
 
   const element = spec.index === undefined ? selection.first() : selection.eq(spec.index);
@@ -1954,6 +1981,30 @@ function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector
   if (spec.format === 'percent-pair') return values.map(formatPercent).join(spec.separator ?? ' / ');
 
   return values.join(spec.separator ?? ' / ');
+}
+
+async function loadReferencedXml(
+  $: ReturnType<typeof loadXml>,
+  ref: { selector: string; attr: string },
+  context: {
+    graph?: DataCoreRecordGraphLookup;
+    xmlCacheDir: string;
+    referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
+  },
+): Promise<ReturnType<typeof loadXml> | undefined> {
+  const guid = $(ref.selector).first().attr(ref.attr)?.trim();
+  if (!guid || !context.graph) return undefined;
+
+  const record = context.graph.getByRef(guid);
+  if (!record) return undefined;
+
+  const cached = context.referencedXmlCache.get(record.path);
+  if (cached) return cached;
+
+  const xml = await fs.readFile(path.join(context.xmlCacheDir, record.path), 'utf8');
+  const loaded = loadXml(xml);
+  context.referencedXmlCache.set(record.path, loaded);
+  return loaded;
 }
 
 function formatSum(values: string[]): string {

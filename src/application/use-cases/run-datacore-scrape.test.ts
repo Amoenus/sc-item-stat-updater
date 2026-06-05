@@ -24,6 +24,7 @@ import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datacore/throwables';
 import { DATACORE_TYPE_CONFIG as TURRET_TYPE_CONFIG } from '../../items/datacore/turrets';
+import { DATACORE_TYPE_CONFIG as WEAPON_DEFENSIVE_TYPE_CONFIG } from '../../items/datacore/weapon-defensive';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -395,6 +396,102 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Missile Quantity,Missile Size\r?\n/,
   );
   assert.match(csv, /mrck_test,item_NameMRCK_Test,,item_DescMRCK_Test,AEGS,6,1,,200,3,3/);
+});
+
+test('runDatacoreScrape follows countermeasure ammo param refs from defensive weapon records', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-defensive-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const countermeasurePath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'countermeasures',
+    'aegs_test_cml_chaff.xml',
+  );
+  const ammoPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'ammoparams',
+    'vehicle',
+    'ammoparams.test_chaff.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'aegs.xml');
+  await fs.mkdir(path.dirname(countermeasurePath), { recursive: true });
+  await fs.mkdir(path.dirname(ammoPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    countermeasurePath,
+    `
+      <EntityClassDefinition.AEGS_Test_CML_Chaff __path="libs/foundry/records/entities/scitem/ships/countermeasures/aegs_test_cml_chaff.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponDefensive" SubType="CountermeasureLauncher" Size="1" Grade="1" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+              <Localization Name="@item_NameAEGS_Test_CML_Chaff" ShortName="@hud_countermeasure_smokescreen" Description="@item_DescAEGS_Test_CML_Chaff" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SAmmoContainerComponentParams initialAmmoCount="12" maxAmmoCount="12" ammoParamsRecord="6c4fdf64-425c-4722-b286-dfedb06e8cfb" />
+          <SHealthComponentParams Health="1000" />
+        </Components>
+      </EntityClassDefinition.AEGS_Test_CML_Chaff>
+    `,
+  );
+  await fs.writeFile(
+    ammoPath,
+    `
+      <AmmoParams.Test_Chaff __type="AmmoParams" __ref="6c4fdf64-425c-4722-b286-dfedb06e8cfb" __path="libs/foundry/records/ammoparams/vehicle/ammoparams.test_chaff.xml" lifetime="0.8" speed="180">
+        <projectileParams>
+          <CounterMeasureProjectileParams>
+            <typeParams>
+              <CounterMeasureChaffParams StartInfrared="80000" StartElectromagnetic="150000" StartCrossSection="100000" />
+            </typeParams>
+          </CounterMeasureProjectileParams>
+        </projectileParams>
+      </AmmoParams.Test_Chaff>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.AEGS Code="AEGS" __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'weapon-defensive',
+        csvFile: 'weapondefensive.datacore.csv',
+        typeConfig: WEAPON_DEFENSIVE_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weapondefensive.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'weapon-defensive', rows: 1, skipped: 0, csvFile: 'weapondefensive.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Type,Ammo Quantity,Ammo Speed,Ammo Lifetime,Signature IR,Signature CS,Signature EM\r?\n/,
+  );
+  assert.match(
+    csv,
+    /aegs_test_cml_chaff,item_NameAEGS_Test_CML_Chaff,hud_countermeasure_smokescreen,item_DescAEGS_Test_CML_Chaff,AEGS,1,1,CountermeasureLauncher,1000,Chaff,12,180,0\.8,80000,100000,150000/,
+  );
 });
 
 test('runDatacoreScrape extracts bomb params and skips missile records in shared ordnance folder', async () => {

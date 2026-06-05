@@ -2,22 +2,30 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. Countermeasure entity class names vary
-// by type (chaff_, flare_, noise_). The 'wcm_' prefix is speculative.
+const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
+const countermeasureParamsSelector = 'CounterMeasureChaffParams, CounterMeasureFlareParams';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/countermeasures',
-  // wcm_kbar_s1_chaff → strip 'wcm_' → 'KBAR_S1_CHAFF'
-  entityClassPrefix: 'wcm_',
-  nameKeyInfix: 'WPCM_',
+  recordSelector: 'SAmmoContainerComponentParams',
+  entityClassPrefix: '',
+  nameKeyInfix: '',
   fieldSelectors: {
-    Type: 'SCountermeasureComponentParams CountermeasureParams type',
-    'Ammo Quantity': 'SAmmoContainerComponentParams capacity',
-    'Ammo Speed': 'SCountermeasureComponentParams CountermeasureParams speed',
-    'Ammo Lifetime': 'SCountermeasureComponentParams CountermeasureParams lifetime',
-    'Signature IR': 'SCountermeasureComponentParams CountermeasureParams signatureIR',
-    'Signature CS': 'SCountermeasureComponentParams CountermeasureParams signatureCS',
-    'Signature EM': 'SCountermeasureComponentParams CountermeasureParams signatureEM',
+    Type: {
+      derive: (row) => {
+        const entityClass = row['Entity Class'].toLowerCase();
+        if (entityClass.includes('chaff')) return 'Chaff';
+        if (entityClass.includes('noise')) return 'Noise';
+        if (entityClass.includes('flare') || entityClass.includes('decoy')) return 'Decoy';
+        return row['Class'] || 'Countermeasure';
+      },
+    },
+    'Ammo Quantity': { selector: 'SAmmoContainerComponentParams', attr: 'maxAmmoCount' },
+    'Ammo Speed': { ref: ammoParamsRef, selector: ':root', attr: 'speed' },
+    'Ammo Lifetime': { ref: ammoParamsRef, selector: ':root', attr: 'lifetime' },
+    'Signature IR': { ref: ammoParamsRef, selector: countermeasureParamsSelector, attr: 'StartInfrared' },
+    'Signature CS': { ref: ammoParamsRef, selector: countermeasureParamsSelector, attr: 'StartCrossSection' },
+    'Signature EM': { ref: ammoParamsRef, selector: countermeasureParamsSelector, attr: 'StartElectromagnetic' },
   },
 };
 
@@ -28,7 +36,7 @@ export default {
   descKeyMatch: (kl) =>
     kl.includes('desc') &&
     (kl.includes('chaff') || kl.includes('flare') || kl.includes('noise') || kl.includes('countermeasure')),
-  getTargetKeys: makeGetTargetKeys('wcm_', 'WPCM_'),
+  getTargetKeys: makeGetTargetKeys('', ''),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', r['Type'] || 'Defensive Weapon')

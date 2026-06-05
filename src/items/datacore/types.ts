@@ -10,6 +10,10 @@ export type DataCoreFieldSelector =
       separator?: string;
       format?: 'count' | 'number-pair' | 'percent' | 'percent-pair' | 'scaled-number' | 'scaled-number-pair' | 'sum';
       scale?: number;
+      ref?: {
+        selector: string;
+        attr: string;
+      };
     }
   | {
       derive: (row: Record<string, string>) => string;
