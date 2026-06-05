@@ -17,6 +17,7 @@ import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qe
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
 import { DATACORE_TYPE_CONFIG as RADAR_TYPE_CONFIG } from '../../items/datacore/radars';
 import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../items/datacore/salvage-modifiers';
+import { DATACORE_TYPE_CONFIG as SELF_DESTRUCT_TYPE_CONFIG } from '../../items/datacore/self-destruct';
 import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
@@ -677,6 +678,69 @@ test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', asyn
   assert.match(
     csv,
     /tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,UNDEFINED,150,1000,400,150,250,150,0,12,0\.75,6/,
+  );
+});
+
+test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-self-destruct-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const selfDestructPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'selfdestruct',
+    'vhcl_selfdestruct_120s.xml',
+  );
+  await fs.mkdir(path.dirname(selfDestructPath), { recursive: true });
+  await fs.writeFile(
+    selfDestructPath,
+    `
+      <EntityClassDefinition.VHCL_SelfDestruct_120s __path="libs/foundry/records/entities/scitem/ships/selfdestruct/vhcl_selfdestruct_120s.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="SelfDestruct" SubType="UNDEFINED" Size="1" Grade="1" inheritParentManufacturer="1">
+              <Localization Name="@item_TypeSelfDestruct" ShortName="@LOC_EMPTY" Description="@item_TypeSelfDestruct" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SSCItemSelfDestructComponentParams damage="120000" minRadius="100" radius="175" minPhysRadius="110" physRadius="150" time="120" />
+        </Components>
+      </EntityClassDefinition.VHCL_SelfDestruct_120s>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'self-destruct',
+        csvFile: 'selfdestruct.datacore.csv',
+        typeConfig: SELF_DESTRUCT_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'selfdestruct.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [{ type: 'self-destruct', rows: 1, skipped: 0, csvFile: 'selfdestruct.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius\r?\n/,
+  );
+  assert.match(
+    csv,
+    /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,120,120000,100 - 175/,
   );
 });
 

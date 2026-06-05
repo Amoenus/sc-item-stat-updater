@@ -2,17 +2,18 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Self-destruct entity class prefix and DataForge component names are
-// speculative. Verify against real game files.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/selfdestruct',
-  // sdsys_orig_s3 → strip 'sdsys_' → 'ORIG_S3'
-  entityClassPrefix: 'sdsys_',
-  nameKeyInfix: 'SDSYS_',
+  entityClassPrefix: 'vhcl_selfdestruct_',
+  nameKeyInfix: 'SelfDestruct_',
   fieldSelectors: {
-    Countdown: 'SSelfDestructComponentParams SelfDestructParams Countdown',
-    'Explosion Damage': 'SSelfDestructComponentParams SelfDestructParams ExplosionDamage',
-    'Explosion Radius': 'SSelfDestructComponentParams SelfDestructParams ExplosionRadius',
+    Countdown: { selector: 'SSCItemSelfDestructComponentParams', attr: 'time' },
+    'Explosion Damage': { selector: 'SSCItemSelfDestructComponentParams', attr: 'damage' },
+    'Explosion Radius': {
+      selector: 'SSCItemSelfDestructComponentParams',
+      attrs: ['minRadius', 'radius'],
+      format: 'number-pair',
+    },
   },
 };
 
@@ -21,7 +22,7 @@ export default {
   label: 'DC Self Destruct',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('selfdestruct'),
-  getTargetKeys: makeGetTargetKeys('sdsys_', 'SDSYS_'),
+  getTargetKeys: makeGetTargetKeys('vhcl_selfdestruct_', 'SelfDestruct_'),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Self Destruct')
