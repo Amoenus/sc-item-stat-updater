@@ -25,7 +25,7 @@ async function writeDataCoreRawFactFiles(dir: string, except: string[] = []): Pr
   await Promise.all(
     DATACORE_RAW_FACTS.flatMap((rawFact) => rawFact.sourceFiles)
       .filter((file) => !excluded.has(file))
-      .map((file) => fs.writeFile(path.join(dir, file), 'header\n', 'utf8')),
+      .map((file) => fs.writeFile(path.join(dir, file), 'header\nvalue\n', 'utf8')),
   );
 }
 
@@ -161,6 +161,29 @@ test('source freshness diagnostics warn for missing standalone DataCore raw fact
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /WARNING DataCore LIVE datacore-vehicles/);
     assert.match(formatted, new RegExp(expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('source freshness diagnostics warn for header-only DataCore raw fact files', async () => {
+  const root = await makeTempDir();
+  try {
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await writeDataCoreRawFactFiles(itemVersionDir);
+    const expectedPath = path.join(itemVersionDir, 'factions.datacore.csv');
+    await fs.writeFile(expectedPath, 'Faction Class,Name Key\n', 'utf8');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(makePrepared(root, []), { provider: 'datacore' });
+
+    assert.equal(diagnostics.warnings.length, 1);
+    assert.equal(diagnostics.warnings[0].provider, 'datacore');
+    assert.equal(diagnostics.warnings[0].category, 'datacore-factions');
+    assert.equal(diagnostics.warnings[0].path, expectedPath);
+    assert.match(diagnostics.warnings[0].message, /expected at least one data row/);
+
+    const formatted = formatSourceFreshnessDiagnostics(diagnostics);
+    assert.match(formatted, /WARNING DataCore LIVE datacore-factions/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

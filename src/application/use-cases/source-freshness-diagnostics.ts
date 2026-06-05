@@ -128,8 +128,17 @@ async function collectRawFactWarnings(
     rawFact.sourceFiles.map(async (filename) => {
       const sourcePath = resolveChildPath(options.baseDir, filename, 'DataCore raw fact source file');
       try {
-        await fs.access(sourcePath);
-        return null;
+        const contents = await fs.readFile(sourcePath, 'utf8');
+        if (hasCsvDataRows(contents)) return null;
+        const warning: SourceFreshnessWarning = {
+          provider: 'datacore',
+          label: 'DataCore',
+          channel: options.channel,
+          category: rawFact.slug,
+          path: sourcePath,
+          message: 'DataCore raw fact data appears incomplete; expected at least one data row.',
+        };
+        return warning;
       } catch {
         const warning: SourceFreshnessWarning = {
           provider: 'datacore',
@@ -144,6 +153,15 @@ async function collectRawFactWarnings(
     }),
   );
   return warnings.filter((warning): warning is SourceFreshnessWarning => warning !== null);
+}
+
+function hasCsvDataRows(contents: string): boolean {
+  return (
+    contents
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean).length > 1
+  );
 }
 
 function dedupeWarningsByPath(warnings: SourceFreshnessWarning[]): SourceFreshnessWarning[] {
