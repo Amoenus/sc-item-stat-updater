@@ -23,7 +23,8 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
 
   const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
   assert.equal(generatedMining?.kind, 'generated source step');
-  assert.equal(generatedMining?.activeForDatacoreProvider, true);
+  assert.equal(generatedMining?.activeForDatacoreProvider, false);
+  assert.match(generatedMining?.reason ?? '', /--refresh-scmdb-mining-locations/);
 
   const optionalJournal = audit.entries.find((entry) => entry.slug === 'mining-journal' && entry.kind === 'extra step');
   assert.equal(optionalJournal?.classification, 'SCMDB-only derived/generated');
@@ -52,7 +53,7 @@ test('formatted SCMDB dependency audit shows source hierarchy and migration slic
   );
   assert.match(
     output,
-    /\| generated source step \| regen-mining-locations \(Regenerate mining-locations\.csv\) \| mining_data\.json, mining_data-\*\.json \| SCMDB-only derived\/generated \| yes \|/,
+    /\| generated source step \| regen-mining-locations \(Regenerate mining-locations\.csv\) \| mining_data\.json, mining_data-\*\.json \| SCMDB-only derived\/generated \| no \|/,
   );
   assert.match(output, /Why SCMDB is still used:/);
 });

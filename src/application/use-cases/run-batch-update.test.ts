@@ -21,7 +21,7 @@ function makePrepared(): PreparedUpdateCategories {
   };
 }
 
-test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categories plus extra steps', async () => {
+test('runBatchUpdate can refresh SCMDB mining locations before preflight when requested', async () => {
   const observed: string[] = [];
   const prepared = makePrepared();
   const categoryStarts: string[] = [];
@@ -31,6 +31,7 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
     repoRoot: 'repo',
     provider: 'datacore',
     ptu: true,
+    refreshScmdbMiningLocations: true,
     now: (() => {
       const values = [100, 125];
       return () => values.shift() ?? 125;
@@ -98,12 +99,16 @@ test('runBatchUpdate prepares, regenerates, preflights, backs up, and runs categ
 
 test('runBatchUpdate skips backup for dry runs and returns nonzero when steps report errors', async () => {
   let backupCalled = false;
+  let regenerateCalled = false;
 
   const result = await runBatchUpdate({
     repoRoot: 'repo',
     dryRun: true,
     prepare: async () => makePrepared(),
-    regenerateMiningLocations: () => ({ outPath: 'out', rowCount: 0, outDir: 'missions-dir' }),
+    regenerateMiningLocations: () => {
+      regenerateCalled = true;
+      return { outPath: 'out', rowCount: 0, outDir: 'missions-dir' };
+    },
     sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
     scmdbDependencyAudit: async () => ({ sourceHierarchy: [], entries: [] }),
     preflight: async () => {},
@@ -118,6 +123,7 @@ test('runBatchUpdate skips backup for dry runs and returns nonzero when steps re
   });
 
   assert.equal(backupCalled, false);
+  assert.equal(regenerateCalled, false);
   assert.equal(result.exitCode, 1);
   assert.deepEqual(result.errors, [{ label: 'Test category', message: 'missing csv' }]);
 });

@@ -114,9 +114,9 @@ function generatedMiningLocationsEntry(): ScmdbDependencyAuditEntry {
     sourceFiles: ['mining_data.json', 'mining_data-*.json'],
     classification: 'SCMDB-only derived/generated',
     reason:
-      'update-all regenerates mining-locations.csv from SCMDB mining_data before preflight, even when --provider datacore is selected.',
-    migrationSlice: 'Replace this bridge with a DataCore mining location aggregation step, then make SCMDB fallback opt-in.',
-    activeForDatacoreProvider: true,
+      'update-all can regenerate mining-locations.csv from SCMDB mining_data when --refresh-scmdb-mining-locations is explicitly passed; DataCore updates otherwise consume the checked/generated CSV as a fallback input only.',
+    migrationSlice: 'Replace this compatibility refresh with a DataCore mining location aggregation step, then remove the SCMDB fallback input.',
+    activeForDatacoreProvider: false,
   };
 }
 

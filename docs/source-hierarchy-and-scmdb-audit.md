@@ -45,6 +45,8 @@ node --import tsx/esm bin/update-item.ts --scmdb-audit
 
 For `update-all`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
 
+`update-all` does not refresh SCMDB-generated `mining-locations.csv` by default. Pass `--refresh-scmdb-mining-locations` only when you intentionally want to rebuild that legacy bridge from cached SCMDB `mining_data`; otherwise DataCore-first updates consume the existing CSV as a fallback input until the DataCore mining-location aggregation fully replaces it.
+
 ## Migration slices
 
 The current high-value replacement targets are:

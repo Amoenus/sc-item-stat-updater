@@ -26,6 +26,7 @@ export interface RunBatchUpdateOptions {
   ptu?: boolean;
   provider?: UpdateProvider;
   includeMiningJournal?: boolean;
+  refreshScmdbMiningLocations?: boolean;
   skipBackup?: boolean;
   prepare?: typeof prepareUpdateCategories;
   regenerateMiningLocations?: typeof regenMiningLocations;
@@ -74,10 +75,12 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     csvDir: options.csvDir,
   });
 
-  regenerateMiningLocations({
-    repoRoot: options.repoRoot,
-    scmdbDir: prepared.missionCsvDir,
-  });
+  if (options.refreshScmdbMiningLocations) {
+    regenerateMiningLocations({
+      repoRoot: options.repoRoot,
+      scmdbDir: prepared.missionCsvDir,
+    });
+  }
 
   const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
   const scmdbDependencyAudit = await buildScmdbAudit({ provider });
