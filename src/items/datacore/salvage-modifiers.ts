@@ -2,17 +2,31 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
 
-// ⚠️ Salvage modifier entity classes use varying prefixes (smod_, scrp_, etc.)
-// and their INI keys follow a different naming convention (item_scraper_*).
-// Verify all values against real game files.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
+  // Verified against real unforged XML cache. Entity files live at:
+  //   libs/foundry/records/entities/scitem/ships/utility/salvage/salvagemodifiers/
+  // Includes scraper modules (salvage_modifier_scraper_*), tractor modules
+  // (salvage_modifier_tractor_*), and ship-integrated buff modifiers
+  // (salvage_buff_modifier_*).
   recordFilter: 'scitem/ships/utility/salvage/salvagemodifiers',
-  entityClassPrefix: 'smod_',
-  nameKeyInfix: 'SMOD_',
+  // Entity class names are salvage_modifier_* or salvage_buff_modifier_*
+  entityClassPrefix: 'salvage_modifier_',
+  nameKeyInfix: 'SALVAGE_MODIFIER_',
   fieldSelectors: {
-    'Speed Multiplier': 'SSalvageModifierComponentParams SalvageModifierParams SpeedMultiplier',
-    'Radius Multiplier': 'SSalvageModifierComponentParams SalvageModifierParams RadiusMultiplier',
-    'Extraction Efficiency': 'SSalvageModifierComponentParams SalvageModifierParams ExtractionEfficiency',
+    // All three stats live in the salvageModifier element inside weaponStats,
+    // which is part of the ItemWeaponModifiersParams component.
+    'Speed Multiplier': {
+      selector: 'ItemWeaponModifiersParams salvageModifier',
+      attr: 'salvageSpeedMultiplier',
+    },
+    'Radius Multiplier': {
+      selector: 'ItemWeaponModifiersParams salvageModifier',
+      attr: 'radiusMultiplier',
+    },
+    'Extraction Efficiency': {
+      selector: 'ItemWeaponModifiersParams salvageModifier',
+      attr: 'extractionEfficiency',
+    },
   },
 };
 
@@ -24,16 +38,8 @@ export default {
     (kl.startsWith('item_scraper_') && kl.endsWith('_desc')) || kl === 'item_descgrin_tractorbeam_module_001',
   nameKeyToDescKey: (nameKey) =>
     nameKey.endsWith('_Name') ? nameKey.replace(/_Name$/, '_Desc') : nameKey.replace(/^item_Name/, 'item_Desc'),
-  // ⚠️ Salvage modifier INI keys use item_scraper_* convention. Key derivation
-  // from entity class is speculative. Manual mapping may be required.
   getTargetKeys(row, deriveDescKey) {
-    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
-    if (rawKeys.length > 0) return rawKeys;
-
-    const entityClass = row['Entity Class'];
-    if (!entityClass) return [];
-    const suffix = entityClass.replace(/^smod_/i, '').toLowerCase();
-    return [deriveDescKey(`item_scraper_${suffix}_Name`)];
+    return getRawDataCoreTargetKeys(row, deriveDescKey);
   },
   buildValue(r, flavorText) {
     return stat(r)

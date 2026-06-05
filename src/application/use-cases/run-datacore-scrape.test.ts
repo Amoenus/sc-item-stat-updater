@@ -7,10 +7,12 @@ import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
 import { DATACORE_TYPE_CONFIG as MINING_LASER_TYPE_CONFIG } from '../../items/datacore/mining-lasers';
+import { DATACORE_TYPE_CONFIG as MINING_MODIFIER_TYPE_CONFIG } from '../../items/datacore/mining-modifiers';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
+import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../items/datacore/salvage-modifiers';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
 const typeEntry: DataCoreTypeEntry = {
@@ -1945,5 +1947,233 @@ test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XM
   assert.match(
     csv,
     /mining_laser_shin_hofstede_s1,item_Mining_MiningLaser_Shubin_1_S1,,item_Mining_MiningLaser_Shubin_1_S1_Desc,SHIN,1,1,,8000,2100,45,135,0\.05,105,10,-30,60,20,30/,
+  );
+});
+
+test('runDatacoreScrape extracts mining modifier stats from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-modifiers-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const miningArmDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'utility',
+    'mining',
+    'miningarm',
+  );
+  await fs.mkdir(miningArmDir, { recursive: true });
+
+  // Real-shaped XML for the Brandt active consumable mining module.
+  // activationMethod="ActivateOnDemand", charges=5, duration=60s in ItemMiningModifierParams.
+  // Power Mining: damageMultiplier=1.35 on fireActionIndex=0.
+  // Rock modifiers: resistanceModifier=+15.5, shatterdamageModifier=-30.
+  await fs.writeFile(
+    path.join(miningArmDir, 'mining_modules_active_brandt.xml'),
+    `
+      <EntityClassDefinition.Mining_Modules_Active_Brandt __path="libs/foundry/records/entities/scitem/ships/utility/mining/miningarm/mining_modules_active_brandt.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="MiningModifier" SubType="Gun" Size="1" Grade="1" Manufacturer="MISC">
+              <Localization Name="@item_Mining_Consumable_Brandt" ShortName="@LOC_EMPTY" Description="@item_Mining_Consumable_Brandt_Desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="200" />
+          <EntityComponentAttachableModifierParams activationMethod="ActivateOnDemand" charges="5">
+            <modifiers>
+              <ItemWeaponModifiersParams fireActionIndex="0" showInUI="1">
+                <modifierLifetime>
+                  <ItemModifierTimedLife lifetime="60" />
+                </modifierLifetime>
+                <weaponModifier>
+                  <weaponStats damageMultiplier="1.35" />
+                </weaponModifier>
+              </ItemWeaponModifiersParams>
+              <ItemWeaponModifiersParams fireActionIndex="1" showInUI="0">
+                <weaponModifier>
+                  <weaponStats damageMultiplier="1" />
+                </weaponModifier>
+              </ItemWeaponModifiersParams>
+              <ItemMiningModifierParams>
+                <modifierLifetime>
+                  <ItemModifierTimedLife lifetime="60" />
+                </modifierLifetime>
+                <MiningLaserModifier isOptimalRateGood="1">
+                  <resistanceModifier>
+                    <FloatModifierMultiplicative showInUI="1" value="15.5" />
+                  </resistanceModifier>
+                  <shatterdamageModifier>
+                    <FloatModifierMultiplicative showInUI="1" value="-30" />
+                  </shatterdamageModifier>
+                </MiningLaserModifier>
+              </ItemMiningModifierParams>
+            </modifiers>
+          </EntityComponentAttachableModifierParams>
+        </Components>
+      </EntityClassDefinition.Mining_Modules_Active_Brandt>
+    `,
+  );
+
+  // Real-shaped XML for the Focus Mk1 passive module.
+  // activationMethod="ActivateOnAttach", charges=1 (permanent).
+  // Power Mining: damageMultiplier=0.85 on fireActionIndex=0 (-15%).
+  // Rock modifiers: optimalChargeWindowSizeModifier=+30.
+  await fs.writeFile(
+    path.join(miningArmDir, 'mining_modules_passive_focus_mk1.xml'),
+    `
+      <EntityClassDefinition.Mining_Modules_Passive_Focus_MK1 __path="libs/foundry/records/entities/scitem/ships/utility/mining/miningarm/mining_modules_passive_focus_mk1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="MiningModifier" SubType="Gun" Size="1" Grade="1" Manufacturer="THCN">
+              <Localization Name="@item_Mining_Modules_Passive_Focus_MK1" ShortName="@LOC_EMPTY" Description="@item_Mining_Modules_Passive_Focus_MK1_Desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="200" />
+          <EntityComponentAttachableModifierParams activationMethod="ActivateOnAttach" charges="1">
+            <modifiers>
+              <ItemWeaponModifiersParams fireActionIndex="0" showInUI="1">
+                <weaponModifier>
+                  <weaponStats damageMultiplier="0.85" />
+                </weaponModifier>
+              </ItemWeaponModifiersParams>
+              <ItemWeaponModifiersParams fireActionIndex="1" showInUI="0">
+                <weaponModifier>
+                  <weaponStats damageMultiplier="1" />
+                </weaponModifier>
+              </ItemWeaponModifiersParams>
+              <ItemMiningModifierParams>
+                <MiningLaserModifier isOptimalRateGood="1">
+                  <optimalChargeWindowSizeModifier>
+                    <FloatModifierMultiplicative showInUI="1" value="30" />
+                  </optimalChargeWindowSizeModifier>
+                </MiningLaserModifier>
+              </ItemMiningModifierParams>
+            </modifiers>
+          </EntityComponentAttachableModifierParams>
+        </Components>
+      </EntityClassDefinition.Mining_Modules_Passive_Focus_MK1>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'mining-modifiers',
+        csvFile: 'miningmodifier.datacore.csv',
+        typeConfig: MINING_MODIFIER_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'miningmodifier.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'mining-modifiers', rows: 2, skipped: 0, csvFile: 'miningmodifier.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Type,Charges,Duration,Power Modifier Mining,Power Modifier Extract,Resistance,Instability,Optimal Charge Zone,Optimal Rate,Shatter Damage,Cluster Factor,Overcharge Rate,Inert Materials\r?\n/,
+  );
+  // Brandt: charges=5, duration=60, power mining=1.35, resistance=15.5, shatter=-30
+  assert.match(
+    csv,
+    /mining_modules_active_brandt,item_Mining_Consumable_Brandt,,item_Mining_Consumable_Brandt_Desc,MISC,1,1,Gun,200,Module,5,60,1\.35,1,15\.5,,,,-30,,,/,
+  );
+  // Focus Mk1: charges=1 (passive), power mining=0.85, optimal charge zone=30
+  assert.match(
+    csv,
+    /mining_modules_passive_focus_mk1,item_Mining_Modules_Passive_Focus_MK1,,item_Mining_Modules_Passive_Focus_MK1_Desc,THCN,1,1,Gun,200,Module,1,,0\.85,1,,,30,,,,,/,
+  );
+});
+
+test('runDatacoreScrape extracts salvage modifier stats from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-salvage-modifiers-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const salvageDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'utility',
+    'salvage',
+    'salvagemodifiers',
+  );
+  await fs.mkdir(salvageDir, { recursive: true });
+
+  // Real-shaped XML for the Trawler scraper module (large).
+  // salvageSpeedMultiplier=0.05, radiusMultiplier=6, extractionEfficiency=0.6
+  await fs.writeFile(
+    path.join(salvageDir, 'salvage_modifier_scraper_large.xml'),
+    `
+      <EntityClassDefinition.Salvage_Modifier_Scraper_Large __path="libs/foundry/records/entities/scitem/ships/utility/salvage/salvagemodifiers/salvage_modifier_scraper_large.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="SalvageModifier" Size="1" Grade="1" Manufacturer="GRIN">
+              <Localization Name="@item_scraper_GRIN_Large_Name" ShortName="@LOC_PLACEHOLDER" Description="@item_scraper_GRIN_Large_Desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="100" />
+          <EntityComponentAttachableModifierParams activationMethod="ActivateOnDemand" charges="0">
+            <modifiers>
+              <ItemWeaponModifiersParams fireActionIndex="0" setFireActionOnEnable="1" showInUI="0">
+                <weaponModifier>
+                  <weaponStats damageMultiplier="1">
+                    <salvageModifier salvageSpeedMultiplier="0.05" radiusMultiplier="6" extractionEfficiency="0.6" />
+                  </weaponStats>
+                </weaponModifier>
+              </ItemWeaponModifiersParams>
+            </modifiers>
+          </EntityComponentAttachableModifierParams>
+        </Components>
+      </EntityClassDefinition.Salvage_Modifier_Scraper_Large>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'salvage-modifiers',
+        csvFile: 'salvagemodifier.datacore.csv',
+        typeConfig: SALVAGE_MODIFIER_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'salvagemodifier.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'salvage-modifiers', rows: 1, skipped: 0, csvFile: 'salvagemodifier.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Speed Multiplier,Radius Multiplier,Extraction Efficiency\r?\n/,
+  );
+  assert.match(
+    csv,
+    /salvage_modifier_scraper_large,item_scraper_GRIN_Large_Name,LOC_PLACEHOLDER,item_scraper_GRIN_Large_Desc,GRIN,1,1,,100,0\.05,6,0\.6/,
   );
 });
