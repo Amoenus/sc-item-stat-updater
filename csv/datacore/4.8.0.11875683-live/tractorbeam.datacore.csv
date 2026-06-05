@@ -1,5 +1,5 @@
-Entity Class,Manufacturer,Size,Grade,Class,Health,Force,Range,Full Strength Distance,Max Angle,Max Volume,Tow Force,Tow Max Distance
-argo_srv_maintractorbeamarm,,,,,20000,,,,,,,
-espr_prowler_utility_tractor_beam_arm,,,,,4000,,,,,,,
-rsi_hermes_utility_tractor_beam_arm,,,,,4000,,,,,,,
-rsi_zeus_tractor_beam_arm,,,,,4000,,,,,,,
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Force,Range,Full Strength Distance,Max Angle,Max Volume,Tow Force,Tow Max Distance
+argo_srv_maintractorbeamarm,ui_Mining_ShipMiningArm,,,,1,1,UNDEFINED,20000,,,,,,,
+espr_prowler_utility_tractor_beam_arm,ui_Mining_ShipMiningArm,,,,2,1,UNDEFINED,4000,,,,,,,
+rsi_hermes_utility_tractor_beam_arm,port_NameTractorTurret,,,,2,1,UNDEFINED,4000,,,,,,,
+rsi_zeus_tractor_beam_arm,ui_Mining_ShipMiningArm,,,,2,1,UNDEFINED,4000,,,,,,,

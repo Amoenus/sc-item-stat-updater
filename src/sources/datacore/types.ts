@@ -9,6 +9,9 @@ import type { SourceDataset } from '../../pipeline/types';
  */
 export interface DataCoreComponentRecord extends Record<string, string> {
   'Entity Class': string;
+  'Name Key': string;
+  'Short Name Key': string;
+  'Description Key': string;
   Manufacturer: string;
   Size: string;
   Grade: string;

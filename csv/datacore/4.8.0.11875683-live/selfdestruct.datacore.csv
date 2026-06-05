@@ -1,8 +1,8 @@
-Entity Class,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius
-vhcl_selfdestruct_10s,,,,,,,,
-vhcl_selfdestruct_120s,,,,,,,,
-vhcl_selfdestruct_20s,,,,,,,,
-vhcl_selfdestruct_30s,,,,,,,,
-vhcl_selfdestruct_45s,,,,,,,,
-vhcl_selfdestruct_60s,,,,,,,,
-vhcl_selfdestruct_80s,,,,,,,,
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius
+vhcl_selfdestruct_10s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_20s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_30s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_45s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_60s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,
+vhcl_selfdestruct_80s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,,,

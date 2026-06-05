@@ -12,6 +12,9 @@ test('provider source dataset contracts carry source metadata and provider recor
     records: [
       {
         'Entity Class': 'shield_test',
+        'Name Key': 'item_NameSHLD_Test',
+        'Short Name Key': '',
+        'Description Key': 'item_DescSHLD_Test',
         Manufacturer: 'BEHR',
         Size: '1',
         Grade: 'A',

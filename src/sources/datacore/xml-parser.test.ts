@@ -28,3 +28,20 @@ test('DataCore XML parser facade exposes XML helpers and common normalization he
   assert.equal(xmlVal($, 'Label'), 'Reclaimer Shield');
   assert.equal(xmlAttr($, 'Power', 'unit'), 'MW');
 });
+
+test('DataCore XML parser reads capitalized AttachDef attributes from real DataForge XML', () => {
+  const $ = loadXml(`
+    <EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem>
+      <SAttachableComponentParams>
+        <AttachDef Type="Shield" SubType="MILITARY" Size="4" Grade="1" />
+      </SAttachableComponentParams>
+    </EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem>
+  `);
+
+  assert.deepEqual(extractAttachDef($), {
+    size: '4',
+    grade: '1',
+    subtype: 'Military',
+    manufacturer: '',
+  });
+});

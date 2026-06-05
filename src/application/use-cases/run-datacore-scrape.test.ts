@@ -59,6 +59,48 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
   await assert.rejects(() => fs.stat(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live')));
 });
 
+test('runDatacoreScrape writes raw component identity keys and capitalized AttachDef stats', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-identity-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
+        <SAttachableComponentParams>
+          <AttachDef Size="2" Grade="b" SubType="CIVILIAN">
+            <Localization Name="@item_NameSHLD_Test" ShortName="@LOC_EMPTY" Description="@item_DescSHLD_Test" />
+            <Manufacturer Name="ACME" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="500" />
+        <Power value="42" />
+        <Efficiency value="0.875" />
+      </EntityClassDefinition.SHLD_Test_SCItem>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [typeEntry],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'shields.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shields.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power,Efficiency\r?\n/,
+  );
+  assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,ACME,2,B,Civilian,500,42,87.5%/);
+});
+
 test('runDatacoreScrape extracts XML cache when cached records are missing', async () => {
   const events: string[] = [];
 

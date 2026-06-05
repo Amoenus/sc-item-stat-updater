@@ -1,8 +1,8 @@
-Entity Class,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Radius,Charge Delay,Unleash Delay,Cooldown
-aegs_emp_device_s4,,,,,150,,,,,
-aegs_emp_sentinel_s4,,,,,150,,,,,
-anvl_hawk_emp_device_s2,,,,,150,,,,,
-mxox_emp_device_s2,,,,,150,,,,,
-rsi_mantis_emp_device,,,,,150,,,,,
-rsi_scorpius_emp_device,,,,,150,,,,,
-tmbl_emp_device_s1,,,,,150,,,,,
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Radius,Charge Delay,Unleash Delay,Cooldown
+aegs_emp_device_s4,item_NameAEGS_EMP_Device,item_NameAEGS_EMP_Device,item_DescAEGS_EMP_Device,,4,1,UNDEFINED,150,,,,,
+aegs_emp_sentinel_s4,item_NameAEGS_EMP_Sentinel_S4,item_NameAEGS_EMP_Sentinel_S4_short,item_DescAEGS_EMP_Sentinel_S4,,4,1,UNDEFINED,150,,,,,
+anvl_hawk_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,,,,,
+mxox_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,,,,,
+rsi_mantis_emp_device,item_NameMXOX_EMP_Device,,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,,,,,
+rsi_scorpius_emp_device,item_NameRSI_EMP_Magstrand_S4,item_NameRSI_EMP_Magstrand_S4,item_DescRSI_EMP_Magstrand_S4,,4,1,UNDEFINED,150,,,,,
+tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,,1,1,UNDEFINED,150,,,,,

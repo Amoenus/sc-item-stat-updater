@@ -274,7 +274,17 @@ export interface RunDatacoreScrapeResult {
   errors: DataCoreScrapeTypeError[];
 }
 
-const COMMON_HEADERS = ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Class', 'Health'];
+const COMMON_HEADERS = [
+  'Entity Class',
+  'Name Key',
+  'Short Name Key',
+  'Description Key',
+  'Manufacturer',
+  'Size',
+  'Grade',
+  'Class',
+  'Health',
+];
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
@@ -1128,8 +1138,12 @@ async function scrapeDataCoreType(
 
     const attachDef = extractAttachDef($);
     const health = extractHealth($);
+    const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
     const rowRecord: Record<string, string> = {
       'Entity Class': entityClass,
+      'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
+      'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
+      'Description Key': localizationKey(attachLocalization.attr('Description') ?? ''),
       Manufacturer: attachDef.manufacturer,
       Size: attachDef.size,
       Grade: attachDef.grade,
@@ -1150,6 +1164,9 @@ async function scrapeDataCoreType(
 
     rows.push([
       entityClass,
+      rowRecord['Name Key'],
+      rowRecord['Short Name Key'],
+      rowRecord['Description Key'],
       attachDef.manufacturer,
       attachDef.size,
       attachDef.grade,
@@ -1869,4 +1886,10 @@ function formatPercent(value: string): string {
   const num = Number(value);
   if (!Number.isFinite(num)) return value;
   return `${Number((num * 100).toFixed(2))}%`;
+}
+
+function localizationKey(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

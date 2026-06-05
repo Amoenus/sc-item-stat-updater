@@ -98,16 +98,32 @@ function mapSubtype(raw: string): string {
 export function extractAttachDef($: CheerioDoc): AttachDef {
   const def = $('SAttachableComponentParams AttachDef').first();
   const mfr =
-    def.find('Manufacturer').first().attr('name') ??
-    def.find('manufacturer').first().attr('name') ??
-    $('SAttachableComponentParams AttachDef > Manufacturer').first().attr('name') ??
+    readAttr(def.find('Manufacturer').first(), 'name') ??
+    readAttr(def.find('manufacturer').first(), 'name') ??
+    readAttr($('SAttachableComponentParams AttachDef > Manufacturer').first(), 'name') ??
     '';
   return {
-    size: def.attr('size') ?? '',
-    grade: (def.attr('grade') ?? '').toUpperCase(),
-    subtype: mapSubtype(def.attr('subtype') ?? def.attr('sub_type') ?? ''),
+    size: readAttr(def, 'size') ?? '',
+    grade: (readAttr(def, 'grade') ?? '').toUpperCase(),
+    subtype: mapSubtype(readAttr(def, 'subtype') ?? readAttr(def, 'sub_type') ?? ''),
     manufacturer: mfr,
   };
+}
+
+function readAttr(
+  element: {
+    attr(): Record<string, string> | undefined;
+    attr(name: string): string | undefined;
+  },
+  name: string,
+): string | undefined {
+  const exact = element.attr(name);
+  if (exact !== undefined) return exact;
+
+  const attrs = element.attr() as Record<string, string> | undefined;
+  const lowerName = name.toLowerCase();
+  const found = Object.entries(attrs ?? {}).find(([key]) => key.toLowerCase() === lowerName);
+  return found?.[1];
 }
 
 /**
