@@ -98,6 +98,7 @@ function mapSubtype(raw: string): string {
 export function extractAttachDef($: CheerioDoc): AttachDef {
   const def = $('SAttachableComponentParams AttachDef').first();
   const mfr =
+    readAttr(def, 'Manufacturer') ??
     readAttr(def.find('Manufacturer').first(), 'name') ??
     readAttr(def.find('manufacturer').first(), 'name') ??
     readAttr($('SAttachableComponentParams AttachDef > Manufacturer').first(), 'name') ??

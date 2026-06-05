@@ -15,6 +15,10 @@ import { extractDataCoreCommodities } from '../../sources/datacore/commodity-ext
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
+import {
+  createDataCoreManufacturerResolver,
+  type DataCoreManufacturerResolver,
+} from '../../sources/datacore/manufacturer-resolver';
 import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
 import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
 import { extractDataCoreMiningCompositions } from '../../sources/datacore/mining-composition-extractor';
@@ -842,6 +846,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
   const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
+  const manufacturerResolver = createDataCoreManufacturerResolver(graphLookup);
 
   const commodityRows = await extractCommodities({
     xmlCacheDir,
@@ -1061,7 +1066,9 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     options.onTypeStart?.(entry, index);
 
     try {
-      results.push(await scrapeDataCoreType(entry, { xmlCacheDir, outputBase, dryRun: options.dryRun }));
+      results.push(
+        await scrapeDataCoreType(entry, { xmlCacheDir, outputBase, dryRun: options.dryRun, manufacturerResolver }),
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       errors.push({ type: entry.name, message });
@@ -1128,7 +1135,12 @@ function selectTypes(allTypes: DataCoreTypeEntry[], requestedNames: string[]): D
 
 async function scrapeDataCoreType(
   entry: DataCoreTypeEntry,
-  options: { xmlCacheDir: string; outputBase: string; dryRun?: boolean },
+  options: {
+    xmlCacheDir: string;
+    outputBase: string;
+    dryRun?: boolean;
+    manufacturerResolver?: DataCoreManufacturerResolver;
+  },
 ): Promise<DataCoreScrapeTypeResult> {
   const { name, csvFile, typeConfig } = entry;
   const xmlFiles = await collectDataCoreXmlFilesMatching(options.xmlCacheDir, typeConfig.recordFilter);
@@ -1160,12 +1172,13 @@ async function scrapeDataCoreType(
     const attachDef = extractAttachDef($);
     const health = extractHealth($);
     const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
+    const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
     const rowRecord: Record<string, string> = {
       'Entity Class': entityClass,
       'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
       'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
       'Description Key': localizationKey(attachLocalization.attr('Description') ?? ''),
-      Manufacturer: attachDef.manufacturer,
+      Manufacturer: manufacturer,
       Size: attachDef.size,
       Grade: attachDef.grade,
       Class: attachDef.subtype,
@@ -1188,7 +1201,7 @@ async function scrapeDataCoreType(
       rowRecord['Name Key'],
       rowRecord['Short Name Key'],
       rowRecord['Description Key'],
-      attachDef.manufacturer,
+      manufacturer,
       attachDef.size,
       attachDef.grade,
       attachDef.subtype,
@@ -1931,4 +1944,10 @@ function localizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+}
+
+function resolveManufacturerCode(manufacturer: string, resolver: DataCoreManufacturerResolver | undefined): string {
+  const trimmed = manufacturer.trim();
+  if (!trimmed) return '';
+  return resolver?.resolve(trimmed)?.code || trimmed;
 }

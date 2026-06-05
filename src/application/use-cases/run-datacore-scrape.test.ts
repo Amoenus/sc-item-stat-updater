@@ -68,21 +68,34 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-identity-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
   const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'aegs.xml');
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
   await fs.writeFile(
     xmlPath,
     `
       <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
         <SAttachableComponentParams>
-          <AttachDef Size="2" Grade="b" SubType="CIVILIAN">
+          <AttachDef Size="2" Grade="b" SubType="CIVILIAN" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
             <Localization Name="@item_NameSHLD_Test" ShortName="@LOC_EMPTY" Description="@item_DescSHLD_Test" />
-            <Manufacturer Name="ACME" />
           </AttachDef>
         </SAttachableComponentParams>
         <SHealthComponentParams Health="500" />
         <Power value="42" />
         <Efficiency value="0.875" />
       </EntityClassDefinition.SHLD_Test_SCItem>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.AEGS
+        Code="AEGS"
+        __type="SCItemManufacturer"
+        __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2"
+        __path="libs/foundry/records/scitemmanufacturer/aegs.xml">
+        <Localization Name="@manufacturer_NameAEGS" Description="@manufacturer_DescAEGS" />
+      </SCItemManufacturer.AEGS>
     `,
   );
 
@@ -103,7 +116,7 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power,Efficiency\r?\n/,
   );
-  assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,ACME,2,B,Civilian,500,42,87.5%/);
+  assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,AEGS,2,B,Civilian,500,42,87.5%/);
 });
 
 test('runDatacoreScrape extracts XML cache when cached records are missing', async () => {

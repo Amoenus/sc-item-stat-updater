@@ -33,7 +33,7 @@ test('DataCore XML parser reads capitalized AttachDef attributes from real DataF
   const $ = loadXml(`
     <EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem>
       <SAttachableComponentParams>
-        <AttachDef Type="Shield" SubType="MILITARY" Size="4" Grade="1" />
+        <AttachDef Type="Shield" SubType="MILITARY" Size="4" Grade="1" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />
       </SAttachableComponentParams>
     </EntityClassDefinition.SHLD_AEGS_S04_Reclaimer_SCItem>
   `);
@@ -42,6 +42,6 @@ test('DataCore XML parser reads capitalized AttachDef attributes from real DataF
     size: '4',
     grade: '1',
     subtype: 'Military',
-    manufacturer: '',
+    manufacturer: 'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2',
   });
 });
