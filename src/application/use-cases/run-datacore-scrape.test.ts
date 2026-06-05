@@ -151,6 +151,70 @@ test('runDatacoreScrape writes DataCore commodity CSV after building the record 
   assert.match(csv, /atlasium,items_commodities_atlasium,items_commodities_atlasium_desc/);
 });
 
+test('runDatacoreScrape writes DataCore vehicle CSV after building the record graph', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-vehicles-'));
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    extractCommodities: async () => [],
+    extractVehicles: async () => [
+      {
+        ref: '11111111-1111-1111-1111-111111111111',
+        path: 'libs/foundry/records/entities/spaceships/aegs_avenger_titan.xml',
+        entityClass: 'AEGS_Avenger_Titan',
+        vehicleNameKey: 'vehicle_NameAEGS_Avenger_Titan',
+        vehicleDescriptionKey: 'vehicle_DescAEGS_Avenger_Titan',
+        manufacturerGuid: 'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2',
+        manufacturerCode: 'AEGS',
+        manufacturerNameKey: 'manufacturer_NameAEGS',
+        movementClass: 'Spaceship',
+        vehicleDefinition: 'scripts/entities/vehicles/implementations/xml/aegs_avenger.xml',
+        modification: 'Titan',
+        careerKey: 'vehicle_focus_transporter',
+        careerGuid: 'd86d770d-1fc4-4525-b3b0-4f670a8a5634',
+        roleKey: 'vehicle_class_lightfreight',
+        roleGuid: 'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11',
+        crewSize: '1',
+        hullDamageNormalization: '1650',
+        allowSoftDestruction: '1',
+        dogfightEnabled: '1',
+        isGravlevVehicle: '0',
+        inventoryContainerGuid: 'a623a5e1-27db-4e93-af6b-e54912b78e32',
+      },
+    ],
+  });
+
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'vehicles.datacore.csv');
+  const csv = await fs.readFile(csvPath, 'utf8');
+
+  assert.equal(result.vehicleResult.rows, 1);
+  assert.equal(result.vehicleResult.csvFile, 'vehicles.datacore.csv');
+  assert.match(
+    csv,
+    /^Entity Class,Vehicle Name Key,Vehicle Description Key,Manufacturer GUID,Manufacturer Code,Manufacturer Name Key,Movement Class,Vehicle Definition,Modification,Career Key,Career GUID,Role Key,Role GUID,Crew Size,Hull Damage Normalization,Allow Soft Destruction,Dogfight Enabled,Gravlev Vehicle,Inventory Container GUID,Record GUID,Record Path\r?\n/,
+  );
+  assert.match(csv, /AEGS_Avenger_Titan,vehicle_NameAEGS_Avenger_Titan,vehicle_DescAEGS_Avenger_Titan/);
+});
+
 test('runDatacoreScrape writes DataCore mining element CSV after building the record graph', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-elements-'));
 
@@ -851,7 +915,10 @@ test('runDatacoreScrape writes DataCore mining location label CSV after building
     csv,
     /^Location Class,Source Reason,Name Key,Description Key,Callout 1 Key,Callout 2 Key,Callout 3 Key,Type GUID,Parent GUID,Parent Class,Parent Path,Location Hierarchy Tag,Nav Icon,Size,Hide In Starmap,Hide In World,Is Scannable,Block Travel,Arrival Radius,Adoption Radius,Set Entity Location On Enter,Expose For Player Created Missions,Record GUID,Record Path\r?\n/,
   );
-  assert.match(csv, /AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01,class-or-path-mining,ab_mine_pyro_regiona_med_001/);
+  assert.match(
+    csv,
+    /AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01,class-or-path-mining,ab_mine_pyro_regiona_med_001/,
+  );
 });
 
 test('runDatacoreScrape writes DataCore mining param CSV after building the record graph', async () => {

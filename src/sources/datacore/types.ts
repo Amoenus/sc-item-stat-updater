@@ -44,6 +44,34 @@ export type DataCoreCommodityDataset = SourceDataset<DataCoreCommodityRecord> & 
   source: 'datacore';
 };
 
+export interface DataCoreVehicleRecord {
+  ref: string;
+  path: string;
+  entityClass: string;
+  vehicleNameKey: string;
+  vehicleDescriptionKey: string;
+  manufacturerGuid: string;
+  manufacturerCode: string;
+  manufacturerNameKey: string;
+  movementClass: string;
+  vehicleDefinition: string;
+  modification: string;
+  careerKey: string;
+  careerGuid: string;
+  roleKey: string;
+  roleGuid: string;
+  crewSize: string;
+  hullDamageNormalization: string;
+  allowSoftDestruction: string;
+  dogfightEnabled: string;
+  isGravlevVehicle: string;
+  inventoryContainerGuid: string;
+}
+
+export type DataCoreVehicleDataset = SourceDataset<DataCoreVehicleRecord> & {
+  source: 'datacore';
+};
+
 export interface DataCoreMiningElementRecord {
   ref: string;
   path: string;

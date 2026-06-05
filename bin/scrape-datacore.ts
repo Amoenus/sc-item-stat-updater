@@ -150,6 +150,11 @@ console.log(
   }${commodityDryNote}`,
 );
 console.log(
+  `  ${'vehicles'.padEnd(28)} ${String(result.vehicleResult.rows).padStart(4)} rows -> ${
+    result.vehicleResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
   `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
     result.miningElementResult.csvFile
   }${commodityDryNote}`,
@@ -185,14 +190,14 @@ console.log(
   )} rows -> ${result.miningHarvestableSetupResult.csvFile}${commodityDryNote}`,
 );
 console.log(
-  `  ${'mining-sub-harvestable-configs'.padEnd(28)} ${String(
-    result.miningSubHarvestableConfigResult.rows,
-  ).padStart(4)} rows -> ${result.miningSubHarvestableConfigResult.csvFile}${commodityDryNote}`,
+  `  ${'mining-sub-harvestable-configs'.padEnd(28)} ${String(result.miningSubHarvestableConfigResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningSubHarvestableConfigResult.csvFile}${commodityDryNote}`,
 );
 console.log(
-  `  ${'mining-quality-distributions'.padEnd(28)} ${String(
-    result.miningQualityDistributionResult.rows,
-  ).padStart(4)} rows -> ${result.miningQualityDistributionResult.csvFile}${commodityDryNote}`,
+  `  ${'mining-quality-distributions'.padEnd(28)} ${String(result.miningQualityDistributionResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningQualityDistributionResult.csvFile}${commodityDryNote}`,
 );
 console.log(
   `  ${'mining-location-labels'.padEnd(28)} ${String(result.miningLocationLabelResult.rows).padStart(
@@ -212,7 +217,9 @@ console.log(
 for (const row of result.results) {
   const dryNote = values['dry-run'] ? ' (dry run, not written)' : '';
   const skippedNote = row.skipped > 0 ? ` (${row.skipped} skipped)` : '';
-  console.log(`  ${row.type.padEnd(28)} ${String(row.rows).padStart(4)} rows -> ${row.csvFile}${dryNote}${skippedNote}`);
+  console.log(
+    `  ${row.type.padEnd(28)} ${String(row.rows).padStart(4)} rows -> ${row.csvFile}${dryNote}${skippedNote}`,
+  );
 }
 
 if (result.errors.length > 0) {

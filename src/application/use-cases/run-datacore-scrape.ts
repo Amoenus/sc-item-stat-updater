@@ -45,7 +45,9 @@ import type {
   DataCoreMiningQualityDistributionRecord,
   DataCoreMiningSubHarvestableConfigRecord,
   DataCoreRecordGraph,
+  DataCoreVehicleRecord,
 } from '../../sources/datacore/types';
+import { extractDataCoreVehicles } from '../../sources/datacore/vehicle-extractor';
 import {
   collectDataCoreXmlFilesMatching,
   countDataCoreXmlFiles,
@@ -73,6 +75,11 @@ export interface DataCoreScrapeTypeResult {
 }
 
 export interface DataCoreScrapeCommodityResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeVehicleResult {
   rows: number;
   csvFile: string;
 }
@@ -159,6 +166,7 @@ export interface RunDatacoreScrapeOptions {
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
   extractCommodities?: typeof extractDataCoreCommodities;
+  extractVehicles?: typeof extractDataCoreVehicles;
   extractMiningElements?: typeof extractDataCoreMiningElements;
   extractMiningCompositions?: typeof extractDataCoreMiningCompositions;
   extractMineableEntities?: typeof extractDataCoreMineableEntities;
@@ -189,6 +197,7 @@ export interface RunDatacoreScrapeOptions {
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMineableEntitiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -218,6 +227,7 @@ export interface RunDatacoreScrapeResult {
     outputPath: string;
   };
   commodityResult: DataCoreScrapeCommodityResult;
+  vehicleResult: DataCoreScrapeVehicleResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
   mineableEntityResult: DataCoreScrapeMineableEntityResult;
@@ -236,6 +246,7 @@ export interface RunDatacoreScrapeResult {
 
 const COMMON_HEADERS = ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Class', 'Health'];
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
+const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
 const MINEABLE_ENTITIES_CSV_FILE = 'mineable-entities.datacore.csv';
@@ -264,6 +275,29 @@ const COMMODITY_HEADERS = [
   'Unrefined',
   'Raw',
   'Refined',
+  'Record GUID',
+  'Record Path',
+];
+const VEHICLE_HEADERS = [
+  'Entity Class',
+  'Vehicle Name Key',
+  'Vehicle Description Key',
+  'Manufacturer GUID',
+  'Manufacturer Code',
+  'Manufacturer Name Key',
+  'Movement Class',
+  'Vehicle Definition',
+  'Modification',
+  'Career Key',
+  'Career GUID',
+  'Role Key',
+  'Role GUID',
+  'Crew Size',
+  'Hull Damage Normalization',
+  'Allow Soft Destruction',
+  'Dogfight Enabled',
+  'Gravlev Vehicle',
+  'Inventory Container GUID',
   'Record GUID',
   'Record Path',
 ];
@@ -596,11 +630,11 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
+  const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
   const extractMiningCompositions = options.extractMiningCompositions ?? extractDataCoreMiningCompositions;
   const extractMineableEntities = options.extractMineableEntities ?? extractDataCoreMineableEntities;
-  const extractMiningDensityOverrides =
-    options.extractMiningDensityOverrides ?? extractDataCoreMiningDensityOverrides;
+  const extractMiningDensityOverrides = options.extractMiningDensityOverrides ?? extractDataCoreMiningDensityOverrides;
   const extractMiningClustering = options.extractMiningClustering ?? extractDataCoreMiningClustering;
   const extractMiningHarvestablePresets =
     options.extractMiningHarvestablePresets ?? extractDataCoreMiningHarvestablePresets;
@@ -664,10 +698,11 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     await writeRecordGraph(recordGraph, recordGraphPath);
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
+  const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
 
   const commodityRows = await extractCommodities({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const commodityResult = await writeCommodityCsv(commodityRows, {
     outputBase,
@@ -675,9 +710,19 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   });
   options.onCommoditiesExtracted?.(commodityResult.rows, commodityResult.csvFile, Boolean(options.dryRun));
 
+  const vehicleRows = await extractVehicles({
+    xmlCacheDir,
+    graph: graphLookup,
+  });
+  const vehicleResult = await writeVehicleCsv(vehicleRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onVehiclesExtracted?.(vehicleResult.rows, vehicleResult.csvFile, Boolean(options.dryRun));
+
   const miningElementRows = await extractMiningElements({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningElementResult = await writeMiningElementCsv(miningElementRows, {
     outputBase,
@@ -687,7 +732,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningCompositionRows = await extractMiningCompositions({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningCompositionResult = await writeMiningCompositionCsv(miningCompositionRows, {
     outputBase,
@@ -701,17 +746,21 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const mineableEntityRows = await extractMineableEntities({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const mineableEntityResult = await writeMineableEntityCsv(mineableEntityRows, {
     outputBase,
     dryRun: options.dryRun,
   });
-  options.onMineableEntitiesExtracted?.(mineableEntityResult.rows, mineableEntityResult.csvFile, Boolean(options.dryRun));
+  options.onMineableEntitiesExtracted?.(
+    mineableEntityResult.rows,
+    mineableEntityResult.csvFile,
+    Boolean(options.dryRun),
+  );
 
   const miningDensityOverrideRows = await extractMiningDensityOverrides({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningDensityOverrideResult = await writeMiningDensityOverrideCsv(miningDensityOverrideRows, {
     outputBase,
@@ -725,7 +774,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningClusteringRows = await extractMiningClustering({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningClusteringResult = await writeMiningClusteringCsv(miningClusteringRows, {
     outputBase,
@@ -739,7 +788,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningHarvestablePresetRows = await extractMiningHarvestablePresets({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningHarvestablePresetResult = await writeMiningHarvestablePresetCsv(miningHarvestablePresetRows, {
     outputBase,
@@ -753,7 +802,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningHarvestableSetupRows = await extractMiningHarvestableSetups({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningHarvestableSetupResult = await writeMiningHarvestableSetupCsv(miningHarvestableSetupRows, {
     outputBase,
@@ -767,15 +816,12 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningSubHarvestableConfigRows = await extractMiningSubHarvestableConfigs({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
-  const miningSubHarvestableConfigResult = await writeMiningSubHarvestableConfigCsv(
-    miningSubHarvestableConfigRows,
-    {
-      outputBase,
-      dryRun: options.dryRun,
-    },
-  );
+  const miningSubHarvestableConfigResult = await writeMiningSubHarvestableConfigCsv(miningSubHarvestableConfigRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
   options.onMiningSubHarvestableConfigsExtracted?.(
     miningSubHarvestableConfigResult.rows,
     miningSubHarvestableConfigResult.csvFile,
@@ -784,7 +830,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningQualityDistributionRows = await extractMiningQualityDistributions({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningQualityDistributionResult = await writeMiningQualityDistributionCsv(miningQualityDistributionRows, {
     outputBase,
@@ -798,7 +844,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningLocationLabelRows = await extractMiningLocationLabels({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningLocationLabelResult = await writeMiningLocationLabelCsv(miningLocationLabelRows, {
     outputBase,
@@ -812,7 +858,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningParamRows = await extractMiningParams({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningParamResult = await writeMiningParamCsv(miningParamRows, {
     outputBase,
@@ -822,7 +868,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const miningProviderPresetRows = await extractMiningProviderPresets({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(recordGraph),
+    graph: graphLookup,
   });
   const miningProviderPresetResult = await writeMiningProviderPresetCsv(miningProviderPresetRows, {
     outputBase,
@@ -864,6 +910,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       outputPath: recordGraphPath,
     },
     commodityResult,
+    vehicleResult,
     miningElementResult,
     miningCompositionResult,
     mineableEntityResult,
@@ -987,10 +1034,52 @@ async function writeCommodityCsv(
       row.ref,
       row.path,
     ]);
-    await fs.writeFile(path.join(options.outputBase, COMMODITY_CSV_FILE), stringify([COMMODITY_HEADERS, ...csvRows]), 'utf8');
+    await fs.writeFile(
+      path.join(options.outputBase, COMMODITY_CSV_FILE),
+      stringify([COMMODITY_HEADERS, ...csvRows]),
+      'utf8',
+    );
   }
 
   return { rows: rows.length, csvFile: COMMODITY_CSV_FILE };
+}
+
+async function writeVehicleCsv(
+  rows: DataCoreVehicleRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeVehicleResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.entityClass,
+      row.vehicleNameKey,
+      row.vehicleDescriptionKey,
+      row.manufacturerGuid,
+      row.manufacturerCode,
+      row.manufacturerNameKey,
+      row.movementClass,
+      row.vehicleDefinition,
+      row.modification,
+      row.careerKey,
+      row.careerGuid,
+      row.roleKey,
+      row.roleGuid,
+      row.crewSize,
+      row.hullDamageNormalization,
+      row.allowSoftDestruction,
+      row.dogfightEnabled,
+      row.isGravlevVehicle,
+      row.inventoryContainerGuid,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, VEHICLES_CSV_FILE),
+      stringify([VEHICLE_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: VEHICLES_CSV_FILE };
 }
 
 async function writeMiningElementCsv(
