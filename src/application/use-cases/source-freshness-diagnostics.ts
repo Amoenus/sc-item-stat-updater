@@ -8,6 +8,7 @@ import type {
   UpdateSourceProvider,
 } from './prepare-update-categories';
 import type { ItemSourceFileDeclaration } from '../../enrichment/item-config';
+import { DATACORE_RAW_FACTS, type RawFactListingEntry } from './category-listing';
 
 export interface SourceVersionDiagnostic {
   provider: UpdateSourceProvider;
@@ -119,6 +120,42 @@ async function collectIncompleteSourceWarnings(category: UpdateCategory): Promis
   return warnings.filter((warning): warning is SourceFreshnessWarning => warning !== null);
 }
 
+async function collectRawFactWarnings(
+  rawFact: RawFactListingEntry,
+  options: { baseDir: string; channel: UpdateChannel },
+): Promise<SourceFreshnessWarning[]> {
+  const warnings = await Promise.all(
+    rawFact.sourceFiles.map(async (filename) => {
+      const sourcePath = resolveChildPath(options.baseDir, filename, 'DataCore raw fact source file');
+      try {
+        await fs.access(sourcePath);
+        return null;
+      } catch {
+        const warning: SourceFreshnessWarning = {
+          provider: 'datacore',
+          label: 'DataCore',
+          channel: options.channel,
+          category: rawFact.slug,
+          path: sourcePath,
+          message: 'DataCore raw fact data appears incomplete; expected source file is missing.',
+        };
+        return warning;
+      }
+    }),
+  );
+  return warnings.filter((warning): warning is SourceFreshnessWarning => warning !== null);
+}
+
+function dedupeWarningsByPath(warnings: SourceFreshnessWarning[]): SourceFreshnessWarning[] {
+  const seen = new Set<string>();
+  return warnings.filter((warning) => {
+    const key = `${warning.provider}:${warning.path}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function buildSourceFreshnessDiagnostics(
   prepared: PreparedUpdateCategories,
   options: { provider: UpdateProvider; ptu?: boolean },
@@ -151,7 +188,18 @@ export async function buildSourceFreshnessDiagnostics(
       message: `${source.label} source version does not look like ${source.channel} data.`,
     }));
 
-  const incompleteWarnings = (await Promise.all(prepared.categories.map(collectIncompleteSourceWarnings))).flat();
+  const categoryWarnings = (await Promise.all(prepared.categories.map(collectIncompleteSourceWarnings))).flat();
+  const rawFactWarnings =
+    options.provider === 'datacore'
+      ? (
+          await Promise.all(
+            DATACORE_RAW_FACTS.map((rawFact) =>
+              collectRawFactWarnings(rawFact, { baseDir: prepared.itemVersionDir, channel }),
+            ),
+          )
+        ).flat()
+      : [];
+  const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings]);
   return { versions, warnings: [...staleWarnings, ...incompleteWarnings] };
 }
 

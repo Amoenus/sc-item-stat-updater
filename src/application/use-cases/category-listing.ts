@@ -95,7 +95,7 @@ function toEntries(
     .sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
-const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
+export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
   {
     slug: 'datacore-commodities',
     label: 'Commodities',

@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import type { ItemConfig } from '../../enrichment/item-config';
 import type { PreparedUpdateCategories, UpdateCategory } from './prepare-update-categories';
+import { DATACORE_RAW_FACTS } from './category-listing';
 import { buildSourceFreshnessDiagnostics, formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 
 const config: ItemConfig = {
@@ -16,6 +17,16 @@ const config: ItemConfig = {
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), 'sc-source-diagnostics-'));
+}
+
+async function writeDataCoreRawFactFiles(dir: string, except: string[] = []): Promise<void> {
+  await fs.mkdir(dir, { recursive: true });
+  const excluded = new Set(except);
+  await Promise.all(
+    DATACORE_RAW_FACTS.flatMap((rawFact) => rawFact.sourceFiles)
+      .filter((file) => !excluded.has(file))
+      .map((file) => fs.writeFile(path.join(dir, file), 'header\n', 'utf8')),
+  );
 }
 
 function makePrepared(root: string, categories: UpdateCategory[]): PreparedUpdateCategories {
@@ -37,6 +48,7 @@ test('source freshness diagnostics summarize selected provider versions', async 
     const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
     await fs.mkdir(itemVersionDir, { recursive: true });
     await fs.writeFile(path.join(itemVersionDir, 'coolers.datacore.csv'), 'header\n', 'utf8');
+    await writeDataCoreRawFactFiles(itemVersionDir);
 
     const diagnostics = await buildSourceFreshnessDiagnostics(
       makePrepared(root, [
@@ -65,6 +77,7 @@ test('source freshness diagnostics warn for incomplete selected source files wit
   try {
     const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
     await fs.mkdir(itemVersionDir, { recursive: true });
+    await writeDataCoreRawFactFiles(itemVersionDir);
     const expectedPath = path.join(itemVersionDir, 'coolers.datacore.csv');
 
     const diagnostics = await buildSourceFreshnessDiagnostics(
@@ -99,6 +112,7 @@ test('source freshness diagnostics warn for missing provider companion source fi
     const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
     await fs.mkdir(scmdbDir, { recursive: true });
     await fs.mkdir(itemVersionDir, { recursive: true });
+    await writeDataCoreRawFactFiles(itemVersionDir, ['commodities.datacore.csv']);
     const expectedPath = path.join(itemVersionDir, 'commodities.datacore.csv');
 
     const diagnostics = await buildSourceFreshnessDiagnostics(
@@ -129,12 +143,36 @@ test('source freshness diagnostics warn for missing provider companion source fi
   }
 });
 
+test('source freshness diagnostics warn for missing standalone DataCore raw fact files', async () => {
+  const root = await makeTempDir();
+  try {
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await writeDataCoreRawFactFiles(itemVersionDir, ['vehicles.datacore.csv']);
+    const expectedPath = path.join(itemVersionDir, 'vehicles.datacore.csv');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(makePrepared(root, []), { provider: 'datacore' });
+
+    assert.equal(diagnostics.warnings.length, 1);
+    assert.equal(diagnostics.warnings[0].provider, 'datacore');
+    assert.equal(diagnostics.warnings[0].category, 'datacore-vehicles');
+    assert.equal(diagnostics.warnings[0].path, expectedPath);
+    assert.match(diagnostics.warnings[0].message, /DataCore raw fact data appears incomplete/);
+
+    const formatted = formatSourceFreshnessDiagnostics(diagnostics);
+    assert.match(formatted, /WARNING DataCore LIVE datacore-vehicles/);
+    assert.match(formatted, new RegExp(expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test('source freshness diagnostics warn when a selected version looks like the wrong channel', async () => {
   const root = await makeTempDir();
   try {
     const prepared = makePrepared(root, []);
     prepared.itemVersion = '4.8.1-live';
     prepared.itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await writeDataCoreRawFactFiles(prepared.itemVersionDir);
 
     const diagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider: 'datacore', ptu: true });
 
