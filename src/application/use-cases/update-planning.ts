@@ -10,7 +10,12 @@ import { sanitizeIniValue } from '../../enrichment/formatter';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
 import { getLogger } from '../../infrastructure/logger';
-import type { IssueRecord, ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
+import type {
+  IssueRecord,
+  ItemConfig,
+  ItemSourceDataContext,
+  ItemSourceFileDeclaration,
+} from '../../enrichment/item-config';
 import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
 
 const logger = getLogger('updater');
@@ -67,6 +72,7 @@ interface PreflightCategory {
   config: ItemConfig;
   csvDir: string;
   source?: UpdateSourceMetadata;
+  sourceDirs?: ItemSourceDataContext['sourceDirs'];
 }
 
 export interface UpdatePlanResult extends UpdateStats {
@@ -200,7 +206,15 @@ function formatProvider(provider: UpdateSourceProvider | undefined): string | un
 }
 
 function inferProvider(config: ItemConfig, csvDir: string): UpdateSourceProvider | undefined {
-  const haystack = [config.csvFile, config.jsonFile, config.lookupCsvFile, csvDir].filter(Boolean).join(' ');
+  const haystack = [
+    config.csvFile,
+    config.jsonFile,
+    config.lookupCsvFile,
+    ...(config.sourceFiles ?? []).map((sourceFile) => `${sourceFile.sourceDir ?? ''} ${sourceFile.file}`),
+    csvDir,
+  ]
+    .filter(Boolean)
+    .join(' ');
   if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
   if (/\bscmdb\b|mission/i.test(haystack)) return 'scmdb';
   if (/\bspviewer\b|\.spviewer\./i.test(haystack)) return 'spviewer';
@@ -224,8 +238,13 @@ function scrapeCommand(provider: UpdateSourceProvider | undefined, channel: Upda
   return channel === 'PTU' ? `${command} -- --ptu` : command;
 }
 
-function formatMissingSource(category: PreflightCategory, filename: string, filePath: string): string {
-  const provider = category.source?.provider ?? inferProvider(category.config, category.csvDir);
+function formatMissingSource(
+  category: PreflightCategory,
+  filename: string,
+  filePath: string,
+  providerOverride?: UpdateSourceProvider,
+): string {
+  const provider = providerOverride ?? category.source?.provider ?? inferProvider(category.config, category.csvDir);
   const channel = category.source?.channel ?? inferChannel(category.csvDir);
   const sourceCategory = category.source?.category ?? category.config.label;
   const context = [formatProvider(provider), channel, sourceCategory].filter(Boolean).join(' | ');
@@ -238,6 +257,28 @@ function formatMissingSource(category: PreflightCategory, filename: string, file
     lines.splice(1, 0, `    Config: ${category.config.label}`);
   }
   return lines.join('\n');
+}
+
+function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
+  if (sourceDir === 'datacore' || sourceDir === 'scmdb' || sourceDir === 'spviewer') return sourceDir;
+  return undefined;
+}
+
+function resolveDeclaredSourceFiles(
+  category: PreflightCategory,
+): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider }> {
+  const staticFiles = [category.config.csvFile, category.config.jsonFile, category.config.lookupCsvFile]
+    .filter((filename): filename is string => typeof filename === 'string')
+    .map((filename) => ({ filename, baseDir: category.csvDir, provider: category.source?.provider }));
+
+  const companionFiles = (category.config.sourceFiles ?? []).flatMap((sourceFile) => {
+    const sourceDir = sourceFile.sourceDir ?? 'csvDir';
+    const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
+    if (!baseDir) return [];
+    return [{ filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir) }];
+  });
+
+  return [...staticFiles, ...companionFiles];
 }
 
 /** Finds the last existing description key index for insertion ordering. */
@@ -339,8 +380,9 @@ function planRow(
 }
 
 /**
- * Preflight check: verifies that every static CSV / JSON source file declared
- * in a config actually exists on disk before any update logic runs.
+ * Preflight check: verifies that every declared static source file exists on
+ * disk before any update logic runs. Dynamic JSON configs still resolve their
+ * primary source at runtime, but declared companion files are checked here.
  *
  * Configs that use `resolveJsonFile` are intentionally skipped — they locate
  * their source dynamically (e.g. globbing for the latest merged-*.json) and
@@ -352,20 +394,15 @@ function planRow(
 export async function preflightCheckConfigs(categories: PreflightCategory[]): Promise<void> {
   const perConfig = await Promise.all(
     categories.map(async (category) => {
-      const { config, csvDir } = category;
-      // Skip configs whose file is resolved dynamically at runtime.
-      if (config.resolveJsonFile) return [];
-      const filenames = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(
-        (f): f is string => typeof f === 'string',
-      );
+      const sourceFiles = resolveDeclaredSourceFiles(category);
       const missingResults = await Promise.all(
-        filenames.map(async (filename) => {
-          const filePath = resolveChildPath(csvDir, filename, 'source file');
+        sourceFiles.map(async ({ filename, baseDir, provider }) => {
+          const filePath = resolveChildPath(baseDir, filename, 'source file');
           try {
             await fs.access(filePath);
             return null;
           } catch {
-            return formatMissingSource(category, filename, filePath);
+            return formatMissingSource(category, filename, filePath, provider);
           }
         }),
       );

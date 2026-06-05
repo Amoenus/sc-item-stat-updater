@@ -7,6 +7,7 @@ import type {
   UpdateProvider,
   UpdateSourceProvider,
 } from './prepare-update-categories';
+import type { ItemSourceFileDeclaration } from '../../enrichment/item-config';
 
 export interface SourceVersionDiagnostic {
   provider: UpdateSourceProvider;
@@ -56,7 +57,13 @@ function looksLikeRequestedChannel(version: string, channel: UpdateChannel): boo
 
 function categoryProvider(category: UpdateCategory): UpdateSourceProvider {
   if (category.source) return category.source.provider;
-  const haystack = [category.config.csvFile, category.config.jsonFile, category.config.lookupCsvFile, category.csvDir]
+  const haystack = [
+    category.config.csvFile,
+    category.config.jsonFile,
+    category.config.lookupCsvFile,
+    ...(category.config.sourceFiles ?? []).map((sourceFile) => `${sourceFile.sourceDir ?? ''} ${sourceFile.file}`),
+    category.csvDir,
+  ]
     .filter(Boolean)
     .join(' ');
   if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
@@ -64,19 +71,38 @@ function categoryProvider(category: UpdateCategory): UpdateSourceProvider {
   return 'spviewer';
 }
 
+function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
+  if (sourceDir === 'datacore' || sourceDir === 'scmdb' || sourceDir === 'spviewer') return sourceDir;
+  return undefined;
+}
+
+function resolveDeclaredSourceFiles(
+  category: UpdateCategory,
+): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider }> {
+  const staticFiles = [category.config.csvFile, category.config.jsonFile, category.config.lookupCsvFile]
+    .filter((filename): filename is string => typeof filename === 'string')
+    .map((filename) => ({ filename, baseDir: category.csvDir, provider: category.source?.provider }));
+
+  const companionFiles = (category.config.sourceFiles ?? []).flatMap((sourceFile) => {
+    const sourceDir = sourceFile.sourceDir ?? 'csvDir';
+    const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
+    if (!baseDir) return [];
+    return [{ filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir) }];
+  });
+
+  return [...staticFiles, ...companionFiles];
+}
+
 async function collectIncompleteSourceWarnings(category: UpdateCategory): Promise<SourceFreshnessWarning[]> {
-  if (category.config.resolveJsonFile) return [];
-  const filenames = [category.config.csvFile, category.config.jsonFile, category.config.lookupCsvFile].filter(
-    (file): file is string => typeof file === 'string',
-  );
+  const sourceFiles = resolveDeclaredSourceFiles(category);
   const warnings = await Promise.all(
-    filenames.map(async (filename) => {
-      const sourcePath = resolveChildPath(category.csvDir, filename, 'source file');
+    sourceFiles.map(async ({ filename, baseDir, provider: fileProvider }) => {
+      const sourcePath = resolveChildPath(baseDir, filename, 'source file');
       try {
         await fs.access(sourcePath);
         return null;
       } catch {
-        const provider = categoryProvider(category);
+        const provider = fileProvider ?? categoryProvider(category);
         const label = providerLabel(provider);
         const warning: SourceFreshnessWarning = {
           provider,

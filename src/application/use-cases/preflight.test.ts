@@ -159,7 +159,7 @@ describe('preflightCheckConfigs', () => {
     }
   });
 
-  it('skips configs that use resolveJsonFile (dynamic resolution)', async () => {
+  it('skips dynamic JSON primary sources with no declared companion files', async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
     try {
       // No files created — resolveJsonFile config should be skipped entirely
@@ -170,6 +170,60 @@ describe('preflightCheckConfigs', () => {
             label: 'Commodities',
           }),
           csvDir: dir,
+        },
+      ];
+
+      await assert.doesNotReject(preflightCheckConfigs(categories));
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('checks declared DataCore companion files for dynamic SCMDB configs', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    try {
+      const scmdbDir = path.join(dir, 'scmdb');
+      const datacoreDir = path.join(dir, 'datacore');
+      await fs.mkdir(scmdbDir, { recursive: true });
+      await fs.mkdir(datacoreDir, { recursive: true });
+      const expectedPath = path.join(datacoreDir, 'commodities.datacore.csv');
+
+      const categories = [
+        {
+          config: makeConfig({
+            resolveJsonFile: async () => path.join(scmdbDir, 'merged-test.json'),
+            sourceFiles: [{ file: 'commodities.datacore.csv', sourceDir: 'datacore' }],
+            label: 'Commodities',
+          }),
+          csvDir: scmdbDir,
+          sourceDirs: { datacore: datacoreDir, scmdb: scmdbDir },
+          source: { provider: 'scmdb' as const, channel: 'LIVE' as const, category: 'mission-commodities' },
+        },
+      ];
+
+      await assert.rejects(preflightCheckConfigs(categories), (err: Error) => {
+        assert.ok(err.message.includes('DataCore'), 'should report the companion file provider');
+        assert.ok(err.message.includes('commodities.datacore.csv'));
+        assert.ok(err.message.includes(expectedPath));
+        assert.ok(err.message.includes('npm run scrape:datacore'));
+        return true;
+      });
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('skips provider companion files when that provider source directory is unavailable', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    try {
+      const categories = [
+        {
+          config: makeConfig({
+            sourceFiles: [{ file: 'commodities.datacore.csv', sourceDir: 'datacore' }],
+            label: 'Commodities',
+          }),
+          csvDir: dir,
+          sourceDirs: { scmdb: dir },
         },
       ];
 

@@ -92,6 +92,43 @@ test('source freshness diagnostics warn for incomplete selected source files wit
   }
 });
 
+test('source freshness diagnostics warn for missing provider companion source files', async () => {
+  const root = await makeTempDir();
+  try {
+    const scmdbDir = path.join(root, 'csv', 'scmdb', '4.8.1-live.11875683');
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await fs.mkdir(scmdbDir, { recursive: true });
+    await fs.mkdir(itemVersionDir, { recursive: true });
+    const expectedPath = path.join(itemVersionDir, 'commodities.datacore.csv');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(
+      makePrepared(root, [
+        {
+          config: {
+            label: 'Commodities',
+            resolveJsonFile: async () => path.join(scmdbDir, 'merged-test.json'),
+            sourceFiles: [{ file: 'commodities.datacore.csv', sourceDir: 'datacore' }],
+            requiredColumns: [],
+            descKeyMatch: () => false,
+          },
+          csvDir: scmdbDir,
+          sourceDirs: { datacore: itemVersionDir, scmdb: scmdbDir },
+          source: { provider: 'scmdb', channel: 'LIVE', category: 'mission-commodities' },
+        },
+      ]),
+      { provider: 'datacore' },
+    );
+
+    assert.equal(diagnostics.warnings.length, 1);
+    assert.equal(diagnostics.warnings[0].provider, 'datacore');
+    assert.equal(diagnostics.warnings[0].category, 'mission-commodities');
+    assert.equal(diagnostics.warnings[0].path, expectedPath);
+    assert.match(diagnostics.warnings[0].message, /DataCore source data appears incomplete/);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test('source freshness diagnostics warn when a selected version looks like the wrong channel', async () => {
   const root = await makeTempDir();
   try {

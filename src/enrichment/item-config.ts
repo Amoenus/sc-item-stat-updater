@@ -8,6 +8,8 @@ export interface BaseItemConfig {
   csvFile?: string;
   /** JSON filename relative to the CSV directory */
   jsonFile?: string;
+  /** Additional source files used by custom loaders, relative to csvDir or a named provider source directory. */
+  sourceFiles?: ItemSourceFileDeclaration[];
   /** Parses JSON content into rows */
   parseJson?: (json: unknown) => Array<Record<string, string>>;
   /** Resolves JSON source file path at runtime */
@@ -32,6 +34,11 @@ export interface BaseItemConfig {
   nameKeyToDescKey?: (nameKey: string) => string;
   /** Extra keys to check for existing entries */
   getAlternateDescKeys?: (descKey: string) => string[];
+}
+
+export interface ItemSourceFileDeclaration {
+  file: string;
+  sourceDir?: keyof NonNullable<ItemSourceDataContext['sourceDirs']> | 'csvDir';
 }
 
 export interface ItemSourceDataContext {

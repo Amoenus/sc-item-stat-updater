@@ -45,7 +45,13 @@ export interface ProviderCoverageMatrix {
 }
 
 function sourceFiles(config: ItemConfig): string[] {
-  return [config.csvFile, config.jsonFile, config.lookupCsvFile].filter((file): file is string => Boolean(file));
+  const primaryFiles = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter((file): file is string => Boolean(file));
+  const companionFiles = (config.sourceFiles ?? []).map((sourceFile) =>
+    sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
+      ? `${sourceFile.sourceDir}:${sourceFile.file}`
+      : sourceFile.file,
+  );
+  return [...primaryFiles, ...companionFiles];
 }
 
 function sourceHint(config: ItemConfig): string | undefined {
@@ -163,8 +169,11 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
 }
 
 function formatSource(entry: CategoryListingEntry): string {
-  const files = entry.sourceFiles.length > 0 ? entry.sourceFiles.join(', ') : entry.sourceHint;
-  return files ?? 'none declared';
+  const parts = [
+    entry.sourceFiles.length > 0 ? entry.sourceFiles.join(', ') : undefined,
+    entry.sourceHint,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join('; ') : 'none declared';
 }
 
 function formatSection(title: CategoryListingFamily, entries: CategoryListingEntry[]): string[] {

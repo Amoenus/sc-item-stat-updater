@@ -171,6 +171,7 @@ function isFileNotFound(err: unknown): boolean {
 export default {
   // jsonFile is resolved dynamically via resolveJsonFile; no static path needed.
   resolveJsonFile,
+  sourceFiles: [{ file: DATACORE_COMMODITIES_CSV, sourceDir: 'datacore' }],
   loadSourceData: loadCommoditySourceData,
   label: 'Commodities',
   requiredColumns: ['Localization Key', 'Name'],

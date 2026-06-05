@@ -48,6 +48,7 @@ test('category listing includes representative provider families and source meta
 
   const commodities = listing.categories.find((entry) => entry.slug === 'mission-commodities');
   assert.equal(commodities?.sourceHint, 'dynamic JSON source resolved from the selected source directory');
+  assert.deepEqual(commodities?.sourceFiles, ['datacore:commodities.datacore.csv']);
 
   assert.deepEqual(listing.mixedSources, [
     {
@@ -75,7 +76,10 @@ test('formatted category listing distinguishes provider families and mixed-sourc
     output,
     /SCMDB categories:\n(?:.*\n)*? {2}mission-scmdb-descriptions \| SCMDB mission descriptions \| files: missions\/scmdb-missions\.csv/,
   );
-  assert.match(output, /mission-commodities \| Commodities \| files: dynamic JSON source resolved/);
+  assert.match(
+    output,
+    /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv; dynamic JSON source resolved/,
+  );
   assert.match(output, /Mixed-source batch modes:\n {2}update-all --provider spviewer \| SPViewer \+ SCMDB/);
   assert.match(output, /update-all --provider datacore \| DataCore \+ SCMDB/);
 });
