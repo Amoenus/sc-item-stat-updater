@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -117,6 +118,81 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power,Efficiency\r?\n/,
   );
   assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,AEGS,2,B,Civilian,500,42,87.5%/);
+});
+
+test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'powerplant',
+    'powr_test_scitem.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.POWR_Test_SCItem __path="libs/foundry/records/entities/scitem/ships/powerplant/powr_test_scitem.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="PowerPlant" Size="1" Grade="2" Manufacturer="ACOM">
+              <Localization Name="@item_Name_POWR_Test" Description="@item_Desc_POWR_Test" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="140" />
+          <ItemResourceComponentParams>
+            <states>
+              <ItemResourceState name="Online">
+                <deltas>
+                  <ItemResourceDeltaGeneration>
+                    <generation resource="Power">
+                      <resourceAmountPerSecond>
+                        <SPowerSegmentResourceUnit units="16" />
+                      </resourceAmountPerSecond>
+                    </generation>
+                  </ItemResourceDeltaGeneration>
+                </deltas>
+              </ItemResourceState>
+            </states>
+          </ItemResourceComponentParams>
+        </Components>
+      </EntityClassDefinition.POWR_Test_SCItem>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'powerplants',
+        csvFile: 'powerplant.datacore.csv',
+        typeConfig: POWERPLANT_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'powerplant.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [{ type: 'powerplants', rows: 1, skipped: 0, csvFile: 'powerplant.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power Output,EM Per Segment\r?\n/,
+  );
+  assert.match(csv, /powr_test,item_Name_POWR_Test,,item_Desc_POWR_Test,ACOM,1,2,,140,16,/);
 });
 
 test('runDatacoreScrape extracts XML cache when cached records are missing', async () => {

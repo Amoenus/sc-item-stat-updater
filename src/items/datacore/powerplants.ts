@@ -10,7 +10,11 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'powr_',
   nameKeyInfix: 'POWR_',
   fieldSelectors: {
-    'Power Output': 'SPowerPlantComponentParams PowerPlantParams PowerOutput',
+    'Power Output': {
+      selector:
+        'ItemResourceComponentParams ItemResourceDeltaGeneration generation[resource="Power"] SPowerSegmentResourceUnit',
+      attr: 'units',
+    },
     'EM Per Segment': 'SPowerPlantComponentParams PowerPlantParams ElectromagneticEmissionPerPowerSegment',
   },
 };
