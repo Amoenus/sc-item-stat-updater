@@ -8,6 +8,7 @@ import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape
 import { DATACORE_RAW_FACTS } from './category-listing';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
+import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
 const typeEntry: DataCoreTypeEntry = {
@@ -264,6 +265,75 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Missile Quantity,Missile Size\r?\n/,
   );
   assert.match(csv, /mrck_test,item_NameMRCK_Test,,item_DescMRCK_Test,AEGS,6,1,,200,3,3/);
+});
+
+test('runDatacoreScrape extracts quantum drive params from DataCore item records', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-quantum-drives-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'quantumdrive',
+    'qdrv_wetk_s02_xl1_scitem.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.QDRV_WETK_S02_XL1_SCItem __path="libs/foundry/records/entities/scitem/ships/quantumdrive/qdrv_wetk_s02_xl1_scitem.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="QuantumDrive" Size="2" Grade="1" Manufacturer="WETK">
+              <Localization Name="@item_NameQDRV_WETK_S02_XL1_SCItem" Description="@item_DescQDRV_WETK_S02_XL1_SCItem" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="290" />
+          <SCItemQuantumDriveParams quantumFuelRequirement="0.02398" jumpRange="3.402823E+38" disconnectRange="38076">
+            <params driveSpeed="324000000" cooldownTime="22.86" stageOneAccelRate="4830000" stageTwoAccelRate="21300000" interdictionEffectTime="5" spoolUpTime="6" />
+            <splineJumpParams driveSpeed="400000" cooldownTime="22.86" stageOneAccelRate="250" stageTwoAccelRate="50000" spoolUpTime="6" />
+          </SCItemQuantumDriveParams>
+        </Components>
+      </EntityClassDefinition.QDRV_WETK_S02_XL1_SCItem>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'quantum-drives',
+        csvFile: 'quantumdrive.datacore.csv',
+        typeConfig: QUANTUM_DRIVE_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'quantumdrive.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'quantum-drives', rows: 1, skipped: 0, csvFile: 'quantumdrive.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Max Speed,Stage 1 Accel,Stage 2 Accel,Spline Speed,Spool Time,Cooldown,Interdiction Delay,Fuel Rate\r?\n/,
+  );
+  assert.match(
+    csv,
+    /qdrv_wetk_s02_xl1,item_NameQDRV_WETK_S02_XL1_SCItem,,item_DescQDRV_WETK_S02_XL1_SCItem,WETK,2,1,,290,324000000,4830000,21300000,400000,6,22\.86,5,0\.02398/,
+  );
 });
 
 test('runDatacoreScrape extracts tractor beam force and towing stats from weapon action params', async () => {

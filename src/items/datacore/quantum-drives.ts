@@ -2,23 +2,20 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ p4kFilter, entityClassPrefix, nameKeyInfix and all fieldSelectors are
-// best-effort derivations from community documentation. Verify against real
-// unforged game files before relying on them.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/quantumdrive',
-  // qdrv_rsi_s1_atlas → strip 'qdrv_' → 'RSI_S1_ATLAS' → item_NameQDRV_RSI_S1_ATLAS
+  // qdrv_rsi_s1_atlas -> strip 'qdrv_' -> 'RSI_S1_ATLAS' -> item_NameQDRV_RSI_S1_ATLAS
   entityClassPrefix: 'qdrv_',
   nameKeyInfix: 'QDRV_',
   fieldSelectors: {
-    'Max Speed': 'SQuantumDriveComponentParams QuantumDriveParams DriveSpeed',
-    'Stage 1 Accel': 'SQuantumDriveComponentParams QuantumDriveParams Stage1AccelSpeed',
-    'Stage 2 Accel': 'SQuantumDriveComponentParams QuantumDriveParams Stage2AccelSpeed',
-    'Spline Speed': 'SQuantumDriveComponentParams QuantumDriveParams SplineSpeed',
-    'Spool Time': 'SQuantumDriveComponentParams QuantumDriveParams SpoolUpTime',
-    Cooldown: 'SQuantumDriveComponentParams QuantumDriveParams CooldownTime',
-    'Interdiction Delay': 'SQuantumDriveComponentParams QuantumDriveParams InterdictionDelay',
-    'Fuel Rate': 'SQuantumDriveComponentParams QuantumDriveParams QuantumFuelRate',
+    'Max Speed': { selector: 'SCItemQuantumDriveParams > params', attr: 'driveSpeed' },
+    'Stage 1 Accel': { selector: 'SCItemQuantumDriveParams > params', attr: 'stageOneAccelRate' },
+    'Stage 2 Accel': { selector: 'SCItemQuantumDriveParams > params', attr: 'stageTwoAccelRate' },
+    'Spline Speed': { selector: 'SCItemQuantumDriveParams > splineJumpParams', attr: 'driveSpeed' },
+    'Spool Time': { selector: 'SCItemQuantumDriveParams > params', attr: 'spoolUpTime' },
+    Cooldown: { selector: 'SCItemQuantumDriveParams > params', attr: 'cooldownTime' },
+    'Interdiction Delay': { selector: 'SCItemQuantumDriveParams > params', attr: 'interdictionEffectTime' },
+    'Fuel Rate': { selector: 'SCItemQuantumDriveParams', attr: 'quantumFuelRequirement' },
   },
 };
 
