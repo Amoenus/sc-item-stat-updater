@@ -2,20 +2,21 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ EMP entity class prefix and DataForge component structure are speculative.
-// The p4k path may be scitemweapon_emp or scitemvehicle_weaponemp.
-// Verify against real game files.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons/emp',
-  // emp_kbar_s2_headhunterII → strip 'emp_' → 'KBAR_S2_HEADHUNTERII'
+  // emp_kbar_s2_headhunterII -> strip 'emp_' -> 'KBAR_S2_HEADHUNTERII'
   entityClassPrefix: 'emp_',
   nameKeyInfix: 'EMP_',
   fieldSelectors: {
-    'Damage Total': 'SEMPComponentParams EMPParams MaxDamage',
-    'Damage Radius': 'SEMPComponentParams EMPParams MaxRadius',
-    'Charge Delay': 'SEMPComponentParams EMPParams ChargeUpTime',
-    'Unleash Delay': 'SEMPComponentParams EMPParams UnleashDelay',
-    Cooldown: 'SEMPComponentParams EMPParams CooldownTime',
+    'Damage Total': { selector: 'SCItemEMPParams', attr: 'distortionDamage' },
+    'Damage Radius': { selector: 'SCItemEMPParams', attr: 'empRadius' },
+    'Damage Radius Min': { selector: 'SCItemEMPParams', attr: 'minEmpRadius' },
+    'Physical Radius': { selector: 'SCItemEMPParams', attr: 'physRadius' },
+    'Physical Radius Min': { selector: 'SCItemEMPParams', attr: 'minPhysRadius' },
+    Pressure: { selector: 'SCItemEMPParams', attr: 'pressure' },
+    'Charge Delay': { selector: 'SCItemEMPParams', attr: 'chargeTime' },
+    'Unleash Delay': { selector: 'SCItemEMPParams', attr: 'unleashTime' },
+    Cooldown: { selector: 'SCItemEMPParams', attr: 'cooldownTime' },
   },
 };
 
@@ -33,6 +34,10 @@ export default {
       .section('-- EMP Stats --')
       .raw('Damage', 'Damage Total')
       .raw('Radius', 'Damage Radius')
+      .rawIf('Min Radius', 'Damage Radius Min')
+      .rawIf('Physical Radius', 'Physical Radius')
+      .rawIf('Min Physical Radius', 'Physical Radius Min')
+      .rawIf('Pressure', 'Pressure')
       .rawIf('Charge Delay', 'Charge Delay')
       .rawIf('Unleash Delay', 'Unleash Delay')
       .rawIf('Cooldown', 'Cooldown')

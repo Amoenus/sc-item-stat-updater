@@ -6,6 +6,8 @@ import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_TYPE_CONFIG as EMP_TYPE_CONFIG } from '../../items/datacore/emps';
+import { DATACORE_TYPE_CONFIG as JUMP_DRIVE_TYPE_CONFIG } from '../../items/datacore/jump-drives';
 import { DATACORE_TYPE_CONFIG as MINING_LASER_TYPE_CONFIG } from '../../items/datacore/mining-lasers';
 import { DATACORE_TYPE_CONFIG as MINING_MODIFIER_TYPE_CONFIG } from '../../items/datacore/mining-modifiers';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
@@ -407,6 +409,157 @@ test('runDatacoreScrape extracts QED params from DataCore item records', async (
   assert.match(
     csv,
     /qed_wetk_s03_reynie,item_NameQED_WETK_S03_Reynie,item_NameQED_WETK_S03_Reynie,item_DescQED_WETK_S03_Reynie,WETK,1,1,,1100,12000,20000,90,3,1/,
+  );
+});
+
+test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-jump-drives-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const jumpDrivePath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'jumpdrive',
+    'jdrv_aegs_s04_javelin_scitem.xml',
+  );
+  const manufacturerPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'scitemmanufacturer',
+    'scitemmanufacturer.aegs.xml',
+  );
+  await fs.mkdir(path.dirname(jumpDrivePath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    jumpDrivePath,
+    `
+      <EntityClassDefinition.JDRV_AEGS_S04_Javelin_SCItem __path="libs/foundry/records/entities/scitem/ships/jumpdrive/jdrv_aegs_s04_javelin_scitem.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="JumpDrive" SubType="UNDEFINED" Size="4" Grade="3" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+              <Localization Name="@LOC_PLACEHOLDER" ShortName="@LOC_EMPTY" Description="@LOC_EMPTY" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="77000" />
+          <SDistortionParams DecayDelay="1" DecayRate="345.6" Maximum="1728" />
+          <SCItemJumpDriveParams alignmentRate="0.2" alignmentDecayRate="0.1" tuningRate="0.26" tuningDecayRate="0.5" fuelUsageEfficiencyMultiplier="8" />
+        </Components>
+      </EntityClassDefinition.JDRV_AEGS_S04_Javelin_SCItem>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.AEGS Code="AEG" __type="SCItemManufacturer" __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" __path="libs/foundry/records/scitemmanufacturer/scitemmanufacturer.aegs.xml">
+        <Localization Name="@manufacturer_NameAEGS" Description="@manufacturer_DescAEGS" />
+      </SCItemManufacturer.AEGS>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'jump-drives',
+        csvFile: 'jumpdrive.datacore.csv',
+        typeConfig: JUMP_DRIVE_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'jumpdrive.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'jump-drives', rows: 1, skipped: 0, csvFile: 'jumpdrive.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Alignment Rate,Alignment Decay,Tuning Rate,Tuning Decay,Fuel Usage Mult,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
+  );
+  assert.match(
+    csv,
+    /jdrv_aegs_s04_javelin,LOC_PLACEHOLDER,,,AEGS,4,3,UNDEFINED,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
+  );
+});
+
+test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-emps-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const empPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'weapons',
+    'emp',
+    'tmbl_emp_device_s1.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'tmbl.xml');
+  await fs.mkdir(path.dirname(empPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    empPath,
+    `
+      <EntityClassDefinition.TMBL_EMP_Device_S1 __path="libs/foundry/records/entities/scitem/ships/weapons/emp/tmbl_emp_device_s1.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="EMP" SubType="UNDEFINED" Size="1" Grade="1" Manufacturer="bb1024bc-b82e-491c-820c-36662c36feb3">
+              <Localization Name="@item_NameMXOX_EMP_Device" ShortName="@item_NameMXOX_EMP_Device" Description="@item_DescMXOX_EMP_Device" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemEMPParams chargeTime="12" distortionDamage="1000" empRadius="400" minEmpRadius="150" physRadius="250" minPhysRadius="150" pressure="0" unleashTime="0.75" cooldownTime="6" />
+          <SHealthComponentParams Health="150" />
+        </Components>
+      </EntityClassDefinition.TMBL_EMP_Device_S1>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.TMBL Code="TMBL" __type="SCItemManufacturer" __ref="bb1024bc-b82e-491c-820c-36662c36feb3" __path="libs/foundry/records/scitemmanufacturer/tmbl.xml">
+        <Localization Name="@manufacturer_NameTMBL" Description="@manufacturer_DescTMBL" />
+      </SCItemManufacturer.TMBL>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'emps',
+        csvFile: 'emp.datacore.csv',
+        typeConfig: EMP_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'emp.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'emps', rows: 1, skipped: 0, csvFile: 'emp.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Radius,Damage Radius Min,Physical Radius,Physical Radius Min,Pressure,Charge Delay,Unleash Delay,Cooldown\r?\n/,
+  );
+  assert.match(
+    csv,
+    /tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,UNDEFINED,150,1000,400,150,250,150,0,12,0\.75,6/,
   );
 });
 
