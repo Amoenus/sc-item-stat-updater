@@ -2,20 +2,26 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
-// ⚠️ Throwable entity class prefixes vary (gren_, throwable_, etc.).
-// Verify p4kFilter and all field paths against real game files.
+const triggerSelector = 'EntityComponentTriggerableDevicesParams > triggers';
+const explosionSelector = `${triggerSelector} explosionParams`;
+const damageSelector = `${explosionSelector} DamageInfo`;
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/weapons/throwable',
   entityClassPrefix: 'gren_',
   nameKeyInfix: 'GREN_',
   fieldSelectors: {
-    Type: 'SThrowableComponentParams ThrowableParams type',
-    'Damage Physical': 'SProjectileComponentParams BulletParams DamagePhysical',
-    'Damage Energy': 'SProjectileComponentParams BulletParams DamageEnergy',
-    'Damage Distortion': 'SProjectileComponentParams BulletParams DamageDistortion',
-    'Detonation Delay': 'SThrowableComponentParams ThrowableParams detonationDelay',
-    'Explosion Radius': 'SThrowableComponentParams ThrowableParams explosionRadius',
-    'Explosion Pressure': 'SThrowableComponentParams ThrowableParams explosionPressure',
+    Type: { selector: 'AttachDef', attr: 'SubType' },
+    'Damage Physical': { selector: damageSelector, attr: 'DamagePhysical' },
+    'Damage Energy': { selector: damageSelector, attr: 'DamageEnergy' },
+    'Damage Distortion': { selector: damageSelector, attr: 'DamageDistortion' },
+    'Detonation Delay': { selector: `${triggerSelector} STriggerableDevicesTriggerTimerParams`, attr: 'duration' },
+    'Explosion Radius': {
+      selector: explosionSelector,
+      attrs: ['minRadius', 'maxRadius'],
+      format: 'number-pair',
+    },
+    'Explosion Pressure': { selector: explosionSelector, attr: 'pressure' },
   },
 };
 
@@ -24,9 +30,8 @@ export default {
   label: 'DC Throwables',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size'],
   descKeyMatch: (kl) => kl.includes('desc') && (kl.includes('grenade') || kl.includes('throwable')),
-  // ⚠️ Throwable key derivation: 'gren_' is the most common prefix but not
-  // universal. Items not matching will silently produce no updates.
   getTargetKeys: makeGetTargetKeysFromPrefixMap([
+    ['behr_gren_frag_', 'behr_frag_grenade_'],
     ['gren_', 'GREN_'],
     ['throwable_', 'THROW_'],
   ]),

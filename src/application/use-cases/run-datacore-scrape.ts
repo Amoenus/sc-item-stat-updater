@@ -1939,8 +1939,9 @@ function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector
   ];
 
   if (spec.format === 'scaled-number' && values[0]) return formatScaledNumber(values[0], spec.scale ?? 1);
-  if (spec.format === 'number-pair') return values.join(spec.separator ?? ' - ');
+  if (spec.format === 'number-pair') return values.some(Boolean) ? values.join(spec.separator ?? ' - ') : '';
   if (spec.format === 'scaled-number-pair') {
+    if (!values.some(Boolean)) return '';
     return values.map((value) => formatScaledNumber(value, spec.scale ?? 1)).join(spec.separator ?? ' - ');
   }
   if (spec.format === 'percent' && values[0]) return formatPercent(values[0]);

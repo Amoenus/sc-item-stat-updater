@@ -20,6 +20,7 @@ import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../item
 import { DATACORE_TYPE_CONFIG as SELF_DESTRUCT_TYPE_CONFIG } from '../../items/datacore/self-destruct';
 import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
+import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datacore/throwables';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -741,6 +742,103 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
   assert.match(
     csv,
     /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,120,120000,100 - 175/,
+  );
+});
+
+test('runDatacoreScrape extracts throwable explosion params from triggerable devices', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-throwables-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const throwablePath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'weapons',
+    'throwable',
+    'behr_gren_frag_01.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'behr.xml');
+  await fs.mkdir(path.dirname(throwablePath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    throwablePath,
+    `
+      <EntityClassDefinition.behr_gren_frag_01 __path="libs/foundry/records/entities/scitem/weapons/throwable/behr_gren_frag_01.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponPersonal" SubType="Grenade" Size="1" Grade="1" Manufacturer="65a5d887-3b21-4046-a718-6912c0c7c3be">
+              <Localization Name="@item_Namebehr_frag_grenade_01" ShortName="@item_Namebehr_frag_grenade_01_short" Description="@item_Descbehr_frag_grenade_01" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <EntityComponentTriggerableDevicesParams>
+            <triggers>
+              <STriggerableDevicesTriggerTimerParams name="Pre explosion" duration="5">
+                <behavior>
+                  <STriggerableDevicesBehaviorExplosionParams name="Explosion">
+                    <explosionParams minRadius="4" maxRadius="5.5" pressure="280">
+                      <damage>
+                        <DamageInfo DamagePhysical="20" DamageEnergy="0" DamageDistortion="0" />
+                      </damage>
+                    </explosionParams>
+                  </STriggerableDevicesBehaviorExplosionParams>
+                </behavior>
+              </STriggerableDevicesTriggerTimerParams>
+            </triggers>
+            <aiTriggers>
+              <STriggerableDevicesTriggerTimerParams name="Explosion Timer" duration="3">
+                <behavior>
+                  <STriggerableDevicesBehaviorExplosionParams name="Explosion">
+                    <explosionParams minRadius="0.25" maxRadius="7" pressure="280">
+                      <damage>
+                        <DamageInfo DamagePhysical="14" DamageEnergy="0" DamageDistortion="0" />
+                      </damage>
+                    </explosionParams>
+                  </STriggerableDevicesBehaviorExplosionParams>
+                </behavior>
+              </STriggerableDevicesTriggerTimerParams>
+            </aiTriggers>
+          </EntityComponentTriggerableDevicesParams>
+        </Components>
+      </EntityClassDefinition.behr_gren_frag_01>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.BEHR Code="BEHR" __type="SCItemManufacturer" __ref="65a5d887-3b21-4046-a718-6912c0c7c3be" __path="libs/foundry/records/scitemmanufacturer/behr.xml">
+        <Localization Name="@manufacturer_NameBEHR" Description="@manufacturer_DescBEHR" />
+      </SCItemManufacturer.BEHR>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'throwables',
+        csvFile: 'throwable.datacore.csv',
+        typeConfig: THROWABLE_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'throwable.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'throwables', rows: 1, skipped: 0, csvFile: 'throwable.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Type,Damage Physical,Damage Energy,Damage Distortion,Detonation Delay,Explosion Radius,Explosion Pressure\r?\n/,
+  );
+  assert.match(
+    csv,
+    /behr_gren_frag_01,item_Namebehr_frag_grenade_01,item_Namebehr_frag_grenade_01_short,item_Descbehr_frag_grenade_01,BEHR,1,1,Grenade,,Grenade,20,0,0,5,4 - 5\.5,280/,
   );
 });
 
