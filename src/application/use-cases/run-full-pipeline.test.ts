@@ -197,6 +197,7 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'mining-provider-presets.datacore.csv',
         },
+        rawFactResults: [],
         results: [],
         errors: [],
       };

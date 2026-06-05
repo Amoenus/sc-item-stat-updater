@@ -144,31 +144,13 @@ if (selectedTypes.length > 0) {
 
 console.log('\n=== Results ===');
 const commodityDryNote = values['dry-run'] ? ' (dry run, not written)' : '';
-console.log(
-  `  ${'commodities'.padEnd(28)} ${String(result.commodityResult.rows).padStart(4)} rows -> ${
-    result.commodityResult.csvFile
-  }${commodityDryNote}`,
-);
-console.log(
-  `  ${'vehicles'.padEnd(28)} ${String(result.vehicleResult.rows).padStart(4)} rows -> ${
-    result.vehicleResult.csvFile
-  }${commodityDryNote}`,
-);
-console.log(
-  `  ${'factions'.padEnd(28)} ${String(result.factionResult.rows).padStart(4)} rows -> ${
-    result.factionResult.csvFile
-  }${commodityDryNote}`,
-);
-console.log(
-  `  ${'manufacturers'.padEnd(28)} ${String(result.manufacturerResult.rows).padStart(4)} rows -> ${
-    result.manufacturerResult.csvFile
-  }${commodityDryNote}`,
-);
-console.log(
-  `  ${'location-labels'.padEnd(28)} ${String(result.locationLabelResult.rows).padStart(4)} rows -> ${
-    result.locationLabelResult.csvFile
-  }${commodityDryNote}`,
-);
+console.log('DataCore raw fact datasets:');
+for (const rawFact of result.rawFactResults) {
+  console.log(
+    `  ${rawFact.slug.padEnd(28)} ${String(rawFact.rows).padStart(4)} rows -> ${rawFact.csvFile}${commodityDryNote}`,
+  );
+}
+console.log('DataCore mining fact datasets:');
 console.log(
   `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
     result.miningElementResult.csvFile
@@ -213,11 +195,6 @@ console.log(
   `  ${'mining-quality-distributions'.padEnd(28)} ${String(result.miningQualityDistributionResult.rows).padStart(
     4,
   )} rows -> ${result.miningQualityDistributionResult.csvFile}${commodityDryNote}`,
-);
-console.log(
-  `  ${'mining-location-labels'.padEnd(28)} ${String(result.miningLocationLabelResult.rows).padStart(
-    4,
-  )} rows -> ${result.miningLocationLabelResult.csvFile}${commodityDryNote}`,
 );
 console.log(
   `  ${'mining-params'.padEnd(28)} ${String(result.miningParamResult.rows).padStart(4)} rows -> ${

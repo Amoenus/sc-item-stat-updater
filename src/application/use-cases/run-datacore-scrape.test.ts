@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
+import { DATACORE_RAW_FACTS } from './category-listing';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -56,6 +57,10 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
   assert.equal(result.versionTag, '4.8.0-live');
   assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shields.datacore.csv' }]);
   assert.deepEqual(result.errors, []);
+  assert.deepEqual(
+    result.rawFactResults.map((entry) => [entry.slug, entry.csvFile, entry.rows]),
+    DATACORE_RAW_FACTS.map((entry) => [entry.slug, entry.sourceFiles[0], 0]),
+  );
   await assert.rejects(() => fs.stat(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live')));
 });
 

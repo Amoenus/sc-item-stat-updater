@@ -66,6 +66,7 @@ import {
   loadXml,
   xmlVal,
 } from '../../sources/datacore/xml-parser';
+import { DATACORE_RAW_FACTS } from './category-listing';
 
 export interface DataCoreTypeEntry {
   name: string;
@@ -161,6 +162,13 @@ export interface DataCoreScrapeMiningParamResult {
 }
 
 export interface DataCoreScrapeMiningProviderPresetResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreRawFactScrapeResult {
+  slug: string;
+  label: string;
   rows: number;
   csvFile: string;
 }
@@ -270,6 +278,7 @@ export interface RunDatacoreScrapeResult {
   miningLocationLabelResult: DataCoreScrapeMiningLocationLabelResult;
   miningParamResult: DataCoreScrapeMiningParamResult;
   miningProviderPresetResult: DataCoreScrapeMiningProviderPresetResult;
+  rawFactResults: DataCoreRawFactScrapeResult[];
   results: DataCoreScrapeTypeResult[];
   errors: DataCoreScrapeTypeError[];
 }
@@ -1059,6 +1068,17 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     }
   }
 
+  const rawFactResults = buildRawFactResults(
+    new Map([
+      [commodityResult.csvFile, commodityResult],
+      [vehicleResult.csvFile, vehicleResult],
+      [factionResult.csvFile, factionResult],
+      [manufacturerResult.csvFile, manufacturerResult],
+      [locationLabelResult.csvFile, locationLabelResult],
+      [miningLocationLabelResult.csvFile, miningLocationLabelResult],
+    ]),
+  );
+
   return {
     exitCode: errors.length > 0 ? 1 : 0,
     gameVersion,
@@ -1090,6 +1110,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     miningLocationLabelResult,
     miningParamResult,
     miningProviderPresetResult,
+    rawFactResults,
     results,
     errors,
   };
@@ -1865,6 +1886,24 @@ async function writeMiningProviderPresetCsv(
   }
 
   return { rows: rows.length, csvFile: MINING_PROVIDER_PRESETS_CSV_FILE };
+}
+
+function buildRawFactResults(
+  resultsByCsvFile: Map<string, { rows: number; csvFile: string }>,
+): DataCoreRawFactScrapeResult[] {
+  return DATACORE_RAW_FACTS.map((rawFact) => {
+    const csvFile = rawFact.sourceFiles[0];
+    const result = resultsByCsvFile.get(csvFile);
+    if (!result) {
+      throw new Error(`DataCore raw fact "${rawFact.slug}" is cataloged but not emitted by the scraper (${csvFile}).`);
+    }
+    return {
+      slug: rawFact.slug,
+      label: rawFact.label,
+      rows: result.rows,
+      csvFile: result.csvFile,
+    };
+  });
 }
 
 function resolveField($: ReturnType<typeof loadXml>, spec: DataCoreFieldSelector, row: Record<string, string>): string {
