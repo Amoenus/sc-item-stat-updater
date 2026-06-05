@@ -1,14 +1,10 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. Launchers may live under
-// scitemweapon_missile_rack or scitemvehicle_missilelauncher.
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/missile_racks',
-  // mssl_ksar_s2_panther → strip 'mssl_' → 'KSAR_S2_PANTHER' → item_NameMSSL_KSAR_S2_PANTHER
-  entityClassPrefix: 'mssl_',
+  entityClassPrefix: 'mrck_',
   nameKeyInfix: 'MRCK_',
   fieldSelectors: {
     'Missile Quantity': {
@@ -27,7 +23,10 @@ export default {
   label: 'DC Missile Launchers',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Missile Quantity', 'Missile Size', 'Health'],
   descKeyMatch: (kl) => kl.includes('descmrck_') || kl.includes('desc_mrck_'),
-  getTargetKeys: makeGetTargetKeys('mssl_', 'MRCK_'),
+  getTargetKeys: makeGetTargetKeysFromPrefixMap([
+    ['mrck_', 'MRCK_'],
+    ['gmrck_', 'MRCK_'],
+  ]),
   buildValue(r, flavorText) {
     return stat(r)
       .line('Item Type', 'Missile Launcher')
