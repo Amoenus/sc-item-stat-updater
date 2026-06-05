@@ -8,6 +8,7 @@ import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape
 import { DATACORE_RAW_FACTS } from './category-listing';
 import { DATACORE_TYPE_CONFIG as MISSILE_LAUNCHER_TYPE_CONFIG } from '../../items/datacore/missile-launchers';
 import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/datacore/powerplants';
+import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
@@ -333,6 +334,74 @@ test('runDatacoreScrape extracts quantum drive params from DataCore item records
   assert.match(
     csv,
     /qdrv_wetk_s02_xl1,item_NameQDRV_WETK_S02_XL1_SCItem,,item_DescQDRV_WETK_S02_XL1_SCItem,WETK,2,1,,290,324000000,4830000,21300000,400000,6,22\.86,5,0\.02398/,
+  );
+});
+
+test('runDatacoreScrape extracts QED params from DataCore item records', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-qeds-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'quantumenforcementdevice',
+    'qed_wetk_s03_reynie.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.QED_WETK_S03_Reynie __path="libs/foundry/records/entities/scitem/ships/quantumenforcementdevice/qed_wetk_s03_reynie.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="QuantumInterdictionGenerator" Size="1" Grade="1" Manufacturer="WETK">
+              <Localization Name="@item_NameQED_WETK_S03_Reynie" ShortName="@item_NameQED_WETK_S03_Reynie" Description="@item_DescQED_WETK_S03_Reynie" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="1100" />
+          <SCItemQuantumInterdictionGeneratorParams basePowerDrawFraction="0.18" pulsePowerFraction="0.82" jammerPowerFraction="0.18">
+            <jammerSettings>
+              <SCItemQuantumJammerParams jammerRange="12000" maxPowerDraw="200" greenZoneCheckRange="4000" />
+            </jammerSettings>
+            <quantumInterdictionPulseSettings>
+              <SCItemQuantumInterdictionPulseParams chargeTimeSecs="90" dischargeTimeSecs="30" cooldownTimeSecs="1" radiusMeters="20000" activationPhaseDuration_seconds="3" />
+            </quantumInterdictionPulseSettings>
+          </SCItemQuantumInterdictionGeneratorParams>
+        </Components>
+      </EntityClassDefinition.QED_WETK_S03_Reynie>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'qeds',
+        csvFile: 'qed.datacore.csv',
+        typeConfig: QED_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'qed.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'qeds', rows: 1, skipped: 0, csvFile: 'qed.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Jammer Range,Interdiction Range,Charge Delay,Activation Delay,Cooldown\r?\n/,
+  );
+  assert.match(
+    csv,
+    /qed_wetk_s03_reynie,item_NameQED_WETK_S03_Reynie,item_NameQED_WETK_S03_Reynie,item_DescQED_WETK_S03_Reynie,WETK,1,1,,1100,12000,20000,90,3,1/,
   );
 });
 

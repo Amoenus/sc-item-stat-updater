@@ -1,21 +1,23 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
-// ⚠️ QED (Quantum Enforcement Device / Quantum Interdiction Generator) entity
-// class prefix and DataForge paths are speculative. INI keys use both
-// 'descqdmp_' and 'descqed_' prefixes. Verify against real game files.
+const pulseParamsSelector =
+  'SCItemQuantumInterdictionGeneratorParams > quantumInterdictionPulseSettings SCItemQuantumInterdictionPulseParams';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
-  recordFilter: 'scitem/ships/weapons/qig',
-  // qig_ksar_s3_boreas → strip 'qig_' → 'KSAR_S3_BOREAS'
-  entityClassPrefix: 'qig_',
+  recordFilter: ['scitem/ships/quantumenforcementdevice', 'scitem/ships/weapons/qig'],
+  entityClassPrefix: 'qdmp_',
   nameKeyInfix: 'QDMP_',
   fieldSelectors: {
-    'Jammer Range': 'SQuantumInterdictionGeneratorComponentParams QIGParams JammerRange',
-    'Interdiction Range': 'SQuantumInterdictionGeneratorComponentParams QIGParams InterdictionRange',
-    'Charge Delay': 'SQuantumInterdictionGeneratorComponentParams QIGParams ChargeTime',
-    'Activation Delay': 'SQuantumInterdictionGeneratorComponentParams QIGParams ActivationDelay',
-    Cooldown: 'SQuantumInterdictionGeneratorComponentParams QIGParams CooldownTime',
+    'Jammer Range': {
+      selector: 'SCItemQuantumInterdictionGeneratorParams > jammerSettings SCItemQuantumJammerParams',
+      attr: 'jammerRange',
+    },
+    'Interdiction Range': { selector: pulseParamsSelector, attr: 'radiusMeters' },
+    'Charge Delay': { selector: pulseParamsSelector, attr: 'chargeTimeSecs' },
+    'Activation Delay': { selector: pulseParamsSelector, attr: 'activationPhaseDuration_seconds' },
+    Cooldown: { selector: pulseParamsSelector, attr: 'cooldownTimeSecs' },
   },
 };
 
@@ -24,7 +26,11 @@ export default {
   label: 'DC QEDs',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Jammer Range'],
   descKeyMatch: (kl) => kl.includes('descqdmp_') || kl.includes('descqed_'),
-  getTargetKeys: makeGetTargetKeys('qig_', 'QDMP_'),
+  getTargetKeys: makeGetTargetKeysFromPrefixMap([
+    ['qdmp_', 'QDMP_'],
+    ['qed_', 'QED_'],
+    ['qig_', 'QDMP_'],
+  ]),
   buildValue(r, flavorText) {
     const hasSnare = r['Interdiction Range'] && r['Interdiction Range'] !== '0';
 
