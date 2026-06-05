@@ -95,6 +95,9 @@ export function makeGetTargetKeys(
   nameKeyInfix: string,
 ): NonNullable<ItemConfig['getTargetKeys']> {
   return (row, deriveDescKey) => {
+    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
+    if (rawKeys.length > 0) return rawKeys;
+
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     const suffix = entityClass.replace(new RegExp(`^${entityClassPrefix}`, 'i'), '').toUpperCase();
@@ -114,6 +117,9 @@ export function makeGetTargetKeysFromPrefixMap(
   prefixMap: Array<[string, string]>,
 ): NonNullable<ItemConfig['getTargetKeys']> {
   return (row, deriveDescKey) => {
+    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
+    if (rawKeys.length > 0) return rawKeys;
+
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     for (const [pfx, infix] of prefixMap) {
@@ -124,4 +130,20 @@ export function makeGetTargetKeysFromPrefixMap(
     }
     return [];
   };
+}
+
+export function getRawDataCoreTargetKeys(
+  row: Record<string, string>,
+  deriveDescKey: (nameKey: string) => string,
+): string[] {
+  const descriptionKey = usableLocalizationKey(row['Description Key']);
+  if (descriptionKey) return [descriptionKey];
+
+  const nameKey = usableLocalizationKey(row['Name Key']);
+  return nameKey ? [deriveDescKey(nameKey)] : [];
+}
+
+function usableLocalizationKey(value: string | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';
 }

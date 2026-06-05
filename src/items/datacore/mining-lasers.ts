@@ -1,6 +1,6 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import type { DataCoreItemTypeConfig } from './types';
+import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Mining laser entity class prefixes (wmn_, mlas_, wmlas_) and the p4k
 // directory name are not fully confirmed. Verify against real game files.
@@ -38,6 +38,9 @@ export default {
   },
   // ⚠️ mining laser key derivation: use wmn_ prefix assumption.
   getTargetKeys(row, deriveDescKey) {
+    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
+    if (rawKeys.length > 0) return rawKeys;
+
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     const suffix = entityClass.replace(/^wmn_/i, '').toUpperCase();

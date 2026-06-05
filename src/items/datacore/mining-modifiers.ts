@@ -1,6 +1,6 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import type { DataCoreItemTypeConfig } from './types';
+import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Mining modifier entity class prefix (mmod_) and the DataForge directory
 // name are not confirmed. The INI key pattern differs from standard items
@@ -37,6 +37,9 @@ export default {
   // item_mining_consumable_arden_Name). Derivation from entity class is
   // highly uncertain — manual mapping may be needed.
   getTargetKeys(row, deriveDescKey) {
+    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
+    if (rawKeys.length > 0) return rawKeys;
+
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     // Best-effort: try known mining-consumable prefix patterns

@@ -1,6 +1,6 @@
 import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import type { DataCoreItemTypeConfig } from './types';
+import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
 
 // ⚠️ Salvage modifier entity classes use varying prefixes (smod_, scrp_, etc.)
 // and their INI keys follow a different naming convention (item_scraper_*).
@@ -27,6 +27,9 @@ export default {
   // ⚠️ Salvage modifier INI keys use item_scraper_* convention. Key derivation
   // from entity class is speculative. Manual mapping may be required.
   getTargetKeys(row, deriveDescKey) {
+    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
+    if (rawKeys.length > 0) return rawKeys;
+
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
     const suffix = entityClass.replace(/^smod_/i, '').toLowerCase();
