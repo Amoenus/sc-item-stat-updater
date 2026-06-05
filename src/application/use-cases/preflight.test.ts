@@ -149,7 +149,7 @@ describe('preflightCheckConfigs', () => {
       ];
 
       await assert.rejects(preflightCheckConfigs(categories), (err: Error) => {
-        assert.ok(err.message.includes('2 source file(s) not found'), 'should report count');
+        assert.ok(err.message.includes('2 source file issue(s)'), 'should report count');
         assert.ok(err.message.includes('shields.csv'));
         assert.ok(err.message.includes('coolers.csv'));
         return true;
@@ -249,6 +249,44 @@ describe('preflightCheckConfigs', () => {
     }
   });
 
+  it('rejects standalone DataCore raw fact files with no data rows', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    try {
+      const expectedPath = path.join(dir, 'factions.datacore.csv');
+      await touch(expectedPath);
+      await fs.writeFile(expectedPath, 'Faction Class,Name Key\n', 'utf8');
+
+      await assert.rejects(
+        preflightCheckConfigs([], {
+          rawFacts: [
+            {
+              rawFact: {
+                slug: 'datacore-factions',
+                label: 'Factions and reputation',
+                family: 'DataCore',
+                sourceRoot: 'csv/datacore',
+                sourceFiles: ['factions.datacore.csv'],
+                description: 'first-party faction flags',
+              },
+              baseDir: dir,
+              channel: 'LIVE',
+            },
+          ],
+        }),
+        (err: Error) => {
+          assert.ok(err.message.includes('DataCore'), 'should name the provider');
+          assert.ok(err.message.includes('datacore-factions'), 'should name the raw fact slug');
+          assert.ok(err.message.includes(expectedPath), 'should include the expected path');
+          assert.ok(err.message.includes('expected at least one data row'), 'should report the empty file issue');
+          assert.ok(err.message.includes('npm run scrape:datacore'), 'should suggest the DataCore scraper');
+          return true;
+        },
+      );
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('deduplicates missing DataCore files shared by category companions and raw facts', async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
     try {
@@ -287,7 +325,7 @@ describe('preflightCheckConfigs', () => {
             },
           ],
         }),
-        /1 source file\(s\) not found/,
+        /1 source file issue\(s\)/,
       );
     } finally {
       await fs.rm(dir, { recursive: true, force: true });

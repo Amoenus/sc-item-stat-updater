@@ -278,18 +278,29 @@ function formatMissingSource(
   return lines.join('\n');
 }
 
-function formatMissingRawFactSource(
+function formatRawFactSourceIssue(
   rawFact: RawFactListingEntry,
   filename: string,
   filePath: string,
   channel: UpdateChannel,
+  issue: string,
 ): string {
   return [
     `  [DataCore | ${channel} | ${rawFact.slug}] ${filename}`,
     `    Config: ${rawFact.label}`,
+    `    Issue: ${issue}`,
     `    Expected: ${filePath}`,
     `    Generate with: ${scrapeCommand('datacore', channel)}`,
   ].join('\n');
+}
+
+function hasCsvDataRows(contents: string): boolean {
+  return (
+    contents
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean).length > 1
+  );
 }
 
 function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
@@ -455,12 +466,17 @@ export async function preflightCheckConfigs(
       rawFact.sourceFiles.map(async (filename) => {
         const filePath = resolveChildPath(baseDir, filename, 'DataCore raw fact source file');
         try {
-          await fs.access(filePath);
-          return null;
+          const contents = await fs.readFile(filePath, 'utf8');
+          if (hasCsvDataRows(contents)) return null;
+          const missing: MissingSourceFile = {
+            key: `datacore:${filePath}`,
+            message: formatRawFactSourceIssue(rawFact, filename, filePath, channel, 'expected at least one data row'),
+          };
+          return missing;
         } catch {
           const missing: MissingSourceFile = {
             key: `datacore:${filePath}`,
-            message: formatMissingRawFactSource(rawFact, filename, filePath, channel),
+            message: formatRawFactSourceIssue(rawFact, filename, filePath, channel, 'expected source file is missing'),
           };
           return missing;
         }
@@ -475,7 +491,7 @@ export async function preflightCheckConfigs(
   const missing = [...missingByPath.values()].map((entry) => entry.message);
   if (missing.length > 0) {
     throw new Error(
-      `Preflight check failed — ${missing.length} source file(s) not found:\n${missing.join('\n')}\n\nRun the scrapers first to populate the missing files.`,
+      `Preflight check failed — ${missing.length} source file issue(s):\n${missing.join('\n')}\n\nRun the scrapers first to populate the missing files.`,
     );
   }
 }
