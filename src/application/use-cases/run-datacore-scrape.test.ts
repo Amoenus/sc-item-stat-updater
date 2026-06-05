@@ -23,6 +23,7 @@ import { DATACORE_TYPE_CONFIG as SELF_DESTRUCT_TYPE_CONFIG } from '../../items/d
 import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datacore/throwables';
+import { DATACORE_TYPE_CONFIG as TURRET_TYPE_CONFIG } from '../../items/datacore/turrets';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -1065,6 +1066,80 @@ test('runDatacoreScrape extracts radar stats from signature detection and aim as
   assert.match(
     csv,
     /radr_bltr_s01_prophet,item_NameRADR_BLTR_S01_Prophet,,item_DescRADR_BLTR_S01_Prophet,BLTR,1,1,MidRangeRadar,460,780,1122,60,0\.8,0\.8,0\.8,1,0,0\.25,0\.25,0\.25,1,0\.25,8,318,10,1\.5,0\.6666667,16\.5/,
+  );
+});
+
+test('runDatacoreScrape extracts turret rotation axis params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-turrets-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const turretPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'turret',
+    'aegs_hammerhead_scitem_turret_rear.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'aegs.xml');
+  await fs.mkdir(path.dirname(turretPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    turretPath,
+    `
+      <EntityClassDefinition.AEGS_Hammerhead_SCItem_Turret_Rear __path="libs/foundry/records/entities/scitem/ships/turret/aegs_hammerhead_scitem_turret_rear.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="TurretBase" SubType="MannedTurret" Size="5" Grade="1" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+              <Localization Name="@item_Name_Turret_Manned" ShortName="@LOC_EMPTY" Description="@LOC_EMPTY" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemTurretParams>
+            <movementParams>
+              <SCItemTurretJointMovementParams jointName="turret_upper_helper">
+                <yawAxis>
+                  <SCItemTurretJointMovementAxisParams speed="95" acceleration_timeToFullSpeed="0.3" accelerationDecay="18" />
+                </yawAxis>
+              </SCItemTurretJointMovementParams>
+              <SCItemTurretJointMovementParams jointName="turret_pitch">
+                <pitchAxis>
+                  <SCItemTurretJointMovementAxisParams speed="95" acceleration_timeToFullSpeed="0.3" accelerationDecay="18" />
+                </pitchAxis>
+              </SCItemTurretJointMovementParams>
+            </movementParams>
+          </SCItemTurretParams>
+          <SHealthComponentParams Health="15000" />
+        </Components>
+      </EntityClassDefinition.AEGS_Hammerhead_SCItem_Turret_Rear>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `<SCItemManufacturer.AEGS Code="AEGS" __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [{ name: 'turrets', csvFile: 'turret.datacore.csv', typeConfig: TURRET_TYPE_CONFIG }],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'turret.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'turrets', rows: 1, skipped: 0, csvFile: 'turret.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Yaw Speed,Yaw Time To Full Speed,Yaw Accel Decay,Pitch Speed,Pitch Time To Full Speed,Pitch Accel Decay\r?\n/,
+  );
+  assert.match(
+    csv,
+    /aegs_hammerhead_scitem_turret_rear,item_Name_Turret_Manned,,,AEGS,5,1,MannedTurret,15000,95,0\.3,18,95,0\.3,18/,
   );
 });
 

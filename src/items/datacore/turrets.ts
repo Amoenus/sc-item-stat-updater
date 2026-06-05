@@ -2,19 +2,21 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-// ⚠️ Verify p4kFilter, entityClassPrefix, nameKeyInfix and fieldSelectors
-// against real unforged game files. Turret entity classes and component
-// names are inferred from community data.
+const yawAxisSelector = 'SCItemTurretParams yawAxis SCItemTurretJointMovementAxisParams';
+const pitchAxisSelector = 'SCItemTurretParams pitchAxis SCItemTurretJointMovementAxisParams';
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/turret',
-  // turr_orig_s3_m4a → strip 'turr_' → 'ORIG_S3_M4A' → item_NameTURR_ORIG_S3_M4A
+  recordSelector: 'SCItemTurretParams',
   entityClassPrefix: 'turr_',
   nameKeyInfix: 'TURR_',
   fieldSelectors: {
-    'Yaw Speed': 'STurretComponentParams TurretParams yawSpeed',
-    'Pitch Speed': 'STurretComponentParams TurretParams pitchSpeed',
-    'Yaw Accel': 'STurretComponentParams TurretParams yawAcceleration',
-    'Pitch Accel': 'STurretComponentParams TurretParams pitchAcceleration',
+    'Yaw Speed': { selector: yawAxisSelector, attr: 'speed' },
+    'Yaw Time To Full Speed': { selector: yawAxisSelector, attr: 'acceleration_timeToFullSpeed' },
+    'Yaw Accel Decay': { selector: yawAxisSelector, attr: 'accelerationDecay' },
+    'Pitch Speed': { selector: pitchAxisSelector, attr: 'speed' },
+    'Pitch Time To Full Speed': { selector: pitchAxisSelector, attr: 'acceleration_timeToFullSpeed' },
+    'Pitch Accel Decay': { selector: pitchAxisSelector, attr: 'accelerationDecay' },
   },
 };
 
@@ -31,9 +33,11 @@ export default {
       .raw('Size', 'Size')
       .section('-- Rotation --')
       .rawIf('Yaw Speed', 'Yaw Speed')
+      .rawIf('Yaw Time To Full Speed', 'Yaw Time To Full Speed')
+      .rawIf('Yaw Accel Decay', 'Yaw Accel Decay')
       .rawIf('Pitch Speed', 'Pitch Speed')
-      .rawIf('Yaw Accel', 'Yaw Accel')
-      .rawIf('Pitch Accel', 'Pitch Accel')
+      .rawIf('Pitch Time To Full Speed', 'Pitch Time To Full Speed')
+      .rawIf('Pitch Accel Decay', 'Pitch Accel Decay')
       .section('-- Durability --')
       .raw('Health', 'Health')
       .build(flavorText);
