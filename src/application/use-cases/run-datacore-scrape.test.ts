@@ -215,6 +215,74 @@ test('runDatacoreScrape writes DataCore vehicle CSV after building the record gr
   assert.match(csv, /AEGS_Avenger_Titan,vehicle_NameAEGS_Avenger_Titan,vehicle_DescAEGS_Avenger_Titan/);
 });
 
+test('runDatacoreScrape writes DataCore faction CSV after building the record graph', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-factions-'));
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    extractCommodities: async () => [],
+    extractVehicles: async () => [],
+    extractFactions: async () => [
+      {
+        ref: '9f89edc0-441b-4f40-a502-df12ebf3f1eb',
+        path: 'libs/foundry/records/factions/faction_reputation_unlawful_headhunters.xml',
+        factionClass: 'Faction_Reputation_Unlawful_HeadHunters',
+        nameKey: 'HeadHunters_RepUI_Name',
+        descriptionKey: 'HeadHunters_RepUI_Description',
+        defaultReaction: 'Neutral',
+        factionType: 'Unlawful',
+        ableToArrest: '0',
+        policesLawfulTrespass: '0',
+        policesCriminality: '0',
+        noLegalRights: '0',
+        factionReputationGuid: '09efeef4-c646-408d-a979-3ae56a3b1beb',
+        factionReputationClass: 'FactionReputation_HeadHunters',
+        factionReputationPath: 'libs/foundry/records/factions/factionreputation/factionreputation_headhunters.xml',
+        reputationDisplayNameKey: 'HeadHunters_RepUI_Name',
+        reputationDescriptionKey: 'HeadHunters_RepUI_Description',
+        reputationHeadquartersKey: 'HeadHunters_RepUI_Headquarters',
+        reputationFoundedKey: '',
+        reputationLeadershipKey: '',
+        reputationAreaKey: '',
+        reputationFocusKey: 'HeadHunters_RepUI_Focus',
+        reputationLawful: '0',
+        alliedFactionGuids: '3c9a42a9-a986-494f-b724-4d74415f6016',
+        enemyFactionGuids: '14789370-bf3a-42b9-ac55-a49ee406e1f1;cd2b32d1-0362-41fb-8cfd-d29781daf789',
+      },
+    ],
+  });
+
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'factions.datacore.csv');
+  const csv = await fs.readFile(csvPath, 'utf8');
+
+  assert.equal(result.factionResult.rows, 1);
+  assert.equal(result.factionResult.csvFile, 'factions.datacore.csv');
+  assert.match(
+    csv,
+    /^Faction Class,Name Key,Description Key,Default Reaction,Faction Type,Able To Arrest,Polices Lawful Trespass,Polices Criminality,No Legal Rights,Faction Reputation GUID,Faction Reputation Class,Faction Reputation Path,Reputation Display Name Key,Reputation Description Key,Reputation Headquarters Key,Reputation Founded Key,Reputation Leadership Key,Reputation Area Key,Reputation Focus Key,Reputation Lawful,Allied Faction GUIDs,Enemy Faction GUIDs,Record GUID,Record Path\r?\n/,
+  );
+  assert.match(csv, /Faction_Reputation_Unlawful_HeadHunters,HeadHunters_RepUI_Name/);
+});
+
 test('runDatacoreScrape writes DataCore mining element CSV after building the record graph', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-elements-'));
 

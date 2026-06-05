@@ -72,6 +72,37 @@ export type DataCoreVehicleDataset = SourceDataset<DataCoreVehicleRecord> & {
   source: 'datacore';
 };
 
+export interface DataCoreFactionRecord {
+  ref: string;
+  path: string;
+  factionClass: string;
+  nameKey: string;
+  descriptionKey: string;
+  defaultReaction: string;
+  factionType: string;
+  ableToArrest: string;
+  policesLawfulTrespass: string;
+  policesCriminality: string;
+  noLegalRights: string;
+  factionReputationGuid: string;
+  factionReputationClass: string;
+  factionReputationPath: string;
+  reputationDisplayNameKey: string;
+  reputationDescriptionKey: string;
+  reputationHeadquartersKey: string;
+  reputationFoundedKey: string;
+  reputationLeadershipKey: string;
+  reputationAreaKey: string;
+  reputationFocusKey: string;
+  reputationLawful: string;
+  alliedFactionGuids: string;
+  enemyFactionGuids: string;
+}
+
+export type DataCoreFactionDataset = SourceDataset<DataCoreFactionRecord> & {
+  source: 'datacore';
+};
+
 export interface DataCoreMiningElementRecord {
   ref: string;
   path: string;

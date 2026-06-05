@@ -155,6 +155,11 @@ console.log(
   }${commodityDryNote}`,
 );
 console.log(
+  `  ${'factions'.padEnd(28)} ${String(result.factionResult.rows).padStart(4)} rows -> ${
+    result.factionResult.csvFile
+  }${commodityDryNote}`,
+);
+console.log(
   `  ${'mining-elements'.padEnd(28)} ${String(result.miningElementResult.rows).padStart(4)} rows -> ${
     result.miningElementResult.csvFile
   }${commodityDryNote}`,
