@@ -8,8 +8,10 @@ import { runFpsTitleTagUpdate } from './fps-title-tags';
 async function makeTempWorkspace() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'fps-title-tags-'));
   const spviewerDir = path.join(dir, 'spviewer');
+  const datacoreDir = path.join(dir, 'datacore');
   const iniPath = path.join(dir, 'global.ini');
   await fs.mkdir(spviewerDir);
+  await fs.mkdir(datacoreDir);
 
   await fs.writeFile(
     path.join(spviewerDir, 'weaponpersonal.spviewer.csv'),
@@ -25,7 +27,22 @@ async function makeTempWorkspace() {
     ['Name,Size,Slot,Type', 'Beacon Light,1,,Flashlight'].join('\n'),
   );
 
-  return { dir, spviewerDir, iniPath };
+  await fs.writeFile(
+    path.join(datacoreDir, 'weaponpersonal.datacore.csv'),
+    [
+      'Entity Class,Name Key,Size,Class',
+      'ksar_rifle_energy_01,item_Name_ksar_rifle_energy_01,2,Medium',
+      'behr_pistol_ballistic_01,item_Name_behr_pistol_ballistic_01,1,Small',
+    ].join('\n'),
+  );
+  await fs.writeFile(
+    path.join(datacoreDir, 'weaponattachment.datacore.csv'),
+    ['Entity Class,Name Key,Size,Class,Slot', 'behr_optics_test,item_Name_behr_optics_test,1,IronSight,Optics'].join(
+      '\n',
+    ),
+  );
+
+  return { dir, spviewerDir, datacoreDir, iniPath };
 }
 
 describe('runFpsTitleTagUpdate', () => {
@@ -87,6 +104,34 @@ describe('runFpsTitleTagUpdate', () => {
 
       assert.strictEqual(result.updatedCount, 1);
       assert.match(updated, /item_name_greycat_pistol=\[S0\|WPN\|DIS\] Greycat Stunner/);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('adds FPS tags from DataCore localization keys without SPViewer names', async () => {
+    const { dir, datacoreDir, iniPath } = await makeTempWorkspace();
+    try {
+      await fs.writeFile(
+        iniPath,
+        [
+          'item_Name_ksar_rifle_energy_01=Gallant Rifle',
+          'item_Name_ksar_rifle_energy_01_red=Gallant Rifle Red',
+          'item_Name_behr_optics_test=Beacon Sight',
+          'item_name_unrelated=Gallant Rifle',
+        ].join('\n'),
+      );
+
+      const result = await runFpsTitleTagUpdate({ iniPath, datacoreDir, dryRun: false });
+      const updated = await fs.readFile(iniPath, 'utf-8');
+
+      assert.strictEqual(result.updatedCount, 3);
+      assert.strictEqual(result.matchedCount, 2);
+      assert.strictEqual(result.scannedCount, 4);
+      assert.match(updated, /item_Name_ksar_rifle_energy_01=\[S2\|RFL\|ENG\] Gallant Rifle/);
+      assert.match(updated, /item_Name_ksar_rifle_energy_01_red=\[S2\|RFL\|ENG\] Gallant Rifle Red/);
+      assert.match(updated, /item_Name_behr_optics_test=\[S1\|OPT\] Beacon Sight/);
+      assert.match(updated, /item_name_unrelated=Gallant Rifle/);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }

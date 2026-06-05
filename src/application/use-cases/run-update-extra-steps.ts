@@ -23,6 +23,7 @@ export interface RunUpdateExtraStepsOptions {
   dryRun?: boolean;
   includeMiningJournal?: boolean;
   spviewerVersionDir?: string;
+  datacoreVersionDir?: string;
   runners?: Partial<Record<UpdateExtraStepLabel, UpdateExtraStepRunner>>;
   onStepStart?: (label: UpdateExtraStepLabel, index: number) => void;
   onStepError?: (error: BatchUpdateError) => void;
@@ -84,8 +85,13 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
       return runComponentTitleUpdate({ iniPath: options.iniPath, spviewerDir: options.spviewerVersionDir, dryRun });
     },
     'FPS title tags': async () => {
-      if (!options.spviewerVersionDir) return null;
-      return runFpsTitleTagUpdate({ iniPath: options.iniPath, spviewerDir: options.spviewerVersionDir, dryRun });
+      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
+      return runFpsTitleTagUpdate({
+        iniPath: options.iniPath,
+        spviewerDir: options.spviewerVersionDir,
+        datacoreDir: options.datacoreVersionDir,
+        dryRun,
+      });
     },
     'Missile title tags': async () => {
       if (!options.spviewerVersionDir) return null;

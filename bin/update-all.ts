@@ -100,7 +100,7 @@ const prepared = await prepareUpdateCategories({
   ptu: values.ptu,
   csvDir: values['csv-dir'],
 });
-const { categories, scmdbVersion, itemVersion, missionCsvDir, spviewerVersionDir } = prepared;
+const { categories, scmdbVersion, itemVersion, itemVersionDir, missionCsvDir, spviewerVersionDir } = prepared;
 
 const options = {
   iniPath: values['ini-path'],
@@ -214,6 +214,7 @@ const extraStepResult = await runUpdateExtraSteps({
   repoRoot,
   missionCsvDir,
   spviewerVersionDir,
+  datacoreVersionDir: provider === 'datacore' ? itemVersionDir : undefined,
   dryRun: options.dryRun,
   includeMiningJournal: values['include-mining-journal'],
   onStepStart: (label, index) => {

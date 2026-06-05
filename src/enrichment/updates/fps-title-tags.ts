@@ -1,6 +1,6 @@
 ﻿import { readCsvFile } from '../../io/local/csv-parser';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { resolveSpviewerCsvPath } from '../../io/local/path-conventions';
+import { resolveChildPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
 import { getLogger } from '../../infrastructure/logger';
 import { buildLookupMapFromRows } from './lookup-utils';
 import {
@@ -17,6 +17,8 @@ const logger = getLogger('fps-title-tags-update');
 
 const PERSONAL_CSV = 'weaponpersonal.spviewer.csv';
 const ATTACHMENT_CSV = 'weaponattachment.spviewer.csv';
+const DATACORE_PERSONAL_CSV = 'weaponpersonal.datacore.csv';
+const DATACORE_ATTACHMENT_CSV = 'weaponattachment.datacore.csv';
 
 const TYPE_CODE_RULES: Array<readonly [string, string]> = [
   ['sniper', 'SNP'],
@@ -85,7 +87,7 @@ function normalizeDamageCode(row: Record<string, string>): string | null {
   const secondaryDamage = SECONDARY_DAMAGE_CODES.find((code) => (damageValues.get(code) ?? 0) > 0);
   if (primaryDamage || secondaryDamage) return primaryDamage ?? secondaryDamage ?? null;
 
-  const type = String(row.Type || '').toLowerCase();
+  const type = String(row.Type || row['Entity Class'] || row['Name Key'] || row.Class || '').toLowerCase();
   return DAMAGE_TYPE_RULES.find(([fragment]) => type.includes(fragment))?.[1] ?? null;
 }
 
@@ -102,7 +104,7 @@ function normalizeSlotCode(value: string | undefined, type: string | undefined):
 
 function buildPersonalTag(row: Record<string, string>): string {
   const size = String(row.Size || '').trim();
-  const typeCode = normalizeTypeCode(row.Type || row.Name || '');
+  const typeCode = normalizeTypeCode(row.Type || row.Name || row['Entity Class'] || row['Name Key'] || row.Class || '');
   const damageCode = normalizeDamageCode(row);
   const parts = [`S${size || '?'}`, typeCode];
   if (damageCode) {
@@ -113,7 +115,7 @@ function buildPersonalTag(row: Record<string, string>): string {
 
 function buildAttachmentTag(row: Record<string, string>): string {
   const size = String(row.Size || '').trim();
-  const slotCode = normalizeSlotCode(row.Slot, row.Type);
+  const slotCode = normalizeSlotCode(row.Slot, row.Type || row.Class);
   return [`S${size || '?'}`, slotCode].join('|');
 }
 
@@ -139,11 +141,41 @@ async function buildFpsTitleLookup(spviewerDir: string) {
   return nameToTag;
 }
 
+async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
+  const personalPath = resolveChildPath(datacoreDir, DATACORE_PERSONAL_CSV, 'DataCore FPS personal CSV filename');
+  const attachmentPath = resolveChildPath(datacoreDir, DATACORE_ATTACHMENT_CSV, 'DataCore FPS attachment CSV filename');
+  const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
+
+  const keyToTag = buildLookupMapFromRows(personalRows, (row) => {
+    const key = normalizeLocalizationKey(row['Name Key']);
+    if (!key) return null;
+    return [key, { tag: buildPersonalTag(row) }];
+  });
+
+  for (const [key, value] of buildLookupMapFromRows(attachmentRows, (row) => {
+    const key = normalizeLocalizationKey(row['Name Key']);
+    if (!key) return null;
+    return [key, { tag: buildAttachmentTag(row) }];
+  })) {
+    keyToTag.set(key, value);
+  }
+
+  return keyToTag;
+}
+
+function normalizeLocalizationKey(value: unknown): string {
+  return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
+}
+
 function isFpsNameKey(keyLower: string): boolean {
   return FPS_NAME_KEY_PARTS.some((part) => keyLower.includes(part));
 }
 
-function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: string; tag: string }>) {
+function applyFpsTitleTags(
+  lines: string[],
+  nameToTag: Map<string, { name: string; tag: string }>,
+  keyToTag = new Map<string, { tag: string }>(),
+) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
   const processedFamilies = new Set();
@@ -164,7 +196,7 @@ function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: strin
       continue;
     }
 
-    const base = resolveBaseFromCurrentValue(parsed.value, nameToTag);
+    const base = keyToTag.get(normalizeLocalizationKey(parsed.key)) ?? resolveBaseFromCurrentValue(parsed.value, nameToTag);
     if (!base) {
       continue;
     }
@@ -195,28 +227,32 @@ function applyFpsTitleTags(lines: string[], nameToTag: Map<string, { name: strin
 /**
  * @param {object} params
  * @param {string} params.iniPath
- * @param {string} params.spviewerDir
+ * @param {string} [params.spviewerDir]
+ * @param {string} [params.datacoreDir]
  * @param {boolean} params.dryRun
  */
 export async function runFpsTitleTagUpdate({
   iniPath,
   spviewerDir,
+  datacoreDir,
   dryRun,
 }: {
   iniPath: string;
-  spviewerDir: string;
+  spviewerDir?: string;
+  datacoreDir?: string;
   dryRun: boolean;
 }) {
   const start = performance.now();
-  const nameToTag = await buildFpsTitleLookup(spviewerDir);
+  const nameToTag = spviewerDir ? await buildFpsTitleLookup(spviewerDir) : new Map<string, { name: string; tag: string }>();
+  const keyToTag = datacoreDir ? await buildFpsTitleLookupFromDataCore(datacoreDir) : new Map<string, { tag: string }>();
 
   logger.info('Loaded FPS title lookup data', {
-    titleCount: nameToTag.size,
+    titleCount: nameToTag.size + keyToTag.size,
   });
 
   const iniData = await readIniFile(iniPath);
   const { lines } = iniData;
-  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyFpsTitleTags(lines, nameToTag);
+  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyFpsTitleTags(lines, nameToTag, keyToTag);
 
   await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 
