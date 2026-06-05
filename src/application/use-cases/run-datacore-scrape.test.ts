@@ -13,6 +13,7 @@ import { DATACORE_TYPE_CONFIG as POWERPLANT_TYPE_CONFIG } from '../../items/data
 import { DATACORE_TYPE_CONFIG as QED_TYPE_CONFIG } from '../../items/datacore/qeds';
 import { DATACORE_TYPE_CONFIG as QUANTUM_DRIVE_TYPE_CONFIG } from '../../items/datacore/quantum-drives';
 import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../items/datacore/salvage-modifiers';
+import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
 import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 
 const typeEntry: DataCoreTypeEntry = {
@@ -405,6 +406,89 @@ test('runDatacoreScrape extracts QED params from DataCore item records', async (
   assert.match(
     csv,
     /qed_wetk_s03_reynie,item_NameQED_WETK_S03_Reynie,item_NameQED_WETK_S03_Reynie,item_DescQED_WETK_S03_Reynie,WETK,1,1,,1100,12000,20000,90,3,1/,
+  );
+});
+
+test('runDatacoreScrape extracts shield generator params from real-shaped DataCore XML', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-shields-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const shieldPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'ships',
+    'shieldgenerator',
+    'shld_asas_s02_shroud_scitem.xml',
+  );
+  const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'asas.xml');
+  await fs.mkdir(path.dirname(shieldPath), { recursive: true });
+  await fs.mkdir(path.dirname(manufacturerPath), { recursive: true });
+  await fs.writeFile(
+    shieldPath,
+    `
+      <EntityClassDefinition.SHLD_ASAS_S02_Shroud_SCItem __path="libs/foundry/records/entities/scitem/ships/shieldgenerator/shld_asas_s02_shroud_scitem.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="Shield" SubType="UNDEFINED" Size="2" Grade="4" Manufacturer="abca0ae0-a819-4aeb-a1a7-f8f1d7e277cf">
+              <Localization Name="@item_NameSHLD_ASAS_S02_Shroud" Description="@item_DescSHLD_ASAS_S02_Shroud" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SHealthComponentParams Health="350" />
+          <SDistortionParams DecayDelay="3" DecayRate="173.3333" Maximum="2600" />
+          <SCItemShieldGeneratorParams MaxShieldHealth="9350" MaxShieldRegen="842" ReservePoolMaxHealthRatio="1" ReservePoolRegenRateRatio="1" ReservePoolDrainRateRatio="2.5" DownedRegenDelay="8.47" DamagedRegenDelay="4.24" ElectricalChargeDamageResistance="0">
+            <ShieldResistance>
+              <SShieldResistance Max="0.25" Min="0" />
+              <SShieldResistance Max="-0.27" Min="-0.8" />
+              <SShieldResistance Max="0.95" Min="0.75" />
+            </ShieldResistance>
+            <ShieldAbsorption>
+              <SShieldAbsorption Max="0.45" Min="0" />
+              <SShieldAbsorption Max="1" Min="1" />
+              <SShieldAbsorption Max="1" Min="1" />
+            </ShieldAbsorption>
+          </SCItemShieldGeneratorParams>
+        </Components>
+      </EntityClassDefinition.SHLD_ASAS_S02_Shroud_SCItem>
+    `,
+  );
+  await fs.writeFile(
+    manufacturerPath,
+    `
+      <SCItemManufacturer.ASAS Code="ASAS" __type="SCItemManufacturer" __ref="abca0ae0-a819-4aeb-a1a7-f8f1d7e277cf" __path="libs/foundry/records/scitemmanufacturer/asas.xml">
+        <Localization Name="@manufacturer_NameASAS" Description="@manufacturer_DescASAS" />
+      </SCItemManufacturer.ASAS>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'shields',
+        csvFile: 'shield.datacore.csv',
+        typeConfig: SHIELD_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'shield.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shield.datacore.csv' }]);
+  assert.match(
+    csv,
+    /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,HP Pool,Regen Rate,Regen Time,Damaged Delay,Downed Delay,Reserve Max Ratio,Reserve Regen Ratio,Reserve Drain Ratio,Electrical Charge Damage Resistance,Resistance Physical,Resistance Energy,Resistance Distortion,Absorption Physical,Absorption Energy,Absorption Distortion,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
+  );
+  assert.match(
+    csv,
+    /shld_asas_s02_shroud,item_NameSHLD_ASAS_S02_Shroud,,item_DescSHLD_ASAS_S02_Shroud,ASAS,2,4,UNDEFINED,350,9350,842,11\.1,4\.24,8\.47,1,1,2\.5,0,25% \/ 0%,-27% \/ -80%,95% \/ 75%,45% \/ 0%,100% \/ 100%,100% \/ 100%,2600,3,173\.3333,18/,
   );
 });
 

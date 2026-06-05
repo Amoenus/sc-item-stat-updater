@@ -1,73 +1,73 @@
-Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,HP Pool,Regen Rate,Regen Time,Damaged Delay,Downed Delay,Absorption Physical,Absorption Energy,Absorption Distortion
-shld_aegs_s04_reclaimer,item_NameSHLD_AEGS_S04_Reclaimer_SCItem,,item_DescSHLD_AEGS_S04_Reclaimer_SCItem,,4,1,UNDEFINED,4900,243000,17820,13.64,5.55,11.1,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s01_cloak,item_NameSHLD_ASAS_S01_Cloak,,item_DescSHLD_ASAS_S01_Cloak,,1,4,UNDEFINED,110,2805,252,11.13,3.85,7.7,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s01_mirage,item_NameSHLD_ASAS_S01_Mirage,,item_Desc_SHLD_ASAS_S01_Mirage,,1,1,UNDEFINED,170,2805,309,9.08,2.92,5.83,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s01_shimmer,item_NameSHLD_ASAS_S01_Shimmer,,item_DescSHLD_ASAS_S01_Shimmer,,1,3,UNDEFINED,130,2805,266,10.55,3.5,7,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s01_veil,item_NameSHLD_ASAS_S01_Veil,,item_Desc_SHLD_ASAS_S01_Veil,,1,2,UNDEFINED,150,2805,281,9.98,3.18,6.36,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s02_obscura,item_Name_SHLD_ASAS_S02_Obscura,,item_Desc_SHLD_ASAS_S02_Obscura,,2,3,UNDEFINED,350,9350,888,10.53,3.85,7.7,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s02_sheut,item_Name_SHLD_ASAS_S02_Sheut,,item_Desc_SHLD_ASAS_S02_Sheut,,2,2,UNDEFINED,400,9350,935,10,3.5,7,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s02_shroud,item_NameSHLD_ASAS_S02_Shroud,,item_DescSHLD_ASAS_S02_Shroud,,2,4,UNDEFINED,300,9350,842,11.1,4.24,8.47,45% / 0%,100% / 100%,100% / 100%
-shld_asas_s02_umbra,item_Name_SHLD_ASAS_S02_Umbra,,item_Desc_SHLD_ASAS_S02_Umbra,,2,1,UNDEFINED,460,9350,1029,9.09,3.21,6.42,45% / 0%,100% / 100%,100% / 100%
-shld_banu_s01_placeholder,item_NameSHLD_BANU_S01_Suldrath,,item_DescSHLD_BANU_S01_Suldrath,,1,3,UNDEFINED,180,2880,274,10.51,5.75,11.5,45% / 0%,100% / 100%,100% / 100%
-shld_banu_s02_placeholder,item_NameSHLD_BANU_S02_Sukoran,,item_DescSHLD_BANU_S02_Sukoran,,2,3,UNDEFINED,500,9600,912,10.53,6.33,12.7,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s00_castra,item_NameSHLD_BASL_S00_Castra,,item_DescSHLD_BASL_S00_Castra,,0,3,UNDEFINED,65,900,51,17.65,4.55,9.09,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s01_bulwark,item_NameSHLD_BASL_S01_Bulwark,,item_DescSHLD_BASL_S01_Bulwark,,1,3,UNDEFINED,180,2700,257,10.51,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s01_guardian,item_Name_SHLD_BASL_S01_Guardian,,item_Desc_SHLD_BASL_S01_Guardian,,1,2,UNDEFINED,210,2700,270,10,4.55,9.09,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s01_palisade,item_Name_SHLD_BASL_S01_Palisade,,item_Desc_SHLD_BASL_S01_Palisade,,1,1,UNDEFINED,230,2700,297,9.09,4.17,8.33,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s01_steward,item_Name_SHLD_BASL_S01_Steward,,item_Desc_SHLD_BASL_S01_Steward,,1,4,UNDEFINED,160,2700,243,11.11,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s02_armada,item_Name_SHLD_BASL_S02_Armada,,item_Desc_SHLD_BASL_S02_Armada,,2,4,UNDEFINED,430,9000,810,11.11,6.05,12.1,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s02_aspis,item_NameSHLD_BASL_S02_Aspis,,item_DescSHLD_BASL_S02_Aspis,,2,3,UNDEFINED,500,9000,855,10.53,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s02_citadel,item_Name_SHLD_BASL_S02_Citadel,,item_Desc_SHLD_BASL_S02_Citadel,,2,2,UNDEFINED,570,9000,900,10,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s02_rampart,item_Name_SHLD_BASL_S02_Rampart,,item_Desc_SHLD_BASL_S02_Rampart,,2,1,UNDEFINED,640,9000,990,9.09,4.58,9.17,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s03_barbican,item_Name_SHLD_BASL_S03_Barbican,,item_Desc_SHLD_BASL_S03_Barbican,,3,2,UNDEFINED,1600,90000,9000,10,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s03_parapet,item_Name_SHLD_BASL_S03_Parapet,,item_Desc_SHLD_BASL_S03_Parapet,,3,1,UNDEFINED,1800,90000,9900,9.09,5.04,10.1,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s03_stronghold,item_NameSHLD_BASL_S03_Stronghold,,item_DescSHLD_BASL_S03_Stronghold,,3,3,UNDEFINED,1400,90000,8550,10.53,6.05,12.1,45% / 0%,100% / 100%,100% / 100%
-shld_basl_s03_ward,item_Name_SHLD_BASL_S03_Ward,,item_Desc_SHLD_BASL_S03_Ward,,3,4,UNDEFINED,1200,90000,8100,11.11,6.66,13.3,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s01_5sa,item_NameSHLD_BEHR_S01_5SA,,item_DescSHLD_BEHR_S01_5SA,,1,3,UNDEFINED,150,3750,356,10.53,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s01_6sa,item_Name_SHLD_BEHR_S01_6SA,,item_Desc_SHLD_BEHR_S01_6SA,,1,2,UNDEFINED,170,3750,375,10,4.55,9.09,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s01_7sa,item_Name_SHLD_BEHR_S01_7SA,,item_Desc_SHLD_BEHR_S01_7SA,,1,1,UNDEFINED,200,3750,413,9.08,4.17,8.33,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s02_5ma,item_NameSHLD_BEHR_S02_5MA,,item_DescSHLD_BEHR_S02_5MA,,2,3,UNDEFINED,410,12500,1188,10.52,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s02_6ma,item_Name_SHLD_BEHR_S02_6MA,,item_Desc_SHLD_BEHR_S02_6MA,,2,2,UNDEFINED,470,12500,1250,10,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s02_7ma,item_Name_SHLD_BEHR_S02_7MA,,item_Desc_SHLD_BEHR_S02_7MA,,2,1,UNDEFINED,540,12500,1375,9.09,4.58,9.17,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s03_5ca,item_NameSHLD_BEHR_S03_5CA,,item_DescSHLD_BEHR_S03_5CA,,3,3,UNDEFINED,1100,125000,11875,10.53,6.05,12.1,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s03_6ca,item_Name_SHLD_BEHR_S03_6CA,,item_Desc_SHLD_BEHR_S03_6CA,,3,2,UNDEFINED,1300,125000,12500,10,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_behr_s03_7ca,item_Name_SHLD_BEHR_S03_7CA,,item_Desc_SHLD_BEHR_S03_7CA,,3,1,UNDEFINED,1500,125000,13750,9.09,5.04,10.1,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s01_allstop,item_NameSHLD_GODI_S01_AllStop,,item_DescSHLD_GODI_S01_AllStop,,1,3,UNDEFINED,210,3960,376,10.53,5.75,11.5,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s01_allstop_scitem_resistgasclouds,item_NameSHLD_GODI_S01_AllStop,,item_DescSHLD_GODI_S01_AllStop,,1,3,UNDEFINED,210,3960,376,10.53,5.75,11.5,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s01_forcewall,item_NameSHLD_GODI_S01_ForceWall,,item_DescSHLD_GODI_S01_ForceWall,,1,2,UNDEFINED,240,3960,396,10,5.23,10.5,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s01_fr66,item_Name_SHLD_GODI_S01_FR66,,item_Desc_SHLD_GODI_S01_FR66,,1,1,UNDEFINED,270,3960,436,9.08,4.79,9.58,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s01_securehyde,item_NameSHLD_GODI_S01_SecureHyde,,item_DescSHLD_GODI_S01_SecureHyde,,1,4,UNDEFINED,180,3960,356,11.12,6.33,12.7,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s02_coverall,item_Name_SHLD_GODI_S02_CoverAll,,item_Desc_SHLD_GODI_S02_CoverAll,,2,2,UNDEFINED,660,13200,1320,10,5.75,11.5,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s02_fr76,item_Name_SHLD_GODI_S02_FR76,,item_Desc_SHLD_GODI_S02_FR76,,2,1,UNDEFINED,750,13200,1452,9.09,5.27,10.5,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s02_fullstop,item_NameSHLD_GODI_S02_FullStop,,item_DescSHLD_GODI_S02_FullStop,,2,3,UNDEFINED,580,13200,1254,10.53,6.33,12.7,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s02_secureshield,item_Name_SHLD_GODI_S02_SecureShield,,item_Desc_SHLD_GODI_S02_SecureShield,,2,4,UNDEFINED,500,13200,1188,11.11,6.96,13.9,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s03_fr86,item_Name_SHLD_GODI_S03_FR86,,item_Desc_SHLD_GODI_S03_FR86,,3,1,UNDEFINED,2100,132000,14520,9.09,5.8,11.6,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s03_fullblock,item_Name_SHLD_GODI_S03_FullBlock,,item_Desc_SHLD_GODI_S03_FullBlock,,3,2,UNDEFINED,1800,132000,13200,10,6.33,12.7,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s03_securescreen,item_Name_SHLD_GODI_S03_SecureScreen,,item_Desc_SHLD_GODI_S03_SecureScreen,,3,4,UNDEFINED,1400,132000,11880,11.11,7.65,15.3,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s03_surestop,item_Name_SHLD_GODI_S03_SureStop,,item_DescSHLD_GODI_S03_SureStop,,3,3,UNDEFINED,1600,132000,12540,10.53,6.96,13.9,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s04_bengal,LOC_PLACEHOLDER,,,,4,1,UNDEFINED,320000,3960000,87120,45.45,9.34,18.7,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s04_idris_pirate,item_NameSHLD_GODI_S04_Idris,,item_DescSHLD_GODI_S04_Idris,,4,1,UNDEFINED,43000,1320000,58080,22.73,7.72,15.4,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s04_idris,item_NameSHLD_GODI_S04_Idris,,item_DescSHLD_GODI_S04_Idris,,4,1,UNDEFINED,43000,1320000,58080,22.73,7.72,15.4,45% / 0%,100% / 100%,100% / 100%
-shld_godi_s04_javelin,LOC_PLACEHOLDER,,,,4,1,UNDEFINED,120000,2640000,72600,36.36,8.49,17,45% / 0%,100% / 100%,100% / 100%
-shld_orig_s04_890j,item_NameSHLD_ORIG_S04_890J_SCItem,,item_DescSHLD_ORIG_S04_890J_SCItem,,4,1,UNDEFINED,12000,450000,29700,15.15,6.1,12.2,45% / 0%,100% / 100%,100% / 100%
-shld_rsi_s04_polaris,item_NameSHLD_ORIG_S04_890J_SCItem,,item_DescSHLD_ORIG_S04_890J_SCItem,,4,1,UNDEFINED,13000,810000,35640,22.73,6.1,12.2,45% / 0%,100% / 100%,100% / 100%
-shld_s01_template,LOC_PLACEHOLDER,,,,1,1,UNDEFINED,200,2700,297,9.09,4.17,8.33,45% / 0%,100% / 100%,100% / 100%
-shld_s02_template,LOC_PLACEHOLDER,,,,2,1,UNDEFINED,540,9000,990,9.09,4.58,9.17,45% / 0%,100% / 100%,100% / 100%
-shld_s03_template,LOC_PLACEHOLDER,,,,3,1,UNDEFINED,1500,90000,9900,9.09,5.04,10.1,45% / 0%,100% / 100%,100% / 100%
-shld_s04_template,LOC_PLACEHOLDER,,,,4,1,UNDEFINED,4100,243000,17820,13.64,5.55,11.1,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s00_pin,item_NameSHLD_SECO_S00_PIN,,item_DescSHLD_SECO_S00_PIN,,0,3,UNDEFINED,55,900,51,17.65,4.55,9.09,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s01_hex,item_Name_SHLD_SECO_S01_HEX,,item_Desc_SHLD_SECO_S01_HEX,,1,2,UNDEFINED,170,2700,270,10,4.55,9.09,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s01_ink,item_NameSHLD_SECO_S01_INK,,item_DescSHLD_SECO_S01_INK,,1,4,UNDEFINED,130,2700,243,11.11,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s01_web,item_NameSHLD_SECO_S01_WEB,,item_DescSHLD_SECO_S01_WEB,,1,3,UNDEFINED,150,2700,257,10.51,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s02_bloc,item_Name_SHLD_SECO_S02_BLOC,,item_Desc_SHLD_SECO_S02_BLOC,,2,2,UNDEFINED,470,9000,900,10,5,10,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s02_rpel,item_Name_SHLD_SECO_S02_RPEL,,item_Desc_SHLD_SECO_S02_RPEL,,2,4,UNDEFINED,360,9000,810,11.11,6.05,12.1,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s02_stop,item_NameSHLD_SECO_S02_STOP,,item_DescSHLD_SECO_S02_STOP,,2,3,UNDEFINED,410,9000,855,10.53,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s03_armor,item_Name_SHLD_SECO_S03_ARMOR,,item_Desc_SHLD_SECO_S03_ARMOR,,3,2,UNDEFINED,1300,90000,9000,10,5.5,11,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s03_guard,item_Name_SHLD_SECO_S03_GUARD,,item_Desc_SHLD_SECO_S03_GUARD,,3,3,UNDEFINED,1100,90000,8550,10.53,6.05,12.1,45% / 0%,100% / 100%,100% / 100%
-shld_seco_s03_haven,item_Name_SHLD_SECO_S03_HAVEN,,item_Desc_SHLD_SECO_S03_HAVEN,,3,4,UNDEFINED,990,90000,8100,11.11,6.66,13.3,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s01_falco,item_NameSHLD_YORM_S01_Falco,,item_DescSHLD_YORM_S01_Falco,,1,4,UNDEFINED,72,2400,216,11.11,4.68,9.35,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s01_jaghte,item_Name_SHLD_YORM_S01_Jaghte,,item_Desc_SHLD_YORM_S01_Jaghte,,1,2,UNDEFINED,91,2400,240,10,3.86,7.73,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s01_targa,item_NameSHLD_YORM_S01_Targa,,item_DescSHLD_YORM_S01_Targa,,1,3,UNDEFINED,81,2400,228,10.53,4.25,8.5,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s02_bamoty,item_Name_SHLD_YORM_S02_Bamoty,,item_Desc_SHLD_YORM_S02_Bamoty,,2,4,UNDEFINED,200,8000,720,11.11,5.14,10.3,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s02_haltur,item_Name_SHLD_YORM_S02_Haltur,,item_Desc_SHLD_YORM_S02_Haltur,,2,2,UNDEFINED,250,8000,800,10,4.25,8.5,45% / 0%,100% / 100%,100% / 100%
-shld_yorm_s02_trenta,item_Name_SHLD_YORM_S02_Trenta,,item_Desc_SHLD_YORM_S02_Trenta,,2,3,UNDEFINED,220,8000,760,10.53,4.68,9.35,45% / 0%,100% / 100%,100% / 100%
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,HP Pool,Regen Rate,Regen Time,Damaged Delay,Downed Delay,Reserve Max Ratio,Reserve Regen Ratio,Reserve Drain Ratio,Electrical Charge Damage Resistance,Resistance Physical,Resistance Energy,Resistance Distortion,Absorption Physical,Absorption Energy,Absorption Distortion,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time
+shld_aegs_s04_reclaimer,item_NameSHLD_AEGS_S04_Reclaimer_SCItem,,item_DescSHLD_AEGS_S04_Reclaimer_SCItem,,4,1,UNDEFINED,4900,243000,17820,13.64,5.55,11.1,1,1,2.5,0,25% / 0%,-23% / -68%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,13000,6,866.6667,21
+shld_asas_s01_cloak,item_NameSHLD_ASAS_S01_Cloak,,item_DescSHLD_ASAS_S01_Cloak,ASAS,1,4,UNDEFINED,110,2805,252,11.13,3.85,7.7,1,1,2.5,0,25% / 0%,-27% / -80%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1650,1.5,110,16.5
+shld_asas_s01_mirage,item_NameSHLD_ASAS_S01_Mirage,,item_Desc_SHLD_ASAS_S01_Mirage,ASAS,1,1,UNDEFINED,170,2805,309,9.08,2.92,5.83,1,1,2.5,0,25% / 0%,-24% / -71%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2500,1.5,166.6667,16.5
+shld_asas_s01_shimmer,item_NameSHLD_ASAS_S01_Shimmer,,item_DescSHLD_ASAS_S01_Shimmer,ASAS,1,3,UNDEFINED,130,2805,266,10.55,3.5,7,1,1,2.5,0,25% / 0%,-26% / -77%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1900,1.5,126.6667,16.5
+shld_asas_s01_veil,item_NameSHLD_ASAS_S01_Veil,,item_Desc_SHLD_ASAS_S01_Veil,ASAS,1,2,UNDEFINED,150,2805,281,9.98,3.18,6.36,1,1,2.5,0,25% / 0%,-25% / -74%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2200,1.5,146.6667,16.5
+shld_asas_s02_obscura,item_Name_SHLD_ASAS_S02_Obscura,,item_Desc_SHLD_ASAS_S02_Obscura,ASAS,2,3,UNDEFINED,350,9350,888,10.53,3.85,7.7,1,1,2.5,0,25% / 0%,-26% / -77%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2950,3,196.6667,18
+shld_asas_s02_sheut,item_Name_SHLD_ASAS_S02_Sheut,,item_Desc_SHLD_ASAS_S02_Sheut,ASAS,2,2,UNDEFINED,400,9350,935,10,3.5,7,1,1,2.5,0,25% / 0%,-25% / -74%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3400,3,226.6667,18
+shld_asas_s02_shroud,item_NameSHLD_ASAS_S02_Shroud,,item_DescSHLD_ASAS_S02_Shroud,ASAS,2,4,UNDEFINED,300,9350,842,11.1,4.24,8.47,1,1,2.5,0,25% / 0%,-27% / -80%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2600,3,173.3333,18
+shld_asas_s02_umbra,item_Name_SHLD_ASAS_S02_Umbra,,item_Desc_SHLD_ASAS_S02_Umbra,ASAS,2,1,UNDEFINED,460,9350,1029,9.09,3.21,6.42,1,1,2.5,0,25% / 0%,-24% / -71%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3850,3,256.6667,18
+shld_banu_s01_placeholder,item_NameSHLD_BANU_S01_Suldrath,,item_DescSHLD_BANU_S01_Suldrath,BANU,1,3,UNDEFINED,180,2880,274,10.51,5.75,11.5,1,1,2.5,0,25% / 0%,-22% / -66%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2750,1.5,183.3333,16.5
+shld_banu_s02_placeholder,item_NameSHLD_BANU_S02_Sukoran,,item_DescSHLD_BANU_S02_Sukoran,BANU,2,3,UNDEFINED,500,9600,912,10.53,6.33,12.7,1,1,2.5,0,25% / 0%,-22% / -66%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4250,3,283.3333,18
+shld_basl_s00_castra,item_NameSHLD_BASL_S00_Castra,,item_DescSHLD_BASL_S00_Castra,BASL,0,3,UNDEFINED,65,900,51,17.65,4.55,9.09,1,1,2.5,0,25% / 0%,-22% / -67%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1750,1.5,116.6667,16.5
+shld_basl_s01_bulwark,item_NameSHLD_BASL_S01_Bulwark,,item_DescSHLD_BASL_S01_Bulwark,BASL,1,3,UNDEFINED,180,2700,257,10.51,5,10,1,1,2.5,0,25% / 0%,-22% / -67%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2700,1.5,180,16.5
+shld_basl_s01_guardian,item_Name_SHLD_BASL_S01_Guardian,,item_Desc_SHLD_BASL_S01_Guardian,BASL,1,2,UNDEFINED,210,2700,270,10,4.55,9.09,1,1,2.5,0,25% / 0%,-21% / -63%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3100,1.5,206.6667,16.5
+shld_basl_s01_palisade,item_Name_SHLD_BASL_S01_Palisade,,item_Desc_SHLD_BASL_S01_Palisade,BASL,1,1,UNDEFINED,230,2700,297,9.09,4.17,8.33,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3500,1.5,233.3333,16.5
+shld_basl_s01_steward,item_Name_SHLD_BASL_S01_Steward,,item_Desc_SHLD_BASL_S01_Steward,BASL,1,4,UNDEFINED,160,2700,243,11.11,5.5,11,1,1,2.5,0,25% / 0%,-23% / -70%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2350,1.5,156.6667,16.5
+shld_basl_s02_armada,item_Name_SHLD_BASL_S02_Armada,,item_Desc_SHLD_BASL_S02_Armada,BASL,2,4,UNDEFINED,430,9000,810,11.11,6.05,12.1,1,1,2.5,0,25% / 0%,-23% / -70%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3650,3,243.3333,18
+shld_basl_s02_aspis,item_NameSHLD_BASL_S02_Aspis,,item_DescSHLD_BASL_S02_Aspis,BASL,2,3,UNDEFINED,500,9000,855,10.53,5.5,11,1,1,2.5,0,25% / 0%,-22% / -67%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4200,3,280,18
+shld_basl_s02_citadel,item_Name_SHLD_BASL_S02_Citadel,,item_Desc_SHLD_BASL_S02_Citadel,BASL,2,2,UNDEFINED,570,9000,900,10,5,10,1,1,2.5,0,25% / 0%,-21% / -63%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4800,3,320,18
+shld_basl_s02_rampart,item_Name_SHLD_BASL_S02_Rampart,,item_Desc_SHLD_BASL_S02_Rampart,BASL,2,1,UNDEFINED,640,9000,990,9.09,4.58,9.17,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,5500,3,366.6667,18
+shld_basl_s03_barbican,item_Name_SHLD_BASL_S03_Barbican,,item_Desc_SHLD_BASL_S03_Barbican,BASL,3,2,UNDEFINED,1600,90000,9000,10,5.5,11,1,1,2.5,0,25% / 0%,-21% / -63%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,7500,4.5,500,19.5
+shld_basl_s03_parapet,item_Name_SHLD_BASL_S03_Parapet,,item_Desc_SHLD_BASL_S03_Parapet,BASL,3,1,UNDEFINED,1800,90000,9900,9.09,5.04,10.1,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,8500,4.5,566.6667,19.5
+shld_basl_s03_stronghold,item_NameSHLD_BASL_S03_Stronghold,,item_DescSHLD_BASL_S03_Stronghold,BASL,3,3,UNDEFINED,1400,90000,8550,10.53,6.05,12.1,1,1,2.5,0,25% / 0%,-22% / -67%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,6500,4.5,433.3333,19.5
+shld_basl_s03_ward,item_Name_SHLD_BASL_S03_Ward,,item_Desc_SHLD_BASL_S03_Ward,BASL,3,4,UNDEFINED,1200,90000,8100,11.11,6.66,13.3,1,1,2.5,0,25% / 0%,-23% / -70%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,5500,4.5,366.6667,19.5
+shld_behr_s01_5sa,item_NameSHLD_BEHR_S01_5SA,,item_DescSHLD_BEHR_S01_5SA,BEHR,1,3,UNDEFINED,150,3750,356,10.53,5,10,1,1,2.5,0,25% / 0%,-19% / -58%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2250,1.5,150,16.5
+shld_behr_s01_6sa,item_Name_SHLD_BEHR_S01_6SA,,item_Desc_SHLD_BEHR_S01_6SA,BEHR,1,2,UNDEFINED,170,3750,375,10,4.55,9.09,1,1,2.5,0,25% / 0%,-18% / -55%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2600,1.5,173.3333,16.5
+shld_behr_s01_7sa,item_Name_SHLD_BEHR_S01_7SA,,item_Desc_SHLD_BEHR_S01_7SA,BEHR,1,1,UNDEFINED,200,3750,413,9.08,4.17,8.33,1,1,2.5,0,25% / 0%,-18% / -53%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2950,1.5,196.6667,16.5
+shld_behr_s02_5ma,item_NameSHLD_BEHR_S02_5MA,,item_DescSHLD_BEHR_S02_5MA,BEHR,2,3,UNDEFINED,410,12500,1188,10.52,5.5,11,1,1,2.5,0,25% / 0%,-19% / -58%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3500,3,233.3333,18
+shld_behr_s02_6ma,item_Name_SHLD_BEHR_S02_6MA,,item_Desc_SHLD_BEHR_S02_6MA,BEHR,2,2,UNDEFINED,470,12500,1250,10,5,10,1,1,2.5,0,25% / 0%,-18% / -55%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4000,3,266.6667,18
+shld_behr_s02_7ma,item_Name_SHLD_BEHR_S02_7MA,,item_Desc_SHLD_BEHR_S02_7MA,BEHR,2,1,UNDEFINED,540,12500,1375,9.09,4.58,9.17,1,1,2.5,0,25% / 0%,-18% / -53%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4550,3,303.3333,18
+shld_behr_s03_5ca,item_NameSHLD_BEHR_S03_5CA,,item_DescSHLD_BEHR_S03_5CA,BEHR,3,3,UNDEFINED,1100,125000,11875,10.53,6.05,12.1,1,1,2.5,0,25% / 0%,-19% / -58%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,5500,4.5,366.6667,19.5
+shld_behr_s03_6ca,item_Name_SHLD_BEHR_S03_6CA,,item_Desc_SHLD_BEHR_S03_6CA,BEHR,3,2,UNDEFINED,1300,125000,12500,10,5.5,11,1,1,2.5,0,25% / 0%,-18% / -55%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,6000,4.5,400,19.5
+shld_behr_s03_7ca,item_Name_SHLD_BEHR_S03_7CA,,item_Desc_SHLD_BEHR_S03_7CA,BEHR,3,1,UNDEFINED,1500,125000,13750,9.09,5.04,10.1,1,1,2.5,0,25% / 0%,-18% / -53%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,7000,4.5,466.6667,19.5
+shld_godi_s01_allstop,item_NameSHLD_GODI_S01_AllStop,,item_DescSHLD_GODI_S01_AllStop,GODI,1,3,UNDEFINED,210,3960,376,10.53,5.75,11.5,1,1,2.5,0,25% / 0%,-12% / -37%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3150,1.5,210,16.5
+shld_godi_s01_allstop_scitem_resistgasclouds,item_NameSHLD_GODI_S01_AllStop,,item_DescSHLD_GODI_S01_AllStop,GODI,1,3,UNDEFINED,210,3960,376,10.53,5.75,11.5,1,1,2.5,0,25% / 0%,-12% / -37%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3150,1.5,210,16.5
+shld_godi_s01_forcewall,item_NameSHLD_GODI_S01_ForceWall,,item_DescSHLD_GODI_S01_ForceWall,GODI,1,2,UNDEFINED,240,3960,396,10,5.23,10.5,1,1,2.5,0,25% / 0%,-11% / -34%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3600,1.5,240,16.5
+shld_godi_s01_fr66,item_Name_SHLD_GODI_S01_FR66,,item_Desc_SHLD_GODI_S01_FR66,GODI,1,1,UNDEFINED,270,3960,436,9.08,4.79,9.58,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4100,1.5,273.3333,16.5
+shld_godi_s01_securehyde,item_NameSHLD_GODI_S01_SecureHyde,,item_DescSHLD_GODI_S01_SecureHyde,GODI,1,4,UNDEFINED,180,3960,356,11.12,6.33,12.7,1,1,2.5,0,25% / 0%,-13% / -40%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2750,1.5,183.3333,16.5
+shld_godi_s02_coverall,item_Name_SHLD_GODI_S02_CoverAll,,item_Desc_SHLD_GODI_S02_CoverAll,GODI,2,2,UNDEFINED,660,13200,1320,10,5.75,11.5,1,1,2.5,0,25% / 0%,-11% / -34%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,5500,3,366.6667,18
+shld_godi_s02_fr76,item_Name_SHLD_GODI_S02_FR76,,item_Desc_SHLD_GODI_S02_FR76,GODI,2,1,UNDEFINED,750,13200,1452,9.09,5.27,10.5,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,6500,3,433.3333,18
+shld_godi_s02_fullstop,item_NameSHLD_GODI_S02_FullStop,,item_DescSHLD_GODI_S02_FullStop,GODI,2,3,UNDEFINED,580,13200,1254,10.53,6.33,12.7,1,1,2.5,0,25% / 0%,-12% / -37%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4900,3,326.6667,18
+shld_godi_s02_secureshield,item_Name_SHLD_GODI_S02_SecureShield,,item_Desc_SHLD_GODI_S02_SecureShield,GODI,2,4,UNDEFINED,500,13200,1188,11.11,6.96,13.9,1,1,2.5,0,25% / 0%,-13% / -40%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4250,3,283.3333,18
+shld_godi_s03_fr86,item_Name_SHLD_GODI_S03_FR86,,item_Desc_SHLD_GODI_S03_FR86,GODI,3,1,UNDEFINED,2100,132000,14520,9.09,5.8,11.6,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,10000,4.5,666.6667,19.5
+shld_godi_s03_fullblock,item_Name_SHLD_GODI_S03_FullBlock,,item_Desc_SHLD_GODI_S03_FullBlock,GODI,3,2,UNDEFINED,1800,132000,13200,10,6.33,12.7,1,1,2.5,0,25% / 0%,-11% / -34%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,8500,4.5,566.6667,19.5
+shld_godi_s03_securescreen,item_Name_SHLD_GODI_S03_SecureScreen,,item_Desc_SHLD_GODI_S03_SecureScreen,GODI,3,4,UNDEFINED,1400,132000,11880,11.11,7.65,15.3,1,1,2.5,0,25% / 0%,-13% / -40%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,6500,4.5,433.3333,19.5
+shld_godi_s03_surestop,item_Name_SHLD_GODI_S03_SureStop,,item_DescSHLD_GODI_S03_SureStop,GODI,3,3,UNDEFINED,1600,132000,12540,10.53,6.96,13.9,1,1,2.5,0,25% / 0%,-12% / -37%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,7500,4.5,500,19.5
+shld_godi_s04_bengal,LOC_PLACEHOLDER,,,GODI,4,1,UNDEFINED,320000,3960000,87120,45.45,9.34,18.7,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,90000,6,6000,21
+shld_godi_s04_idris_pirate,item_NameSHLD_GODI_S04_Idris,,item_DescSHLD_GODI_S04_Idris,GODI,4,1,UNDEFINED,43000,1320000,58080,22.73,7.72,15.4,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,36500,6,2433.333,21
+shld_godi_s04_idris,item_NameSHLD_GODI_S04_Idris,,item_DescSHLD_GODI_S04_Idris,GODI,4,1,UNDEFINED,43000,1320000,58080,22.73,7.72,15.4,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,36500,6,2433.333,21
+shld_godi_s04_javelin,LOC_PLACEHOLDER,,,GODI,4,1,UNDEFINED,120000,2640000,72600,36.36,8.49,17,1,1,2.5,0,25% / 0%,-10% / -31%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,55000,6,3666.667,21
+shld_orig_s04_890j,item_NameSHLD_ORIG_S04_890J_SCItem,,item_DescSHLD_ORIG_S04_890J_SCItem,ORIG,4,1,UNDEFINED,12000,450000,29700,15.15,6.1,12.2,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,18000,6,1200,21
+shld_rsi_s04_polaris,item_NameSHLD_ORIG_S04_890J_SCItem,,item_DescSHLD_ORIG_S04_890J_SCItem,RSI,4,1,UNDEFINED,13000,810000,35640,22.73,6.1,12.2,1,1,2.5,0,25% / 0%,-23% / -68%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,20500,6,1366.667,21
+shld_s01_template,LOC_PLACEHOLDER,,,,1,1,UNDEFINED,200,2700,297,9.09,4.17,8.33,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,10,1.5,0.6666667,16.5
+shld_s02_template,LOC_PLACEHOLDER,,,,2,1,UNDEFINED,540,9000,990,9.09,4.58,9.17,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,10,3,0.6666667,18
+shld_s03_template,LOC_PLACEHOLDER,,,,3,1,UNDEFINED,1500,90000,9900,9.09,5.04,10.1,1,1,2.5,0,25% / 0%,-20% / -60%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,10,4.5,0.6666667,19.5
+shld_s04_template,LOC_PLACEHOLDER,,,,4,1,UNDEFINED,4100,243000,17820,13.64,5.55,11.1,1,1,2.5,0,25% / 0%,-23% / -68%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,10,6,0.6666667,21
+shld_seco_s00_pin,item_NameSHLD_SECO_S00_PIN,,item_DescSHLD_SECO_S00_PIN,SECO,0,3,UNDEFINED,55,900,51,17.65,4.55,9.09,1,1,2.5,0,25% / 0%,-29% / -86%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1450,1.5,96.66666,16.5
+shld_seco_s01_hex,item_Name_SHLD_SECO_S01_HEX,,item_Desc_SHLD_SECO_S01_HEX,SECO,1,2,UNDEFINED,170,2700,270,10,4.55,9.09,1,1,2.5,0,25% / 0%,-27% / -82%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2600,1.5,173.3333,16.5
+shld_seco_s01_ink,item_NameSHLD_SECO_S01_INK,,item_DescSHLD_SECO_S01_INK,SECO,1,4,UNDEFINED,130,2700,243,11.11,5.5,11,1,1,2.5,0,25% / 0%,-30% / -90%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1950,1.5,130,16.5
+shld_seco_s01_web,item_NameSHLD_SECO_S01_WEB,,item_DescSHLD_SECO_S01_WEB,SECO,1,3,UNDEFINED,150,2700,257,10.51,5,10,1,1,2.5,0,25% / 0%,-29% / -86%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2250,1.5,150,16.5
+shld_seco_s02_bloc,item_Name_SHLD_SECO_S02_BLOC,,item_Desc_SHLD_SECO_S02_BLOC,SECO,2,2,UNDEFINED,470,9000,900,10,5,10,1,1,2.5,0,25% / 0%,-27% / -82%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4000,3,266.6667,18
+shld_seco_s02_rpel,item_Name_SHLD_SECO_S02_RPEL,,item_Desc_SHLD_SECO_S02_RPEL,SECO,2,4,UNDEFINED,360,9000,810,11.11,6.05,12.1,1,1,2.5,0,25% / 0%,-30% / -90%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3050,3,203.3333,18
+shld_seco_s02_stop,item_NameSHLD_SECO_S02_STOP,,item_DescSHLD_SECO_S02_STOP,SECO,2,3,UNDEFINED,410,9000,855,10.53,5.5,11,1,1,2.5,0,25% / 0%,-29% / -86%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,3500,3,233.3333,18
+shld_seco_s03_armor,item_Name_SHLD_SECO_S03_ARMOR,,item_Desc_SHLD_SECO_S03_ARMOR,SECO,3,2,UNDEFINED,1300,90000,9000,10,5.5,11,1,1,2.5,0,25% / 0%,-27% / -82%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,6000,4.5,400,19.5
+shld_seco_s03_guard,item_Name_SHLD_SECO_S03_GUARD,,item_Desc_SHLD_SECO_S03_GUARD,SECO,3,3,UNDEFINED,1100,90000,8550,10.53,6.05,12.1,1,1,2.5,0,25% / 0%,-29% / -86%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,5500,4.5,366.6667,19.5
+shld_seco_s03_haven,item_Name_SHLD_SECO_S03_HAVEN,,item_Desc_SHLD_SECO_S03_HAVEN,SECO,3,4,UNDEFINED,990,90000,8100,11.11,6.66,13.3,1,1,2.5,0,25% / 0%,-30% / -90%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,4700,4.5,313.3333,19.5
+shld_yorm_s01_falco,item_NameSHLD_YORM_S01_Falco,,item_DescSHLD_YORM_S01_Falco,YORM,1,4,UNDEFINED,72,2400,216,11.11,4.68,9.35,1,1,2.5,0,25% / 0%,-33% / -100%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1100,1.5,73.33334,16.5
+shld_yorm_s01_jaghte,item_Name_SHLD_YORM_S01_Jaghte,,item_Desc_SHLD_YORM_S01_Jaghte,YORM,1,2,UNDEFINED,91,2400,240,10,3.86,7.73,1,1,2.5,0,25% / 0%,-31% / -93%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1350,1.5,90,16.5
+shld_yorm_s01_targa,item_NameSHLD_YORM_S01_Targa,,item_DescSHLD_YORM_S01_Targa,YORM,1,3,UNDEFINED,81,2400,228,10.53,4.25,8.5,1,1,2.5,0,25% / 0%,-32% / -97%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1200,1.5,80,16.5
+shld_yorm_s02_bamoty,item_Name_SHLD_YORM_S02_Bamoty,,item_Desc_SHLD_YORM_S02_Bamoty,YORM,2,4,UNDEFINED,200,8000,720,11.11,5.14,10.3,1,1,2.5,0,25% / 0%,-33% / -100%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1700,3,113.3333,18
+shld_yorm_s02_haltur,item_Name_SHLD_YORM_S02_Haltur,,item_Desc_SHLD_YORM_S02_Haltur,YORM,2,2,UNDEFINED,250,8000,800,10,4.25,8.5,1,1,2.5,0,25% / 0%,-31% / -93%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,2100,3,140,18
+shld_yorm_s02_trenta,item_Name_SHLD_YORM_S02_Trenta,,item_Desc_SHLD_YORM_S02_Trenta,YORM,2,3,UNDEFINED,220,8000,760,10.53,4.68,9.35,1,1,2.5,0,25% / 0%,-32% / -97%,95% / 75%,45% / 0%,100% / 100%,100% / 100%,1900,3,126.6667,18

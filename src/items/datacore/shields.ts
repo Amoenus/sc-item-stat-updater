@@ -2,18 +2,9 @@ import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-/**
- * DataForge XML field selectors for shield generator stats.
- * Paths are CSS selectors evaluated in cheerio XML mode against the
- * unforged entity class XML. Verified field names against DataForge schema:
- * SShieldGeneratorComponentParams → ShieldGeneratorParams
- *
- * ⚠️ Exact XML paths should be verified against real unforged game files.
- */
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
-  // Data/libs/foundry/records/entities/scitem/ships/shieldgenerator/
   recordFilter: 'scitem/ships/shieldgenerator',
-  // shld_aegs_s04_reclaimer → strip 'shld_' → 'AEGS_S04_RECLAIMER' → item_NameSHLD_AEGS_S04_RECLAIMER
+  // shld_aegs_s04_reclaimer -> strip 'shld_' -> 'AEGS_S04_RECLAIMER' -> item_NameSHLD_AEGS_S04_RECLAIMER
   entityClassPrefix: 'shld_',
   nameKeyInfix: 'SHLD_',
   fieldSelectors: {
@@ -29,6 +20,31 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
     'Damaged Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DamagedRegenDelay' },
     'Downed Delay': { selector: 'SCItemShieldGeneratorParams', attr: 'DownedRegenDelay' },
+    'Reserve Max Ratio': { selector: 'SCItemShieldGeneratorParams', attr: 'ReservePoolMaxHealthRatio' },
+    'Reserve Regen Ratio': { selector: 'SCItemShieldGeneratorParams', attr: 'ReservePoolRegenRateRatio' },
+    'Reserve Drain Ratio': { selector: 'SCItemShieldGeneratorParams', attr: 'ReservePoolDrainRateRatio' },
+    'Electrical Charge Damage Resistance': {
+      selector: 'SCItemShieldGeneratorParams',
+      attr: 'ElectricalChargeDamageResistance',
+    },
+    'Resistance Physical': {
+      selector: 'SCItemShieldGeneratorParams ShieldResistance SShieldResistance',
+      attrs: ['Max', 'Min'],
+      index: 0,
+      format: 'percent-pair',
+    },
+    'Resistance Energy': {
+      selector: 'SCItemShieldGeneratorParams ShieldResistance SShieldResistance',
+      attrs: ['Max', 'Min'],
+      index: 1,
+      format: 'percent-pair',
+    },
+    'Resistance Distortion': {
+      selector: 'SCItemShieldGeneratorParams ShieldResistance SShieldResistance',
+      attrs: ['Max', 'Min'],
+      index: 2,
+      format: 'percent-pair',
+    },
     'Absorption Physical': {
       selector: 'SCItemShieldGeneratorParams ShieldAbsorption SShieldAbsorption',
       attrs: ['Max', 'Min'],
@@ -46,6 +62,20 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
       attrs: ['Max', 'Min'],
       index: 2,
       format: 'percent-pair',
+    },
+    'Distortion Shutdown Damage': { selector: 'SDistortionParams', attr: 'Maximum' },
+    'Distortion Decay Delay': { selector: 'SDistortionParams', attr: 'DecayDelay' },
+    'Distortion Decay Rate': { selector: 'SDistortionParams', attr: 'DecayRate' },
+    'Distortion Shutdown Time': {
+      derive: (row) => {
+        const maximum = Number(row['Distortion Shutdown Damage']);
+        const decayDelay = Number(row['Distortion Decay Delay']);
+        const decayRate = Number(row['Distortion Decay Rate']);
+        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+          return '';
+        }
+        return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();
+      },
     },
   },
 };
@@ -69,10 +99,24 @@ export default {
       .rawIf('Regen Time', 'Regen Time')
       .rawIf('Damaged Delay', 'Damaged Delay')
       .rawIf('Downed Delay', 'Downed Delay')
-      .section('-- Absorption --')
+      .section('-- NAV-SCM Reserve --')
+      .rawIf('Max Ratio', 'Reserve Max Ratio')
+      .rawIf('Regen Ratio', 'Reserve Regen Ratio')
+      .rawIf('Drain Ratio', 'Reserve Drain Ratio')
+      .section('-- Resistances (Max / Min) --')
+      .rawIf('Physical', 'Resistance Physical')
+      .rawIf('Energy', 'Resistance Energy')
+      .rawIf('Distortion', 'Resistance Distortion')
+      .section('-- Absorption (Max / Min) --')
       .rawIf('Physical', 'Absorption Physical')
       .rawIf('Energy', 'Absorption Energy')
       .rawIf('Distortion', 'Absorption Distortion')
+      .section('-- Distortion --')
+      .rawIf('Shutdown Damage', 'Distortion Shutdown Damage')
+      .rawIf('Decay Delay', 'Distortion Decay Delay')
+      .rawIf('Decay Rate', 'Distortion Decay Rate')
+      .rawIf('Shutdown Time', 'Distortion Shutdown Time')
+      .rawIf('Electrical Charge Resistance', 'Electrical Charge Damage Resistance')
       .section('-- Durability --')
       .raw('Health', 'Health')
       .build(flavorText);
