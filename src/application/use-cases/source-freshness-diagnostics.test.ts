@@ -47,7 +47,11 @@ test('source freshness diagnostics summarize selected provider versions', async 
   try {
     const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
     await fs.mkdir(itemVersionDir, { recursive: true });
-    await fs.writeFile(path.join(itemVersionDir, 'coolers.datacore.csv'), 'header\n', 'utf8');
+    await fs.writeFile(
+      path.join(itemVersionDir, 'coolers.datacore.csv'),
+      'Entity Class,Name Key,Description Key\ncool_test,item_Name_COOL_Test,item_Desc_COOL_Test\n',
+      'utf8',
+    );
     await writeDataCoreRawFactFiles(itemVersionDir);
 
     const diagnostics = await buildSourceFreshnessDiagnostics(
@@ -69,11 +73,17 @@ test('source freshness diagnostics summarize selected provider versions', async 
       diagnostics.rawFacts?.map((entry) => [entry.slug, entry.rows, entry.csvFile]),
       DATACORE_RAW_FACTS.map((entry) => [entry.slug, 1, entry.sourceFiles[0]]),
     );
+    assert.deepEqual(
+      diagnostics.itemIdentity?.map((entry) => [entry.category, entry.rowsWithRawTargetKey]),
+      [['dc-coolers', 1]],
+    );
     assert.deepEqual(diagnostics.warnings, []);
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /DataCore \(LIVE\): 4\.8\.1-live/);
     assert.match(formatted, /DataCore raw fact datasets:/);
     assert.match(formatted, /datacore-vehicles \| Vehicles \| 1 rows \| vehicles\.datacore\.csv/);
+    assert.match(formatted, /DataCore item identity coverage:/);
+    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 1\/1 rows with raw keys \| coolers\.datacore\.csv/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
@@ -145,6 +155,45 @@ test('source freshness diagnostics warn for missing provider companion source fi
     assert.equal(diagnostics.warnings[0].category, 'mission-commodities');
     assert.equal(diagnostics.warnings[0].path, expectedPath);
     assert.match(diagnostics.warnings[0].message, /DataCore source data appears incomplete/);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('source freshness diagnostics warn when DataCore item rows have no raw identity keys', async () => {
+  const root = await makeTempDir();
+  try {
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await fs.mkdir(itemVersionDir, { recursive: true });
+    await fs.writeFile(
+      path.join(itemVersionDir, 'coolers.datacore.csv'),
+      'Entity Class,Name Key,Description Key\ncool_test,LOC_EMPTY,LOC_UNINITIALIZED\n',
+      'utf8',
+    );
+    await writeDataCoreRawFactFiles(itemVersionDir);
+    const expectedPath = path.join(itemVersionDir, 'coolers.datacore.csv');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(
+      makePrepared(root, [
+        {
+          config,
+          csvDir: itemVersionDir,
+          source: { provider: 'datacore', channel: 'LIVE', category: 'dc-coolers' },
+        },
+      ]),
+      { provider: 'datacore' },
+    );
+
+    assert.equal(diagnostics.itemIdentity?.[0].rowsWithRawTargetKey, 0);
+    assert.equal(diagnostics.warnings.length, 1);
+    assert.equal(diagnostics.warnings[0].provider, 'datacore');
+    assert.equal(diagnostics.warnings[0].category, 'dc-coolers');
+    assert.equal(diagnostics.warnings[0].path, expectedPath);
+    assert.match(diagnostics.warnings[0].message, /expected at least one usable Name Key or Description Key/);
+
+    const formatted = formatSourceFreshnessDiagnostics(diagnostics);
+    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 0\/1 rows with raw keys/);
+    assert.match(formatted, /WARNING DataCore LIVE dc-coolers/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

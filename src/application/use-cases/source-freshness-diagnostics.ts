@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { readCsvFile } from '../../io/local/csv-parser';
 import type {
   PreparedUpdateCategories,
   UpdateCategory,
@@ -36,10 +37,23 @@ export interface DataCoreRawFactDiagnostic {
   path: string;
 }
 
+export interface DataCoreItemIdentityDiagnostic {
+  category: string;
+  label: string;
+  channel: UpdateChannel;
+  rows: number;
+  rowsWithNameKey: number;
+  rowsWithDescriptionKey: number;
+  rowsWithRawTargetKey: number;
+  csvFile: string;
+  path: string;
+}
+
 export interface SourceFreshnessDiagnostics {
   versions: SourceVersionDiagnostic[];
   warnings: SourceFreshnessWarning[];
   rawFacts?: DataCoreRawFactDiagnostic[];
+  itemIdentity?: DataCoreItemIdentityDiagnostic[];
 }
 
 function providerLabel(provider: UpdateSourceProvider): string {
@@ -190,12 +204,59 @@ async function collectRawFactDiagnostics(
   return diagnostics.filter((diagnostic): diagnostic is DataCoreRawFactDiagnostic => diagnostic !== null);
 }
 
+async function collectDataCoreItemIdentityDiagnostic(
+  category: UpdateCategory,
+): Promise<DataCoreItemIdentityDiagnostic | null> {
+  if (category.source?.provider !== 'datacore' || !category.config.csvFile || !category.source.channel) return null;
+
+  const sourcePath = resolveChildPath(category.csvDir, category.config.csvFile, 'DataCore item source file');
+  try {
+    const rows = await readCsvFile(sourcePath);
+    const rowsWithNameKey = rows.filter((row) => isUsableLocalizationKey(row['Name Key'])).length;
+    const rowsWithDescriptionKey = rows.filter((row) => isUsableLocalizationKey(row['Description Key'])).length;
+    return {
+      category: category.source.category,
+      label: category.config.label,
+      channel: category.source.channel,
+      rows: rows.length,
+      rowsWithNameKey,
+      rowsWithDescriptionKey,
+      rowsWithRawTargetKey: rows.filter(
+        (row) => isUsableLocalizationKey(row['Name Key']) || isUsableLocalizationKey(row['Description Key']),
+      ).length,
+      csvFile: category.config.csvFile,
+      path: sourcePath,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function collectDataCoreItemIdentityWarnings(diagnostics: DataCoreItemIdentityDiagnostic[]): SourceFreshnessWarning[] {
+  return diagnostics
+    .filter((diagnostic) => diagnostic.rows > 0 && diagnostic.rowsWithRawTargetKey === 0)
+    .map((diagnostic) => ({
+      provider: 'datacore',
+      label: 'DataCore',
+      channel: diagnostic.channel,
+      category: diagnostic.category,
+      path: diagnostic.path,
+      message:
+        'DataCore item identity data appears incomplete; expected at least one usable Name Key or Description Key.',
+    }));
+}
+
 function countCsvDataRows(contents: string): number {
   const nonEmptyLines = contents
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
   return Math.max(0, nonEmptyLines.length - 1);
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const trimmed = value?.trim() ?? '';
+  return trimmed.length > 0 && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED';
 }
 
 function dedupeWarningsByPath(warnings: SourceFreshnessWarning[]): SourceFreshnessWarning[] {
@@ -261,8 +322,15 @@ export async function buildSourceFreshnessDiagnostics(
           )
         ).flat()
       : undefined;
-  const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings]);
-  return { versions, warnings: [...staleWarnings, ...incompleteWarnings], rawFacts };
+  const itemIdentity =
+    options.provider === 'datacore'
+      ? (
+          await Promise.all(prepared.categories.map((category) => collectDataCoreItemIdentityDiagnostic(category)))
+        ).filter((diagnostic): diagnostic is DataCoreItemIdentityDiagnostic => diagnostic !== null)
+      : undefined;
+  const itemIdentityWarnings = itemIdentity ? collectDataCoreItemIdentityWarnings(itemIdentity) : [];
+  const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings, ...itemIdentityWarnings]);
+  return { versions, warnings: [...staleWarnings, ...incompleteWarnings], rawFacts, itemIdentity };
 }
 
 export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDiagnostics): string {
@@ -276,6 +344,16 @@ export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDia
     for (const rawFact of diagnostics.rawFacts ?? []) {
       lines.push(`  ${rawFact.slug} | ${rawFact.label} | ${rawFact.rows} rows | ${rawFact.csvFile}`);
       lines.push(`    Path: ${rawFact.path}`);
+    }
+  }
+  if ((diagnostics.itemIdentity ?? []).length > 0) {
+    lines.push('DataCore item identity coverage:');
+    for (const item of diagnostics.itemIdentity ?? []) {
+      lines.push(
+        `  ${item.category} | ${item.label} | ${item.rowsWithRawTargetKey}/${item.rows} rows with raw keys | ${item.csvFile}`,
+      );
+      lines.push(`    Name Key rows: ${item.rowsWithNameKey}; Description Key rows: ${item.rowsWithDescriptionKey}`);
+      lines.push(`    Path: ${item.path}`);
     }
   }
   if (diagnostics.warnings.length > 0) {
