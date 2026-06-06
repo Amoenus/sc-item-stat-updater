@@ -36,6 +36,23 @@ export interface PreparedUpdateCategories {
   missionCsvDir: string;
 }
 
+export function inferCategorySourceProvider(config: ItemConfig, fallback: UpdateSourceProvider): UpdateSourceProvider {
+  const requiredSourceDirs = (config.sourceFiles ?? [])
+    .filter((sourceFile) => !sourceFile.optional)
+    .map((sourceFile) => sourceFile.sourceDir ?? 'csvDir');
+
+  if (requiredSourceDirs.includes('datacore')) return 'datacore';
+  if (requiredSourceDirs.includes('scmdb')) return 'scmdb';
+  if (requiredSourceDirs.includes('spviewer')) return 'spviewer';
+
+  const primarySource = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(Boolean).join(' ');
+  if (/\.datacore\.|\/datacore\/|\\datacore\\/i.test(primarySource)) return 'datacore';
+  if (/\.spviewer\.|\/spviewer\/|\\spviewer\\/i.test(primarySource)) return 'spviewer';
+  if (/scmdb/i.test(primarySource)) return 'scmdb';
+
+  return fallback;
+}
+
 /**
  * Finds the latest versioned subfolder under a base directory that matches the
  * requested channel (live or ptu).
@@ -100,7 +117,7 @@ export async function prepareUpdateCategories(
     ...missionConfigs.map(([category, config]) => ({
       config,
       csvDir: missionCsvDir,
-      source: { provider: 'scmdb' as const, channel, category },
+      source: { provider: inferCategorySourceProvider(config, 'scmdb'), channel, category },
       sourceDirs: { datacore: itemVersionDir, scmdb: scmdbDir },
     })),
   ];

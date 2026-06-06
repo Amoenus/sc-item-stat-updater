@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { resolveLatestVersionDir } from './prepare-update-categories';
+import { inferCategorySourceProvider, resolveLatestVersionDir } from './prepare-update-categories';
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), 'sc-update-categories-'));
@@ -38,5 +38,60 @@ test('resolveLatestVersionDir reports missing channel with scraper hint', async 
   await assert.rejects(
     () => resolveLatestVersionDir(root, true, 'DataCore', 'scrape-datacore.js'),
     /No PTU DataCore version folder found.*scrape-datacore\.js --ptu/,
+  );
+});
+
+test('inferCategorySourceProvider treats required DataCore companion files as authoritative', () => {
+  assert.equal(
+    inferCategorySourceProvider(
+      {
+        label: 'Mining locations',
+        csvFile: 'mining-locations.csv',
+        sourceFiles: [
+          { file: 'mining-provider-presets.datacore.csv', sourceDir: 'datacore' },
+          { file: 'mining-compositions.datacore.csv', sourceDir: 'datacore' },
+        ],
+        loadSourceData: async () => [],
+        requiredColumns: [],
+        descKeyMatch: () => false,
+      },
+      'scmdb',
+    ),
+    'datacore',
+  );
+});
+
+test('inferCategorySourceProvider keeps optional SCMDB bridge files behind required DataCore files', () => {
+  assert.equal(
+    inferCategorySourceProvider(
+      {
+        label: 'Mining element stats',
+        csvFile: 'mining-elements.csv',
+        sourceFiles: [
+          { file: 'mining-elements.csv', sourceDir: 'csvDir', optional: true },
+          { file: 'mining-elements.datacore.csv', sourceDir: 'datacore' },
+        ],
+        loadSourceData: async () => [],
+        requiredColumns: [],
+        descKeyMatch: () => false,
+      },
+      'scmdb',
+    ),
+    'datacore',
+  );
+});
+
+test('inferCategorySourceProvider leaves SCMDB mission CSV bridges classified as SCMDB', () => {
+  assert.equal(
+    inferCategorySourceProvider(
+      {
+        label: 'SCMDB mission descriptions',
+        csvFile: 'missions/scmdb-missions.csv',
+        requiredColumns: [],
+        descKeyMatch: () => false,
+      },
+      'scmdb',
+    ),
+    'scmdb',
   );
 });
