@@ -151,6 +151,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party mission and contract localization references from record graph',
   },
   {
+    slug: 'datacore-mission-brokers',
+    label: 'Mission broker records',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['mission-brokers.datacore.csv'],
+    description: 'first-party mission broker rewards, timing, flags, and localization keys',
+  },
+  {
     slug: 'datacore-mining-location-labels',
     label: 'Mining location labels',
     family: 'DataCore',

@@ -54,7 +54,7 @@ Mining location rendering no longer imports arbitrary SCMDB-only location rows o
 The current high-value replacement targets are:
 
 1. Mission titles/descriptions/chains/rewards.
-   Build a first-party mission/contract extractor and reproduce SCMDB contract metadata joins from DataCore records. DataCore now emits `mission-localization.datacore.csv` from mission/contract record graph references. With checked-in DataCore `4.8.0.11875683-live` and SCMDB `4.8.1-live.11875683`, that CSV has 5,087 rows and 1,027 unique keys, but overlaps only 71 of 1,449 SCMDB mission rows: 38/694 title rows and 27/721 description rows. Treat it as a diagnostic/reconstruction input, not an active replacement for `missions/scmdb-missions.csv`.
+   Build a first-party mission/contract extractor and reproduce SCMDB contract metadata joins from DataCore records. DataCore now emits `mission-brokers.datacore.csv` with 2,584 first-party MissionBrokerEntry rows plus `mission-localization.datacore.csv` with 5,087 mission/contract localization-reference rows and 1,027 unique keys. With checked-in DataCore `4.8.0.11875683-live` and SCMDB `4.8.1-live.11875683`, those broker/localization keys overlap only 71 of 1,449 SCMDB mission rows: 38/694 title rows and 27/721 description rows. Treat them as diagnostic/reconstruction inputs, not active replacements for `missions/scmdb-missions.csv`.
 2. Blueprint and crafting relationships.
    Recover blueprint reward, chain, pool, and crafting-item joins from game-file records instead of SCMDB merged outputs.
 3. Mining location summaries and journal fallback removal.

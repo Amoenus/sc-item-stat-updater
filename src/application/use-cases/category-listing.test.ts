@@ -68,6 +68,7 @@ test('category listing includes representative provider families and source meta
       ['datacore-factions', 'factions.datacore.csv'],
       ['datacore-location-labels', 'location-labels.datacore.csv'],
       ['datacore-mission-localization', 'mission-localization.datacore.csv'],
+      ['datacore-mission-brokers', 'mission-brokers.datacore.csv'],
       ['datacore-mining-location-labels', 'mining-location-labels.datacore.csv'],
     ],
   );

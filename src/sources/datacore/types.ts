@@ -85,6 +85,63 @@ export interface DataCoreMissionLocalizationRecord {
   path: string;
 }
 
+export interface DataCoreMissionBrokerRecord {
+  missionClass: string;
+  titleKey: string;
+  titleHudKey: string;
+  descriptionKey: string;
+  missionGiverKey: string;
+  commsChannelNameKey: string;
+  missionModule: string;
+  missionTypeGuid: string;
+  missionTypeClass: string;
+  ownerGuid: string;
+  ownerClass: string;
+  missionGiverRecordGuid: string;
+  missionGiverRecordClass: string;
+  locationMissionAvailableGuid: string;
+  locationMissionAvailableClass: string;
+  missionDifficulty: string;
+  reward: string;
+  rewardMax: string;
+  rewardPlusBonuses: string;
+  currencyType: string;
+  missionCompletionTime: string;
+  missionAutoEnd: string;
+  missionResultAfterTimerEnd: string;
+  remainingTimeToShowTimer: string;
+  initiallyActive: string;
+  notifyOnAvailable: string;
+  showAsOffer: string;
+  requestOnly: string;
+  lawfulMission: string;
+  maxInstances: string;
+  maxPlayersPerInstance: string;
+  maxInstancesPerPlayer: string;
+  canBeShared: string;
+  onceOnly: string;
+  tutorial: string;
+  availableInPrison: string;
+  failIfSentToPrison: string;
+  failIfBecameCriminal: string;
+  failIfLeavePrison: string;
+  respawnTime: string;
+  respawnTimeVariation: string;
+  instanceHasLifeTime: string;
+  showLifeTimeInMobiGlas: string;
+  instanceLifeTime: string;
+  instanceLifeTimeVariation: string;
+  canReacceptAfterAbandoning: string;
+  abandonedCooldownTime: string;
+  abandonedCooldownTimeVariation: string;
+  canReacceptAfterFailing: string;
+  hasPersonalCooldown: string;
+  personalCooldownTime: string;
+  personalCooldownTimeVariation: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreFactionRecord {
   ref: string;
   path: string;

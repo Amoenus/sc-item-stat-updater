@@ -19,6 +19,7 @@ import { extractDataCoreCommodities } from '../../sources/datacore/commodity-ext
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
+import { extractDataCoreMissionBrokers } from '../../sources/datacore/mission-broker-extractor';
 import { extractDataCoreMissionLocalization } from '../../sources/datacore/mission-localization-extractor';
 import {
   createDataCoreManufacturerResolver,
@@ -49,6 +50,7 @@ import type {
   DataCoreFactionRecord,
   DataCoreLocationLabelRecord,
   DataCoreManufacturerRecord,
+  DataCoreMissionBrokerRecord,
   DataCoreMissionLocalizationRecord,
   DataCoreMineableEntityRecord,
   DataCoreMiningClusteringParamRecord,
@@ -118,6 +120,11 @@ export interface DataCoreScrapeLocationLabelResult {
 }
 
 export interface DataCoreScrapeMissionLocalizationResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMissionBrokerResult {
   rows: number;
   csvFile: string;
 }
@@ -226,6 +233,7 @@ export interface RunDatacoreScrapeOptions {
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
   extractManufacturers?: typeof extractDataCoreManufacturers;
+  extractMissionBrokers?: typeof extractDataCoreMissionBrokers;
   extractMissionLocalization?: typeof extractDataCoreMissionLocalization;
   extractLocationLabels?: typeof extractDataCoreLocationLabels;
   extractMiningElements?: typeof extractDataCoreMiningElements;
@@ -264,6 +272,7 @@ export interface RunDatacoreScrapeOptions {
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onManufacturersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMissionBrokersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMissionLocalizationExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -300,6 +309,7 @@ export interface RunDatacoreScrapeResult {
   factionResult: DataCoreScrapeFactionResult;
   manufacturerResult: DataCoreScrapeManufacturerResult;
   locationLabelResult: DataCoreScrapeLocationLabelResult;
+  missionBrokerResult: DataCoreScrapeMissionBrokerResult;
   missionLocalizationResult: DataCoreScrapeMissionLocalizationResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
@@ -336,6 +346,7 @@ const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
 const MANUFACTURERS_CSV_FILE = 'manufacturers.datacore.csv';
 const LOCATION_LABELS_CSV_FILE = 'location-labels.datacore.csv';
+const MISSION_BROKERS_CSV_FILE = 'mission-brokers.datacore.csv';
 const MISSION_LOCALIZATION_CSV_FILE = 'mission-localization.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
@@ -487,6 +498,62 @@ const MISSION_LOCALIZATION_HEADERS = [
   'Attribute',
   'Record Type',
   'Entity Class',
+  'Record GUID',
+  'Record Path',
+];
+const MISSION_BROKER_HEADERS = [
+  'Mission Class',
+  'Title Key',
+  'Title HUD Key',
+  'Description Key',
+  'Mission Giver Key',
+  'Comms Channel Name Key',
+  'Mission Module',
+  'Mission Type GUID',
+  'Mission Type Class',
+  'Owner GUID',
+  'Owner Class',
+  'Mission Giver Record GUID',
+  'Mission Giver Record Class',
+  'Location Mission Available GUID',
+  'Location Mission Available Class',
+  'Mission Difficulty',
+  'Reward',
+  'Reward Max',
+  'Reward Plus Bonuses',
+  'Currency Type',
+  'Mission Completion Time',
+  'Mission Auto End',
+  'Mission Result After Timer End',
+  'Remaining Time To Show Timer',
+  'Initially Active',
+  'Notify On Available',
+  'Show As Offer',
+  'Request Only',
+  'Lawful Mission',
+  'Max Instances',
+  'Max Players Per Instance',
+  'Max Instances Per Player',
+  'Can Be Shared',
+  'Once Only',
+  'Tutorial',
+  'Available In Prison',
+  'Fail If Sent To Prison',
+  'Fail If Became Criminal',
+  'Fail If Leave Prison',
+  'Respawn Time',
+  'Respawn Time Variation',
+  'Instance Has Life Time',
+  'Show Life Time In MobiGlas',
+  'Instance Life Time',
+  'Instance Life Time Variation',
+  'Can Reaccept After Abandoning',
+  'Abandoned Cooldown Time',
+  'Abandoned Cooldown Time Variation',
+  'Can Reaccept After Failing',
+  'Has Personal Cooldown',
+  'Personal Cooldown Time',
+  'Personal Cooldown Time Variation',
   'Record GUID',
   'Record Path',
 ];
@@ -840,6 +907,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
   const extractManufacturers = options.extractManufacturers ?? extractDataCoreManufacturers;
+  const extractMissionBrokers = options.extractMissionBrokers ?? extractDataCoreMissionBrokers;
   const extractMissionLocalization = options.extractMissionLocalization ?? extractDataCoreMissionLocalization;
   const extractLocationLabels = options.extractLocationLabels ?? extractDataCoreLocationLabels;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
@@ -923,6 +991,17 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
   const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
+
+  const missionBrokerRows = await extractMissionBrokers({ xmlCacheDir, graph: graphLookup });
+  const missionBrokerResult = await writeMissionBrokerCsv(missionBrokerRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMissionBrokersExtracted?.(
+    missionBrokerResult.rows,
+    missionBrokerResult.csvFile,
+    Boolean(options.dryRun),
+  );
 
   const missionLocalizationRows = extractMissionLocalization(recordGraph);
   const missionLocalizationResult = await writeMissionLocalizationCsv(missionLocalizationRows, {
@@ -1204,6 +1283,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       [factionResult.csvFile, factionResult],
       [manufacturerResult.csvFile, manufacturerResult],
       [locationLabelResult.csvFile, locationLabelResult],
+      [missionBrokerResult.csvFile, missionBrokerResult],
       [missionLocalizationResult.csvFile, missionLocalizationResult],
       [miningLocationLabelResult.csvFile, miningLocationLabelResult],
     ]),
@@ -1228,6 +1308,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     factionResult,
     manufacturerResult,
     locationLabelResult,
+    missionBrokerResult,
     missionLocalizationResult,
     miningElementResult,
     miningCompositionResult,
@@ -1632,6 +1713,77 @@ async function writeMissionLocalizationCsv(
   }
 
   return { rows: rows.length, csvFile: MISSION_LOCALIZATION_CSV_FILE };
+}
+
+async function writeMissionBrokerCsv(
+  rows: DataCoreMissionBrokerRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMissionBrokerResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.missionClass,
+      row.titleKey,
+      row.titleHudKey,
+      row.descriptionKey,
+      row.missionGiverKey,
+      row.commsChannelNameKey,
+      row.missionModule,
+      row.missionTypeGuid,
+      row.missionTypeClass,
+      row.ownerGuid,
+      row.ownerClass,
+      row.missionGiverRecordGuid,
+      row.missionGiverRecordClass,
+      row.locationMissionAvailableGuid,
+      row.locationMissionAvailableClass,
+      row.missionDifficulty,
+      row.reward,
+      row.rewardMax,
+      row.rewardPlusBonuses,
+      row.currencyType,
+      row.missionCompletionTime,
+      row.missionAutoEnd,
+      row.missionResultAfterTimerEnd,
+      row.remainingTimeToShowTimer,
+      row.initiallyActive,
+      row.notifyOnAvailable,
+      row.showAsOffer,
+      row.requestOnly,
+      row.lawfulMission,
+      row.maxInstances,
+      row.maxPlayersPerInstance,
+      row.maxInstancesPerPlayer,
+      row.canBeShared,
+      row.onceOnly,
+      row.tutorial,
+      row.availableInPrison,
+      row.failIfSentToPrison,
+      row.failIfBecameCriminal,
+      row.failIfLeavePrison,
+      row.respawnTime,
+      row.respawnTimeVariation,
+      row.instanceHasLifeTime,
+      row.showLifeTimeInMobiGlas,
+      row.instanceLifeTime,
+      row.instanceLifeTimeVariation,
+      row.canReacceptAfterAbandoning,
+      row.abandonedCooldownTime,
+      row.abandonedCooldownTimeVariation,
+      row.canReacceptAfterFailing,
+      row.hasPersonalCooldown,
+      row.personalCooldownTime,
+      row.personalCooldownTimeVariation,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MISSION_BROKERS_CSV_FILE),
+      stringify([MISSION_BROKER_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MISSION_BROKERS_CSV_FILE };
 }
 
 async function writeMiningElementCsv(
