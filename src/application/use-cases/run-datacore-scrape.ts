@@ -19,6 +19,7 @@ import { extractDataCoreCommodities } from '../../sources/datacore/commodity-ext
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
+import { extractDataCoreMissionLocalization } from '../../sources/datacore/mission-localization-extractor';
 import {
   createDataCoreManufacturerResolver,
   type DataCoreManufacturerResolver,
@@ -48,6 +49,7 @@ import type {
   DataCoreFactionRecord,
   DataCoreLocationLabelRecord,
   DataCoreManufacturerRecord,
+  DataCoreMissionLocalizationRecord,
   DataCoreMineableEntityRecord,
   DataCoreMiningClusteringParamRecord,
   DataCoreMiningCompositionPartRecord,
@@ -111,6 +113,11 @@ export interface DataCoreScrapeManufacturerResult {
 }
 
 export interface DataCoreScrapeLocationLabelResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMissionLocalizationResult {
   rows: number;
   csvFile: string;
 }
@@ -219,6 +226,7 @@ export interface RunDatacoreScrapeOptions {
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
   extractManufacturers?: typeof extractDataCoreManufacturers;
+  extractMissionLocalization?: typeof extractDataCoreMissionLocalization;
   extractLocationLabels?: typeof extractDataCoreLocationLabels;
   extractMiningElements?: typeof extractDataCoreMiningElements;
   extractMiningCompositions?: typeof extractDataCoreMiningCompositions;
@@ -256,6 +264,7 @@ export interface RunDatacoreScrapeOptions {
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onManufacturersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMissionLocalizationExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMineableEntitiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -291,6 +300,7 @@ export interface RunDatacoreScrapeResult {
   factionResult: DataCoreScrapeFactionResult;
   manufacturerResult: DataCoreScrapeManufacturerResult;
   locationLabelResult: DataCoreScrapeLocationLabelResult;
+  missionLocalizationResult: DataCoreScrapeMissionLocalizationResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
   mineableEntityResult: DataCoreScrapeMineableEntityResult;
@@ -326,6 +336,7 @@ const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
 const MANUFACTURERS_CSV_FILE = 'manufacturers.datacore.csv';
 const LOCATION_LABELS_CSV_FILE = 'location-labels.datacore.csv';
+const MISSION_LOCALIZATION_CSV_FILE = 'mission-localization.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
 const MINEABLE_ENTITIES_CSV_FILE = 'mineable-entities.datacore.csv';
@@ -467,6 +478,15 @@ const LOCATION_LABEL_HEADERS = [
   'StarMap Material Path',
   'StarMap Shape Path',
   'Location Image Path',
+  'Record GUID',
+  'Record Path',
+];
+const MISSION_LOCALIZATION_HEADERS = [
+  'Localization Key',
+  'Localization Role',
+  'Attribute',
+  'Record Type',
+  'Entity Class',
   'Record GUID',
   'Record Path',
 ];
@@ -820,6 +840,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
   const extractManufacturers = options.extractManufacturers ?? extractDataCoreManufacturers;
+  const extractMissionLocalization = options.extractMissionLocalization ?? extractDataCoreMissionLocalization;
   const extractLocationLabels = options.extractLocationLabels ?? extractDataCoreLocationLabels;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
   const extractMiningCompositions = options.extractMiningCompositions ?? extractDataCoreMiningCompositions;
@@ -902,6 +923,17 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
   const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
+
+  const missionLocalizationRows = extractMissionLocalization(recordGraph);
+  const missionLocalizationResult = await writeMissionLocalizationCsv(missionLocalizationRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMissionLocalizationExtracted?.(
+    missionLocalizationResult.rows,
+    missionLocalizationResult.csvFile,
+    Boolean(options.dryRun),
+  );
   const manufacturerResolver = createDataCoreManufacturerResolver(graphLookup);
 
   const commodityRows = await extractCommodities({
@@ -1172,6 +1204,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       [factionResult.csvFile, factionResult],
       [manufacturerResult.csvFile, manufacturerResult],
       [locationLabelResult.csvFile, locationLabelResult],
+      [missionLocalizationResult.csvFile, missionLocalizationResult],
       [miningLocationLabelResult.csvFile, miningLocationLabelResult],
     ]),
   );
@@ -1195,6 +1228,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     factionResult,
     manufacturerResult,
     locationLabelResult,
+    missionLocalizationResult,
     miningElementResult,
     miningCompositionResult,
     mineableEntityResult,
@@ -1574,6 +1608,30 @@ async function writeLocationLabelCsv(
   }
 
   return { rows: rows.length, csvFile: LOCATION_LABELS_CSV_FILE };
+}
+
+async function writeMissionLocalizationCsv(
+  rows: DataCoreMissionLocalizationRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMissionLocalizationResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.localizationKey,
+      row.localizationRole,
+      row.attribute,
+      row.rootType,
+      row.entityClass,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MISSION_LOCALIZATION_CSV_FILE),
+      stringify([MISSION_LOCALIZATION_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MISSION_LOCALIZATION_CSV_FILE };
 }
 
 async function writeMiningElementCsv(

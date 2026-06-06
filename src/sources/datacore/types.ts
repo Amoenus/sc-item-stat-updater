@@ -75,6 +75,16 @@ export type DataCoreVehicleDataset = SourceDataset<DataCoreVehicleRecord> & {
   source: 'datacore';
 };
 
+export interface DataCoreMissionLocalizationRecord {
+  localizationKey: string;
+  localizationRole: string;
+  attribute: string;
+  rootType: string;
+  entityClass: string;
+  ref: string;
+  path: string;
+}
+
 export interface DataCoreFactionRecord {
   ref: string;
   path: string;

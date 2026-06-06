@@ -143,6 +143,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party StarMap labels, affiliation refs, and jurisdiction refs',
   },
   {
+    slug: 'datacore-mission-localization',
+    label: 'Mission localization references',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['mission-localization.datacore.csv'],
+    description: 'first-party mission and contract localization references from record graph',
+  },
+  {
     slug: 'datacore-mining-location-labels',
     label: 'Mining location labels',
     family: 'DataCore',

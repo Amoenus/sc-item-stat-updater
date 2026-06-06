@@ -142,6 +142,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'location-labels.datacore.csv',
         },
+        missionLocalizationResult: {
+          rows: 0,
+          csvFile: 'mission-localization.datacore.csv',
+        },
         miningElementResult: {
           rows: 0,
           csvFile: 'mining-elements.datacore.csv',

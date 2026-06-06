@@ -54,15 +54,16 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-scmdb-descriptions': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins.',
+      'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins. DataCore now emits mission-localization.datacore.csv from mission/contract record graph references, but the checked-in data overlaps only 27 of 721 SCMDB description rows, so it is a diagnostic input rather than an active replacement.',
     migrationSlice:
-      'Build a first-party mission/contract extractor and reproduce SCMDB contract metadata joins from DataCore records.',
+      'Extend the DataCore mission extractor beyond localization references to recover contract text variants, cooldowns, encounters, hauling details, blueprint rewards, and item reward joins.',
   },
   'mission-scmdb-titles': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'Mission titles and chain tags currently come from the SCMDB mission CSV; title localization keys may be recoverable from mission/contract records.',
-    migrationSlice: 'Extract mission title keys and blueprint/intro chain markers from DataCore mission records.',
+      'Mission titles and chain tags currently come from the SCMDB mission CSV. DataCore now emits mission-localization.datacore.csv from mission/contract record graph references, but the checked-in data overlaps only 38 of 694 SCMDB title rows, so title replacement still needs deeper contract/variant traversal.',
+    migrationSlice:
+      'Extend the DataCore mission extractor to recover title variants plus blueprint, intro, and chain markers from first-party mission records.',
   },
 };
 
