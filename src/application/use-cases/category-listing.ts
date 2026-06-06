@@ -175,6 +175,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party mission broker rewards, timing, flags, and localization keys',
   },
   {
+    slug: 'datacore-mission-contract-intel',
+    label: 'Mission contract intel',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['mission-contract-intel.datacore.csv'],
+    description: 'DataCore-derived mission reward, time limit, efficiency, and cooldown text',
+  },
+  {
     slug: 'datacore-mining-location-labels',
     label: 'Mining location labels',
     family: 'DataCore',

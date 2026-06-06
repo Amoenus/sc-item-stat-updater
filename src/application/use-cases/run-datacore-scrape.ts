@@ -40,6 +40,7 @@ import { extractDataCoreMiningQualityQuantizations } from '../../sources/datacor
 import { extractDataCoreMiningRockSignatures } from '../../sources/datacore/mining-rock-signature-extractor';
 import { extractDataCoreMiningSubHarvestableConfigs } from '../../sources/datacore/mining-sub-harvestable-config-extractor';
 import { extractDataCoreMissionBrokers } from '../../sources/datacore/mission-broker-extractor';
+import { buildDataCoreMissionContractIntel } from '../../sources/datacore/mission-contract-intel-builder';
 import { extractDataCoreMissionLocalization } from '../../sources/datacore/mission-localization-extractor';
 import {
   type BuildDataCoreRecordGraphOptions,
@@ -69,6 +70,7 @@ import type {
   DataCoreMiningRockSignatureRecord,
   DataCoreMiningSubHarvestableConfigRecord,
   DataCoreMissionBrokerRecord,
+  DataCoreMissionContractIntelRecord,
   DataCoreMissionLocalizationRecord,
   DataCoreRecordGraph,
   DataCoreRecordGraphLookup,
@@ -139,6 +141,11 @@ export interface DataCoreScrapeMissionLocalizationResult {
 }
 
 export interface DataCoreScrapeMissionBrokerResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMissionContractIntelResult {
   rows: number;
   csvFile: string;
 }
@@ -250,6 +257,7 @@ export interface RunDatacoreScrapeOptions {
   extractFactions?: typeof extractDataCoreFactions;
   extractManufacturers?: typeof extractDataCoreManufacturers;
   extractMissionBrokers?: typeof extractDataCoreMissionBrokers;
+  buildMissionContractIntel?: typeof buildDataCoreMissionContractIntel;
   extractMissionLocalization?: typeof extractDataCoreMissionLocalization;
   extractLocationLabels?: typeof extractDataCoreLocationLabels;
   extractMiningElements?: typeof extractDataCoreMiningElements;
@@ -291,6 +299,7 @@ export interface RunDatacoreScrapeOptions {
   onManufacturersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMissionBrokersExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMissionContractIntelExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMissionLocalizationExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningElementsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningCompositionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -330,6 +339,7 @@ export interface RunDatacoreScrapeResult {
   manufacturerResult: DataCoreScrapeManufacturerResult;
   locationLabelResult: DataCoreScrapeLocationLabelResult;
   missionBrokerResult: DataCoreScrapeMissionBrokerResult;
+  missionContractIntelResult: DataCoreScrapeMissionContractIntelResult;
   missionLocalizationResult: DataCoreScrapeMissionLocalizationResult;
   miningElementResult: DataCoreScrapeMiningElementResult;
   miningCompositionResult: DataCoreScrapeMiningCompositionResult;
@@ -369,6 +379,7 @@ const FACTIONS_CSV_FILE = 'factions.datacore.csv';
 const MANUFACTURERS_CSV_FILE = 'manufacturers.datacore.csv';
 const LOCATION_LABELS_CSV_FILE = 'location-labels.datacore.csv';
 const MISSION_BROKERS_CSV_FILE = 'mission-brokers.datacore.csv';
+const MISSION_CONTRACT_INTEL_CSV_FILE = 'mission-contract-intel.datacore.csv';
 const MISSION_LOCALIZATION_CSV_FILE = 'mission-localization.datacore.csv';
 const MINING_ELEMENTS_CSV_FILE = 'mining-elements.datacore.csv';
 const MINING_COMPOSITIONS_CSV_FILE = 'mining-compositions.datacore.csv';
@@ -653,6 +664,19 @@ const MISSION_BROKER_HEADERS = [
   'Has Personal Cooldown',
   'Personal Cooldown Time',
   'Personal Cooldown Time Variation',
+  'Record GUID',
+  'Record Path',
+];
+const MISSION_CONTRACT_INTEL_HEADERS = [
+  'Mission Class',
+  'Description Key',
+  'Contract Intel',
+  'Cooldown',
+  'Reward',
+  'Reward Currency',
+  'Time Limit',
+  'Efficiency',
+  'Mission Difficulty',
   'Record GUID',
   'Record Path',
 ];
@@ -1009,6 +1033,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
   const extractManufacturers = options.extractManufacturers ?? extractDataCoreManufacturers;
   const extractMissionBrokers = options.extractMissionBrokers ?? extractDataCoreMissionBrokers;
+  const buildMissionContractIntel = options.buildMissionContractIntel ?? buildDataCoreMissionContractIntel;
   const extractMissionLocalization = options.extractMissionLocalization ?? extractDataCoreMissionLocalization;
   const extractLocationLabels = options.extractLocationLabels ?? extractDataCoreLocationLabels;
   const extractMiningElements = options.extractMiningElements ?? extractDataCoreMiningElements;
@@ -1121,6 +1146,17 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     dryRun: options.dryRun,
   });
   options.onMissionBrokersExtracted?.(missionBrokerResult.rows, missionBrokerResult.csvFile, Boolean(options.dryRun));
+
+  const missionContractIntelRows = buildMissionContractIntel(missionBrokerRows);
+  const missionContractIntelResult = await writeMissionContractIntelCsv(missionContractIntelRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMissionContractIntelExtracted?.(
+    missionContractIntelResult.rows,
+    missionContractIntelResult.csvFile,
+    Boolean(options.dryRun),
+  );
 
   const missionLocalizationRows = extractMissionLocalization(recordGraph);
   const missionLocalizationResult = await writeMissionLocalizationCsv(missionLocalizationRows, {
@@ -1405,6 +1441,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       [manufacturerResult.csvFile, manufacturerResult],
       [locationLabelResult.csvFile, locationLabelResult],
       [missionBrokerResult.csvFile, missionBrokerResult],
+      [missionContractIntelResult.csvFile, missionContractIntelResult],
       [missionLocalizationResult.csvFile, missionLocalizationResult],
       [miningLocationLabelResult.csvFile, miningLocationLabelResult],
     ]),
@@ -1432,6 +1469,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     manufacturerResult,
     locationLabelResult,
     missionBrokerResult,
+    missionContractIntelResult,
     missionLocalizationResult,
     miningElementResult,
     miningCompositionResult,
@@ -2014,6 +2052,34 @@ async function writeMissionBrokerCsv(
   }
 
   return { rows: rows.length, csvFile: MISSION_BROKERS_CSV_FILE };
+}
+
+async function writeMissionContractIntelCsv(
+  rows: DataCoreMissionContractIntelRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMissionContractIntelResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.missionClass,
+      row.descriptionKey,
+      row.contractIntel,
+      row.cooldown,
+      row.reward,
+      row.rewardCurrency,
+      row.timeLimit,
+      row.efficiency,
+      row.missionDifficulty,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MISSION_CONTRACT_INTEL_CSV_FILE),
+      stringify([MISSION_CONTRACT_INTEL_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MISSION_CONTRACT_INTEL_CSV_FILE };
 }
 
 async function writeMiningElementCsv(

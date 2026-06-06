@@ -142,6 +142,20 @@ export interface DataCoreMissionBrokerRecord {
   recordPath: string;
 }
 
+export interface DataCoreMissionContractIntelRecord {
+  missionClass: string;
+  descriptionKey: string;
+  contractIntel: string;
+  cooldown: string;
+  reward: string;
+  rewardCurrency: string;
+  timeLimit: string;
+  efficiency: string;
+  missionDifficulty: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreContractGeneratorRecord {
   generatorClass: string;
   handlerType: string;

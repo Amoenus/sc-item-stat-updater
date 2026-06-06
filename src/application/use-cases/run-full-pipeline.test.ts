@@ -154,6 +154,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'mission-brokers.datacore.csv',
         },
+        missionContractIntelResult: {
+          rows: 0,
+          csvFile: 'mission-contract-intel.datacore.csv',
+        },
         missionLocalizationResult: {
           rows: 0,
           csvFile: 'mission-localization.datacore.csv',
