@@ -1,14 +1,12 @@
+import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { getLogger } from '../../infrastructure/logger';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { buildLookupFromCsvFiles, listSpviewerCsvFiles } from './lookup-utils';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
   normalizeSpaces,
   parseNameLine,
-  resolveBaseFromCurrentValue,
   toVariantFamilyKey,
 } from './title-tag-utils';
 import { buildScannedUpdateResult } from './update-result';
@@ -31,31 +29,6 @@ function getMiningPrefix(cls: string, size: string, grade: string): string | nul
   }
   const abbr = MINING_CLASS_ABBREV[cls as keyof typeof MINING_CLASS_ABBREV] || cls.slice(0, 3);
   return `${abbr}/${size}/${grade}`;
-}
-
-async function buildMiningTitleLookup(spviewerDir: string) {
-  const files = await listSpviewerCsvFiles(spviewerDir);
-  const nameToPrefix = await buildLookupFromCsvFiles<{ name: string; prefix: string }>(
-    spviewerDir,
-    files,
-    async (filePath: string) => {
-      const rows = await readCsvFile(filePath);
-      const entries: Array<readonly [string, { name: string; prefix: string }]> = [];
-      for (const row of rows) {
-        const name = normalizeSpaces(row.Name || '');
-        if (!name) continue;
-        const cls = (row.Class || '').trim();
-        const size = (row.Size || '').trim();
-        const grade = (row.Grade || '').trim();
-        const prefix = getMiningPrefix(cls, size, grade);
-        if (!prefix) continue;
-        entries.push([name.toLowerCase(), { name, prefix }]);
-      }
-      return entries;
-    },
-  );
-
-  return { files, nameToPrefix };
 }
 
 async function buildMiningTitleLookupFromDataCore(datacoreDir: string) {
@@ -83,8 +56,7 @@ function normalizeLocalizationKey(value: unknown): string {
 
 function applyMiningTitlePrefixes(
   lines: string[],
-  nameToPrefix: Map<string, { name: string; prefix: string }>,
-  keyToPrefix = new Map<string, { prefix: string }>(),
+  keyToPrefix: Map<string, { prefix: string }>,
 ) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
@@ -101,8 +73,7 @@ function applyMiningTitlePrefixes(
     }
 
     scannedCount++;
-    const base =
-      keyToPrefix.get(normalizeLocalizationKey(parsed.key)) ?? resolveBaseFromCurrentValue(parsed.value, nameToPrefix);
+    const base = keyToPrefix.get(normalizeLocalizationKey(parsed.key));
 
     if (!base) {
       continue;
@@ -129,41 +100,29 @@ function applyMiningTitlePrefixes(
 /**
  * @param {object} params
  * @param {string} params.iniPath
- * @param {string} [params.spviewerDir]
- * @param {string} [params.datacoreDir]
+ * @param {string} params.datacoreDir
  * @param {boolean} params.dryRun
  */
 export async function runComponentTitleUpdate({
   iniPath,
-  spviewerDir,
   datacoreDir,
   dryRun,
 }: {
   iniPath: string;
-  spviewerDir?: string;
-  datacoreDir?: string;
+  datacoreDir: string;
   dryRun: boolean;
 }) {
   const start = performance.now();
-  const spviewerLookup = spviewerDir
-    ? await buildMiningTitleLookup(spviewerDir)
-    : { files: [], nameToPrefix: new Map<string, { name: string; prefix: string }>() };
-  const keyToPrefix = datacoreDir
-    ? await buildMiningTitleLookupFromDataCore(datacoreDir)
-    : new Map<string, { prefix: string }>();
+  const keyToPrefix = await buildMiningTitleLookupFromDataCore(datacoreDir);
 
   logger.info('Loaded mining title lookup data', {
-    csvFileCount: spviewerLookup.files.length + (datacoreDir ? 1 : 0),
-    componentCount: spviewerLookup.nameToPrefix.size + keyToPrefix.size,
+    csvFileCount: 1,
+    componentCount: keyToPrefix.size,
   });
 
   const iniData = await readIniFile(iniPath);
   const { lines } = iniData;
-  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMiningTitlePrefixes(
-    lines,
-    spviewerLookup.nameToPrefix,
-    keyToPrefix,
-  );
+  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyMiningTitlePrefixes(lines, keyToPrefix);
 
   await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 

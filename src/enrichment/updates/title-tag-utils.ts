@@ -143,21 +143,6 @@ function stripLeadingTitleTag(value: unknown): string {
   return clean;
 }
 
-export function resolveBaseFromCurrentValue<V>(currentValue: unknown, lookupMap: Map<string, V>): V | null {
-  const normalized = normalizeSpaces(currentValue);
-  if (!normalized) {
-    return null;
-  }
-
-  const exact = lookupMap.get(normalized.toLowerCase());
-  if (exact) {
-    return exact;
-  }
-
-  const clean = normalizeSpaces(stripLeadingTitleTag(currentValue));
-  return lookupMap.get(clean.toLowerCase()) ?? null;
-}
-
 export function applyTagToFamily(
   lines: string[],
   familyIndex: Map<string, number[]>,

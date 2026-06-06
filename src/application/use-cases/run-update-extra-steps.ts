@@ -22,7 +22,6 @@ export interface RunUpdateExtraStepsOptions {
   missionCsvDir: string;
   dryRun?: boolean;
   includeMiningJournal?: boolean;
-  spviewerVersionDir?: string;
   datacoreVersionDir?: string;
   runners?: Partial<Record<UpdateExtraStepLabel, UpdateExtraStepRunner>>;
   onStepStart?: (label: UpdateExtraStepLabel, index: number) => void;
@@ -50,9 +49,7 @@ export function getUpdateExtraStepLabels(options: { includeMiningJournal?: boole
   return labels;
 }
 
-export async function runUpdateExtraSteps(
-  options: RunUpdateExtraStepsOptions,
-): Promise<RunUpdateExtraStepsResult> {
+export async function runUpdateExtraSteps(options: RunUpdateExtraStepsOptions): Promise<RunUpdateExtraStepsResult> {
   const labels = getUpdateExtraStepLabels({ includeMiningJournal: options.includeMiningJournal });
   const runners = { ...defaultRunners(options), ...options.runners };
   const results: BatchUpdateResult[] = [];
@@ -81,29 +78,25 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
   const dryRun = options.dryRun ?? false;
   return {
     'Component Titles': async () => {
-      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
+      if (!options.datacoreVersionDir) return null;
       return runComponentTitleUpdate({
         iniPath: options.iniPath,
-        spviewerDir: options.spviewerVersionDir,
         datacoreDir: options.datacoreVersionDir,
         dryRun,
       });
     },
     'FPS title tags': async () => {
-      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
+      if (!options.datacoreVersionDir) return null;
       return runFpsTitleTagUpdate({
         iniPath: options.iniPath,
-        spviewerDir: options.spviewerVersionDir,
         datacoreDir: options.datacoreVersionDir,
         dryRun,
       });
     },
     'Missile title tags': async () => {
-      if (!options.spviewerVersionDir && !options.datacoreVersionDir) return null;
+      if (!options.datacoreVersionDir) return null;
       return runMissileTitleTagUpdate({
         iniPath: options.iniPath,
-        spviewerDir: options.spviewerVersionDir,
-        repoRoot: options.repoRoot,
         datacoreDir: options.datacoreVersionDir,
         dryRun,
       });

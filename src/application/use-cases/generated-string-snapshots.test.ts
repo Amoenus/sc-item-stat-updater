@@ -3,11 +3,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import missionDescriptionsConfig from '../../items/missions/scmdb-descriptions';
-import missionTitlesConfig from '../../items/missions/scmdb-titles';
-import { buildJournalValue } from '../../items/missions/mining-journal';
 import { runAdagioLocationTagUpdate } from '../../enrichment/updates/adagio-location-tags';
 import { runComponentTitleUpdate } from '../../enrichment/updates/component-titles';
+import { buildJournalValue } from '../../items/missions/mining-journal';
+import missionDescriptionsConfig from '../../items/missions/scmdb-descriptions';
+import missionTitlesConfig from '../../items/missions/scmdb-titles';
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), 'generated-string-snapshot-'));
@@ -68,12 +68,15 @@ test('snapshot: mining journal keeps insight and rarity sections in stable order
 test('snapshot: component title tags apply stable mining prefixes to variant families', async () => {
   const tempDir = await makeTempDir();
   try {
-    const spviewerDir = path.join(tempDir, 'spviewer');
+    const datacoreDir = path.join(tempDir, 'datacore');
     const iniPath = path.join(tempDir, 'global.ini');
-    await fs.mkdir(spviewerDir, { recursive: true });
+    await fs.mkdir(datacoreDir, { recursive: true });
     await fs.writeFile(
-      path.join(spviewerDir, 'miningmodifier.spviewer.csv'),
-      ['Name,Class,Size,Grade', 'Helix Mining Head,Industrial,1,A'].join('\n'),
+      path.join(datacoreDir, 'miningmodifier.datacore.csv'),
+      [
+        'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class',
+        'helix_mining_head,item_name_mining_head_helix,item_desc_mining_head_helix,GMNI,1,A,Industrial',
+      ].join('\n'),
       'utf8',
     );
     await fs.writeFile(
@@ -84,13 +87,14 @@ test('snapshot: component title tags apply stable mining prefixes to variant fam
       'utf8',
     );
 
-    await runComponentTitleUpdate({ iniPath, spviewerDir, dryRun: false });
+    await runComponentTitleUpdate({ iniPath, datacoreDir, dryRun: false });
 
     assert.equal(
       stripBom(await fs.readFile(iniPath, 'utf8')),
-      ['item_name_mining_head_helix=Ind/1/A Helix Mining Head', 'item_name_mining_head_helix_red=Ind/1/A Helix Mining Head Red'].join(
-        '\n',
-      ),
+      [
+        'item_name_mining_head_helix=Ind/1/A Helix Mining Head',
+        'item_name_mining_head_helix_red=Ind/1/A Helix Mining Head Red',
+      ].join('\n'),
     );
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

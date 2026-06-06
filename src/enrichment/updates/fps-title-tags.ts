@@ -1,22 +1,19 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser';
+﻿import { getLogger } from '../../infrastructure/logger';
+import { readCsvFile } from '../../io/local/csv-parser';
+import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { resolveChildPath, resolveSpviewerCsvPath } from '../../io/local/path-conventions';
-import { getLogger } from '../../infrastructure/logger';
 import { buildLookupMapFromRows } from './lookup-utils';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
   normalizeSpaces,
   parseNameLine,
-  resolveBaseFromCurrentValue,
   toVariantFamilyKey,
 } from './title-tag-utils';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('fps-title-tags-update');
 
-const PERSONAL_CSV = 'weaponpersonal.spviewer.csv';
-const ATTACHMENT_CSV = 'weaponattachment.spviewer.csv';
 const DATACORE_PERSONAL_CSV = 'weaponpersonal.datacore.csv';
 const DATACORE_ATTACHMENT_CSV = 'weaponattachment.datacore.csv';
 
@@ -119,28 +116,6 @@ function buildAttachmentTag(row: Record<string, string>): string {
   return [`S${size || '?'}`, slotCode].join('|');
 }
 
-async function buildFpsTitleLookup(spviewerDir: string) {
-  const personalPath = resolveSpviewerCsvPath(spviewerDir, PERSONAL_CSV);
-  const attachmentPath = resolveSpviewerCsvPath(spviewerDir, ATTACHMENT_CSV);
-  const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
-
-  const nameToTag = buildLookupMapFromRows(personalRows, (row) => {
-    const name = normalizeSpaces(row.Name || '');
-    if (!name) return null;
-    return [name.toLowerCase(), { name, tag: buildPersonalTag(row) }];
-  });
-
-  for (const [key, value] of buildLookupMapFromRows(attachmentRows, (row) => {
-    const name = normalizeSpaces(row.Name || '');
-    if (!name) return null;
-    return [name.toLowerCase(), { name, tag: buildAttachmentTag(row) }];
-  })) {
-    nameToTag.set(key, value);
-  }
-
-  return nameToTag;
-}
-
 async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
   const personalPath = resolveChildPath(datacoreDir, DATACORE_PERSONAL_CSV, 'DataCore FPS personal CSV filename');
   const attachmentPath = resolveChildPath(datacoreDir, DATACORE_ATTACHMENT_CSV, 'DataCore FPS attachment CSV filename');
@@ -173,8 +148,7 @@ function isFpsNameKey(keyLower: string): boolean {
 
 function applyFpsTitleTags(
   lines: string[],
-  nameToTag: Map<string, { name: string; tag: string }>,
-  keyToTag = new Map<string, { tag: string }>(),
+  keyToTag: Map<string, { tag: string }>,
 ) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
@@ -196,7 +170,7 @@ function applyFpsTitleTags(
       continue;
     }
 
-    const base = keyToTag.get(normalizeLocalizationKey(parsed.key)) ?? resolveBaseFromCurrentValue(parsed.value, nameToTag);
+    const base = keyToTag.get(normalizeLocalizationKey(parsed.key));
     if (!base) {
       continue;
     }
@@ -227,32 +201,28 @@ function applyFpsTitleTags(
 /**
  * @param {object} params
  * @param {string} params.iniPath
- * @param {string} [params.spviewerDir]
- * @param {string} [params.datacoreDir]
+ * @param {string} params.datacoreDir
  * @param {boolean} params.dryRun
  */
 export async function runFpsTitleTagUpdate({
   iniPath,
-  spviewerDir,
   datacoreDir,
   dryRun,
 }: {
   iniPath: string;
-  spviewerDir?: string;
-  datacoreDir?: string;
+  datacoreDir: string;
   dryRun: boolean;
 }) {
   const start = performance.now();
-  const nameToTag = spviewerDir ? await buildFpsTitleLookup(spviewerDir) : new Map<string, { name: string; tag: string }>();
-  const keyToTag = datacoreDir ? await buildFpsTitleLookupFromDataCore(datacoreDir) : new Map<string, { tag: string }>();
+  const keyToTag = await buildFpsTitleLookupFromDataCore(datacoreDir);
 
   logger.info('Loaded FPS title lookup data', {
-    titleCount: nameToTag.size + keyToTag.size,
+    titleCount: keyToTag.size,
   });
 
   const iniData = await readIniFile(iniPath);
   const { lines } = iniData;
-  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyFpsTitleTags(lines, nameToTag, keyToTag);
+  const { updatedLines, scannedCount, matchedCount, updatedCount } = applyFpsTitleTags(lines, keyToTag);
 
   await writeIniFileIfChanged(iniPath, updatedLines, { dryRun, updatedCount, skipBackup: true });
 
