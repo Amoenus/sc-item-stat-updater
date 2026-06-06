@@ -168,7 +168,7 @@ export async function buildCategoryListing(): Promise<CategoryListing> {
     mixedSources: [
       {
         command: 'update-all',
-        description: 'DataCore item categories plus SCMDB mission categories',
+        description: 'DataCore item categories plus remaining SCMDB-derived mission bridges',
         families: ['DataCore', 'SCMDB'],
       },
     ],
@@ -239,8 +239,14 @@ function formatSource(entry: CategoryListingEntry): string {
   return parts.length > 0 ? parts.join('; ') : 'none declared';
 }
 
-function formatSection(title: CategoryListingFamily, entries: CategoryListingEntry[]): string[] {
-  const lines = [`${title} categories:`];
+function sectionTitle(family: CategoryListingFamily): string {
+  if (family === 'SPViewer') return 'SPViewer diagnostic categories:';
+  if (family === 'SCMDB') return 'SCMDB derived bridge categories:';
+  return 'DataCore active categories:';
+}
+
+function formatSection(family: CategoryListingFamily, entries: CategoryListingEntry[]): string[] {
+  const lines = [sectionTitle(family)];
   for (const entry of entries) {
     const batchNote = entry.skippedByBatch ? ' (extra step)' : '';
     lines.push(
@@ -263,7 +269,7 @@ function formatRawFactSection(entries: RawFactListingEntry[]): string[] {
 }
 
 export function formatCategoryListing(listing: CategoryListing): string {
-  const lines = ['Available update categories', ''];
+  const lines = ['Category inventory', ''];
   const families: CategoryListingFamily[] = ['SPViewer', 'DataCore', 'SCMDB'];
 
   for (const family of families) {

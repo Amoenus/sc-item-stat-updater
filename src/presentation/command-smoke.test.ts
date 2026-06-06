@@ -77,11 +77,11 @@ test('update-item list-categories reports provider and source metadata', async (
   const result = await runCommand(['bin/update-item.ts', '--list-categories']);
 
   assert.equal(result.exitCode, 0, result.stderr);
-  assert.match(result.stdout, /SPViewer categories:/);
+  assert.match(result.stdout, /SPViewer diagnostic categories:/);
   assert.match(result.stdout, /sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/);
-  assert.match(result.stdout, /DataCore categories:/);
+  assert.match(result.stdout, /DataCore active categories:/);
   assert.match(result.stdout, /dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/);
-  assert.match(result.stdout, /SCMDB categories:/);
+  assert.match(result.stdout, /SCMDB derived bridge categories:/);
   assert.match(result.stdout, /mission-scmdb-descriptions \| SCMDB mission descriptions/);
   assert.match(result.stdout, /DataCore raw fact datasets:/);
   assert.match(result.stdout, /datacore-vehicles \| Vehicles \| files: vehicles\.datacore\.csv/);

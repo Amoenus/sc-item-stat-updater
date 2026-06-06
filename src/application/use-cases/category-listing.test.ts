@@ -65,7 +65,7 @@ test('category listing includes representative provider families and source meta
   assert.deepEqual(listing.mixedSources, [
     {
       command: 'update-all',
-      description: 'DataCore item categories plus SCMDB mission categories',
+      description: 'DataCore item categories plus remaining SCMDB-derived mission bridges',
       families: ['DataCore', 'SCMDB'],
     },
   ]);
@@ -74,14 +74,17 @@ test('category listing includes representative provider families and source meta
 test('formatted category listing distinguishes provider families and mixed-source modes', async () => {
   const output = formatCategoryListing(await buildCategoryListing());
 
-  assert.match(output, /SPViewer categories:\n(?:.*\n)*? {2}sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/);
   assert.match(
     output,
-    /DataCore categories:\n(?:.*\n)*? {2}dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/,
+    /SPViewer diagnostic categories:\n(?:.*\n)*? {2}sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/,
   );
   assert.match(
     output,
-    /SCMDB categories:\n(?:.*\n)*? {2}mission-scmdb-descriptions \| SCMDB mission descriptions \| files: missions\/scmdb-missions\.csv/,
+    /DataCore active categories:\n(?:.*\n)*? {2}dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/,
+  );
+  assert.match(
+    output,
+    /SCMDB derived bridge categories:\n(?:.*\n)*? {2}mission-scmdb-descriptions \| SCMDB mission descriptions \| files: missions\/scmdb-missions\.csv/,
   );
   assert.match(
     output,
