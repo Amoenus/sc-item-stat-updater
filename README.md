@@ -46,7 +46,7 @@ npm install puppeteer
 npm run update
 ```
 
-Runs all active categories using DataCore item stats plus SCMDB missions. It automatically detects the latest versioned directories for LIVE data.
+Runs all active categories using DataCore item stats plus the remaining SCMDB-derived mission bridges. It automatically detects the latest versioned directories for LIVE data.
 
 Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
@@ -132,7 +132,8 @@ That CSV includes `Note`, `TitleNote`, and `RewardList` columns so blueprint cha
 After scraping, run:
 
 ```sh
-node --import tsx/esm bin/update-item.ts -c ./csv/scmdb/<version> mission-scmdb
+node --import tsx/esm bin/update-item.ts -c ./csv/scmdb/<version> mission-scmdb-descriptions
+node --import tsx/esm bin/update-item.ts -c ./csv/scmdb/<version> mission-scmdb-titles
 ```
 
 To list available SCMDB versions:
