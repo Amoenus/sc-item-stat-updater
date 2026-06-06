@@ -209,6 +209,44 @@ test('source freshness diagnostics warn for missing provider companion source fi
   }
 });
 
+test('source freshness diagnostics ignore missing optional provider companion source files', async () => {
+  const root = await makeTempDir();
+  try {
+    const scmdbDir = path.join(root, 'csv', 'scmdb', '4.8.1-live.11875683');
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await fs.mkdir(scmdbDir, { recursive: true });
+    await fs.mkdir(itemVersionDir, { recursive: true });
+    await writeDataCoreRawFactFiles(itemVersionDir);
+    await fs.writeFile(path.join(itemVersionDir, 'mining-elements.datacore.csv'), 'header\nvalue\n', 'utf8');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(
+      makePrepared(root, [
+        {
+          config: {
+            label: 'Mining element stats',
+            csvFile: 'mining-elements.csv',
+            sourceFiles: [
+              { file: 'mining-elements.csv', sourceDir: 'csvDir', optional: true },
+              { file: 'mining-elements.datacore.csv', sourceDir: 'datacore' },
+            ],
+            loadSourceData: async () => [],
+            requiredColumns: [],
+            descKeyMatch: () => false,
+          },
+          csvDir: scmdbDir,
+          sourceDirs: { datacore: itemVersionDir, scmdb: scmdbDir },
+          source: { provider: 'scmdb', channel: 'LIVE', category: 'mission-mining-elements' },
+        },
+      ]),
+      { provider: 'datacore' },
+    );
+
+    assert.equal(diagnostics.warnings.length, 0);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test('source freshness diagnostics warn when DataCore item rows have no raw identity keys', async () => {
   const root = await makeTempDir();
   try {

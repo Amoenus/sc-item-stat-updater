@@ -62,9 +62,11 @@ function sourceFiles(config: ItemConfig): string[] {
     config.lookupCsvFile,
   ].filter((file): file is string => Boolean(file));
   const companionFiles = (config.sourceFiles ?? []).map((sourceFile) =>
-    sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
-      ? `${sourceFile.sourceDir}:${sourceFile.file}`
-      : sourceFile.file,
+    `${sourceFile.optional ? 'optional:' : ''}${
+      sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
+        ? `${sourceFile.sourceDir}:${sourceFile.file}`
+        : sourceFile.file
+    }`,
   );
   return [...primaryFiles, ...companionFiles];
 }

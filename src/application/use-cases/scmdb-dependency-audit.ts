@@ -40,7 +40,7 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-mining-elements': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'DataCore now supplies core mining behavior facts, material labels, asteroid/surface/ground/FPS scan signatures where present, rarity from mineable rock variants, and quality bands from quality quantization records. SCMDB cannot create active mining-element target rows and no longer backfills mining behavior, rarity, density, scan signatures, or quality bands. SCMDB still contributes best-refinery bonus joins; the current DataCore refiningprocess records define only global process speed/quality labels, not station/material bonus profiles.',
+      'DataCore now supplies core mining behavior facts, material labels, asteroid/surface/ground/FPS scan signatures where present, rarity from mineable rock variants, and quality bands from quality quantization records. SCMDB cannot create active mining-element target rows and no longer backfills mining behavior, rarity, density, scan signatures, or quality bands. Optional SCMDB rows can still contribute derived best-refinery bonus joins; the current DataCore refiningprocess records define only global process speed/quality labels, not station/material bonus profiles.',
     migrationSlice:
       'Extend DataCore mining extraction to refinery joins if first-party fields are found. Density is intentionally omitted until a DataCore source is proven; avoid carryable Mass/SCU because it does not match SCMDB density values, and do not infer SCMDB refinery profile IDs unless a station/material bonus source is proven.',
   },
@@ -94,7 +94,7 @@ function sourceFilesFromConfig(config: {
   csvFile?: string;
   jsonFile?: string;
   lookupCsvFile?: string;
-  sourceFiles?: Array<{ file: string; sourceDir?: string }>;
+  sourceFiles?: Array<{ file: string; sourceDir?: string; optional?: boolean }>;
   resolveJsonFile?: unknown;
   loadSourceData?: unknown;
 }): string[] {
@@ -105,10 +105,13 @@ function sourceFilesFromConfig(config: {
     config.lookupCsvFile,
   ].filter((file): file is string => Boolean(file));
   const companionFiles =
-    config.sourceFiles?.map((sourceFile) =>
-      sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
-        ? `${sourceFile.sourceDir}:${sourceFile.file}`
-        : sourceFile.file,
+    config.sourceFiles?.map(
+      (sourceFile) =>
+        `${sourceFile.optional ? 'optional:' : ''}${
+          sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
+            ? `${sourceFile.sourceDir}:${sourceFile.file}`
+            : sourceFile.file
+        }`,
     ) ?? [];
   const dynamicJson = config.resolveJsonFile ? ['dynamic SCMDB JSON: merged-*.json'] : [];
   return [...staticFiles, ...dynamicJson, ...companionFiles];

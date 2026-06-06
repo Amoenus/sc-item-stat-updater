@@ -169,9 +169,7 @@ function formatQualityBands(value: string | undefined): string {
 }
 
 async function loadMiningElementSourceData(context: ItemSourceDataContext): Promise<Record<string, string>[]> {
-  const scmdbRows = await readCsvFile(
-    resolveChildPath(context.csvDir, 'mining-elements.csv', 'SCMDB mining elements CSV filename'),
-  );
+  const scmdbRows = await loadOptionalScmdbMiningElementRows(context.csvDir);
   const datacoreRows = await loadDatacoreMiningElementRows(context.sourceDirs?.datacore);
   const signatureRows = await loadDatacoreMiningRockSignatureRows(context.sourceDirs?.datacore);
   const qualityQuantizationRows = await loadDatacoreMiningQualityQuantizationRows(context.sourceDirs?.datacore);
@@ -188,6 +186,21 @@ async function loadMiningElementSourceData(context: ItemSourceDataContext): Prom
   });
 
   return buildMiningElementRowsFromSources(datacoreRows, scmdbRows, signatureRows, qualityQuantizationRows);
+}
+
+async function loadOptionalScmdbMiningElementRows(csvDir: string): Promise<Record<string, string>[]> {
+  try {
+    return await readCsvFile(resolveChildPath(csvDir, 'mining-elements.csv', 'SCMDB mining elements CSV filename'));
+  } catch (err) {
+    if (isFileNotFound(err)) {
+      logger.warn('Optional SCMDB mining elements CSV missing; best-refinery hints will be omitted', {
+        csvDir,
+        csvFile: 'mining-elements.csv',
+      });
+      return [];
+    }
+    throw err;
+  }
 }
 
 async function loadDatacoreMiningElementRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
@@ -343,7 +356,7 @@ function isFileNotFound(err: unknown): boolean {
 export default {
   csvFile: 'mining-elements.csv',
   sourceFiles: [
-    { file: 'mining-elements.csv', sourceDir: 'csvDir' },
+    { file: 'mining-elements.csv', sourceDir: 'csvDir', optional: true },
     { file: DATACORE_MINING_ELEMENTS_CSV, sourceDir: 'datacore' },
     { file: DATACORE_MINING_ROCK_SIGNATURES_CSV, sourceDir: 'datacore' },
     { file: DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV, sourceDir: 'datacore' },

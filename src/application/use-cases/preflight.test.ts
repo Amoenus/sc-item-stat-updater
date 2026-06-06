@@ -376,6 +376,33 @@ describe('preflightCheckConfigs', () => {
     }
   });
 
+  it('does not require optional declared source files', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    const datacoreDir = path.join(dir, 'datacore');
+    try {
+      await touch(path.join(datacoreDir, 'mining-elements.datacore.csv'));
+      const categories = [
+        {
+          config: makeConfig({
+            csvFile: 'mining-elements.csv',
+            sourceFiles: [
+              { file: 'mining-elements.csv', sourceDir: 'csvDir', optional: true },
+              { file: 'mining-elements.datacore.csv', sourceDir: 'datacore' },
+            ],
+            loadSourceData: async () => [],
+            label: 'Mining element stats',
+          }),
+          csvDir: dir,
+          sourceDirs: { datacore: datacoreDir },
+        },
+      ];
+
+      await assert.doesNotReject(preflightCheckConfigs(categories));
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('resolves successfully for an empty categories list', async () => {
     await assert.doesNotReject(preflightCheckConfigs([]));
   });

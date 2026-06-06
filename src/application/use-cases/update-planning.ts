@@ -314,7 +314,7 @@ function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']
 
 function resolveDeclaredSourceFiles(
   category: PreflightCategory,
-): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider }> {
+): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider; optional?: boolean }> {
   const usesDeclaredCustomSources = Boolean(category.config.loadSourceData && category.config.sourceFiles?.length);
   const staticFiles = [
     usesDeclaredCustomSources ? undefined : category.config.csvFile,
@@ -328,7 +328,7 @@ function resolveDeclaredSourceFiles(
     const sourceDir = sourceFile.sourceDir ?? 'csvDir';
     const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
     if (!baseDir) return [];
-    return [{ filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir) }];
+    return [{ filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir), optional: sourceFile.optional }];
   });
 
   return [...staticFiles, ...companionFiles];
@@ -452,12 +452,13 @@ export async function preflightCheckConfigs(
     categories.map(async (category) => {
       const sourceFiles = resolveDeclaredSourceFiles(category);
       const missingResults = await Promise.all(
-        sourceFiles.map(async ({ filename, baseDir, provider }) => {
+        sourceFiles.map(async ({ filename, baseDir, provider, optional }) => {
           const filePath = resolveChildPath(baseDir, filename, 'source file');
           try {
             await fs.access(filePath);
             return null;
           } catch {
+            if (optional) return null;
             const missing: MissingSourceFile = {
               key: `${provider ?? category.source?.provider ?? inferProvider(category.config, category.csvDir) ?? 'unknown'}:${filePath}`,
               message: formatMissingSource(category, filename, filePath, provider),

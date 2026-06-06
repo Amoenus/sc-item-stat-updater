@@ -45,12 +45,13 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.match(journalCategory?.reason ?? '', /DataCore journal use is limited to separately rendered insight summaries/);
 
   const miningElements = audit.entries.find((entry) => entry.slug === 'mission-mining-elements');
+  assert.equal(miningElements?.sourceFiles.includes('optional:mining-elements.csv'), true);
   assert.equal(miningElements?.sourceFiles.includes('datacore:mining-rock-signatures.datacore.csv'), true);
   assert.equal(miningElements?.sourceFiles.includes('datacore:mining-quality-quantizations.datacore.csv'), true);
   assert.match(miningElements?.reason ?? '', /rarity from mineable rock variants/);
   assert.match(miningElements?.reason ?? '', /SCMDB cannot create active mining-element target rows/);
   assert.match(miningElements?.reason ?? '', /no longer backfills mining behavior, rarity, density, scan signatures, or quality bands/);
-  assert.match(miningElements?.reason ?? '', /SCMDB still contributes best-refinery bonus joins/);
+  assert.match(miningElements?.reason ?? '', /Optional SCMDB rows can still contribute derived best-refinery bonus joins/);
   assert.match(miningElements?.reason ?? '', /refiningprocess records define only global process speed\/quality labels/);
   assert.match(miningElements?.migrationSlice ?? '', /Density is intentionally omitted until a DataCore source is proven/);
   assert.match(miningElements?.migrationSlice ?? '', /station\/material bonus source is proven/);

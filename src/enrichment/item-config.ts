@@ -39,6 +39,7 @@ export interface BaseItemConfig {
 export interface ItemSourceFileDeclaration {
   file: string;
   sourceDir?: keyof NonNullable<ItemSourceDataContext['sourceDirs']> | 'csvDir';
+  optional?: boolean;
 }
 
 export interface ItemSourceDataContext {

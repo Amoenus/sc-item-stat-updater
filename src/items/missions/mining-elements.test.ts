@@ -283,4 +283,48 @@ describe('mining element updater', () => {
     assert.equal(agricium?.['Quality Bands'], '34.6% / 58.8% / 100.0%');
     assert.equal(rows.find((row) => row['Element Name'] === 'Titanium (Ore)'), undefined);
   });
+
+  it('loads DataCore mining elements when optional SCMDB bridge rows are missing', async () => {
+    assert.ok(config.loadSourceData, 'loadSourceData must be defined on the mining elements config');
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'mining-element-sources-'));
+    const scmdbDir = path.join(dir, 'scmdb');
+    const datacoreDir = path.join(dir, 'datacore');
+    await fs.mkdir(scmdbDir, { recursive: true });
+    await fs.mkdir(datacoreDir, { recursive: true });
+    await fs.writeFile(
+      path.join(datacoreDir, 'mining-elements.datacore.csv'),
+      [
+        'Element Class,Element Name,Material Name,Inferred Description Key,Resource Type GUID,Instability,Resistance,Optimal Window Midpoint,Optimal Window Randomness,Optimal Window Thinness,Explosion Multiplier,Cluster Factor',
+        'Agricium_Ore,Agricium (Ore),Agricium,items_commodities_agricium_ore_desc,guid,350,0.5,0.5,0.15,2,4,0.2',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
+      path.join(datacoreDir, 'mining-rock-signatures.datacore.csv'),
+      [
+        'Entity Class,Variant Family,Rarity,Element Token,Scan Signature,Record GUID,Record Path',
+        'MineableRock_AsteroidUncommon_Agricium,asteroid,uncommon,Agricium,3885,guid,path.xml',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
+      path.join(datacoreDir, 'mining-quality-quantizations.datacore.csv'),
+      [
+        'Quantization Class,Element Token,Quality Bands,Band Ranges,Record GUID,Record Path',
+        'Quantization_Agricium,Agricium,346 / 588 / 1000,0-399:346 / 400-599:588 / 999-1000:1000,guid,path.xml',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const rows = await config.loadSourceData({
+      csvDir: scmdbDir,
+      sourceDirs: { datacore: datacoreDir, scmdb: scmdbDir },
+    });
+    const agricium = rows.find((row) => row['Element Name'] === 'Agricium (Ore)');
+
+    assert.equal(agricium?.Source, 'DataCore');
+    assert.equal(agricium?.['Best Refinery'], '');
+    assert.equal(agricium?.['Scan Signature'], '3885');
+    assert.equal(agricium?.['Quality Bands'], '34.6% / 58.8% / 100.0%');
+  });
 });
