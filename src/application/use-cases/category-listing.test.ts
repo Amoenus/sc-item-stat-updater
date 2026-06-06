@@ -146,7 +146,10 @@ test('formatted provider coverage matrix includes provider statuses and mixed-so
     output,
     /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
-  assert.match(output, /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/);
+  assert.match(
+    output,
+    /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/,
+  );
   assert.match(output, /legacy comparison = audit-only comparison source/);
   assert.match(output, /\| update-all \| DataCore \+ SCMDB \|/);
   assert.doesNotMatch(output, /update-all --provider spviewer/);
