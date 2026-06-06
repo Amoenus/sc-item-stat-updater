@@ -1,5 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../../items/registry';
+import { inferCategorySourceProvider } from './prepare-update-categories';
 
 export type CategoryListingFamily = 'SPViewer' | 'DataCore' | 'SCMDB';
 
@@ -54,28 +55,27 @@ export interface ProviderCoverageMatrix {
   mixedSources: MixedSourceListingEntry[];
 }
 
-function sourceFiles(config: ItemConfig): string[] {
+function sourceFiles(config: ItemConfig, csvDirProvider?: CategoryListingFamily): string[] {
   const usesDeclaredCustomSources = Boolean(config.loadSourceData && config.sourceFiles?.length);
   const primaryFiles = [
     usesDeclaredCustomSources ? undefined : config.csvFile,
     config.jsonFile,
     config.lookupCsvFile,
   ].filter((file): file is string => Boolean(file));
-  const companionFiles = (config.sourceFiles ?? []).map((sourceFile) =>
-    `${sourceFile.optional ? 'optional:' : ''}${
-      sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
-        ? `${sourceFile.sourceDir}:${sourceFile.file}`
-        : sourceFile.file
-    }`,
-  );
+  const companionFiles = (config.sourceFiles ?? []).map((sourceFile) => {
+    const sourceDir = sourceFile.sourceDir ?? 'csvDir';
+    const provider = sourceDir === 'csvDir' ? csvDirProvider?.toLowerCase() : sourceDir;
+    const providerPrefix = provider ? `${provider}:` : '';
+    return `${sourceFile.optional ? 'optional:' : ''}${providerPrefix}${sourceFile.file}`;
+  });
   return [...primaryFiles, ...companionFiles];
 }
 
-function sourceHint(config: ItemConfig): string | undefined {
+function sourceHint(config: ItemConfig, csvDirProvider?: CategoryListingFamily): string | undefined {
   if (config.resolveJsonFile) {
     return 'dynamic JSON source resolved from the selected source directory';
   }
-  if (sourceFiles(config).length === 0) {
+  if (sourceFiles(config, csvDirProvider).length === 0) {
     return 'source file is resolved by category logic';
   }
   return undefined;
@@ -85,6 +85,7 @@ function toEntries(
   configs: Map<string, ItemConfig>,
   family: CategoryListingFamily,
   sourceRoot: string,
+  csvDirProvider?: CategoryListingFamily,
 ): CategoryListingEntry[] {
   return [...configs.entries()]
     .map(([slug, config]) => ({
@@ -93,8 +94,8 @@ function toEntries(
       family,
       sourceRoot,
       channelExpectation: `${sourceRoot}/<latest LIVE or PTU version>`,
-      sourceFiles: sourceFiles(config),
-      sourceHint: sourceHint(config),
+      sourceFiles: sourceFiles(config, csvDirProvider),
+      sourceHint: sourceHint(config, csvDirProvider),
       skippedByBatch: config.skip === true,
     }))
     .sort((a, b) => a.slug.localeCompare(b.slug));
@@ -157,12 +158,20 @@ export async function buildCategoryListing(): Promise<CategoryListing> {
     loadDatacoreConfigs(),
     loadMissionConfigs(),
   ]);
+  const missionEntries = [...missions.entries()];
+  const datacoreBackedMissions = new Map(
+    missionEntries.filter(([, config]) => inferCategorySourceProvider(config, 'scmdb') === 'datacore'),
+  );
+  const scmdbBackedMissions = new Map(
+    missionEntries.filter(([, config]) => inferCategorySourceProvider(config, 'scmdb') === 'scmdb'),
+  );
 
   return {
     categories: [
       ...toEntries(spviewer, 'SPViewer', 'csv/spviewer'),
       ...toEntries(datacore, 'DataCore', 'csv/datacore'),
-      ...toEntries(missions, 'SCMDB', 'csv/scmdb'),
+      ...toEntries(datacoreBackedMissions, 'DataCore', 'csv/datacore', 'SCMDB'),
+      ...toEntries(scmdbBackedMissions, 'SCMDB', 'csv/scmdb'),
     ],
     rawFacts: DATACORE_RAW_FACTS,
     mixedSources: [

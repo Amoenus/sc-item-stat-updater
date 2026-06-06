@@ -47,8 +47,17 @@ test('category listing includes representative provider families and source meta
   });
 
   const commodities = listing.categories.find((entry) => entry.slug === 'mission-commodities');
+  assert.equal(commodities?.family, 'DataCore');
+  assert.equal(commodities?.sourceRoot, 'csv/datacore');
   assert.equal(commodities?.sourceHint, undefined);
   assert.deepEqual(commodities?.sourceFiles, ['datacore:commodities.datacore.csv']);
+
+  const miningElements = listing.categories.find((entry) => entry.slug === 'mission-mining-elements');
+  assert.equal(miningElements?.family, 'DataCore');
+  assert.equal(miningElements?.sourceFiles.includes('optional:scmdb:mining-elements.csv'), true);
+
+  const scmdbSlugs = listing.categories.filter((entry) => entry.family === 'SCMDB').map((entry) => entry.slug);
+  assert.deepEqual(scmdbSlugs, ['mission-scmdb-descriptions', 'mission-scmdb-titles']);
 
   assert.deepEqual(
     listing.rawFacts.map((entry) => [entry.slug, entry.sourceFiles[0]]),
@@ -90,6 +99,8 @@ test('formatted category listing distinguishes provider families and mixed-sourc
     output,
     /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv/,
   );
+  assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-commodities/);
+  assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-mining-locations/);
   assert.match(
     output,
     /DataCore raw fact datasets:\n(?:.*\n)*? {2}datacore-vehicles \| Vehicles \| files: vehicles\.datacore\.csv \| first-party vehicle labels/,
