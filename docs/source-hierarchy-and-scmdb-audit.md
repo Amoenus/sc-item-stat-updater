@@ -45,7 +45,7 @@ node --import tsx/esm bin/update-item.ts --scmdb-audit
 
 For `update-all`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
 
-`update-all` does not refresh SCMDB-generated `mining-locations.csv` by default. Pass `--refresh-scmdb-mining-locations` only when you intentionally want to rebuild that legacy file from cached SCMDB `mining_data` for manual comparison; DataCore-first mining-location updates no longer read it.
+`update-all` no longer refreshes SCMDB-generated `mining-locations.csv`. Use the standalone `bin/regen-mining-locations.ts` command only when intentionally rebuilding that legacy file from cached SCMDB `mining_data` for manual comparison; DataCore-first mining-location updates no longer read it.
 
 Mining location rendering no longer imports arbitrary SCMDB-only location rows or SCMDB quality-note fallback text. DataCore rows are authoritative for normal locations and now reconstruct the special-site pools for `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`. The mining-location SCMDB bridge is retired; `mining-journal.csv` remains a separate SCMDB dependency for journal rarity labels.
 

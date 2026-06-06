@@ -52,7 +52,6 @@ Options:
 - `--ptu` to use latest scraped PTU data instead of LIVE.
 - `--dry-run` to preview changes without modifying `global.ini`.
 - `--provider datacore` is accepted for compatibility; DataCore is the only active batch item-stat provider.
-- `--refresh-scmdb-mining-locations` to explicitly regenerate the legacy SCMDB `mining-locations.csv` bridge from cached `mining_data` before updating.
 
 > Note: `npm run update` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
 

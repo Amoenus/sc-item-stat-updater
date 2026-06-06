@@ -43,7 +43,7 @@ test('update-all help exits successfully with user-facing options', async () => 
   assert.match(result.stdout, /Usage: node update-all\.js \[options]/);
   assert.match(result.stdout, /--dry-run\s+Preview changes without writing/);
   assert.match(result.stdout, /--emit-artifact <path>/);
-  assert.match(result.stdout, /--refresh-scmdb-mining-locations/);
+  assert.doesNotMatch(result.stdout, /--refresh-scmdb-mining-locations/);
 });
 
 test('update-item help exits successfully and lists categories', async () => {

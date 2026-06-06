@@ -30,7 +30,8 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
   assert.equal(generatedMining?.kind, 'generated source step');
   assert.equal(generatedMining?.activeForDatacoreProvider, false);
-  assert.match(generatedMining?.reason ?? '', /--refresh-scmdb-mining-locations/);
+  assert.match(generatedMining?.reason ?? '', /standalone regen-mining-locations CLI/);
+  assert.match(generatedMining?.reason ?? '', /update-all no longer read or refresh/);
 
   const optionalJournal = audit.entries.find((entry) => entry.slug === 'mining-journal' && entry.kind === 'extra step');
   assert.equal(optionalJournal?.classification, 'SCMDB-only derived/generated');

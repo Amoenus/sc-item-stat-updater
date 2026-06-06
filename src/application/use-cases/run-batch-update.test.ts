@@ -21,7 +21,7 @@ function makePrepared(): PreparedUpdateCategories {
   };
 }
 
-test('runBatchUpdate can refresh SCMDB mining locations before preflight when requested', async () => {
+test('runBatchUpdate prepares diagnostics and preflight before running update steps', async () => {
   const observed: string[] = [];
   const prepared = makePrepared();
   const categoryStarts: string[] = [];
@@ -31,7 +31,6 @@ test('runBatchUpdate can refresh SCMDB mining locations before preflight when re
     repoRoot: 'repo',
     provider: 'datacore',
     ptu: true,
-    refreshScmdbMiningLocations: true,
     now: (() => {
       const values = [100, 125];
       return () => values.shift() ?? 125;
@@ -39,10 +38,6 @@ test('runBatchUpdate can refresh SCMDB mining locations before preflight when re
     prepare: async (options) => {
       observed.push(`prepare:${options.provider}:${options.ptu}`);
       return prepared;
-    },
-    regenerateMiningLocations: (options) => {
-      observed.push(`regen:${options.repoRoot}:${options.scmdbDir}`);
-      return { outPath: 'missions-dir/mining-locations.csv', rowCount: 1, outDir: 'missions-dir' };
     },
     sourceDiagnostics: async (preparedInput, options) => {
       observed.push(`diagnostics:${preparedInput.itemVersion}:${options.provider}:${options.ptu}`);
@@ -87,7 +82,6 @@ test('runBatchUpdate can refresh SCMDB mining locations before preflight when re
   assert.deepEqual(extraStepStarts, ['0:Component Titles']);
   assert.deepEqual(observed, [
     'prepare:datacore:true',
-    'regen:repo:missions-dir',
     'diagnostics:items-live:datacore:true',
     'audit:datacore',
     'preflight:1',
@@ -99,16 +93,11 @@ test('runBatchUpdate can refresh SCMDB mining locations before preflight when re
 
 test('runBatchUpdate skips backup for dry runs and returns nonzero when steps report errors', async () => {
   let backupCalled = false;
-  let regenerateCalled = false;
 
   const result = await runBatchUpdate({
     repoRoot: 'repo',
     dryRun: true,
     prepare: async () => makePrepared(),
-    regenerateMiningLocations: () => {
-      regenerateCalled = true;
-      return { outPath: 'out', rowCount: 0, outDir: 'missions-dir' };
-    },
     sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
     scmdbDependencyAudit: async () => ({ sourceHierarchy: [], entries: [] }),
     preflight: async () => {},
@@ -123,7 +112,6 @@ test('runBatchUpdate skips backup for dry runs and returns nonzero when steps re
   });
 
   assert.equal(backupCalled, false);
-  assert.equal(regenerateCalled, false);
   assert.equal(result.exitCode, 1);
   assert.deepEqual(result.errors, [{ label: 'Test category', message: 'missing csv' }]);
 });
@@ -136,7 +124,6 @@ test('runBatchUpdate exposes SCMDB dependency audit for datacore provider', asyn
     provider: 'datacore',
     dryRun: true,
     prepare: async () => makePrepared(),
-    regenerateMiningLocations: () => ({ outPath: 'out', rowCount: 0, outDir: 'missions-dir' }),
     sourceDiagnostics: async () => ({ versions: [], warnings: [] }),
     scmdbDependencyAudit: async (options) => {
       observed.push(`audit:${options?.provider}`);

@@ -13,7 +13,6 @@ import { backupIniFile } from '../src/localization/ini-file';
 import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
 import { preflightCheckConfigs } from '../src/application/use-cases/update-planning';
-import { regenMiningLocations } from '../src/sources/scmdb/mining-locations';
 import {
   buildSourceFreshnessDiagnostics,
   formatSourceFreshnessDiagnostics,
@@ -65,7 +64,6 @@ const { values } = parseArgs({
     'emit-artifact': { type: 'string' },
     ptu: { type: 'boolean', default: false },
     'include-mining-journal': { type: 'boolean', default: false },
-    'refresh-scmdb-mining-locations': { type: 'boolean', default: false },
     'mining-journal-rarity-report': { type: 'boolean', default: false },
     provider: { type: 'string', default: 'datacore' },
     verbose: { type: 'boolean', short: 'v', default: false },
@@ -86,7 +84,6 @@ if (values.help) {
   console.log('      --emit-artifact <path>  Write a patch artifact JSON to the given path (ADR 002)');
   console.log('      --ptu              Use latest PTU scraped data instead of latest LIVE');
   console.log('      --include-mining-journal  Also update mining compendium journal entry');
-  console.log('      --refresh-scmdb-mining-locations  Regenerate mining-locations.csv from SCMDB mining_data before update');
   console.log('      --mining-journal-rarity-report  Print SCMDB vs DataCore mining journal rarity report and exit');
   console.log('      --provider datacore  Data provider (default; SPViewer is legacy audit-only)');
   console.log('  -v, --verbose          Enable verbose logging');
@@ -140,22 +137,6 @@ console.log(`=== Starting update (${channel}, provider: ${provider}) ===`);
 const sourceDiagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider, ptu: values.ptu });
 console.log(`${formatSourceFreshnessDiagnostics(sourceDiagnostics)}\n`);
 console.log(`${formatScmdbDependencyAudit(await buildScmdbDependencyAudit({ provider }))}\n`);
-
-if (values['refresh-scmdb-mining-locations']) {
-  try {
-    logger.info('Regenerating mining-locations.csv', { missionCsvDir });
-    regenMiningLocations({
-      repoRoot,
-      scmdbDir: missionCsvDir,
-      log: (message: string) => logger.debug(message),
-    });
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    logger.error('Failed to regenerate mining-locations.csv', { error: error.message });
-    await shutdownLogger();
-    process.exit(1);
-  }
-}
 
 // Preflight: verify every declared static source file exists before touching anything.
 try {

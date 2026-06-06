@@ -1,7 +1,6 @@
 ﻿import path from 'node:path';
 import { backupIniFile } from '../../localization/ini-file';
 import { preflightCheckConfigs } from './update-planning';
-import { regenMiningLocations } from '../../sources/scmdb/mining-locations';
 import {
   prepareUpdateCategories,
   type PreparedUpdateCategories,
@@ -26,10 +25,8 @@ export interface RunBatchUpdateOptions {
   ptu?: boolean;
   provider?: UpdateProvider;
   includeMiningJournal?: boolean;
-  refreshScmdbMiningLocations?: boolean;
   skipBackup?: boolean;
   prepare?: typeof prepareUpdateCategories;
-  regenerateMiningLocations?: typeof regenMiningLocations;
   preflight?: typeof preflightCheckConfigs;
   backupIni?: typeof backupIniFile;
   runCategories?: typeof runPreparedUpdateCategories;
@@ -60,7 +57,6 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   const iniPath = options.iniPath || path.join(options.repoRoot, 'global.ini');
   const now = options.now ?? (() => performance.now());
   const prepare = options.prepare ?? prepareUpdateCategories;
-  const regenerateMiningLocations = options.regenerateMiningLocations ?? regenMiningLocations;
   const preflight = options.preflight ?? preflightCheckConfigs;
   const backupIni = options.backupIni ?? backupIniFile;
   const runCategories = options.runCategories ?? runPreparedUpdateCategories;
@@ -74,13 +70,6 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
     ptu: options.ptu,
     csvDir: options.csvDir,
   });
-
-  if (options.refreshScmdbMiningLocations) {
-    regenerateMiningLocations({
-      repoRoot: options.repoRoot,
-      scmdbDir: prepared.missionCsvDir,
-    });
-  }
 
   const diagnostics = await sourceDiagnostics(prepared, { provider, ptu: options.ptu });
   const scmdbDependencyAudit = await buildScmdbAudit({ provider });

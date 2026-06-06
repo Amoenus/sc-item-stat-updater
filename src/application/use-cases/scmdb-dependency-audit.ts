@@ -122,9 +122,9 @@ function generatedMiningLocationsEntry(): ScmdbDependencyAuditEntry {
     sourceFiles: ['mining_data.json', 'mining_data-*.json'],
     classification: 'SCMDB-only derived/generated',
     reason:
-      'update-all can still regenerate mining-locations.csv from SCMDB mining_data when --refresh-scmdb-mining-locations is explicitly passed, but DataCore mining location updates no longer read that generated CSV.',
+      'The standalone regen-mining-locations CLI can still rebuild mining-locations.csv from SCMDB mining_data for manual legacy comparison, but active DataCore mining location updates and update-all no longer read or refresh that generated CSV.',
     migrationSlice:
-      'Retire this compatibility refresh once no manual legacy comparison workflow depends on mining-locations.csv.',
+      'Retain only as manual legacy comparison tooling until no comparison workflow depends on mining-locations.csv.',
     activeForDatacoreProvider: false,
   };
 }
