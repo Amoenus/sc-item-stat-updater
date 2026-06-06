@@ -369,7 +369,6 @@ export default {
     const scannerLines = [`Rarity: ${formattedRarity}`, `Scan Signature: ${row['Scan Signature'] || 'N/A'}`];
     appendIfPresent(scannerLines, 'Ground Scan Signature', row['Ground Scan Signature']);
     appendIfPresent(scannerLines, 'FPS Scan Signature', row['FPS Scan Signature']);
-    appendIfPresent(scannerLines, 'Density', row.Density);
     scannerLines.push(`Resistance: ${row.Resistance || 'N/A'}`, `Instability: ${row.Instability || 'N/A'}`);
 
     const behaviorLines: string[] = [];

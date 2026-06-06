@@ -35,6 +35,7 @@ describe('mining element updater', () => {
       Rarity: 'uncommon',
       'Scan Signature': '3885',
       'Ground Scan Signature': '4000',
+      Density: '1.23',
       Resistance: '0.5',
       Instability: '350',
       'Mining Difficulty': 'Difficult',
@@ -50,6 +51,7 @@ describe('mining element updater', () => {
     assert.strictEqual(first, second);
     assert.match(first, /\*\* Scanner Data \*\*/);
     assert.match(first, /\*\* Mining Behavior \*\*/);
+    assert.doesNotMatch(first, /Density:/);
     assert.match(first, /Best Refinery: ARC-L1 Wide Forest Station \(\+5\)/);
   });
 
