@@ -63,6 +63,7 @@ test('category listing includes representative provider families and source meta
     listing.rawFacts.map((entry) => [entry.slug, entry.sourceFiles[0]]),
     [
       ['datacore-contract-generators', 'contract-generators.datacore.csv'],
+      ['datacore-contract-templates', 'contract-templates.datacore.csv'],
       ['datacore-commodities', 'commodities.datacore.csv'],
       ['datacore-vehicles', 'vehicles.datacore.csv'],
       ['datacore-manufacturers', 'manufacturers.datacore.csv'],
@@ -98,10 +99,7 @@ test('formatted category listing distinguishes provider families and mixed-sourc
     output,
     /SCMDB derived bridge categories:\n(?:.*\n)*? {2}mission-scmdb-descriptions \| SCMDB mission descriptions \| files: missions\/scmdb-missions\.csv/,
   );
-  assert.match(
-    output,
-    /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv/,
-  );
+  assert.match(output, /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv/);
   assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-commodities/);
   assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-mining-locations/);
   assert.match(

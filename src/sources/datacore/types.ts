@@ -183,6 +183,44 @@ export interface DataCoreContractGeneratorRecord {
   recordPath: string;
 }
 
+export interface DataCoreContractTemplateRecord {
+  templateClass: string;
+  contractClassType: string;
+  ownerGuid: string;
+  ownerClass: string;
+  displayTypeGuid: string;
+  displayTypeClass: string;
+  illegal: string;
+  showLifeTimeInMobiGlas: string;
+  preShowObjectives: string;
+  hasCompleteButton: string;
+  handlesAbandonRequest: string;
+  canBeShared: string;
+  displayAlliedMarkers: string;
+  onlyOwnerCanComplete: string;
+  failIfSentToPrison: string;
+  failIfBecameCriminal: string;
+  failIfLeavePrison: string;
+  missionCompletionTime: string;
+  missionAutoEnd: string;
+  missionResultAfterTimerEnd: string;
+  remainingTimeToShowTimer: string;
+  objectiveCount: string;
+  missionPropertyCount: string;
+  objectiveHandlerTypes: string;
+  objectiveHandlerModules: string;
+  objectiveDisplayKeys: string;
+  travelObjectiveKeys: string;
+  returnObjectiveKeys: string;
+  overrideMissionDetailsKeys: string;
+  navPointNameKeys: string;
+  stringHashKeys: string;
+  locationTagGuids: string;
+  locationTagClasses: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreFactionRecord {
   ref: string;
   path: string;

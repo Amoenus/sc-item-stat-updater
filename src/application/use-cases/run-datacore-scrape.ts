@@ -15,13 +15,12 @@ import type {
   DataCoreItemTypeConfig,
 } from '../../items/datacore/types';
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
-import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
+import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
+import { extractDataCoreContractTemplates } from '../../sources/datacore/contract-template-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
-import { extractDataCoreMissionBrokers } from '../../sources/datacore/mission-broker-extractor';
-import { extractDataCoreMissionLocalization } from '../../sources/datacore/mission-localization-extractor';
 import {
   createDataCoreManufacturerResolver,
   type DataCoreManufacturerResolver,
@@ -40,6 +39,8 @@ import { extractDataCoreMiningQualityDistributions } from '../../sources/datacor
 import { extractDataCoreMiningQualityQuantizations } from '../../sources/datacore/mining-quality-quantization-extractor';
 import { extractDataCoreMiningRockSignatures } from '../../sources/datacore/mining-rock-signature-extractor';
 import { extractDataCoreMiningSubHarvestableConfigs } from '../../sources/datacore/mining-sub-harvestable-config-extractor';
+import { extractDataCoreMissionBrokers } from '../../sources/datacore/mission-broker-extractor';
+import { extractDataCoreMissionLocalization } from '../../sources/datacore/mission-localization-extractor';
 import {
   type BuildDataCoreRecordGraphOptions,
   buildDataCoreRecordGraph,
@@ -49,11 +50,10 @@ import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-g
 import type {
   DataCoreCommodityRecord,
   DataCoreContractGeneratorRecord,
+  DataCoreContractTemplateRecord,
   DataCoreFactionRecord,
   DataCoreLocationLabelRecord,
   DataCoreManufacturerRecord,
-  DataCoreMissionBrokerRecord,
-  DataCoreMissionLocalizationRecord,
   DataCoreMineableEntityRecord,
   DataCoreMiningClusteringParamRecord,
   DataCoreMiningCompositionPartRecord,
@@ -68,6 +68,8 @@ import type {
   DataCoreMiningQualityQuantizationRecord,
   DataCoreMiningRockSignatureRecord,
   DataCoreMiningSubHarvestableConfigRecord,
+  DataCoreMissionBrokerRecord,
+  DataCoreMissionLocalizationRecord,
   DataCoreRecordGraph,
   DataCoreRecordGraphLookup,
   DataCoreVehicleRecord,
@@ -102,6 +104,11 @@ export interface DataCoreScrapeCommodityResult {
 }
 
 export interface DataCoreScrapeContractGeneratorResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeContractTemplateResult {
   rows: number;
   csvFile: string;
 }
@@ -237,6 +244,7 @@ export interface RunDatacoreScrapeOptions {
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
   extractContractGenerators?: typeof extractDataCoreContractGenerators;
+  extractContractTemplates?: typeof extractDataCoreContractTemplates;
   extractCommodities?: typeof extractDataCoreCommodities;
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
@@ -276,6 +284,7 @@ export interface RunDatacoreScrapeOptions {
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
   onContractGeneratorsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onContractTemplatesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -314,6 +323,7 @@ export interface RunDatacoreScrapeResult {
     outputPath: string;
   };
   contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
+  contractTemplateResult: DataCoreScrapeContractTemplateResult;
   commodityResult: DataCoreScrapeCommodityResult;
   vehicleResult: DataCoreScrapeVehicleResult;
   factionResult: DataCoreScrapeFactionResult;
@@ -352,6 +362,7 @@ const COMMON_HEADERS = [
   'Health',
 ];
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
+const CONTRACT_TEMPLATES_CSV_FILE = 'contract-templates.datacore.csv';
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
@@ -429,6 +440,43 @@ const CONTRACT_GENERATOR_HEADERS = [
   'Mental Load',
   'Risk Of Loss',
   'Game Knowledge',
+  'Record GUID',
+  'Record Path',
+];
+const CONTRACT_TEMPLATE_HEADERS = [
+  'Template Class',
+  'Contract Class Type',
+  'Owner GUID',
+  'Owner Class',
+  'Display Type GUID',
+  'Display Type Class',
+  'Illegal',
+  'Show Life Time In MobiGlas',
+  'Pre Show Objectives',
+  'Has Complete Button',
+  'Handles Abandon Request',
+  'Can Be Shared',
+  'Display Allied Markers',
+  'Only Owner Can Complete',
+  'Fail If Sent To Prison',
+  'Fail If Became Criminal',
+  'Fail If Leave Prison',
+  'Mission Completion Time',
+  'Mission Auto End',
+  'Mission Result After Timer End',
+  'Remaining Time To Show Timer',
+  'Objective Count',
+  'Mission Property Count',
+  'Objective Handler Types',
+  'Objective Handler Modules',
+  'Objective Display Keys',
+  'Travel Objective Keys',
+  'Return Objective Keys',
+  'Override Mission Details Keys',
+  'Nav Point Name Keys',
+  'String Hash Keys',
+  'Location Tag GUIDs',
+  'Location Tag Classes',
   'Record GUID',
   'Record Path',
 ];
@@ -955,6 +1003,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
   const extractContractGenerators = options.extractContractGenerators ?? extractDataCoreContractGenerators;
+  const extractContractTemplates = options.extractContractTemplates ?? extractDataCoreContractTemplates;
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
@@ -1055,16 +1104,23 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     Boolean(options.dryRun),
   );
 
+  const contractTemplateRows = await extractContractTemplates({ xmlCacheDir, graph: graphLookup });
+  const contractTemplateResult = await writeContractTemplateCsv(contractTemplateRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onContractTemplatesExtracted?.(
+    contractTemplateResult.rows,
+    contractTemplateResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
   const missionBrokerRows = await extractMissionBrokers({ xmlCacheDir, graph: graphLookup });
   const missionBrokerResult = await writeMissionBrokerCsv(missionBrokerRows, {
     outputBase,
     dryRun: options.dryRun,
   });
-  options.onMissionBrokersExtracted?.(
-    missionBrokerResult.rows,
-    missionBrokerResult.csvFile,
-    Boolean(options.dryRun),
-  );
+  options.onMissionBrokersExtracted?.(missionBrokerResult.rows, missionBrokerResult.csvFile, Boolean(options.dryRun));
 
   const missionLocalizationRows = extractMissionLocalization(recordGraph);
   const missionLocalizationResult = await writeMissionLocalizationCsv(missionLocalizationRows, {
@@ -1342,6 +1398,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const rawFactResults = buildRawFactResults(
     new Map([
       [contractGeneratorResult.csvFile, contractGeneratorResult],
+      [contractTemplateResult.csvFile, contractTemplateResult],
       [commodityResult.csvFile, commodityResult],
       [vehicleResult.csvFile, vehicleResult],
       [factionResult.csvFile, factionResult],
@@ -1368,6 +1425,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       outputPath: recordGraphPath,
     },
     contractGeneratorResult,
+    contractTemplateResult,
     commodityResult,
     vehicleResult,
     factionResult,
@@ -1604,6 +1662,58 @@ async function writeContractGeneratorCsv(
   }
 
   return { rows: rows.length, csvFile: CONTRACT_GENERATORS_CSV_FILE };
+}
+
+async function writeContractTemplateCsv(
+  rows: DataCoreContractTemplateRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeContractTemplateResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.templateClass,
+      row.contractClassType,
+      row.ownerGuid,
+      row.ownerClass,
+      row.displayTypeGuid,
+      row.displayTypeClass,
+      row.illegal,
+      row.showLifeTimeInMobiGlas,
+      row.preShowObjectives,
+      row.hasCompleteButton,
+      row.handlesAbandonRequest,
+      row.canBeShared,
+      row.displayAlliedMarkers,
+      row.onlyOwnerCanComplete,
+      row.failIfSentToPrison,
+      row.failIfBecameCriminal,
+      row.failIfLeavePrison,
+      row.missionCompletionTime,
+      row.missionAutoEnd,
+      row.missionResultAfterTimerEnd,
+      row.remainingTimeToShowTimer,
+      row.objectiveCount,
+      row.missionPropertyCount,
+      row.objectiveHandlerTypes,
+      row.objectiveHandlerModules,
+      row.objectiveDisplayKeys,
+      row.travelObjectiveKeys,
+      row.returnObjectiveKeys,
+      row.overrideMissionDetailsKeys,
+      row.navPointNameKeys,
+      row.stringHashKeys,
+      row.locationTagGuids,
+      row.locationTagClasses,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, CONTRACT_TEMPLATES_CSV_FILE),
+      stringify([CONTRACT_TEMPLATE_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: CONTRACT_TEMPLATES_CSV_FILE };
 }
 
 async function writeCommodityCsv(

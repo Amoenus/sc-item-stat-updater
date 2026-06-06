@@ -111,6 +111,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party generated contract variants, title/description overrides, timing, and location tags',
   },
   {
+    slug: 'datacore-contract-templates',
+    label: 'Contract templates',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['contract-templates.datacore.csv'],
+    description: 'first-party contract template display settings, objective keys, and location tags',
+  },
+  {
     slug: 'datacore-commodities',
     label: 'Commodities',
     family: 'DataCore',

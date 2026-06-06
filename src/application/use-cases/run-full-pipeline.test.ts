@@ -126,6 +126,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'contract-generators.datacore.csv',
         },
+        contractTemplateResult: {
+          rows: 0,
+          csvFile: 'contract-templates.datacore.csv',
+        },
         commodityResult: {
           rows: 0,
           csvFile: 'commodities.datacore.csv',
