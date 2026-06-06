@@ -4,7 +4,6 @@ import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
 import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
-import type { runSpviewerScrape } from './run-spviewer-scrape';
 import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
 
@@ -20,7 +19,6 @@ export interface RunFullPipelineOptions {
   runUpdate?: typeof runBatchUpdate;
   runDatacore?: typeof runDatacoreScrape;
   runScmdb?: typeof runScmdbScrape;
-  runSpviewer?: typeof runSpviewerScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
 }

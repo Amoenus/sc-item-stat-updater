@@ -6,7 +6,6 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
   const completed: string[] = [];
   const updateOptions: unknown[] = [];
   const scmdbOptions: unknown[] = [];
-  const spviewerOptions: unknown[] = [];
   const datacoreOptions: unknown[] = [];
   const logs: string[] = [];
 
@@ -28,18 +27,6 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
         outDir: 'repo/csv/scmdb/scmdb-live',
         missionsOutDir: 'repo/csv/scmdb/scmdb-live/missions',
         files: [],
-      };
-    },
-    runSpviewer: async (options) => {
-      spviewerOptions.push(options);
-      return {
-        exitCode: 0,
-        channel: 'ptu',
-        version: '4.8.0-ptu',
-        outDir: 'repo/csv/spviewer/4.8.0-ptu',
-        types: ['Shield'],
-        files: [],
-        errors: [],
       };
     },
     runDatacore: async (options) => {
@@ -81,7 +68,6 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     repoIniPath: 'repo\\global.ini',
   });
   assert.deepEqual(scmdbOptions, [{ repoRoot: 'repo', ptu: true }]);
-  assert.deepEqual(spviewerOptions, []);
   assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: true }]);
   assert.deepEqual(updateOptions, [
     {
