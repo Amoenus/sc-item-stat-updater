@@ -1,6 +1,6 @@
 import { loadMissionConfigs } from '../../items/registry';
-import { getUpdateExtraStepLabels, type UpdateExtraStepLabel } from './run-update-extra-steps';
 import type { UpdateProvider } from './prepare-update-categories';
+import { getUpdateExtraStepLabels, type UpdateExtraStepLabel } from './run-update-extra-steps';
 
 export type ScmdbDependencyClassification =
   | 'Already extractable from DataCore'
@@ -33,21 +33,23 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-commodities': {
     classification: 'Already extractable from DataCore',
     reason:
-      'DataCore commodities now supply commodity localization keys; SCMDB remains as a fallback for resource-pool and illegal-commodity keys until those edge cases are fully reconstructed.',
-    migrationSlice: 'Remove the SCMDB resource-pool fallback after DataCore commodity extraction covers every updater target key.',
+      'DataCore commodities now supply commodity entity keys plus explicit carryable commodity localization keys. SCMDB remains only for resource-pool aliases not expressed as DataCore items_commodities_* localization, loc_placeholder, and generated salvage component labels.',
+    migrationSlice:
+      'Keep shrinking the SCMDB resource-pool fallback only when a first-party localization or contract/resource record proves each remaining target key.',
   },
   'mission-mining-elements': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'DataCore supplies core mining behavior facts, but SCMDB still contributes generated scanner/refinery/quality fields used in the rendered element descriptions.',
-    migrationSlice: 'Extend DataCore mining extraction to scanner signatures, material labels, quality bands, and refinery joins.',
+      'DataCore now supplies core mining behavior facts, material labels, scan signatures (asteroid/ground/FPS variants), rarity from mineable rock variants where present, and quality bands from quality quantization records. SCMDB still contributes density and best-refinery bonus joins; the current DataCore refiningprocess records define only global process speed/quality labels, not station/material bonus profiles.',
+    migrationSlice:
+      'Extend DataCore mining extraction to density and refinery joins if first-party fields are found; SCMDB remains for those two fields only. Density investigation should avoid carryable Mass/SCU because it does not match SCMDB density values, and refinery replacement should not infer SCMDB profile IDs unless a station/material bonus source is proven.',
   },
   'mission-mining-locations': {
-    classification: 'Probably extractable from DataCore with new graph traversal',
+    classification: 'Already extractable from DataCore',
     reason:
-      'DataCore mining provider, composition, quality, entity, clustering, sub-harvestable, and parameter CSVs now drive normal location summaries; SCMDB remains only for quality-note fallback text and three explicit special-site rows not yet reconstructed from DataCore.',
+      'DataCore mining provider, composition, quality, entity, clustering, sub-harvestable, and parameter CSVs now drive mining location summaries, including the former Breaker Station and Hathor special-site pools. SCMDB mining-locations.csv is no longer read by this category.',
     migrationSlice:
-      'Reconstruct Breaker Station and Hathor special-site pools plus remaining quality notes from DataCore, then remove the SCMDB mining-location CSV input.',
+      'Retired for mining locations; keep watching mining-journal.csv separately for journal rarity labels.',
   },
   'mission-mining-journal': {
     classification: 'SCMDB-only derived/generated',
@@ -60,7 +62,8 @@ const MISSION_CLASSIFICATIONS: Record<
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
       'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins.',
-    migrationSlice: 'Build a first-party mission/contract extractor and reproduce SCMDB contract metadata joins from DataCore records.',
+    migrationSlice:
+      'Build a first-party mission/contract extractor and reproduce SCMDB contract metadata joins from DataCore records.',
   },
   'mission-scmdb-titles': {
     classification: 'Probably extractable from DataCore with new graph traversal',
@@ -93,10 +96,14 @@ function sourceFilesFromConfig(config: {
   lookupCsvFile?: string;
   sourceFiles?: Array<{ file: string; sourceDir?: string }>;
   resolveJsonFile?: unknown;
+  loadSourceData?: unknown;
 }): string[] {
-  const staticFiles = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter((file): file is string =>
-    Boolean(file),
-  );
+  const usesDeclaredCustomSources = Boolean(config.loadSourceData && config.sourceFiles?.length);
+  const staticFiles = [
+    usesDeclaredCustomSources ? undefined : config.csvFile,
+    config.jsonFile,
+    config.lookupCsvFile,
+  ].filter((file): file is string => Boolean(file));
   const companionFiles =
     config.sourceFiles?.map((sourceFile) =>
       sourceFile.sourceDir && sourceFile.sourceDir !== 'csvDir'
@@ -115,13 +122,16 @@ function generatedMiningLocationsEntry(): ScmdbDependencyAuditEntry {
     sourceFiles: ['mining_data.json', 'mining_data-*.json'],
     classification: 'SCMDB-only derived/generated',
     reason:
-      'update-all can regenerate mining-locations.csv from SCMDB mining_data when --refresh-scmdb-mining-locations is explicitly passed; DataCore updates otherwise consume the checked/generated CSV as a fallback input only.',
-    migrationSlice: 'Replace this compatibility refresh with a DataCore mining location aggregation step, then remove the SCMDB fallback input.',
+      'update-all can still regenerate mining-locations.csv from SCMDB mining_data when --refresh-scmdb-mining-locations is explicitly passed, but DataCore mining location updates no longer read that generated CSV.',
+    migrationSlice:
+      'Retire this compatibility refresh once no manual legacy comparison workflow depends on mining-locations.csv.',
     activeForDatacoreProvider: false,
   };
 }
 
-export async function buildScmdbDependencyAudit(options: { provider?: UpdateProvider } = {}): Promise<ScmdbDependencyAudit> {
+export async function buildScmdbDependencyAudit(
+  options: { provider?: UpdateProvider } = {},
+): Promise<ScmdbDependencyAudit> {
   const provider = options.provider ?? 'datacore';
   const missionConfigs = await loadMissionConfigs();
   const entries: ScmdbDependencyAuditEntry[] = [];
@@ -149,7 +159,10 @@ export async function buildScmdbDependencyAudit(options: { provider?: UpdateProv
     if (!classification) continue;
     entries.push({
       kind: 'extra step',
-      slug: label.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/^-|-$/g, ''),
+      slug: label
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9]+/g, '-')
+        .replaceAll(/^-|-$/g, ''),
       label,
       sourceFiles: [
         'datacore:mining-elements.datacore.csv',

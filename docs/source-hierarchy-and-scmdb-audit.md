@@ -45,9 +45,9 @@ node --import tsx/esm bin/update-item.ts --scmdb-audit
 
 For `update-all`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
 
-`update-all` does not refresh SCMDB-generated `mining-locations.csv` by default. Pass `--refresh-scmdb-mining-locations` only when you intentionally want to rebuild that legacy bridge from cached SCMDB `mining_data`; otherwise DataCore-first updates consume the existing CSV as a fallback input until the DataCore mining-location aggregation fully replaces it.
+`update-all` does not refresh SCMDB-generated `mining-locations.csv` by default. Pass `--refresh-scmdb-mining-locations` only when you intentionally want to rebuild that legacy file from cached SCMDB `mining_data` for manual comparison; DataCore-first mining-location updates no longer read it.
 
-Mining location rendering no longer imports arbitrary SCMDB-only location rows. DataCore rows are authoritative for normal locations; the SCMDB bridge is limited to quality-note fallback text plus three explicit special-site rows: `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`.
+Mining location rendering no longer imports arbitrary SCMDB-only location rows or SCMDB quality-note fallback text. DataCore rows are authoritative for normal locations and now reconstruct the special-site pools for `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`. The mining-location SCMDB bridge is retired; `mining-journal.csv` remains a separate SCMDB dependency for journal rarity labels.
 
 ## Migration slices
 
@@ -59,14 +59,18 @@ The current high-value replacement targets are:
    Recover blueprint reward, chain, pool, and crafting-item joins from game-file records instead of SCMDB merged outputs.
 3. Mining location summaries and journal fallback removal.
    Finish replacing SCMDB mining aggregations with DataCore mining provider, quality, composition, density, clustering, setup, and parameter joins. SCMDB remains authoritative for mining journal rarity labels because DataCore rarity inference has not proven equivalent.
-4. Commodity joins.
-   Remove SCMDB resource-pool fallbacks once DataCore commodity extraction covers every updater target key.
+4. Mining element residue (density, refinery hints).
+   DataCore now supplies material name, rarity and scan signatures (asteroid/surface/groundvehicle/fps variants from `mining-rock-signatures.datacore.csv`), and quality bands from `mining-quality-quantizations.datacore.csv`. SCMDB still fills gaps where a DataCore rarity variant is absent, but the remaining SCMDB-only fields on the merged element row are density and best-refinery hints. Replace them with first-party joins (likely via resource-type or commodity refining records) before retiring the SCMDB mining-elements bridge entirely.
+   Density investigation so far: SCMDB density is not the physical `Mass` on generated carryable cargo entities and is not `Mass / SCU`; commodity entity records expose cargo occupancy and resource type/subtype GUIDs, but not the rendered density scalar. Continue from the mineable element `resourceType` GUIDs and resource/refinery records rather than deriving density from cargo-box physics.
+   Best-refinery investigation so far: SCMDB `mining_data.json` stores synthetic refinery profile IDs with per-material percentage bonuses, plus station-to-profile assignments. The generated DataCore cache contains starmap/location records for refinery stations and `libs/foundry/records/refiningprocess/*.xml` records for global processing methods, but those `RefiningProcess` records only define process speed/quality labels such as `Fast/Careful` and `Normal/Normal`; they do not expose station/material bonus profiles. Do not infer SCMDB refinery profiles from station names alone. Keep `Best Refinery` as an SCMDB bridge field until a first-party station/material bonus source is found.
+5. Commodity joins.
+   DataCore commodity extraction now covers commodity entity localization keys and explicit `items_commodities_*` localization keys on carryable harvestable/commodity records. The SCMDB resource-pool fallback is narrowed to remaining aliases not expressed as DataCore `items_commodities_*` keys, `loc_placeholder`, and generated salvage component labels. Continue removing fallback rows only when a first-party localization or contract/resource record proves each target key.
 
 Until a slice is replaced, code and docs should describe that dependency as `SCMDB-only derived/generated` or as a temporary SCMDB bridge, not as a peer provider.
 
 ## Mining journal rarity investigation
 
-The DataCore-generated artifacts in `csv/datacore/4.8.0.11875683-live/` do not expose an explicit per-element field named `rarity` for mining journal labels. The record graph and mining CSVs do expose rarity-like bucket names in first-party mining records, including:
+The DataCore-generated artifacts in `csv/datacore/4.8.0.11875683-live/` do not expose an explicit per-element field named `rarity` for mining journal labels. Element descriptions now use DataCore mineable-rock variant rarity where present, but journal grouping is a different derived rollup. The record graph and mining CSVs expose rarity-like bucket names in first-party mining records, including:
 
 - mineable rock entity classes such as `MineableRock_AsteroidCommon_*`, `MineableRock_SurfaceRare_*`, and `MineableRock_AsteroidLegendary_*`
 - composition preset classes such as `CommonShipMineables_*`, `UncommonShipMineables_*`, `RareShipMineables_*`, `EpicShipMineables_*`, and `LegendaryShipMineables_*`

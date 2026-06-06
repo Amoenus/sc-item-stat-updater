@@ -20,6 +20,9 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(commodities?.classification, 'Already extractable from DataCore');
   assert.equal(commodities?.sourceFiles.includes('dynamic SCMDB JSON: merged-*.json'), true);
   assert.equal(commodities?.sourceFiles.includes('datacore:commodities.datacore.csv'), true);
+  assert.match(commodities?.reason ?? '', /explicit carryable commodity localization keys/);
+  assert.match(commodities?.reason ?? '', /generated salvage component labels/);
+  assert.match(commodities?.migrationSlice ?? '', /first-party localization or contract\/resource record proves/);
 
   const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
   assert.equal(generatedMining?.kind, 'generated source step');
@@ -35,6 +38,20 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   const journalCategory = audit.entries.find((entry) => entry.slug === 'mission-mining-journal');
   assert.equal(journalCategory?.classification, 'SCMDB-only derived/generated');
   assert.match(journalCategory?.reason ?? '', /no explicit per-element journal rarity field/);
+
+  const miningElements = audit.entries.find((entry) => entry.slug === 'mission-mining-elements');
+  assert.equal(miningElements?.sourceFiles.includes('datacore:mining-rock-signatures.datacore.csv'), true);
+  assert.equal(miningElements?.sourceFiles.includes('datacore:mining-quality-quantizations.datacore.csv'), true);
+  assert.match(miningElements?.reason ?? '', /rarity from mineable rock variants/);
+  assert.match(miningElements?.reason ?? '', /SCMDB still contributes density and best-refinery bonus joins/);
+  assert.match(miningElements?.reason ?? '', /refiningprocess records define only global process speed\/quality labels/);
+  assert.match(miningElements?.migrationSlice ?? '', /avoid carryable Mass\/SCU/);
+  assert.match(miningElements?.migrationSlice ?? '', /station\/material bonus source is proven/);
+
+  const miningLocations = audit.entries.find((entry) => entry.slug === 'mission-mining-locations');
+  assert.equal(miningLocations?.classification, 'Already extractable from DataCore');
+  assert.equal(miningLocations?.sourceFiles.includes('mining-locations.csv'), false);
+  assert.equal(miningLocations?.sourceFiles.includes('datacore:mining-provider-presets.datacore.csv'), true);
 
   assert.deepEqual(
     audit.entries.filter((entry) => entry.classification === 'Unknown, needs investigation').map((entry) => entry.slug),
