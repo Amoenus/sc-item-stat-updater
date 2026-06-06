@@ -103,6 +103,14 @@ function toEntries(
 
 export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
   {
+    slug: 'datacore-contract-generators',
+    label: 'Contract generator variants',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['contract-generators.datacore.csv'],
+    description: 'first-party generated contract variants, title/description overrides, timing, and location tags',
+  },
+  {
     slug: 'datacore-commodities',
     label: 'Commodities',
     family: 'DataCore',

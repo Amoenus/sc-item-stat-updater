@@ -54,14 +54,14 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-scmdb-descriptions': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins. DataCore now emits mission-brokers.datacore.csv for first-party broker rewards/timing/flags and mission-localization.datacore.csv from mission/contract record graph references, but the checked-in keys overlap only 27 of 721 SCMDB description rows, so these are diagnostic inputs rather than active replacements.',
+      'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins. DataCore now emits contract-generators.datacore.csv for generated title/description variants, mission-brokers.datacore.csv for first-party broker rewards/timing/flags, and mission-localization.datacore.csv from mission/contract record graph references. Combined checked-in DataCore keys overlap 228 of 721 SCMDB description rows, so these are reconstruction inputs rather than active replacements.',
     migrationSlice:
       'Extend the DataCore mission extractor beyond localization references to recover contract text variants, cooldowns, encounters, hauling details, blueprint rewards, and item reward joins.',
   },
   'mission-scmdb-titles': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'Mission titles and chain tags currently come from the SCMDB mission CSV. DataCore now emits mission-brokers.datacore.csv and mission-localization.datacore.csv from mission/contract records, but the checked-in keys overlap only 38 of 694 SCMDB title rows, so title replacement still needs deeper contract/variant traversal.',
+      'Mission titles and chain tags currently come from the SCMDB mission CSV. DataCore now emits contract-generators.datacore.csv, mission-brokers.datacore.csv, and mission-localization.datacore.csv from mission/contract records. Combined checked-in DataCore keys overlap 238 of 694 SCMDB title rows, so title replacement still needs deeper contract/variant traversal.',
     migrationSlice:
       'Extend the DataCore mission extractor to recover title variants plus blueprint, intro, and chain markers from first-party mission records.',
   },

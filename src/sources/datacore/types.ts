@@ -142,6 +142,47 @@ export interface DataCoreMissionBrokerRecord {
   recordPath: string;
 }
 
+export interface DataCoreContractGeneratorRecord {
+  generatorClass: string;
+  handlerType: string;
+  handlerDebugName: string;
+  handlerNotForRelease: string;
+  handlerWorkInProgress: string;
+  factionReputationGuid: string;
+  reputationScopeGuid: string;
+  contractSection: string;
+  contractId: string;
+  contractDebugName: string;
+  contractNotForRelease: string;
+  contractWorkInProgress: string;
+  templateGuid: string;
+  templateClass: string;
+  titleKey: string;
+  descriptionKey: string;
+  contractorKey: string;
+  titleVariantKeys: string;
+  descriptionVariantKeys: string;
+  stringParamOverrides: string;
+  locationTagGuids: string;
+  locationTagClasses: string;
+  maxInstances: string;
+  maxInstancesPerPlayer: string;
+  respawnTime: string;
+  respawnTimeVariation: string;
+  instanceLifeTime: string;
+  instanceLifeTimeVariation: string;
+  contractBuyInAmount: string;
+  timeToComplete: string;
+  difficultyProfileGuid: string;
+  difficultyProfileClass: string;
+  mechanicalSkill: string;
+  mentalLoad: string;
+  riskOfLoss: string;
+  gameKnowledge: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreFactionRecord {
   ref: string;
   path: string;

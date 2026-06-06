@@ -15,6 +15,7 @@ import type {
   DataCoreItemTypeConfig,
 } from '../../items/datacore/types';
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
+import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
@@ -47,6 +48,7 @@ import {
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
 import type {
   DataCoreCommodityRecord,
+  DataCoreContractGeneratorRecord,
   DataCoreFactionRecord,
   DataCoreLocationLabelRecord,
   DataCoreManufacturerRecord,
@@ -95,6 +97,11 @@ export interface DataCoreScrapeTypeResult {
 }
 
 export interface DataCoreScrapeCommodityResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeContractGeneratorResult {
   rows: number;
   csvFile: string;
 }
@@ -229,6 +236,7 @@ export interface RunDatacoreScrapeOptions {
   extractXmlCache?: typeof extractDataCoreXmlCache;
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
+  extractContractGenerators?: typeof extractDataCoreContractGenerators;
   extractCommodities?: typeof extractDataCoreCommodities;
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
@@ -267,6 +275,7 @@ export interface RunDatacoreScrapeOptions {
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
+  onContractGeneratorsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -304,6 +313,7 @@ export interface RunDatacoreScrapeResult {
     recordCount: number;
     outputPath: string;
   };
+  contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
   commodityResult: DataCoreScrapeCommodityResult;
   vehicleResult: DataCoreScrapeVehicleResult;
   factionResult: DataCoreScrapeFactionResult;
@@ -341,6 +351,7 @@ const COMMON_HEADERS = [
   'Class',
   'Health',
 ];
+const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
@@ -378,6 +389,46 @@ const COMMODITY_HEADERS = [
   'Unrefined',
   'Raw',
   'Refined',
+  'Record GUID',
+  'Record Path',
+];
+const CONTRACT_GENERATOR_HEADERS = [
+  'Generator Class',
+  'Handler Type',
+  'Handler Debug Name',
+  'Handler Not For Release',
+  'Handler Work In Progress',
+  'Faction Reputation GUID',
+  'Reputation Scope GUID',
+  'Contract Section',
+  'Contract ID',
+  'Contract Debug Name',
+  'Contract Not For Release',
+  'Contract Work In Progress',
+  'Template GUID',
+  'Template Class',
+  'Title Key',
+  'Description Key',
+  'Contractor Key',
+  'Title Variant Keys',
+  'Description Variant Keys',
+  'String Param Overrides',
+  'Location Tag GUIDs',
+  'Location Tag Classes',
+  'Max Instances',
+  'Max Instances Per Player',
+  'Respawn Time',
+  'Respawn Time Variation',
+  'Instance Life Time',
+  'Instance Life Time Variation',
+  'Contract Buy In Amount',
+  'Time To Complete',
+  'Difficulty Profile GUID',
+  'Difficulty Profile Class',
+  'Mechanical Skill',
+  'Mental Load',
+  'Risk Of Loss',
+  'Game Knowledge',
   'Record GUID',
   'Record Path',
 ];
@@ -903,6 +954,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractXmlCache = options.extractXmlCache ?? extractDataCoreXmlCache;
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
+  const extractContractGenerators = options.extractContractGenerators ?? extractDataCoreContractGenerators;
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
@@ -991,6 +1043,17 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   }
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
   const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
+
+  const contractGeneratorRows = await extractContractGenerators({ xmlCacheDir, graph: graphLookup });
+  const contractGeneratorResult = await writeContractGeneratorCsv(contractGeneratorRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onContractGeneratorsExtracted?.(
+    contractGeneratorResult.rows,
+    contractGeneratorResult.csvFile,
+    Boolean(options.dryRun),
+  );
 
   const missionBrokerRows = await extractMissionBrokers({ xmlCacheDir, graph: graphLookup });
   const missionBrokerResult = await writeMissionBrokerCsv(missionBrokerRows, {
@@ -1278,6 +1341,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const rawFactResults = buildRawFactResults(
     new Map([
+      [contractGeneratorResult.csvFile, contractGeneratorResult],
       [commodityResult.csvFile, commodityResult],
       [vehicleResult.csvFile, vehicleResult],
       [factionResult.csvFile, factionResult],
@@ -1303,6 +1367,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       recordCount: recordGraph.recordCount,
       outputPath: recordGraphPath,
     },
+    contractGeneratorResult,
     commodityResult,
     vehicleResult,
     factionResult,
@@ -1484,6 +1549,61 @@ async function scrapeDataCoreType(
   }
 
   return { type: name, rows: rows.length, skipped, csvFile };
+}
+
+async function writeContractGeneratorCsv(
+  rows: DataCoreContractGeneratorRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeContractGeneratorResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.generatorClass,
+      row.handlerType,
+      row.handlerDebugName,
+      row.handlerNotForRelease,
+      row.handlerWorkInProgress,
+      row.factionReputationGuid,
+      row.reputationScopeGuid,
+      row.contractSection,
+      row.contractId,
+      row.contractDebugName,
+      row.contractNotForRelease,
+      row.contractWorkInProgress,
+      row.templateGuid,
+      row.templateClass,
+      row.titleKey,
+      row.descriptionKey,
+      row.contractorKey,
+      row.titleVariantKeys,
+      row.descriptionVariantKeys,
+      row.stringParamOverrides,
+      row.locationTagGuids,
+      row.locationTagClasses,
+      row.maxInstances,
+      row.maxInstancesPerPlayer,
+      row.respawnTime,
+      row.respawnTimeVariation,
+      row.instanceLifeTime,
+      row.instanceLifeTimeVariation,
+      row.contractBuyInAmount,
+      row.timeToComplete,
+      row.difficultyProfileGuid,
+      row.difficultyProfileClass,
+      row.mechanicalSkill,
+      row.mentalLoad,
+      row.riskOfLoss,
+      row.gameKnowledge,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, CONTRACT_GENERATORS_CSV_FILE),
+      stringify([CONTRACT_GENERATOR_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: CONTRACT_GENERATORS_CSV_FILE };
 }
 
 async function writeCommodityCsv(

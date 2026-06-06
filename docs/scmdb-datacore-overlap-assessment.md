@@ -161,19 +161,22 @@ proven and documented as a temporary bridge.
 
 ### Missions And Contracts
 
-SCMDB mission/contract overlap remains low even after exporting a dedicated
-DataCore mission-broker fact CSV and mission-localization fact CSV:
+SCMDB mission/contract overlap remains partial after exporting dedicated
+DataCore contract-generator, mission-broker, and mission-localization fact CSVs:
 
+- `csv/datacore/4.8.0.11875683-live/contract-generators.datacore.csv`
+  contains 496 generated contract variant rows with title/description overrides,
+  string-hash variants, timing, difficulty, and location-tag fields.
 - `csv/datacore/4.8.0.11875683-live/mission-brokers.datacore.csv`
   contains 2,584 first-party MissionBrokerEntry rows with reward, timing,
   cooldown, mission type, giver, location, flag, and localization-key fields.
 - `csv/datacore/4.8.0.11875683-live/mission-localization.datacore.csv`
   contains 5,087 mission/contract localization-reference rows and 1,027 unique
   keys.
-- 71 / 1,449 SCMDB mission updater rows overlap the DataCore broker/localization
-  keys.
-- Title overlap is 38 / 694 rows.
-- Description overlap is 27 / 721 rows.
+- 476 / 1,449 SCMDB mission updater rows overlap the combined DataCore
+  generator/broker/localization keys.
+- Title overlap is 238 / 694 rows.
+- Description overlap is 228 / 721 rows.
 - 407 / 4,007 SCMDB debug names overlap DataCore mission/contract entity class
   names.
 

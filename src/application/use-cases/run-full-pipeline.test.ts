@@ -122,6 +122,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           recordCount: 0,
           outputPath: 'repo/csv/datacore/4.8.0-live/record-graph.json',
         },
+        contractGeneratorResult: {
+          rows: 0,
+          csvFile: 'contract-generators.datacore.csv',
+        },
         commodityResult: {
           rows: 0,
           csvFile: 'commodities.datacore.csv',

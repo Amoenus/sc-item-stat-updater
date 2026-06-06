@@ -62,6 +62,7 @@ test('category listing includes representative provider families and source meta
   assert.deepEqual(
     listing.rawFacts.map((entry) => [entry.slug, entry.sourceFiles[0]]),
     [
+      ['datacore-contract-generators', 'contract-generators.datacore.csv'],
       ['datacore-commodities', 'commodities.datacore.csv'],
       ['datacore-vehicles', 'vehicles.datacore.csv'],
       ['datacore-manufacturers', 'manufacturers.datacore.csv'],

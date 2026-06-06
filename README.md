@@ -96,7 +96,7 @@ The scraper emits component item-stat CSVs plus standalone raw fact datasets for
 - manufacturer identity, localization, logo, and style refs
 - faction flags, reputation UI keys, and relationship refs
 - StarMap law/location labels and mining-scoped location labels
-- mission broker records plus mission and contract localization references from the record graph
+- contract generator variants, mission broker records, and mission/contract localization references from the record graph
 - mining behavior, composition, scan-signature, and quality-quantization facts
 
 To list supported DataCore item-stat types:
@@ -295,6 +295,7 @@ SPViewer CSVs listed here are legacy diagnostic inputs only. Active game-derived
 | `spviewer/<version>-[live\|ptu]/weapongun.spviewer.csv` | Weapon Guns | SPViewer |
 | `spviewer/<version>-[live\|ptu]/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
 | `spviewer/<version>-[live\|ptu]/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
+| `datacore/<version>-[live\|ptu]/contract-generators.datacore.csv` | Generated contract variants, title/description overrides, timing, and location tags | DataCore |
 | `datacore/<version>-[live\|ptu]/mission-brokers.datacore.csv` | Mission broker rewards, timing, flags, and localization keys | DataCore |
 | `datacore/<version>-[live\|ptu]/mission-localization.datacore.csv` | Mission and contract localization references | DataCore |
 | `scmdb/<version>/contracts.csv` | SCMDB mission contracts | SCMDB |
