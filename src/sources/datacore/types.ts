@@ -132,6 +132,7 @@ export interface DataCoreMiningElementRecord {
   path: string;
   elementClass: string;
   elementName: string;
+  materialName: string;
   inferredDescriptionKey: string;
   resourceTypeGuid: string;
   instability: string;
@@ -185,6 +186,33 @@ export interface DataCoreMineableEntityRecord {
   glowLerpSpeed: string;
   allowAutoRespawning: string;
 }
+
+export interface DataCoreMiningRockSignatureRecord {
+  ref: string;
+  path: string;
+  entityClass: string;
+  variantFamily: 'asteroid' | 'surface' | 'fps' | 'groundvehicle';
+  rarity: string;
+  elementToken: string;
+  scanSignature: string;
+}
+
+export type DataCoreMiningRockSignatureDataset = SourceDataset<DataCoreMiningRockSignatureRecord> & {
+  source: 'datacore';
+};
+
+export interface DataCoreMiningQualityQuantizationRecord {
+  ref: string;
+  path: string;
+  quantizationClass: string;
+  elementToken: string;
+  qualityBands: string;
+  bandRanges: string;
+}
+
+export type DataCoreMiningQualityQuantizationDataset = SourceDataset<DataCoreMiningQualityQuantizationRecord> & {
+  source: 'datacore';
+};
 
 export type DataCoreMineableEntityDataset = SourceDataset<DataCoreMineableEntityRecord> & {
   source: 'datacore';

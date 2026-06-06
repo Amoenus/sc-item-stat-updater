@@ -107,16 +107,114 @@ describe('mining element updater', () => {
     assert.strictEqual(titanium.Source, 'SCMDB');
   });
 
+  it('prefers DataCore Material Name, rarity, scan signatures, and quality bands over SCMDB', () => {
+    const rows = buildMiningElementRowsFromSources(
+      [
+        {
+          'Element Name': 'Agricium (Ore)',
+          'Material Name': 'Agricium',
+          'Inferred Description Key': 'items_commodities_agricium_ore_desc',
+          Instability: '350',
+          Resistance: '0.5',
+          'Optimal Window Midpoint': '0.5',
+          'Optimal Window Randomness': '0.15',
+          'Optimal Window Thinness': '2',
+          'Explosion Multiplier': '4',
+          'Cluster Factor': '0.2',
+        },
+      ],
+      [
+        {
+          'Element Name': 'Agricium (Ore)',
+          Rarity: 'common',
+          'Scan Signature': '1',
+          'Ground Scan Signature': '2',
+          'FPS Scan Signature': '3',
+          'Material Name': 'Old Material',
+          'Quality Bands': '1.0% / 2.0%',
+          Resistance: 'old',
+          Instability: 'old',
+        },
+      ],
+      [
+        {
+          'Entity Class': 'MineableRock_AsteroidUncommon_Agricium',
+          'Variant Family': 'asteroid',
+          Rarity: 'uncommon',
+          'Element Token': 'Agricium',
+          'Scan Signature': '3885',
+        },
+        {
+          'Entity Class': 'MineableRock_GroundVehicle_Carinite',
+          'Variant Family': 'groundvehicle',
+          Rarity: '',
+          'Element Token': 'Agricium',
+          'Scan Signature': '4000',
+        },
+        {
+          'Entity Class': 'MineableRock_FPS_Carinite',
+          'Variant Family': 'fps',
+          Rarity: '',
+          'Element Token': 'Agricium',
+          'Scan Signature': '3000',
+        },
+      ],
+      [
+        {
+          'Quantization Class': 'Quantization_Agricium',
+          'Element Token': 'Agricium',
+          'Quality Bands': '346 / 588 / 1000',
+        },
+      ],
+    );
+
+    const agricium = rows.find((row) => row['Element Name'] === 'Agricium (Ore)');
+    assert.ok(agricium);
+    assert.strictEqual(agricium['Material Name'], 'Agricium', 'DataCore Material Name should win');
+    assert.strictEqual(agricium.Rarity, 'uncommon');
+    assert.strictEqual(agricium['Scan Signature'], '3885', 'DataCore asteroid family wins for Scan Signature');
+    assert.strictEqual(agricium['Ground Scan Signature'], '4000');
+    assert.strictEqual(agricium['FPS Scan Signature'], '3000');
+    assert.strictEqual(agricium['Quality Bands'], '34.6% / 58.8% / 100.0%');
+  });
+
+  it('falls back to SCMDB rarity, scan signatures, and quality bands when DataCore has no matching rows', () => {
+    const rows = buildMiningElementRowsFromSources(
+      [
+        {
+          'Element Name': 'Bexalite (Raw)',
+          'Material Name': 'Bexalite',
+          'Inferred Description Key': 'items_commodities_bexalite_raw_desc',
+        },
+      ],
+      [
+        {
+          'Element Name': 'Bexalite (Raw)',
+          Rarity: 'rare',
+          'Scan Signature': '4100',
+          'Ground Scan Signature': '4000',
+          'Quality Bands': '30.2% / 59.7%',
+        },
+      ],
+      [],
+      [],
+    );
+
+    const bexalite = rows.find((row) => row['Element Name'] === 'Bexalite (Raw)');
+    assert.ok(bexalite);
+    assert.strictEqual(bexalite.Rarity, 'rare');
+    assert.strictEqual(bexalite['Scan Signature'], '4100');
+    assert.strictEqual(bexalite['Ground Scan Signature'], '4000');
+    assert.strictEqual(bexalite['Quality Bands'], '30.2% / 59.7%');
+  });
+
   it('compares DataCore and SCMDB mining element coverage for diagnostics', () => {
     const coverage = compareMiningElementCoverage(
       [
         { 'Inferred Description Key': 'items_commodities_agricium_ore_desc' },
         { 'Inferred Description Key': 'items_commodities_aslarite_raw_desc' },
       ],
-      [
-        { 'Element Name': 'Agricium (Ore)' },
-        { 'Element Name': 'Titanium (Ore)' },
-      ],
+      [{ 'Element Name': 'Agricium (Ore)' }, { 'Element Name': 'Titanium (Ore)' }],
     );
 
     assert.strictEqual(coverage.datacoreKeys, 2);
@@ -145,19 +243,41 @@ describe('mining element updater', () => {
     await fs.writeFile(
       path.join(datacoreDir, 'mining-elements.datacore.csv'),
       [
-        'Element Class,Element Name,Inferred Description Key,Resource Type GUID,Instability,Resistance,Optimal Window Midpoint,Optimal Window Randomness,Optimal Window Thinness,Explosion Multiplier,Cluster Factor',
-        'Agricium_Ore,Agricium (Ore),items_commodities_agricium_ore_desc,guid,350,0.5,0.5,0.15,2,4,0.2',
+        'Element Class,Element Name,Material Name,Inferred Description Key,Resource Type GUID,Instability,Resistance,Optimal Window Midpoint,Optimal Window Randomness,Optimal Window Thinness,Explosion Multiplier,Cluster Factor',
+        'Agricium_Ore,Agricium (Ore),Agricium,items_commodities_agricium_ore_desc,guid,350,0.5,0.5,0.15,2,4,0.2',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
+      path.join(datacoreDir, 'mining-rock-signatures.datacore.csv'),
+      [
+        'Entity Class,Variant Family,Rarity,Element Token,Scan Signature,Record GUID,Record Path',
+        'MineableRock_AsteroidUncommon_Agricium,asteroid,uncommon,Agricium,3885,guid,path.xml',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
+      path.join(datacoreDir, 'mining-quality-quantizations.datacore.csv'),
+      [
+        'Quantization Class,Element Token,Quality Bands,Band Ranges,Record GUID,Record Path',
+        'Quantization_Agricium,Agricium,346 / 588 / 1000,0-399:346 / 400-599:588 / 999-1000:1000,guid,path.xml',
       ].join('\n'),
       'utf8',
     );
 
-    const rows = await config.loadSourceData({ csvDir: scmdbDir, sourceDirs: { datacore: datacoreDir, scmdb: scmdbDir } });
+    const rows = await config.loadSourceData({
+      csvDir: scmdbDir,
+      sourceDirs: { datacore: datacoreDir, scmdb: scmdbDir },
+    });
     const agricium = rows.find((row) => row['Element Name'] === 'Agricium (Ore)');
 
     assert.equal(agricium?.Source, 'DataCore+SCMDB');
     assert.equal(agricium?.Resistance, '0.5');
     assert.equal(agricium?.Instability, '350');
     assert.equal(agricium?.Rarity, 'uncommon');
+    assert.equal(agricium?.['Material Name'], 'Agricium');
+    assert.equal(agricium?.['Scan Signature'], '3885', 'DataCore scan signature should win over SCMDB');
+    assert.equal(agricium?.['Quality Bands'], '34.6% / 58.8% / 100.0%');
     assert.equal(rows.find((row) => row['Element Name'] === 'Titanium (Ore)')?.Source, 'SCMDB');
   });
 });

@@ -1,16 +1,25 @@
+import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
+import { deriveClusterNote, deriveMiningDifficulty, deriveVolatilityNote } from '../../extractor/mining-parser';
+import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { getLogger } from '../../infrastructure/logger';
-import { deriveClusterNote, deriveMiningDifficulty, deriveVolatilityNote } from '../../extractor/mining-parser';
-import type { ItemConfig } from '../../enrichment/item-config';
-import type { ItemSourceDataContext } from '../../enrichment/item-config';
 
 const SUFFIXLESS_TARGETS: Record<string, string> = {};
 const COMMODITY_SLUG_ALIASES: Record<string, string> = {
   aluminium: 'aluminum',
 };
 const DATACORE_MINING_ELEMENTS_CSV = 'mining-elements.datacore.csv';
+const DATACORE_MINING_ROCK_SIGNATURES_CSV = 'mining-rock-signatures.datacore.csv';
+const DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV = 'mining-quality-quantizations.datacore.csv';
 const logger = getLogger('mining-elements-config');
+
+interface ScanSignatureLookup {
+  scan: string;
+  groundScan: string;
+  fpsScan: string;
+}
+
+const EMPTY_SIGNATURE_LOOKUP: ScanSignatureLookup = { scan: '', groundScan: '', fpsScan: '' };
 
 function toCommoditySlug(name: string): string {
   const slug = name.toLowerCase().replace(/[\s-]/g, '');
@@ -33,7 +42,12 @@ export function compareMiningElementCoverage(
   datacoreRows: Record<string, string>[],
   scmdbRows: Record<string, string>[],
 ): MiningElementCoverageDiagnostics {
-  const datacoreKeys = new Set(datacoreRows.map((row) => row['Inferred Description Key']).filter(Boolean).map((key) => key.toLowerCase()));
+  const datacoreKeys = new Set(
+    datacoreRows
+      .map((row) => row['Inferred Description Key'])
+      .filter(Boolean)
+      .map((key) => key.toLowerCase()),
+  );
   const scmdbKeys = new Set(scmdbRows.flatMap((row) => inferTargetKeys(row)).map((key) => key.toLowerCase()));
   const common = [...datacoreKeys].filter((key) => scmdbKeys.has(key));
   const datacoreOnly = [...datacoreKeys].filter((key) => !scmdbKeys.has(key)).sort((a, b) => a.localeCompare(b));
@@ -51,9 +65,14 @@ export function compareMiningElementCoverage(
 export function buildMiningElementRowsFromSources(
   datacoreRows: Record<string, string>[],
   scmdbRows: Record<string, string>[],
+  signatureRows: Record<string, string>[] = [],
+  qualityQuantizationRows: Record<string, string>[] = [],
 ): Record<string, string>[] {
   const scmdbByTarget = new Map<string, Record<string, string>>();
   const mergedRows: Record<string, string>[] = [];
+  const signaturesByMaterial = buildSignatureLookup(signatureRows);
+  const rarityByMaterial = buildRarityLookup(signatureRows);
+  const qualityBandsByMaterial = buildQualityBandLookup(qualityQuantizationRows);
 
   for (const row of scmdbRows) {
     const targetKey = inferTargetKeys(row)[0];
@@ -66,8 +85,14 @@ export function buildMiningElementRowsFromSources(
     if (!targetKey) continue;
 
     const scmdbRow = scmdbByTarget.get(targetKey.toLowerCase());
-    const merged = toMiningElementRow(datacoreRow, scmdbRow);
-    const existingIndex = mergedRows.findIndex((row) => inferTargetKeys(row)[0]?.toLowerCase() === targetKey.toLowerCase());
+    const materialName = datacoreRow['Material Name']?.trim().toLowerCase() ?? '';
+    const signatures = signaturesByMaterial.get(materialName) ?? EMPTY_SIGNATURE_LOOKUP;
+    const rarity = rarityByMaterial.get(materialName) ?? '';
+    const qualityBands = qualityBandsByMaterial.get(materialName) ?? '';
+    const merged = toMiningElementRow(datacoreRow, scmdbRow, signatures, rarity, qualityBands);
+    const existingIndex = mergedRows.findIndex(
+      (row) => inferTargetKeys(row)[0]?.toLowerCase() === targetKey.toLowerCase(),
+    );
     if (existingIndex === -1) {
       mergedRows.push(merged);
     } else {
@@ -78,9 +103,79 @@ export function buildMiningElementRowsFromSources(
   return mergedRows;
 }
 
+function buildSignatureLookup(signatureRows: Record<string, string>[]): Map<string, ScanSignatureLookup> {
+  const lookup = new Map<string, ScanSignatureLookup>();
+
+  for (const row of signatureRows) {
+    const token = row['Element Token']?.trim().toLowerCase();
+    if (!token) continue;
+    const family = row['Variant Family']?.trim().toLowerCase() ?? '';
+    const signature = row['Scan Signature']?.trim() ?? '';
+    if (!signature || signature === '0') continue;
+
+    const existing = lookup.get(token) ?? { scan: '', groundScan: '', fpsScan: '' };
+    if ((family === 'asteroid' || family === 'surface') && !existing.scan) {
+      existing.scan = signature;
+    } else if (family === 'groundvehicle' && !existing.groundScan) {
+      existing.groundScan = signature;
+    } else if (family === 'fps' && !existing.fpsScan) {
+      existing.fpsScan = signature;
+    }
+    lookup.set(token, existing);
+  }
+
+  return lookup;
+}
+
+function buildRarityLookup(signatureRows: Record<string, string>[]): Map<string, string> {
+  const lookup = new Map<string, string>();
+
+  for (const row of signatureRows) {
+    const token = row['Element Token']?.trim().toLowerCase();
+    if (!token) continue;
+    const family = row['Variant Family']?.trim().toLowerCase() ?? '';
+    if (family !== 'asteroid' && family !== 'surface') continue;
+    const rarity = row.Rarity?.trim().toLowerCase() ?? '';
+    if (!rarity) continue;
+    if (!lookup.has(token)) lookup.set(token, rarity);
+  }
+
+  return lookup;
+}
+
+function buildQualityBandLookup(qualityQuantizationRows: Record<string, string>[]): Map<string, string> {
+  const lookup = new Map<string, string>();
+
+  for (const row of qualityQuantizationRows) {
+    const token = row['Element Token']?.trim().toLowerCase();
+    if (!token) continue;
+    const bands = formatQualityBands(row['Quality Bands']);
+    if (!bands) continue;
+    lookup.set(token, bands);
+  }
+
+  return lookup;
+}
+
+function formatQualityBands(value: string | undefined): string {
+  const bands = value
+    ?.split('/')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const num = Number(part);
+      return Number.isFinite(num) ? `${(num / 10).toFixed(1)}%` : part;
+    });
+  return bands?.join(' / ') ?? '';
+}
+
 async function loadMiningElementSourceData(context: ItemSourceDataContext): Promise<Record<string, string>[]> {
-  const scmdbRows = await readCsvFile(resolveChildPath(context.csvDir, 'mining-elements.csv', 'SCMDB mining elements CSV filename'));
+  const scmdbRows = await readCsvFile(
+    resolveChildPath(context.csvDir, 'mining-elements.csv', 'SCMDB mining elements CSV filename'),
+  );
   const datacoreRows = await loadDatacoreMiningElementRows(context.sourceDirs?.datacore);
+  const signatureRows = await loadDatacoreMiningRockSignatureRows(context.sourceDirs?.datacore);
+  const qualityQuantizationRows = await loadDatacoreMiningQualityQuantizationRows(context.sourceDirs?.datacore);
   const coverage = compareMiningElementCoverage(datacoreRows, scmdbRows);
 
   logger.info('Mining element source coverage', {
@@ -89,16 +184,20 @@ async function loadMiningElementSourceData(context: ItemSourceDataContext): Prom
     common: coverage.common,
     datacoreOnly: coverage.datacoreOnly.length,
     scmdbOnly: coverage.scmdbOnly.length,
+    signatureRows: signatureRows.length,
+    qualityQuantizationRows: qualityQuantizationRows.length,
   });
 
-  return buildMiningElementRowsFromSources(datacoreRows, scmdbRows);
+  return buildMiningElementRowsFromSources(datacoreRows, scmdbRows, signatureRows, qualityQuantizationRows);
 }
 
 async function loadDatacoreMiningElementRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
   if (!datacoreDir) return [];
 
   try {
-    return await readCsvFile(resolveChildPath(datacoreDir, DATACORE_MINING_ELEMENTS_CSV, 'DataCore mining elements CSV filename'));
+    return await readCsvFile(
+      resolveChildPath(datacoreDir, DATACORE_MINING_ELEMENTS_CSV, 'DataCore mining elements CSV filename'),
+    );
   } catch (err) {
     if (isFileNotFound(err)) {
       logger.warn('DataCore mining elements CSV missing; using SCMDB mining element fallback only', {
@@ -111,28 +210,85 @@ async function loadDatacoreMiningElementRows(datacoreDir: string | undefined): P
   }
 }
 
-function toMiningElementRow(datacoreRow: Record<string, string>, scmdbRow: Record<string, string> | undefined): Record<string, string> {
+async function loadDatacoreMiningRockSignatureRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
+  if (!datacoreDir) return [];
+
+  try {
+    return await readCsvFile(
+      resolveChildPath(
+        datacoreDir,
+        DATACORE_MINING_ROCK_SIGNATURES_CSV,
+        'DataCore mining rock signatures CSV filename',
+      ),
+    );
+  } catch (err) {
+    if (isFileNotFound(err)) {
+      logger.warn('DataCore mining rock signatures CSV missing; scan signatures will fall back to SCMDB', {
+        datacoreDir,
+        csvFile: DATACORE_MINING_ROCK_SIGNATURES_CSV,
+      });
+      return [];
+    }
+    throw err;
+  }
+}
+
+async function loadDatacoreMiningQualityQuantizationRows(
+  datacoreDir: string | undefined,
+): Promise<Record<string, string>[]> {
+  if (!datacoreDir) return [];
+
+  try {
+    return await readCsvFile(
+      resolveChildPath(
+        datacoreDir,
+        DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV,
+        'DataCore mining quality quantizations CSV filename',
+      ),
+    );
+  } catch (err) {
+    if (isFileNotFound(err)) {
+      logger.warn('DataCore mining quality quantizations CSV missing; quality bands will fall back to SCMDB', {
+        datacoreDir,
+        csvFile: DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV,
+      });
+      return [];
+    }
+    throw err;
+  }
+}
+
+function toMiningElementRow(
+  datacoreRow: Record<string, string>,
+  scmdbRow: Record<string, string> | undefined,
+  signatures: ScanSignatureLookup,
+  rarity: string,
+  qualityBands: string,
+): Record<string, string> {
   const behaviorFacts = toDatacoreBehaviorFacts(datacoreRow);
   return {
     'Element Name': datacoreRow['Element Name'] || scmdbRow?.['Element Name'] || '',
-    Rarity: scmdbRow?.Rarity || '',
-    'Ground Scan Signature': scmdbRow?.['Ground Scan Signature'] || '',
-    'FPS Scan Signature': scmdbRow?.['FPS Scan Signature'] || '',
-    'Scan Signature': scmdbRow?.['Scan Signature'] || '',
+    Rarity: rarity || scmdbRow?.Rarity || '',
+    'Ground Scan Signature': signatures.groundScan || scmdbRow?.['Ground Scan Signature'] || '',
+    'FPS Scan Signature': signatures.fpsScan || scmdbRow?.['FPS Scan Signature'] || '',
+    'Scan Signature': signatures.scan || scmdbRow?.['Scan Signature'] || '',
     Resistance: datacoreRow.Resistance || scmdbRow?.Resistance || '',
     Instability: datacoreRow.Instability || scmdbRow?.Instability || '',
     Density: scmdbRow?.Density || '',
     'Optimal Window Midpoint': datacoreRow['Optimal Window Midpoint'] || scmdbRow?.['Optimal Window Midpoint'] || '',
-    'Optimal Window Randomness': datacoreRow['Optimal Window Randomness'] || scmdbRow?.['Optimal Window Randomness'] || '',
+    'Optimal Window Randomness':
+      datacoreRow['Optimal Window Randomness'] || scmdbRow?.['Optimal Window Randomness'] || '',
     'Optimal Window Thinness': datacoreRow['Optimal Window Thinness'] || scmdbRow?.['Optimal Window Thinness'] || '',
     'Explosion Multiplier': datacoreRow['Explosion Multiplier'] || scmdbRow?.['Explosion Multiplier'] || '',
     'Cluster Factor': datacoreRow['Cluster Factor'] || scmdbRow?.['Cluster Factor'] || '',
-    'Quality Bands': scmdbRow?.['Quality Bands'] || '',
-    'Material Name': scmdbRow?.['Material Name'] || '',
+    'Quality Bands': qualityBands || scmdbRow?.['Quality Bands'] || '',
+    'Material Name': datacoreRow['Material Name'] || scmdbRow?.['Material Name'] || '',
     'Mining Difficulty': behaviorFacts ? deriveMiningDifficulty(behaviorFacts) : scmdbRow?.['Mining Difficulty'] || '',
     'Volatility Note': behaviorFacts ? deriveVolatilityNote(behaviorFacts) : scmdbRow?.['Volatility Note'] || '',
     'Cluster Note':
-      behaviorFacts?.clusterFactor !== undefined ? deriveClusterNote(behaviorFacts.clusterFactor) : scmdbRow?.['Cluster Note'] || '',
+      behaviorFacts?.clusterFactor !== undefined
+        ? deriveClusterNote(behaviorFacts.clusterFactor)
+        : scmdbRow?.['Cluster Note'] || '',
     'Best Refinery': scmdbRow?.['Best Refinery'] || '',
     'Localization Key': datacoreRow['Inferred Description Key'] || '',
     Source: scmdbRow ? 'DataCore+SCMDB' : 'DataCore',
@@ -188,6 +344,12 @@ function isFileNotFound(err: unknown): boolean {
 
 export default {
   csvFile: 'mining-elements.csv',
+  sourceFiles: [
+    { file: 'mining-elements.csv', sourceDir: 'csvDir' },
+    { file: DATACORE_MINING_ELEMENTS_CSV, sourceDir: 'datacore' },
+    { file: DATACORE_MINING_ROCK_SIGNATURES_CSV, sourceDir: 'datacore' },
+    { file: DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV, sourceDir: 'datacore' },
+  ],
   loadSourceData: loadMiningElementSourceData,
   label: 'Mining element stats',
   requiredColumns: ['Element Name', 'Rarity', 'Scan Signature', 'Resistance', 'Instability'],

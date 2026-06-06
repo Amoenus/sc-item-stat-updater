@@ -3,9 +3,6 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
-import { runDatacoreScrape, type DataCoreTypeEntry } from './run-datacore-scrape';
-import { DATACORE_RAW_FACTS } from './category-listing';
 import { DATACORE_TYPE_CONFIG as BOMB_TYPE_CONFIG } from '../../items/datacore/bombs';
 import { DATACORE_TYPE_CONFIG as COOLER_TYPE_CONFIG } from '../../items/datacore/coolers';
 import { DATACORE_TYPE_CONFIG as EMP_TYPE_CONFIG } from '../../items/datacore/emps';
@@ -21,13 +18,16 @@ import { DATACORE_TYPE_CONFIG as RADAR_TYPE_CONFIG } from '../../items/datacore/
 import { DATACORE_TYPE_CONFIG as SALVAGE_MODIFIER_TYPE_CONFIG } from '../../items/datacore/salvage-modifiers';
 import { DATACORE_TYPE_CONFIG as SELF_DESTRUCT_TYPE_CONFIG } from '../../items/datacore/self-destruct';
 import { DATACORE_TYPE_CONFIG as SHIELD_TYPE_CONFIG } from '../../items/datacore/shields';
-import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 import { DATACORE_TYPE_CONFIG as THROWABLE_TYPE_CONFIG } from '../../items/datacore/throwables';
+import { DATACORE_TYPE_CONFIG as TRACTOR_BEAM_TYPE_CONFIG } from '../../items/datacore/tractor-beams';
 import { DATACORE_TYPE_CONFIG as TURRET_TYPE_CONFIG } from '../../items/datacore/turrets';
 import { DATACORE_TYPE_CONFIG as WEAPON_ATTACHMENT_TYPE_CONFIG } from '../../items/datacore/weapon-attachments';
 import { DATACORE_TYPE_CONFIG as WEAPON_DEFENSIVE_TYPE_CONFIG } from '../../items/datacore/weapon-defensive';
 import { DATACORE_TYPE_CONFIG as WEAPON_GUN_TYPE_CONFIG } from '../../items/datacore/weapon-guns';
 import { DATACORE_TYPE_CONFIG as WEAPON_PERSONAL_TYPE_CONFIG } from '../../items/datacore/weapon-personal';
+import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
+import { DATACORE_RAW_FACTS } from './category-listing';
+import { type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -2307,6 +2307,7 @@ test('runDatacoreScrape writes DataCore mining element CSV after building the re
         path: 'libs/foundry/records/mining/mineableelements/agricium_ore.xml',
         elementClass: 'Agricium_Ore',
         elementName: 'Agricium (Ore)',
+        materialName: 'Agricium',
         inferredDescriptionKey: 'items_commodities_agricium_ore_desc',
         resourceTypeGuid: 'fc1ec740-3047-48d8-81f0-396f4c9a90ef',
         instability: '350',
@@ -2327,9 +2328,9 @@ test('runDatacoreScrape writes DataCore mining element CSV after building the re
   assert.equal(result.miningElementResult.csvFile, 'mining-elements.datacore.csv');
   assert.match(
     csv,
-    /^Element Class,Element Name,Inferred Description Key,Resource Type GUID,Instability,Resistance,Optimal Window Midpoint,Optimal Window Randomness,Optimal Window Thinness,Explosion Multiplier,Cluster Factor,Record GUID,Record Path\r?\n/,
+    /^Element Class,Element Name,Material Name,Inferred Description Key,Resource Type GUID,Instability,Resistance,Optimal Window Midpoint,Optimal Window Randomness,Optimal Window Thinness,Explosion Multiplier,Cluster Factor,Record GUID,Record Path\r?\n/,
   );
-  assert.match(csv, /Agricium_Ore,Agricium \(Ore\),items_commodities_agricium_ore_desc/);
+  assert.match(csv, /Agricium_Ore,Agricium \(Ore\),Agricium,items_commodities_agricium_ore_desc/);
 });
 
 test('runDatacoreScrape writes DataCore mining composition CSV after building the record graph', async () => {
@@ -2900,6 +2901,61 @@ test('runDatacoreScrape writes DataCore mining quality distribution CSV after bu
     /^Distribution Class,Distribution Type,Mineable Family,Location GUID,Location Class,Location Path,Min Quality,Max Quality,Mean,Stddev,Record GUID,Record Path\r?\n/,
   );
   assert.match(csv, /CommonShipMineable_QualityOverride_Pyro,location-override,shipmineables/);
+});
+
+test('runDatacoreScrape writes DataCore mining quality quantization CSV after building the record graph', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-quality-quantizations-'));
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.0',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    extractCommodities: async () => [],
+    extractMiningElements: async () => [],
+    extractMiningCompositions: async () => [],
+    extractMineableEntities: async () => [],
+    extractMiningClustering: async () => [],
+    extractMiningHarvestablePresets: async () => [],
+    extractMiningHarvestableSetups: async () => [],
+    extractMiningSubHarvestableConfigs: async () => [],
+    extractMiningQualityDistributions: async () => [],
+    extractMiningQualityQuantizations: async () => [
+      {
+        ref: 'e2b8bf3d-deff-4433-8c2e-e2d728db88d0',
+        path: 'libs/foundry/records/crafting/qualityquantization/quantization_agricium.xml',
+        quantizationClass: 'Quantization_Agricium',
+        elementToken: 'Agricium',
+        qualityBands: '346 / 588 / 1000',
+        bandRanges: '0-399:346 / 400-599:588 / 999-1000:1000',
+      },
+    ],
+    extractMiningProviderPresets: async () => [],
+  });
+
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-quality-quantizations.datacore.csv');
+  const csv = await fs.readFile(csvPath, 'utf8');
+
+  assert.equal(result.miningQualityQuantizationResult.rows, 1);
+  assert.equal(result.miningQualityQuantizationResult.csvFile, 'mining-quality-quantizations.datacore.csv');
+  assert.match(csv, /^Quantization Class,Element Token,Quality Bands,Band Ranges,Record GUID,Record Path\r?\n/);
+  assert.match(csv, /Quantization_Agricium,Agricium,346 \/ 588 \/ 1000/);
 });
 
 test('runDatacoreScrape writes DataCore mining location label CSV after building the record graph', async () => {

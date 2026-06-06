@@ -23,9 +23,10 @@ import {
   createDataCoreManufacturerResolver,
   type DataCoreManufacturerResolver,
 } from '../../sources/datacore/manufacturer-resolver';
-import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
+import { extractDataCoreMineableEntities } from '../../sources/datacore/mineable-entity-extractor';
 import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
 import { extractDataCoreMiningCompositions } from '../../sources/datacore/mining-composition-extractor';
+import { extractDataCoreMiningDensityOverrides } from '../../sources/datacore/mining-density-override-extractor';
 import { extractDataCoreMiningElements } from '../../sources/datacore/mining-element-extractor';
 import { extractDataCoreMiningHarvestablePresets } from '../../sources/datacore/mining-harvestable-preset-extractor';
 import { extractDataCoreMiningHarvestableSetups } from '../../sources/datacore/mining-harvestable-setup-extractor';
@@ -33,8 +34,9 @@ import { extractDataCoreMiningLocationLabels } from '../../sources/datacore/mini
 import { extractDataCoreMiningParams } from '../../sources/datacore/mining-param-extractor';
 import { extractDataCoreMiningProviderPresets } from '../../sources/datacore/mining-provider-preset-extractor';
 import { extractDataCoreMiningQualityDistributions } from '../../sources/datacore/mining-quality-distribution-extractor';
+import { extractDataCoreMiningQualityQuantizations } from '../../sources/datacore/mining-quality-quantization-extractor';
+import { extractDataCoreMiningRockSignatures } from '../../sources/datacore/mining-rock-signature-extractor';
 import { extractDataCoreMiningSubHarvestableConfigs } from '../../sources/datacore/mining-sub-harvestable-config-extractor';
-import { extractDataCoreMineableEntities } from '../../sources/datacore/mineable-entity-extractor';
 import {
   type BuildDataCoreRecordGraphOptions,
   buildDataCoreRecordGraph,
@@ -57,6 +59,8 @@ import type {
   DataCoreMiningParamRecord,
   DataCoreMiningProviderPresetRecord,
   DataCoreMiningQualityDistributionRecord,
+  DataCoreMiningQualityQuantizationRecord,
+  DataCoreMiningRockSignatureRecord,
   DataCoreMiningSubHarvestableConfigRecord,
   DataCoreRecordGraph,
   DataCoreRecordGraphLookup,
@@ -156,6 +160,16 @@ export interface DataCoreScrapeMiningQualityDistributionResult {
   csvFile: string;
 }
 
+export interface DataCoreScrapeMiningQualityQuantizationResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeMiningRockSignatureResult {
+  rows: number;
+  csvFile: string;
+}
+
 export interface DataCoreScrapeMiningLocationLabelResult {
   rows: number;
   csvFile: string;
@@ -215,6 +229,8 @@ export interface RunDatacoreScrapeOptions {
   extractMiningHarvestableSetups?: typeof extractDataCoreMiningHarvestableSetups;
   extractMiningSubHarvestableConfigs?: typeof extractDataCoreMiningSubHarvestableConfigs;
   extractMiningQualityDistributions?: typeof extractDataCoreMiningQualityDistributions;
+  extractMiningQualityQuantizations?: typeof extractDataCoreMiningQualityQuantizations;
+  extractMiningRockSignatures?: typeof extractDataCoreMiningRockSignatures;
   extractMiningLocationLabels?: typeof extractDataCoreMiningLocationLabels;
   extractMiningParams?: typeof extractDataCoreMiningParams;
   extractMiningProviderPresets?: typeof extractDataCoreMiningProviderPresets;
@@ -249,6 +265,8 @@ export interface RunDatacoreScrapeOptions {
   onMiningHarvestableSetupsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningSubHarvestableConfigsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningQualityDistributionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningQualityQuantizationsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onMiningRockSignaturesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningLocationLabelsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningParamsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onMiningProviderPresetsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -282,6 +300,8 @@ export interface RunDatacoreScrapeResult {
   miningHarvestableSetupResult: DataCoreScrapeMiningHarvestableSetupResult;
   miningSubHarvestableConfigResult: DataCoreScrapeMiningSubHarvestableConfigResult;
   miningQualityDistributionResult: DataCoreScrapeMiningQualityDistributionResult;
+  miningQualityQuantizationResult: DataCoreScrapeMiningQualityQuantizationResult;
+  miningRockSignatureResult: DataCoreScrapeMiningRockSignatureResult;
   miningLocationLabelResult: DataCoreScrapeMiningLocationLabelResult;
   miningParamResult: DataCoreScrapeMiningParamResult;
   miningProviderPresetResult: DataCoreScrapeMiningProviderPresetResult;
@@ -315,6 +335,8 @@ const MINING_HARVESTABLE_PRESETS_CSV_FILE = 'mining-harvestable-presets.datacore
 const MINING_HARVESTABLE_SETUPS_CSV_FILE = 'mining-harvestable-setups.datacore.csv';
 const MINING_SUB_HARVESTABLE_CONFIGS_CSV_FILE = 'mining-sub-harvestable-configs.datacore.csv';
 const MINING_QUALITY_DISTRIBUTIONS_CSV_FILE = 'mining-quality-distributions.datacore.csv';
+const MINING_QUALITY_QUANTIZATIONS_CSV_FILE = 'mining-quality-quantizations.datacore.csv';
+const MINING_ROCK_SIGNATURES_CSV_FILE = 'mining-rock-signatures.datacore.csv';
 const MINING_LOCATION_LABELS_CSV_FILE = 'mining-location-labels.datacore.csv';
 const MINING_PARAMS_CSV_FILE = 'mining-params.datacore.csv';
 const MINING_PROVIDER_PRESETS_CSV_FILE = 'mining-provider-presets.datacore.csv';
@@ -451,6 +473,7 @@ const LOCATION_LABEL_HEADERS = [
 const MINING_ELEMENT_HEADERS = [
   'Element Class',
   'Element Name',
+  'Material Name',
   'Inferred Description Key',
   'Resource Type GUID',
   'Instability',
@@ -594,6 +617,23 @@ const MINING_QUALITY_DISTRIBUTION_HEADERS = [
   'Max Quality',
   'Mean',
   'Stddev',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_ROCK_SIGNATURE_HEADERS = [
+  'Entity Class',
+  'Variant Family',
+  'Rarity',
+  'Element Token',
+  'Scan Signature',
+  'Record GUID',
+  'Record Path',
+];
+const MINING_QUALITY_QUANTIZATION_HEADERS = [
+  'Quantization Class',
+  'Element Token',
+  'Quality Bands',
+  'Band Ranges',
   'Record GUID',
   'Record Path',
 ];
@@ -794,6 +834,9 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     options.extractMiningSubHarvestableConfigs ?? extractDataCoreMiningSubHarvestableConfigs;
   const extractMiningQualityDistributions =
     options.extractMiningQualityDistributions ?? extractDataCoreMiningQualityDistributions;
+  const extractMiningQualityQuantizations =
+    options.extractMiningQualityQuantizations ?? extractDataCoreMiningQualityQuantizations;
+  const extractMiningRockSignatures = options.extractMiningRockSignatures ?? extractDataCoreMiningRockSignatures;
   const extractMiningLocationLabels = options.extractMiningLocationLabels ?? extractDataCoreMiningLocationLabels;
   const extractMiningParams = options.extractMiningParams ?? extractDataCoreMiningParams;
   const extractMiningProviderPresets = options.extractMiningProviderPresets ?? extractDataCoreMiningProviderPresets;
@@ -1033,6 +1076,34 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     Boolean(options.dryRun),
   );
 
+  const miningQualityQuantizationRows = await extractMiningQualityQuantizations({
+    xmlCacheDir,
+    graph: graphLookup,
+  });
+  const miningQualityQuantizationResult = await writeMiningQualityQuantizationCsv(miningQualityQuantizationRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningQualityQuantizationsExtracted?.(
+    miningQualityQuantizationResult.rows,
+    miningQualityQuantizationResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const miningRockSignatureRows = await extractMiningRockSignatures({
+    xmlCacheDir,
+    graph: graphLookup,
+  });
+  const miningRockSignatureResult = await writeMiningRockSignatureCsv(miningRockSignatureRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onMiningRockSignaturesExtracted?.(
+    miningRockSignatureResult.rows,
+    miningRockSignatureResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
   const miningLocationLabelRows = await extractMiningLocationLabels({
     xmlCacheDir,
     graph: graphLookup,
@@ -1133,6 +1204,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     miningHarvestableSetupResult,
     miningSubHarvestableConfigResult,
     miningQualityDistributionResult,
+    miningQualityQuantizationResult,
+    miningRockSignatureResult,
     miningLocationLabelResult,
     miningParamResult,
     miningProviderPresetResult,
@@ -1511,6 +1584,7 @@ async function writeMiningElementCsv(
     const csvRows = rows.map((row) => [
       row.elementClass,
       row.elementName,
+      row.materialName,
       row.inferredDescriptionKey,
       row.resourceTypeGuid,
       row.instability,
@@ -1785,6 +1859,53 @@ async function writeMiningQualityDistributionCsv(
   }
 
   return { rows: rows.length, csvFile: MINING_QUALITY_DISTRIBUTIONS_CSV_FILE };
+}
+
+async function writeMiningRockSignatureCsv(
+  rows: DataCoreMiningRockSignatureRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningRockSignatureResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.entityClass,
+      row.variantFamily,
+      row.rarity,
+      row.elementToken,
+      row.scanSignature,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_ROCK_SIGNATURES_CSV_FILE),
+      stringify([MINING_ROCK_SIGNATURE_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_ROCK_SIGNATURES_CSV_FILE };
+}
+
+async function writeMiningQualityQuantizationCsv(
+  rows: DataCoreMiningQualityQuantizationRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeMiningQualityQuantizationResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.quantizationClass,
+      row.elementToken,
+      row.qualityBands,
+      row.bandRanges,
+      row.ref,
+      row.path,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, MINING_QUALITY_QUANTIZATIONS_CSV_FILE),
+      stringify([MINING_QUALITY_QUANTIZATION_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: MINING_QUALITY_QUANTIZATIONS_CSV_FILE };
 }
 
 async function writeMiningLocationLabelCsv(
