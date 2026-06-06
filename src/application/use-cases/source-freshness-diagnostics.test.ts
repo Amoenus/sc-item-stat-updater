@@ -133,6 +133,44 @@ test('source freshness diagnostics warn for incomplete selected source files wit
   }
 });
 
+test('source freshness diagnostics does not infer SPViewer for unknown missing source files', async () => {
+  const root = await makeTempDir();
+  try {
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
+    await fs.mkdir(itemVersionDir, { recursive: true });
+    await writeDataCoreRawFactFiles(itemVersionDir);
+    const expectedPath = path.join(root, 'csv', 'custom', 'custom-items.csv');
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(
+      makePrepared(root, [
+        {
+          config: {
+            label: 'Custom Items',
+            csvFile: 'custom-items.csv',
+            requiredColumns: [],
+            descKeyMatch: () => false,
+          },
+          csvDir: path.dirname(expectedPath),
+        },
+      ]),
+      { provider: 'datacore' },
+    );
+
+    assert.equal(diagnostics.warnings.length, 1);
+    assert.equal(diagnostics.warnings[0].provider, 'unknown');
+    assert.equal(diagnostics.warnings[0].label, 'Unknown');
+    assert.equal(diagnostics.warnings[0].category, 'Custom Items');
+    assert.equal(diagnostics.warnings[0].path, expectedPath);
+    assert.match(diagnostics.warnings[0].message, /Unknown source data appears incomplete/);
+
+    const formatted = formatSourceFreshnessDiagnostics(diagnostics);
+    assert.match(formatted, /WARNING Unknown Custom Items/);
+    assert.doesNotMatch(formatted, /SPViewer/);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test('source freshness diagnostics warn for missing provider companion source files', async () => {
   const root = await makeTempDir();
   try {

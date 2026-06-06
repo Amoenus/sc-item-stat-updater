@@ -5,7 +5,7 @@ import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
 import type { ItemConfig } from '../../enrichment/item-config';
 
 export type UpdateProvider = 'datacore';
-export type UpdateSourceProvider = UpdateProvider | 'spviewer' | 'scmdb';
+export type UpdateSourceProvider = UpdateProvider | 'spviewer' | 'scmdb' | 'unknown';
 export type UpdateChannel = 'LIVE' | 'PTU';
 
 export interface UpdateSourceMetadata {

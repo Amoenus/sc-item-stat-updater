@@ -68,6 +68,8 @@ function providerLabel(provider: UpdateSourceProvider): string {
       return 'SCMDB';
     case 'spviewer':
       return 'SPViewer';
+    case 'unknown':
+      return 'Unknown';
   }
 }
 
@@ -97,7 +99,8 @@ function categoryProvider(category: UpdateCategory): UpdateSourceProvider {
     .join(' ');
   if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
   if (/\bscmdb\b|mission/i.test(haystack)) return 'scmdb';
-  return 'spviewer';
+  if (/\bspviewer\b|\.spviewer\./i.test(haystack)) return 'spviewer';
+  return 'unknown';
 }
 
 function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {

@@ -217,6 +217,8 @@ function formatProvider(provider: UpdateSourceProvider | undefined): string | un
       return 'SCMDB';
     case 'spviewer':
       return 'SPViewer';
+    case 'unknown':
+      return 'Unknown';
     default:
       return undefined;
   }
@@ -249,6 +251,7 @@ function scrapeCommand(
   channel: UpdateChannel | undefined,
 ): string | undefined {
   if (!provider) return undefined;
+  if (provider === 'unknown') return undefined;
   const command =
     provider === 'datacore'
       ? 'npm run scrape:datacore'
