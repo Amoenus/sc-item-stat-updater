@@ -17,6 +17,7 @@ import type {
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
+import { buildDataCoreContractGeneratorIntel } from '../../sources/datacore/contract-generator-intel-builder';
 import { extractDataCoreContractTemplates } from '../../sources/datacore/contract-template-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
@@ -50,6 +51,7 @@ import {
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
 import type {
   DataCoreCommodityRecord,
+  DataCoreContractGeneratorIntelRecord,
   DataCoreContractGeneratorRecord,
   DataCoreContractTemplateRecord,
   DataCoreFactionRecord,
@@ -106,6 +108,11 @@ export interface DataCoreScrapeCommodityResult {
 }
 
 export interface DataCoreScrapeContractGeneratorResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeContractGeneratorIntelResult {
   rows: number;
   csvFile: string;
 }
@@ -251,6 +258,7 @@ export interface RunDatacoreScrapeOptions {
   buildRecordGraph?: (options: BuildDataCoreRecordGraphOptions) => Promise<DataCoreRecordGraph>;
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
   extractContractGenerators?: typeof extractDataCoreContractGenerators;
+  buildContractGeneratorIntel?: typeof buildDataCoreContractGeneratorIntel;
   extractContractTemplates?: typeof extractDataCoreContractTemplates;
   extractCommodities?: typeof extractDataCoreCommodities;
   extractVehicles?: typeof extractDataCoreVehicles;
@@ -292,6 +300,7 @@ export interface RunDatacoreScrapeOptions {
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
   onContractGeneratorsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onContractGeneratorIntelExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractTemplatesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -332,6 +341,7 @@ export interface RunDatacoreScrapeResult {
     outputPath: string;
   };
   contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
+  contractGeneratorIntelResult: DataCoreScrapeContractGeneratorIntelResult;
   contractTemplateResult: DataCoreScrapeContractTemplateResult;
   commodityResult: DataCoreScrapeCommodityResult;
   vehicleResult: DataCoreScrapeVehicleResult;
@@ -372,6 +382,7 @@ const COMMON_HEADERS = [
   'Health',
 ];
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
+const CONTRACT_GENERATOR_INTEL_CSV_FILE = 'contract-generator-intel.datacore.csv';
 const CONTRACT_TEMPLATES_CSV_FILE = 'contract-templates.datacore.csv';
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
@@ -451,6 +462,20 @@ const CONTRACT_GENERATOR_HEADERS = [
   'Mental Load',
   'Risk Of Loss',
   'Game Knowledge',
+  'Record GUID',
+  'Record Path',
+];
+const CONTRACT_GENERATOR_INTEL_HEADERS = [
+  'Generator Class',
+  'Contract ID',
+  'Contract Debug Name',
+  'Template Class',
+  'Description Key',
+  'Description Key Role',
+  'Contract Intel',
+  'Time Limit',
+  'Contract Buy In Amount',
+  'Difficulty Profile Class',
   'Record GUID',
   'Record Path',
 ];
@@ -1027,6 +1052,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const buildRecordGraph = options.buildRecordGraph ?? buildDataCoreRecordGraph;
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
   const extractContractGenerators = options.extractContractGenerators ?? extractDataCoreContractGenerators;
+  const buildContractGeneratorIntel = options.buildContractGeneratorIntel ?? buildDataCoreContractGeneratorIntel;
   const extractContractTemplates = options.extractContractTemplates ?? extractDataCoreContractTemplates;
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
@@ -1126,6 +1152,16 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   options.onContractGeneratorsExtracted?.(
     contractGeneratorResult.rows,
     contractGeneratorResult.csvFile,
+    Boolean(options.dryRun),
+  );
+  const contractGeneratorIntelRows = buildContractGeneratorIntel(contractGeneratorRows);
+  const contractGeneratorIntelResult = await writeContractGeneratorIntelCsv(contractGeneratorIntelRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onContractGeneratorIntelExtracted?.(
+    contractGeneratorIntelResult.rows,
+    contractGeneratorIntelResult.csvFile,
     Boolean(options.dryRun),
   );
 
@@ -1434,6 +1470,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const rawFactResults = buildRawFactResults(
     new Map([
       [contractGeneratorResult.csvFile, contractGeneratorResult],
+      [contractGeneratorIntelResult.csvFile, contractGeneratorIntelResult],
       [contractTemplateResult.csvFile, contractTemplateResult],
       [commodityResult.csvFile, commodityResult],
       [vehicleResult.csvFile, vehicleResult],
@@ -1462,6 +1499,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       outputPath: recordGraphPath,
     },
     contractGeneratorResult,
+    contractGeneratorIntelResult,
     contractTemplateResult,
     commodityResult,
     vehicleResult,
@@ -1700,6 +1738,35 @@ async function writeContractGeneratorCsv(
   }
 
   return { rows: rows.length, csvFile: CONTRACT_GENERATORS_CSV_FILE };
+}
+
+async function writeContractGeneratorIntelCsv(
+  rows: DataCoreContractGeneratorIntelRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeContractGeneratorIntelResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.generatorClass,
+      row.contractId,
+      row.contractDebugName,
+      row.templateClass,
+      row.descriptionKey,
+      row.descriptionKeyRole,
+      row.contractIntel,
+      row.timeLimit,
+      row.contractBuyInAmount,
+      row.difficultyProfileClass,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, CONTRACT_GENERATOR_INTEL_CSV_FILE),
+      stringify([CONTRACT_GENERATOR_INTEL_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: CONTRACT_GENERATOR_INTEL_CSV_FILE };
 }
 
 async function writeContractTemplateCsv(

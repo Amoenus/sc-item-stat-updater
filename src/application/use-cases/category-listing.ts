@@ -111,6 +111,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party generated contract variants, title/description overrides, timing, and location tags',
   },
   {
+    slug: 'datacore-contract-generator-intel',
+    label: 'Contract generator intel',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['contract-generator-intel.datacore.csv'],
+    description: 'DataCore-derived generated-contract time limit and buy-in text',
+  },
+  {
     slug: 'datacore-contract-templates',
     label: 'Contract templates',
     family: 'DataCore',

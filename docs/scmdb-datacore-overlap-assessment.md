@@ -162,12 +162,14 @@ proven and documented as a temporary bridge.
 ### Missions And Contracts
 
 SCMDB mission/contract overlap remains partial after exporting dedicated
-DataCore contract-generator, contract-template, mission-broker,
-mission-contract-intel, and mission-localization fact CSVs:
+DataCore contract-generator, contract-generator-intel, contract-template,
+mission-broker, mission-contract-intel, and mission-localization fact CSVs:
 
 - `csv/datacore/4.8.0.11875683-live/contract-generators.datacore.csv`
   contains 496 generated contract variant rows with title/description overrides,
   string-hash variants, timing, difficulty, and location-tag fields.
+- `csv/datacore/4.8.0.11875683-live/contract-generator-intel.datacore.csv`
+  contains 394 generated-contract time/buy-in rows across 240 description keys.
 - `csv/datacore/4.8.0.11875683-live/contract-templates.datacore.csv`
   contains 459 ContractTemplate rows with display flags, objective handlers,
   objective/detail localization keys, and location-tag fields.
@@ -186,6 +188,9 @@ mission-contract-intel, and mission-localization fact CSVs:
   generator/template/broker/localization keys.
 - Title overlap is 238 / 694 rows.
 - Description overlap is 227 / 720 rows.
+- Contract-generator-intel key overlap is 143 / 656 SCMDB rows with
+  `ContractIntel`; SCMDB rendered intel contains the generated DataCore
+  time/buy-in text in 140 of those rows.
 - Contract-intel key overlap is 26 / 656 SCMDB rows with `ContractIntel`; exact
   cooldown string overlap is 8 / 269 SCMDB cooldown rows.
 - 407 / 4,007 SCMDB debug names overlap DataCore mission/contract entity class

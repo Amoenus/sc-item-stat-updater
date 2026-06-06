@@ -63,6 +63,7 @@ test('category listing includes representative provider families and source meta
     listing.rawFacts.map((entry) => [entry.slug, entry.sourceFiles[0]]),
     [
       ['datacore-contract-generators', 'contract-generators.datacore.csv'],
+      ['datacore-contract-generator-intel', 'contract-generator-intel.datacore.csv'],
       ['datacore-contract-templates', 'contract-templates.datacore.csv'],
       ['datacore-commodities', 'commodities.datacore.csv'],
       ['datacore-vehicles', 'vehicles.datacore.csv'],

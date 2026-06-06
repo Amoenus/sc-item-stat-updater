@@ -197,6 +197,21 @@ export interface DataCoreContractGeneratorRecord {
   recordPath: string;
 }
 
+export interface DataCoreContractGeneratorIntelRecord {
+  generatorClass: string;
+  contractId: string;
+  contractDebugName: string;
+  templateClass: string;
+  descriptionKey: string;
+  descriptionKeyRole: string;
+  contractIntel: string;
+  timeLimit: string;
+  contractBuyInAmount: string;
+  difficultyProfileClass: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreContractTemplateRecord {
   templateClass: string;
   contractClassType: string;

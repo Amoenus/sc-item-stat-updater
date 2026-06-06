@@ -296,6 +296,7 @@ SPViewer CSVs listed here are legacy diagnostic inputs only. Active game-derived
 | `spviewer/<version>-[live\|ptu]/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
 | `spviewer/<version>-[live\|ptu]/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
 | `datacore/<version>-[live\|ptu]/contract-generators.datacore.csv` | Generated contract variants, title/description overrides, timing, and location tags | DataCore |
+| `datacore/<version>-[live\|ptu]/contract-generator-intel.datacore.csv` | DataCore-derived generated-contract time limit and buy-in text | DataCore |
 | `datacore/<version>-[live\|ptu]/contract-templates.datacore.csv` | Contract template display settings, objective keys, and location tags | DataCore |
 | `datacore/<version>-[live\|ptu]/mission-brokers.datacore.csv` | Mission broker rewards, timing, flags, and localization keys | DataCore |
 | `datacore/<version>-[live\|ptu]/mission-contract-intel.datacore.csv` | DataCore-derived mission reward, time limit, efficiency, and cooldown text | DataCore |
