@@ -1,9 +1,9 @@
-﻿import { readCsvFile } from '../../io/local/csv-parser';
+﻿import { getLogger } from '../../infrastructure/logger';
+import { readCsvFile } from '../../io/local/csv-parser';
 import { pathExists } from '../../io/local/discovery';
-import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { resolveMissionCsvPath } from '../../io/local/path-conventions';
-import { buildJournalValue, hasRenderableRarityRows, loadDataCoreMiningJournalRows } from '../../items/missions/mining-journal';
-import { getLogger } from '../../infrastructure/logger';
+import { buildJournalValue, loadDataCoreMiningJournalRows } from '../../items/missions/mining-journal';
+import { findIniKey, readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('mining-journal-update');
@@ -36,14 +36,14 @@ export async function runMiningJournalUpdate({
 }) {
   const journalCsvPath = resolveMissionCsvPath(missionCsvDir, 'mining-journal.csv');
   const datacoreRows = await loadDataCoreMiningJournalRows(datacoreDir);
-  const useDatacoreRows = hasRenderableRarityRows(datacoreRows);
+  const datacoreInsightRows = datacoreRows.filter((row) => row['Insight Summary']?.trim());
 
-  if (!useDatacoreRows && !(await pathExists(journalCsvPath))) {
+  if (!(await pathExists(journalCsvPath))) {
     return null;
   }
 
   const start = performance.now();
-  const journalRows = useDatacoreRows ? datacoreRows : await readCsvFile(journalCsvPath);
+  const journalRows = [...datacoreInsightRows, ...(await readCsvFile(journalCsvPath))];
   const iniData = await readIniFile(iniPath);
   const { lines: journalLines, index: journalIdx, lowerCaseIndex: journalLowerIdx } = iniData;
   const matchKey = findIniKey(journalIdx, journalLowerIdx, JOURNAL_KEY);
@@ -69,7 +69,7 @@ export async function runMiningJournalUpdate({
   const durationMs = Math.round(performance.now() - start);
   logger.info('Mining journal update complete', {
     updated,
-    source: useDatacoreRows ? 'DataCore-inferred' : 'SCMDB',
+    source: datacoreInsightRows.length > 0 ? 'SCMDB+DataCore-insights' : 'SCMDB',
     durationMs,
     dryRun,
   });

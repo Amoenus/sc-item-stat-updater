@@ -7,7 +7,7 @@ import { runMiningJournalUpdate } from './mining-journal-update';
 
 const JOURNAL_KEY = 'Journal_General_Mining_Compendium_Content';
 
-test('runMiningJournalUpdate prefers DataCore-generated rows over SCMDB fallback', async () => {
+test('runMiningJournalUpdate keeps SCMDB rarity rows and adds DataCore insights', async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mining-journal-update-'));
   try {
     const scmdbDir = path.join(tempDir, 'scmdb');
@@ -18,7 +18,7 @@ test('runMiningJournalUpdate prefers DataCore-generated rows over SCMDB fallback
 
     await fs.writeFile(
       path.join(scmdbDir, 'mining-journal.csv'),
-      ['Rarity Category,Element List,Insight Summary', 'Common,SCMDB Only,'].join('\n'),
+      ['Rarity Category,Element List,Insight Summary', 'Common,SCMDB Copper,', 'Rare,SCMDB Quantainium,'].join('\n'),
       'utf8',
     );
     await fs.writeFile(
@@ -50,9 +50,13 @@ test('runMiningJournalUpdate prefers DataCore-generated rows over SCMDB fallback
     const updated = await fs.readFile(iniPath, 'utf8');
 
     assert.equal(result?.updatedCount, 1);
-    assert.match(updated, /Quantainium \(Raw\)/);
-    assert.match(updated, /Copper \(Ore\)/);
-    assert.doesNotMatch(updated, /SCMDB Only/);
+    assert.match(updated, /\*\* Mining Insights \*\*/);
+    assert.match(updated, /Hardest: Quantainium \(Raw\)/);
+    assert.match(updated, /Quality Floors: shipmineables: 50\.1-100\.0%/);
+    assert.match(updated, /\*\* Common \*\*\\nSCMDB Copper/);
+    assert.match(updated, /\*\* Rare \*\*\\nSCMDB Quantainium/);
+    assert.doesNotMatch(updated, /\*\* Legendary \*\*\\nQuantainium \(Raw\)/);
+    assert.doesNotMatch(updated, /\*\* Common \*\*\\nCopper \(Ore\)/);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }

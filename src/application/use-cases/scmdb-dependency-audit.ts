@@ -54,7 +54,7 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-mining-journal': {
     classification: 'SCMDB-only derived/generated',
     reason:
-      'DataCore mining records contain rarity-named buckets in class/path names, but no explicit per-element journal rarity field has been found in the generated DataCore artifacts. The probability-based DataCore diagnostic does not match SCMDB closely enough, so SCMDB remains authoritative for journal rarity labels.',
+      'DataCore mining records contain rarity-named buckets in class/path names, but no explicit per-element journal rarity field has been found in the generated DataCore artifacts. The probability-based DataCore diagnostic does not match SCMDB closely enough, so SCMDB remains authoritative for journal rarity labels; DataCore journal use is limited to separately rendered insight summaries.',
     migrationSlice:
       'Keep SCMDB mining-journal.csv for journal rarity labels; use DataCore mining facts only for separately proven diagnostics and insights.',
   },
@@ -85,7 +85,7 @@ const EXTRA_STEP_CLASSIFICATIONS: Record<
   'Mining journal': {
     classification: 'SCMDB-only derived/generated',
     reason:
-      'The optional extra step can generate DataCore diagnostics from mining facts, but the inferred rarity buckets do not match SCMDB and no explicit first-party journal rarity field has been found.',
+      'The optional extra step can generate DataCore insight summaries from mining facts, but the inferred rarity buckets do not match SCMDB and no explicit first-party journal rarity field has been found. SCMDB remains the rendered journal rarity source.',
     migrationSlice: 'Keep SCMDB as the journal rarity source; limit DataCore journal usage to proven insights.',
   },
 };
