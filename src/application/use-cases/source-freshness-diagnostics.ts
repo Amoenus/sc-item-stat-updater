@@ -221,6 +221,7 @@ async function collectDataCoreItemIdentityDiagnostic(
   category: UpdateCategory,
 ): Promise<DataCoreItemIdentityDiagnostic | null> {
   if (category.source?.provider !== 'datacore' || !category.config.csvFile || !category.source.channel) return null;
+  if (category.config.loadSourceData && category.config.sourceFiles?.length) return null;
 
   const sourcePath = resolveChildPath(category.csvDir, category.config.csvFile, 'DataCore item source file');
   try {
