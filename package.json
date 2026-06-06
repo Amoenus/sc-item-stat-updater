@@ -14,7 +14,6 @@
     "scrape:scmdb": "node --env-file-if-exists .env.local --import tsx/esm bin/scrape-scmdb.ts",
     "scrape:spviewer": "node --env-file-if-exists .env.local --import tsx/esm bin/scrape-spviewer.ts --all",
     "scrape:datacore": "node --env-file-if-exists .env.local --import tsx/esm bin/scrape-datacore.ts --all",
-    "regen:mining-locations": "node --env-file-if-exists .env.local --import tsx/esm bin/regen-mining-locations.ts",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",

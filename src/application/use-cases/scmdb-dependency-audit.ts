@@ -117,21 +117,6 @@ function sourceFilesFromConfig(config: {
   return [...staticFiles, ...dynamicJson, ...companionFiles];
 }
 
-function generatedMiningLocationsEntry(): ScmdbDependencyAuditEntry {
-  return {
-    kind: 'generated source step',
-    slug: 'regen-mining-locations',
-    label: 'Regenerate mining-locations.csv',
-    sourceFiles: ['mining_data.json', 'mining_data-*.json'],
-    classification: 'SCMDB-only derived/generated',
-    reason:
-      'The standalone regen-mining-locations CLI can still rebuild mining-locations.csv from SCMDB mining_data for manual legacy comparison, but active DataCore mining location updates and update-all no longer read or refresh that generated CSV.',
-    migrationSlice:
-      'Retain only as manual legacy comparison tooling until no comparison workflow depends on mining-locations.csv.',
-    activeForDatacoreProvider: false,
-  };
-}
-
 export async function buildScmdbDependencyAudit(
   options: { provider?: UpdateProvider } = {},
 ): Promise<ScmdbDependencyAudit> {
@@ -154,8 +139,6 @@ export async function buildScmdbDependencyAudit(
       activeForDatacoreProvider: provider === 'datacore' && config.skip !== true,
     });
   }
-
-  entries.push(generatedMiningLocationsEntry());
 
   for (const label of getUpdateExtraStepLabels({ includeMiningJournal: true })) {
     const classification = EXTRA_STEP_CLASSIFICATIONS[label];

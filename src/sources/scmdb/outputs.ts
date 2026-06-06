@@ -1,5 +1,5 @@
 import type { ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
-import { buildMiningElementRows, buildMiningJournalRows, buildMiningLocationRows } from './mining-parser';
+import { buildMiningElementRows, buildMiningJournalRows } from './mining-parser';
 import {
   buildBlueprintPoolRows,
   buildContractBlueprintRows,
@@ -105,14 +105,6 @@ export const SCMDB_MINING_ELEMENT_HEADERS = [
 
 export const SCMDB_MINING_JOURNAL_HEADERS = ['Rarity Category', 'Element List', 'Insight Summary'];
 
-export const SCMDB_MINING_LOCATION_HEADERS = [
-  'Location Name',
-  'Ship Mineables',
-  'Hand Mineables',
-  'Ground Vehicle Mineables',
-  'Quality Note',
-];
-
 export const SCMDB_CONTRACT_BLUEPRINT_HEADERS = [
   'contractId',
   'debugName',
@@ -133,7 +125,6 @@ export interface ScmdbOutputRows {
   contractBlueprintRows: ReturnType<typeof buildContractBlueprintRows>;
   miningElementRows: ReturnType<typeof buildMiningElementRows>;
   miningJournalRows: ReturnType<typeof buildMiningJournalRows>;
-  miningLocationRows: ReturnType<typeof buildMiningLocationRows>;
 }
 
 export function buildScmdbOutputRows(
@@ -159,6 +150,5 @@ export function buildScmdbOutputRows(
     contractBlueprintRows: buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools),
     miningElementRows: miningData ? buildMiningElementRows(miningData) : [],
     miningJournalRows: miningData ? buildMiningJournalRows(miningData) : [],
-    miningLocationRows: miningData ? buildMiningLocationRows(miningData) : [],
   };
 }

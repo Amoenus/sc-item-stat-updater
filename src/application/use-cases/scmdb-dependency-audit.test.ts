@@ -27,11 +27,10 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.match(commodities?.reason ?? '', /LOC_PLACEHOLDER resource-pool entries are ignored/);
   assert.match(commodities?.migrationSlice ?? '', /Retired for commodities/);
 
-  const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
-  assert.equal(generatedMining?.kind, 'generated source step');
-  assert.equal(generatedMining?.activeForDatacoreProvider, false);
-  assert.match(generatedMining?.reason ?? '', /standalone regen-mining-locations CLI/);
-  assert.match(generatedMining?.reason ?? '', /update-all no longer read or refresh/);
+  assert.equal(
+    audit.entries.some((entry) => entry.slug === 'regen-mining-locations'),
+    false,
+  );
 
   const optionalJournal = audit.entries.find((entry) => entry.slug === 'mining-journal' && entry.kind === 'extra step');
   assert.equal(optionalJournal?.classification, 'SCMDB-only derived/generated');
@@ -76,9 +75,6 @@ test('formatted SCMDB dependency audit shows source hierarchy and migration slic
     output,
     /\| update category \| mission-scmdb-descriptions \(SCMDB mission descriptions\) \| missions\/scmdb-missions\.csv \| Probably extractable from DataCore with new graph traversal \| yes \|/,
   );
-  assert.match(
-    output,
-    /\| generated source step \| regen-mining-locations \(Regenerate mining-locations\.csv\) \| mining_data\.json, mining_data-\*\.json \| SCMDB-only derived\/generated \| no \|/,
-  );
+  assert.doesNotMatch(output, /regen-mining-locations/);
   assert.match(output, /Why SCMDB is still used:/);
 });

@@ -5,7 +5,6 @@ import {
   SCMDB_CONTRACT_HEADERS,
   SCMDB_MINING_ELEMENT_HEADERS,
   SCMDB_MINING_JOURNAL_HEADERS,
-  SCMDB_MINING_LOCATION_HEADERS,
   SCMDB_MISSION_HEADERS,
 } from './outputs';
 
@@ -53,12 +52,6 @@ export function planScmdbOutputFiles(rows: ScmdbOutputRows): ScmdbOutputFile[] {
       section: 'root',
       rows: toCsvRows(rows.miningJournalRows),
       headers: SCMDB_MINING_JOURNAL_HEADERS,
-    },
-    {
-      fileName: 'mining-locations.csv',
-      section: 'root',
-      rows: toCsvRows(rows.miningLocationRows),
-      headers: SCMDB_MINING_LOCATION_HEADERS,
     },
     {
       fileName: 'contract-blueprint-rewards.csv',

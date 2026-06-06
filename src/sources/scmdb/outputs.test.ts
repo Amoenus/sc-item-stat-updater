@@ -13,7 +13,6 @@ test('buildScmdbOutputRows builds empty row groups for empty SCMDB data', () => 
   assert.deepEqual(rows.contractBlueprintRows, []);
   assert.deepEqual(rows.miningElementRows, []);
   assert.deepEqual(rows.miningJournalRows, []);
-  assert.deepEqual(rows.miningLocationRows, []);
 });
 
 test('buildScmdbOutputRows includes mining output groups when mining data is present', () => {
@@ -33,7 +32,6 @@ test('buildScmdbOutputRows includes mining output groups when mining data is pre
 
   assert.equal(rows.miningElementRows.length, 1);
   assert.equal(rows.miningJournalRows.length > 0, true);
-  assert.equal(rows.miningLocationRows.length, 0);
 });
 
 test('SCMDB output headers expose the scraper CSV contracts', () => {

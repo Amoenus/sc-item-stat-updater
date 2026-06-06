@@ -109,6 +109,5 @@ function emptyRows(): ScmdbOutputRows {
     contractBlueprintRows: [],
     miningElementRows: [],
     miningJournalRows: [],
-    miningLocationRows: [],
   };
 }
