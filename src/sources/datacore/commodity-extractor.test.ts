@@ -12,6 +12,7 @@ const rantadungPath = 'libs/foundry/records/entities/commodities/agriculturalsup
 const notCommodityPath = 'libs/foundry/records/entities/commodities/readme.xml';
 const carinitePurePath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_mineral_1h_carinitepure.xml';
 const armillariaPath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_armillaria.xml';
+const armillariaBasePath = 'libs/foundry/records/entities/scitem/harvestables/bases/harvestable_base_armillaria.xml';
 
 test('extractDataCoreCommodities extracts first-party commodity facts discovered through the graph', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-'));
@@ -92,16 +93,31 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
       </EntityClassDefinition.Harvestable_Armillaria>
     `,
   );
+  await writeXml(
+    xmlCacheDir,
+    armillariaBasePath,
+    `
+      <EntityClassDefinition.harvestable_base_Armillaria __type="EntityClassDefinition" __ref="ac659f18-1681-4406-8eff-4bd9173b94a7" __path="${armillariaBasePath}">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef>
+              <Localization Name="@harvestable_Armillaria" Description="@harvestable_Armillaria_desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+        </Components>
+      </EntityClassDefinition.harvestable_base_Armillaria>
+    `,
+  );
 
   const rows = await extractDataCoreCommodities({
     xmlCacheDir,
     graph: createDataCoreRecordGraphLookup(makeGraph()),
   });
 
-  assert.equal(rows.length, 3);
+  assert.equal(rows.length, 4);
   assert.deepEqual(
     rows.map((row) => row.path),
-    [rantadungPath, atlasiumPath, carinitePurePath],
+    [rantadungPath, atlasiumPath, carinitePurePath, armillariaBasePath],
   );
 
   const atlasium = rows.find((row) => row.entityClass === 'atlasium');
@@ -139,7 +155,13 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.equal(carinitePure.displayDescriptionKey, 'items_commodities_carinite_pure_desc');
   assert.equal(carinitePure.typeGuid, '');
 
-  assert.equal(rows.some((row) => row.nameKey === 'harvestable_armillaria'), false);
+  const armillaria = rows.find((row) => row.entityClass === 'harvestable_base_Armillaria');
+  assert.ok(armillaria);
+  assert.equal(armillaria.nameKey, 'harvestable_Armillaria');
+  assert.equal(armillaria.descriptionKey, 'harvestable_Armillaria_desc');
+  assert.equal(armillaria.displayNameKey, 'harvestable_Armillaria');
+  assert.equal(armillaria.displayDescriptionKey, 'harvestable_Armillaria_desc');
+  assert.equal(armillaria.typeGuid, '');
 });
 
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
@@ -151,7 +173,7 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 5,
+    recordCount: 6,
     records: [
       {
         path: atlasiumPath,
@@ -218,6 +240,18 @@ function makeGraph(): DataCoreRecordGraph {
         ],
         referencedGuids: [],
       },
+      {
+        path: armillariaBasePath,
+        ref: 'ac659f18-1681-4406-8eff-4bd9173b94a7',
+        rootTag: 'EntityClassDefinition.harvestable_base_Armillaria',
+        rootType: 'EntityClassDefinition',
+        entityClass: 'harvestable_base_Armillaria',
+        localizationKeys: [
+          { attribute: 'Name', key: 'harvestable_Armillaria' },
+          { attribute: 'Description', key: 'harvestable_Armillaria_desc' },
+        ],
+        referencedGuids: [],
+      },
     ],
     indexes: {
       byRef: {
@@ -226,6 +260,7 @@ function makeGraph(): DataCoreRecordGraph {
         '11111111-1111-1111-1111-111111111111': notCommodityPath,
         '9904aaa2-9a13-48d2-a48d-7494e60d012f': carinitePurePath,
         '0ece223a-df2b-4c7a-82e1-7f1467f9c5a1': armillariaPath,
+        'ac659f18-1681-4406-8eff-4bd9173b94a7': armillariaBasePath,
       },
       byPath: {
         [atlasiumPath]: 0,
@@ -233,9 +268,17 @@ function makeGraph(): DataCoreRecordGraph {
         [notCommodityPath]: 2,
         [carinitePurePath]: 3,
         [armillariaPath]: 4,
+        [armillariaBasePath]: 5,
       },
       byRootType: {
-        EntityClassDefinition: [atlasiumPath, rantadungPath, notCommodityPath, carinitePurePath, armillariaPath],
+        EntityClassDefinition: [
+          atlasiumPath,
+          rantadungPath,
+          notCommodityPath,
+          carinitePurePath,
+          armillariaPath,
+          armillariaBasePath,
+        ],
       },
       byEntityClass: {
         atlasium: [atlasiumPath],
@@ -243,6 +286,7 @@ function makeGraph(): DataCoreRecordGraph {
         NotActuallyCommodity: [notCommodityPath],
         Harvestable_Mineral_1H_CarinitePure: [carinitePurePath],
         Harvestable_Armillaria: [armillariaPath],
+        harvestable_base_Armillaria: [armillariaBasePath],
       },
       byLocalizationKey: {},
       byReferencedGuid: {},

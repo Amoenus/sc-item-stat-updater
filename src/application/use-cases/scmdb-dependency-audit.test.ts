@@ -21,6 +21,7 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(commodities?.sourceFiles.includes('dynamic SCMDB JSON: merged-*.json'), true);
   assert.equal(commodities?.sourceFiles.includes('datacore:commodities.datacore.csv'), true);
   assert.match(commodities?.reason ?? '', /explicit carryable commodity localization keys/);
+  assert.match(commodities?.reason ?? '', /first-party harvestable base aliases/);
   assert.match(commodities?.reason ?? '', /generated salvage component labels/);
   assert.match(commodities?.migrationSlice ?? '', /first-party localization or contract\/resource record proves/);
 

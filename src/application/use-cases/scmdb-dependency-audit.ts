@@ -33,7 +33,7 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-commodities': {
     classification: 'Already extractable from DataCore',
     reason:
-      'DataCore commodities now supply commodity entity keys plus explicit carryable commodity localization keys. SCMDB remains only for resource-pool aliases not expressed as DataCore items_commodities_* localization, loc_placeholder, and generated salvage component labels.',
+      'DataCore commodities now supply commodity entity keys, explicit carryable commodity localization keys, and first-party harvestable base aliases such as Armillaria and Molina Mold. SCMDB remains only for loc_placeholder and generated salvage component labels.',
     migrationSlice:
       'Keep shrinking the SCMDB resource-pool fallback only when a first-party localization or contract/resource record proves each remaining target key.',
   },

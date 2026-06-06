@@ -7,6 +7,7 @@ import { loadXml } from './xml-parser';
 
 const DEFAULT_COMMODITY_PATH_PREFIX = 'libs/foundry/records/entities/commodities';
 const DEFAULT_CARRYABLE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/carryables';
+const DEFAULT_HARVESTABLE_BASE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/harvestables/bases';
 
 export interface ExtractDataCoreCommoditiesOptions {
   xmlCacheDir: string;
@@ -73,7 +74,8 @@ export async function extractDataCoreCommodities(
   if (options.pathPrefix !== undefined) return commodities;
 
   const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys);
-  return [...commodities, ...carryableRows];
+  const harvestableRows = extractHarvestableCommodityRows(options.graph, emittedKeys);
+  return [...commodities, ...carryableRows, ...harvestableRows];
 }
 
 function extractCarryableCommodityRows(
@@ -120,17 +122,69 @@ function extractCarryableCommodityRows(
   return rows;
 }
 
-function selectLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+function extractHarvestableCommodityRows(
+  graph: DataCoreRecordGraphLookup,
+  emittedKeys: Set<string>,
+): DataCoreCommodityRecord[] {
+  const rows: DataCoreCommodityRecord[] = [];
+  const records = graph
+    .getByPathPrefix(DEFAULT_HARVESTABLE_BASE_PATH_PREFIX)
+    .filter((record) => record.rootType === 'EntityClassDefinition')
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  for (const record of records) {
+    const nameKey = selectLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName'], isHarvestableNameKey);
+    if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
+
+    const row: DataCoreCommodityRecord = {
+      ref: record.ref,
+      path: record.path,
+      entityClass: record.entityClass,
+      nameKey,
+      descriptionKey: selectLocalizationKey(
+        record,
+        ['Description', 'description', 'displayDescription'],
+        isHarvestableDescriptionKey,
+      ),
+      displayNameKey: nameKey,
+      displayDescriptionKey: selectLocalizationKey(
+        record,
+        ['displayDescription', 'Description', 'description'],
+        isHarvestableDescriptionKey,
+      ),
+      displayTypeKey: '',
+      typeGuid: '',
+      subtypeGuid: '',
+      cargoOccupancyUnit: '',
+      cargoOccupancyValue: '',
+      cargoOccupancySCU: '',
+      boxable: '',
+      isUnrefinedElement: '',
+      isRaw: '',
+      isRefined: '',
+    };
+    markEmittedCommodityKeys(emittedKeys, row);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function selectLocalizationKey(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  predicate = isUpdaterCommodityLocalizationKey,
+): string {
   for (const attribute of attributes) {
     const byAttribute = record.localizationKeys.find(
       (reference) =>
         reference.attribute.toLowerCase() === attribute.toLowerCase() &&
-        isUpdaterCommodityLocalizationKey(reference.key),
+        predicate(reference.key),
     );
     if (byAttribute) return byAttribute.key;
   }
 
-  const byKey = record.localizationKeys.find((reference) => isUpdaterCommodityLocalizationKey(reference.key));
+  const byKey = record.localizationKeys.find((reference) => predicate(reference.key));
   return byKey?.key ?? '';
 }
 
@@ -153,12 +207,24 @@ function selectDescriptionLocalizationKey(record: DataCoreRecordNode, attributes
 
 function markEmittedCommodityKeys(emittedKeys: Set<string>, row: DataCoreCommodityRecord): void {
   for (const key of [row.nameKey, row.displayNameKey]) {
-    if (isUpdaterCommodityLocalizationKey(key)) emittedKeys.add(key.toLowerCase());
+    if (isDataCoreCommodityLocalizationKey(key)) emittedKeys.add(key.toLowerCase());
   }
+}
+
+function isDataCoreCommodityLocalizationKey(key: string): boolean {
+  return isUpdaterCommodityLocalizationKey(key) || isHarvestableNameKey(key);
 }
 
 function isUpdaterCommodityLocalizationKey(key: string): boolean {
   return key.startsWith('items_commodities_') && !key.endsWith('_desc') && !key.startsWith('items_commodities_type_');
+}
+
+function isHarvestableNameKey(key: string): boolean {
+  return key.startsWith('harvestable_') && !key.endsWith('_desc');
+}
+
+function isHarvestableDescriptionKey(key: string): boolean {
+  return key.startsWith('harvestable_') && key.endsWith('_desc');
 }
 
 function extractCargoOccupancy($: ReturnType<typeof loadXml>): { unit: string; value: string; scu: string } {
