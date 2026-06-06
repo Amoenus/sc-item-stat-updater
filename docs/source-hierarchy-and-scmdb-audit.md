@@ -82,4 +82,4 @@ Those buckets are useful first-party mining facts, but they are not yet a proven
 npm run update -- --mining-journal-rarity-report
 ```
 
-reported 16/26 matching rarity labels, 9 mismatches, 1 SCMDB-only element (`Stileron (Ore)`), and 1 DataCore-only element (`Sileron (Ore)`, likely spelling drift). Because the mismatch rate is too high, do not replace SCMDB mining journal rarity with probability inference. Keep SCMDB `mining-journal.csv` as the journal rarity source until a direct first-party field or equivalent game-file join is proven.
+reported 16/26 matching rarity labels, 10 mismatches, 0 SCMDB-only elements, and 0 DataCore-only elements. `Sileron_Ore` is normalized to `Stileron (Ore)` in DataCore mining-element output because other first-party DataCore records use Stileron naming. Because the mismatch rate is too high, do not replace SCMDB mining journal rarity with probability inference. Keep SCMDB `mining-journal.csv` as the journal rarity source until a direct first-party field or equivalent game-file join is proven.

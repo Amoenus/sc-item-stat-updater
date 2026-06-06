@@ -1,11 +1,15 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_ELEMENT_PATH_PREFIX = 'libs/foundry/records/mining/mineableelements';
 const COMMODITY_SLUG_ALIASES: Record<string, string> = {
   aluminium: 'aluminum',
+  sileron: 'stileron',
+};
+const ELEMENT_DISPLAY_SLUG_ALIASES: Record<string, string> = {
+  sileron: 'stileron',
 };
 
 export interface ExtractDataCoreMiningElementsOptions {
@@ -35,6 +39,7 @@ export async function extractDataCoreMiningElements(
       path: record.path,
       elementClass: record.entityClass,
       elementName: toElementName(record.entityClass),
+      materialName: toMaterialName(record.entityClass),
       inferredDescriptionKey: toInferredDescriptionKey(record.entityClass),
       resourceTypeGuid: root.attr('resourceType') ?? '',
       instability: root.attr('elementInstability') ?? '',
@@ -53,9 +58,16 @@ export async function extractDataCoreMiningElements(
 function toElementName(elementClass: string): string {
   const normalized = stripMiningPrefix(elementClass);
   const suffixMatch = /^(.+)_(Ore|Raw)$/i.exec(normalized);
-  if (suffixMatch) return `${toTitleWords(suffixMatch[1])} (${toTitleWords(suffixMatch[2])})`;
+  if (suffixMatch) return `${toElementDisplayName(suffixMatch[1])} (${toTitleWords(suffixMatch[2])})`;
 
-  return toTitleWords(normalized);
+  return toElementDisplayName(normalized);
+}
+
+function toMaterialName(elementClass: string): string {
+  const normalized = stripMiningPrefix(elementClass);
+  const suffixMatch = /^(.+)_(Ore|Raw)$/i.exec(normalized);
+  const base = suffixMatch ? suffixMatch[1] : normalized;
+  return toCommodityDisplayName(base);
 }
 
 function toInferredDescriptionKey(elementClass: string): string {
@@ -78,6 +90,16 @@ function stripMiningPrefix(elementClass: string): string {
 function toCommoditySlug(value: string): string {
   const slug = value.toLowerCase().replace(/[^a-z0-9]/g, '');
   return COMMODITY_SLUG_ALIASES[slug] ?? slug;
+}
+
+function toElementDisplayName(value: string): string {
+  const slug = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return toTitleWords(ELEMENT_DISPLAY_SLUG_ALIASES[slug] ?? value);
+}
+
+function toCommodityDisplayName(value: string): string {
+  const slug = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return toTitleWords(COMMODITY_SLUG_ALIASES[slug] ?? value);
 }
 
 function toTitleWords(value: string): string {

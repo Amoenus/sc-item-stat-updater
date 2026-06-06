@@ -3,8 +3,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import { extractDataCoreMiningElements } from './mining-element-extractor';
+import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import type { DataCoreRecordGraph } from './types';
 
 const agriciumPath = 'libs/foundry/records/mining/mineableelements/agricium_ore.xml';
@@ -44,6 +44,7 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   const agricium = rows.find((row) => row.elementClass === 'Agricium_Ore');
   assert.ok(agricium);
   assert.equal(agricium.elementName, 'Agricium (Ore)');
+  assert.equal(agricium.materialName, 'Agricium');
   assert.equal(agricium.inferredDescriptionKey, 'items_commodities_agricium_ore_desc');
   assert.equal(agricium.resourceTypeGuid, 'fc1ec740-3047-48d8-81f0-396f4c9a90ef');
   assert.equal(agricium.instability, '350');
@@ -57,12 +58,93 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   const aslarite = rows.find((row) => row.elementClass === 'Aslarite_Raw');
   assert.ok(aslarite);
   assert.equal(aslarite.elementName, 'Aslarite (Raw)');
+  assert.equal(aslarite.materialName, 'Aslarite');
   assert.equal(aslarite.inferredDescriptionKey, 'items_commodities_aslarite_raw_desc');
 
   const aphorite = rows.find((row) => row.elementClass === 'MinableElement_FPS_Aphorite');
   assert.ok(aphorite);
   assert.equal(aphorite.elementName, 'Aphorite');
+  assert.equal(aphorite.materialName, 'Aphorite');
   assert.equal(aphorite.inferredDescriptionKey, '');
+});
+
+test('extractDataCoreMiningElements normalizes Aluminium material name to American spelling', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-aluminium-'));
+  const aluminiumPath = 'libs/foundry/records/mining/mineableelements/aluminium_ore.xml';
+  await writeXml(
+    xmlCacheDir,
+    aluminiumPath,
+    `<MineableElement.Aluminium_Ore resourceType="e30bdd32-8fd5-44b8-9994-5fd253a16c37" __type="MineableElement" __ref="3776294d-5689-41f2-b03d-e8fcd17ede6a" __path="${aluminiumPath}" />`,
+  );
+
+  const rows = await extractDataCoreMiningElements({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [
+        node(
+          aluminiumPath,
+          '3776294d-5689-41f2-b03d-e8fcd17ede6a',
+          'MineableElement.Aluminium_Ore',
+          'MineableElement',
+          'Aluminium_Ore',
+        ),
+      ],
+      indexes: {
+        byRef: {},
+        byPath: { [aluminiumPath]: 0 },
+        byRootType: { MineableElement: [aluminiumPath] },
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+  });
+
+  assert.equal(rows[0].elementName, 'Aluminium (Ore)');
+  assert.equal(rows[0].materialName, 'Aluminum');
+  assert.equal(rows[0].inferredDescriptionKey, 'items_commodities_aluminum_ore_desc');
+});
+
+test('extractDataCoreMiningElements normalizes Sileron mineable element to Stileron', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-sileron-'));
+  const sileronPath = 'libs/foundry/records/mining/mineableelements/sileron_ore.xml';
+  await writeXml(
+    xmlCacheDir,
+    sileronPath,
+    `<MineableElement.Sileron_Ore resourceType="32bafbd4-c52a-476d-b31c-97c4b3102471" __type="MineableElement" __ref="9498a080-84c0-41f4-b88f-71942c60c43f" __path="${sileronPath}" />`,
+  );
+
+  const rows = await extractDataCoreMiningElements({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [
+        node(
+          sileronPath,
+          '9498a080-84c0-41f4-b88f-71942c60c43f',
+          'MineableElement.Sileron_Ore',
+          'MineableElement',
+          'Sileron_Ore',
+        ),
+      ],
+      indexes: {
+        byRef: {},
+        byPath: { [sileronPath]: 0 },
+        byRootType: { MineableElement: [sileronPath] },
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+  });
+
+  assert.equal(rows[0].elementClass, 'Sileron_Ore');
+  assert.equal(rows[0].elementName, 'Stileron (Ore)');
+  assert.equal(rows[0].materialName, 'Stileron');
+  assert.equal(rows[0].inferredDescriptionKey, 'items_commodities_stileron_ore_desc');
 });
 
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
@@ -76,8 +158,20 @@ function makeGraph(): DataCoreRecordGraph {
     source: 'datacore-record-graph',
     recordCount: 4,
     records: [
-      node(agriciumPath, 'd61d6c33-e428-4014-9326-0b06034de16a', 'MineableElement.Agricium_Ore', 'MineableElement', 'Agricium_Ore'),
-      node(aslaritePath, '9bd0e34c-2b34-42a3-b41d-381088ff6fed', 'MineableElement.Aslarite_Raw', 'MineableElement', 'Aslarite_Raw'),
+      node(
+        agriciumPath,
+        'd61d6c33-e428-4014-9326-0b06034de16a',
+        'MineableElement.Agricium_Ore',
+        'MineableElement',
+        'Agricium_Ore',
+      ),
+      node(
+        aslaritePath,
+        '9bd0e34c-2b34-42a3-b41d-381088ff6fed',
+        'MineableElement.Aslarite_Raw',
+        'MineableElement',
+        'Aslarite_Raw',
+      ),
       node(
         aphoritePath,
         '2ee59447-83e0-4f26-899e-df66780008e3',
@@ -85,7 +179,13 @@ function makeGraph(): DataCoreRecordGraph {
         'MineableElement',
         'MinableElement_FPS_Aphorite',
       ),
-      node(globalParamsPath, '11111111-1111-1111-1111-111111111111', 'MiningGlobalParams.MiningGlobalParams', 'MiningGlobalParams', 'MiningGlobalParams'),
+      node(
+        globalParamsPath,
+        '11111111-1111-1111-1111-111111111111',
+        'MiningGlobalParams.MiningGlobalParams',
+        'MiningGlobalParams',
+        'MiningGlobalParams',
+      ),
     ],
     indexes: {
       byRef: {},
