@@ -46,29 +46,10 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
       compositionRow('CommonShipMineablesAsteroid_Iron', 'Iron (Ore)', '80'),
       compositionRow('FPS_Hadanite', 'Hadanite', '100'),
       compositionRow('GroundVehicle_Beradom', 'Beradom', '100'),
-    ],
-    [
-      {
-        'Location Name': 'Hurston',
-        'Ship Mineables': 'Old SCMDB ship row',
-        'Hand Mineables': '',
-        'Ground Vehicle Mineables': '',
-        'Quality Note': 'Rare ship rocks: quality floor 60.0%',
-      },
-      {
-        'Location Name': 'Hathor Caves',
-        'Ship Mineables': 'Legacy rock - 100%',
-        'Hand Mineables': '',
-        'Ground Vehicle Mineables': '',
-        'Quality Note': '',
-      },
-      {
-        'Location Name': 'Unknown SCMDB Only',
-        'Ship Mineables': 'Should not leak into DataCore output',
-        'Hand Mineables': '',
-        'Ground Vehicle Mineables': '',
-        'Quality Note': '',
-      },
+      compositionRow('FPS_Composition_AphoriteDeposit', 'Aphorite', '100'),
+      compositionRow('FPS_Composition_SadaryxDeposit', 'Sadaryx', '100'),
+      compositionRow('FPS_Composition_JacliumDeposit', 'Jaclium', '100'),
+      compositionRow('LegendaryShipMineablesAsteroid_Savrilium_RCD', 'Savrilium (Ore)', '100'),
     ],
     [
       {
@@ -95,6 +76,22 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
       {
         'Entity Class': 'AsteroidRock_Aluminum',
         'Density Class': 'EntityDensityClass_Mineable',
+      },
+      {
+        'Entity Class': 'MineableRock_FPS_Aphorite',
+        'Composition Class': 'FPS_Composition_AphoriteDeposit',
+      },
+      {
+        'Entity Class': 'MineableRock_FPS_Sadaryx',
+        'Composition Class': 'FPS_Composition_SadaryxDeposit',
+      },
+      {
+        'Entity Class': 'MineableRock_FPS_Jaclium',
+        'Composition Class': 'FPS_Composition_JacliumDeposit',
+      },
+      {
+        'Entity Class': 'MineableRock_AsteroidLegendary_Savrilium_RCD_large',
+        'Composition Class': 'LegendaryShipMineablesAsteroid_Savrilium_RCD',
       },
     ],
     [
@@ -147,6 +144,41 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Harvestable Respawn Time Multiplier': '2',
         'Geometry Tags': 'asteroid;large',
       },
+      subHarvestableRow({
+        'Config Class': 'V3SlotPreset_RockCracker',
+        'Tagged Config Name': 'Aphorite minable',
+        'Harvestable Class': 'MineableRock_FPS_Aphorite',
+        'Harvestable Entity Class': 'MineableRock_FPS_Aphorite',
+        'Relative Probability': '1',
+      }),
+      subHarvestableRow({
+        'Config Class': 'V3SlotPreset_RockCracker',
+        'Tagged Config Name': 'Sadaryx minable',
+        'Harvestable Class': 'MineableRock_FPS_Sadaryx',
+        'Harvestable Entity Class': 'MineableRock_FPS_Sadaryx',
+        'Relative Probability': '1',
+      }),
+      subHarvestableRow({
+        'Config Class': 'V3SlotPreset_Harvestable_RockCracker_Asteroid',
+        'Tagged Config Name': 'Central',
+        'Harvestable Class': 'MineableRock_AsteroidLegendary_Savrilium_RCD_large',
+        'Harvestable Entity Class': 'MineableRock_AsteroidLegendary_Savrilium_RCD_large',
+        'Relative Probability': '1',
+      }),
+      subHarvestableRow({
+        'Config Class': 'Loot_Caves_Unoccupied_Sand_Stanton_Orbageddon',
+        'Tagged Config Name': 'FPS mineables',
+        'Harvestable Class': 'FPSMining_Aphorite',
+        'Harvestable Entity Class': 'MineableRock_FPS_Aphorite',
+        'Relative Probability': '3',
+      }),
+      subHarvestableRow({
+        'Config Class': 'Loot_Caves_Unoccupied_Sand_Stanton_Orbageddon',
+        'Tagged Config Name': 'FPS mineables',
+        'Harvestable Class': 'FPSMining_Jaclium',
+        'Harvestable Entity Class': 'MineableRock_FPS_Jaclium',
+        'Relative Probability': '2',
+      }),
     ],
     [
       miningParamRow({
@@ -183,7 +215,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
 
   const hurston = rows.find((row) => row['Location Name'] === 'Hurston');
   assert.ok(hurston);
-  assert.equal(hurston.Source, 'DataCore+SCMDB');
+  assert.equal(hurston.Source, 'DataCore');
   assert.equal(hurston['Ship Mineables'], 'Aluminum (Ore) - 75%\nIron (Ore) - 25%');
   assert.equal(hurston['Hand Mineables'], 'Hadanite - 100%');
   assert.equal(hurston['Ground Vehicle Mineables'], 'Beradom - 100%');
@@ -219,11 +251,21 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     'EntityDensityClass_Mineable (cluster radius 1200, DGS max 20, persistent max 8, timeout 300, resetOnMove 1)',
   );
 
-  const fallback = rows.find((row) => row['Location Name'] === 'Hathor Caves');
-  assert.ok(fallback);
-  assert.equal(fallback.Source, 'SCMDB legacy special-site fallback');
-  assert.equal(fallback['Ship Mineables'], 'Legacy rock - 100%');
-  assert.equal(rows.some((row) => row['Location Name'] === 'Unknown SCMDB Only'), false);
+  const breakerInterior = rows.find((row) => row['Location Name'] === 'Breaker Stations Interior');
+  assert.ok(breakerInterior);
+  assert.equal(breakerInterior.Source, 'DataCore');
+  assert.equal(breakerInterior['Hand Mineables'], 'Aphorite - 75%\nSadaryx - 25%');
+
+  const breakerLargeGeode = rows.find((row) => row['Location Name'] === 'Breaker Stations Large Geode');
+  assert.ok(breakerLargeGeode);
+  assert.equal(breakerLargeGeode.Source, 'DataCore');
+  assert.equal(breakerLargeGeode['Ship Mineables'], 'Savrilium (Ore) - 100%');
+
+  const hathor = rows.find((row) => row['Location Name'] === 'Hathor Caves');
+  assert.ok(hathor);
+  assert.equal(hathor.Source, 'DataCore');
+  assert.equal(hathor['Hand Mineables'], 'Aphorite - 60%\nJaclium (Ore) - 40%');
+  assert.equal(hathor['Ship Mineables'], '');
 });
 
 test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap', () => {
@@ -244,10 +286,7 @@ test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap'
       },
       { 'Location Name': 'Pyro I' },
     ],
-    [
-      { 'Location Name': 'Hurston' },
-      { 'Location Name': 'Daymar' },
-    ],
+    [{ 'Location Name': 'Hurston' }, { 'Location Name': 'Daymar' }],
   );
 
   assert.deepEqual(coverage, {
@@ -295,6 +334,21 @@ function compositionRow(compositionClass: string, elementName: string, maxPercen
     'Min Percentage': '0',
     'Max Percentage': maxPercentage,
     Probability: '1',
+  };
+}
+
+function subHarvestableRow(overrides: Record<string, string>): Record<string, string> {
+  return {
+    'Config Class': '',
+    'Config Type': 'multi-manual',
+    'Tagged Config Name': '',
+    'Initial Slots Probability': '1',
+    'Harvestable Class': '',
+    'Harvestable Entity Class': '',
+    'Relative Probability': '',
+    'Deepest Relative Probability': '',
+    'Geometry Tags': '',
+    ...overrides,
   };
 }
 

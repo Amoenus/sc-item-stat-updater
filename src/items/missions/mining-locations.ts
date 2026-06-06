@@ -1,9 +1,8 @@
+import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
+import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { readJsonRelative } from '../../io/local/json-file';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { getLogger } from '../../infrastructure/logger';
-import type { ItemConfig } from '../../enrichment/item-config';
-import type { ItemSourceDataContext } from '../../enrichment/item-config';
 
 const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
   string,
@@ -20,11 +19,6 @@ const DATACORE_MINING_HARVESTABLE_PRESETS_CSV = 'mining-harvestable-presets.data
 const DATACORE_MINING_HARVESTABLE_SETUPS_CSV = 'mining-harvestable-setups.datacore.csv';
 const DATACORE_MINING_SUB_HARVESTABLE_CONFIGS_CSV = 'mining-sub-harvestable-configs.datacore.csv';
 const DATACORE_MINING_PARAMS_CSV = 'mining-params.datacore.csv';
-const LEGACY_SCMDB_ONLY_MINING_LOCATION_NAMES = new Set([
-  'Breaker Stations Interior',
-  'Breaker Stations Large Geode',
-  'Hathor Caves',
-]);
 const POTENTIAL_SECTION_MARKER = String.raw`\n\nPotential `;
 const QUALITY_NOTES_MARKER = String.raw`\n\nQuality Notes:`;
 const INI_NEWLINE = String.raw`\n`;
@@ -77,6 +71,51 @@ const ROMAN_RE = /\b(VIII|VII|VI|IV|V|III|II|I)\b/g;
 type MiningType = 'ship' | 'hand' | 'ground';
 type LocationWeights = Record<MiningType, Record<string, number>>;
 
+const SPECIAL_DATACORE_SITE_POOLS = [
+  {
+    locationName: 'Breaker Stations Interior',
+    miningType: 'hand' as const,
+    configClass: 'V3SlotPreset_RockCracker',
+    taggedConfigNames: new Set(['Aphorite minable', 'Sadaryx minable']),
+    explicitElementWeights: new Map([
+      ['Aphorite', 3],
+      ['Sadaryx', 1],
+    ]),
+    qualityClassTerms: ['rockcracker'],
+  },
+  {
+    locationName: 'Breaker Stations Large Geode',
+    miningType: 'ship' as const,
+    configClass: 'V3SlotPreset_Harvestable_RockCracker_Asteroid',
+    entityClassPattern: /savrilium/i,
+    collapsedElementName: 'Savrilium (Ore)',
+    qualityClassTerms: ['rockcracker'],
+  },
+  {
+    locationName: 'Hathor Caves',
+    miningType: 'hand' as const,
+    configClass: 'Loot_Caves_Unoccupied_Sand_Stanton_Orbageddon',
+    taggedConfigNames: new Set(['FPS mineables']),
+  },
+  {
+    locationName: 'Hathor Caves',
+    miningType: 'ground' as const,
+    configClass: 'Loot_Caves_Unoccupied_Sand_Stanton_Orbageddon',
+    taggedConfigNames: new Set(['Ground mineables']),
+  },
+] satisfies SpecialDatacoreSitePool[];
+
+interface SpecialDatacoreSitePool {
+  locationName: string;
+  miningType: MiningType;
+  configClass: string;
+  taggedConfigNames?: Set<string>;
+  entityClassPattern?: RegExp;
+  collapsedElementName?: string;
+  explicitElementWeights?: Map<string, number>;
+  qualityClassTerms?: string[];
+}
+
 export interface MiningLocationCoverageDiagnostics {
   datacoreLocations: number;
   scmdbLocations: number;
@@ -112,11 +151,15 @@ export function compareMiningLocationCoverage(
     ).length,
     datacoreLocationsWithQualityNotes: datacoreRows.filter((row) => row['DataCore Quality Source']).length,
     datacoreLocationsWithEntityFacts: datacoreRows.filter((row) => row['DataCore Mineable Entity Classes']).length,
-    datacoreLocationsWithDensityOverrideFacts: datacoreRows.filter((row) => row['DataCore Density Override Summary']).length,
+    datacoreLocationsWithDensityOverrideFacts: datacoreRows.filter((row) => row['DataCore Density Override Summary'])
+      .length,
     datacoreLocationsWithClusteringFacts: datacoreRows.filter((row) => row['DataCore Clustering Summary']).length,
-    datacoreLocationsWithHarvestablePresetFacts: datacoreRows.filter((row) => row['DataCore Harvestable Preset Summary']).length,
+    datacoreLocationsWithHarvestablePresetFacts: datacoreRows.filter(
+      (row) => row['DataCore Harvestable Preset Summary'],
+    ).length,
     datacoreLocationsWithSetupFacts: datacoreRows.filter((row) => row['DataCore Setup Summary']).length,
-    datacoreLocationsWithSubHarvestableFacts: datacoreRows.filter((row) => row['DataCore Sub-Harvestable Summary']).length,
+    datacoreLocationsWithSubHarvestableFacts: datacoreRows.filter((row) => row['DataCore Sub-Harvestable Summary'])
+      .length,
     datacoreLocationsWithParamFacts: datacoreRows.filter(
       (row) =>
         row['DataCore Global Param Summary'] ||
@@ -132,7 +175,6 @@ export function compareMiningLocationCoverage(
 export function buildMiningLocationRowsFromSources(
   datacoreProviderRows: Record<string, string>[],
   datacoreCompositionRows: Record<string, string>[],
-  scmdbRows: Record<string, string>[],
   datacoreLocationLabelRows: Record<string, string>[] = [],
   datacoreQualityDistributionRows: Record<string, string>[] = [],
   datacoreMineableEntityRows: Record<string, string>[] = [],
@@ -146,7 +188,6 @@ export function buildMiningLocationRowsFromSources(
   const datacoreRows = buildDatacoreMiningLocationRows(
     datacoreProviderRows,
     datacoreCompositionRows,
-    scmdbRows,
     datacoreLocationLabelRows,
     datacoreQualityDistributionRows,
     datacoreMineableEntityRows,
@@ -157,21 +198,11 @@ export function buildMiningLocationRowsFromSources(
     datacoreSubHarvestableConfigRows,
     datacoreParamRows,
   );
-  const datacoreLocations = new Set(datacoreRows.map((row) => row['Location Name']));
-  const mergedRows: Record<string, string>[] = [
-    ...datacoreRows,
-    ...scmdbRows
-      .filter(
-        (row) =>
-          !datacoreLocations.has(row['Location Name']) && LEGACY_SCMDB_ONLY_MINING_LOCATION_NAMES.has(row['Location Name']),
-      )
-      .map((row) => ({ ...row, Source: row.Source || 'SCMDB legacy special-site fallback' })),
-  ];
+  const mergedRows: Record<string, string>[] = [...datacoreRows];
   return mergedRows.sort((a, b) => (a['Location Name'] || '').localeCompare(b['Location Name'] || ''));
 }
 
 async function loadMiningLocationSourceData(context: ItemSourceDataContext): Promise<Record<string, string>[]> {
-  const scmdbRows = await readCsvFile(resolveChildPath(context.csvDir, 'mining-locations.csv', 'SCMDB mining locations CSV filename'));
   const [
     datacoreProviderRows,
     datacoreCompositionRows,
@@ -185,9 +216,17 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreSubHarvestableConfigRows,
     datacoreParamRows,
   ] = await Promise.all([
-    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_PROVIDER_PRESETS_CSV, 'DataCore mining provider presets'),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_PROVIDER_PRESETS_CSV,
+      'DataCore mining provider presets',
+    ),
     loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions'),
-    loadDatacoreCsv(context.sourceDirs?.datacore, DATACORE_MINING_LOCATION_LABELS_CSV, 'DataCore mining location labels'),
+    loadDatacoreCsv(
+      context.sourceDirs?.datacore,
+      DATACORE_MINING_LOCATION_LABELS_CSV,
+      'DataCore mining location labels',
+    ),
     loadDatacoreCsv(
       context.sourceDirs?.datacore,
       DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV,
@@ -220,7 +259,6 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
   const rows = buildMiningLocationRowsFromSources(
     datacoreProviderRows,
     datacoreCompositionRows,
-    scmdbRows,
     datacoreLocationLabelRows,
     datacoreQualityDistributionRows,
     datacoreMineableEntityRows,
@@ -231,27 +269,27 @@ async function loadMiningLocationSourceData(context: ItemSourceDataContext): Pro
     datacoreSubHarvestableConfigRows,
     datacoreParamRows,
   );
-  const coverage = compareMiningLocationCoverage(
-    rows.filter((row) => row.Source?.startsWith('DataCore')),
-    scmdbRows,
-  );
 
   logger.info('Mining location source coverage', {
-    datacoreLocations: coverage.datacoreLocations,
-    scmdbLocations: coverage.scmdbLocations,
-    datacoreLocationLabelRows: coverage.datacoreLocationLabelRows,
-    datacoreLocationsWithLabelKeys: coverage.datacoreLocationsWithLabelKeys,
-    datacoreLocationsWithQualityNotes: coverage.datacoreLocationsWithQualityNotes,
-    datacoreLocationsWithEntityFacts: coverage.datacoreLocationsWithEntityFacts,
-    datacoreLocationsWithDensityOverrideFacts: coverage.datacoreLocationsWithDensityOverrideFacts,
-    datacoreLocationsWithClusteringFacts: coverage.datacoreLocationsWithClusteringFacts,
-    datacoreLocationsWithHarvestablePresetFacts: coverage.datacoreLocationsWithHarvestablePresetFacts,
-    datacoreLocationsWithSetupFacts: coverage.datacoreLocationsWithSetupFacts,
-    datacoreLocationsWithSubHarvestableFacts: coverage.datacoreLocationsWithSubHarvestableFacts,
-    datacoreLocationsWithParamFacts: coverage.datacoreLocationsWithParamFacts,
-    common: coverage.common,
-    datacoreOnly: coverage.datacoreOnly.length,
-    scmdbOnly: coverage.scmdbOnly.length,
+    datacoreLocations: rows.length,
+    datacoreLocationLabelRows: rows.filter((row) => row['DataCore Location Label Source']).length,
+    datacoreLocationsWithLabelKeys: rows.filter(
+      (row) => row['DataCore Location Name Keys'] || row['DataCore Location Description Keys'],
+    ).length,
+    datacoreLocationsWithQualityNotes: rows.filter((row) => row['DataCore Quality Source']).length,
+    datacoreLocationsWithEntityFacts: rows.filter((row) => row['DataCore Mineable Entity Classes']).length,
+    datacoreLocationsWithDensityOverrideFacts: rows.filter((row) => row['DataCore Density Override Summary']).length,
+    datacoreLocationsWithClusteringFacts: rows.filter((row) => row['DataCore Clustering Summary']).length,
+    datacoreLocationsWithHarvestablePresetFacts: rows.filter((row) => row['DataCore Harvestable Preset Summary'])
+      .length,
+    datacoreLocationsWithSetupFacts: rows.filter((row) => row['DataCore Setup Summary']).length,
+    datacoreLocationsWithSubHarvestableFacts: rows.filter((row) => row['DataCore Sub-Harvestable Summary']).length,
+    datacoreLocationsWithParamFacts: rows.filter(
+      (row) =>
+        row['DataCore Global Param Summary'] ||
+        row['DataCore Audio Param Summary'] ||
+        row['DataCore Density Param Summary'],
+    ).length,
   });
 
   return rows;
@@ -268,7 +306,7 @@ async function loadDatacoreCsv(
     return await readCsvFile(resolveChildPath(datacoreDir, csvFile, `${label} CSV filename`));
   } catch (err) {
     if (isFileNotFound(err)) {
-      logger.warn(`${label} CSV missing; using SCMDB mining location fallback where needed`, {
+      logger.warn(`${label} CSV missing; mining location rows may omit related DataCore facts`, {
         datacoreDir,
         csvFile,
       });
@@ -281,7 +319,6 @@ async function loadDatacoreCsv(
 function buildDatacoreMiningLocationRows(
   providerRows: Record<string, string>[],
   compositionRows: Record<string, string>[],
-  scmdbRows: Record<string, string>[],
   locationLabelRows: Record<string, string>[],
   qualityDistributionRows: Record<string, string>[],
   mineableEntityRows: Record<string, string>[],
@@ -300,7 +337,6 @@ function buildDatacoreMiningLocationRows(
   const setupSummaries = buildSetupSummaryMap(harvestableSetupRows);
   const subHarvestableSummaries = buildSubHarvestableSummaryMap(subHarvestableConfigRows);
   const paramSummaries = buildParamSummaryMaps(paramRows);
-  const scmdbQualityNotes = new Map(scmdbRows.map((row) => [row['Location Name'], row['Quality Note'] || '']));
   const factsByLocation = new Map<
     string,
     {
@@ -322,13 +358,7 @@ function buildDatacoreMiningLocationRows(
       densityParamSummaries: Map<string, string>;
     }
   >();
-
-  for (const row of providerRows) {
-    const locationName = toDisplayLocationName(row);
-    const miningType = classifyMiningGroup(row['Group Name'] || '');
-    const compositionName = compositionNames.get(row['Composition Class']) || cleanCompositionClass(row['Composition Class']);
-    if (!locationName || !miningType || !compositionName) continue;
-
+  const getFacts = (locationName: string) => {
     let facts = factsByLocation.get(locationName);
     if (!facts) {
       facts = {
@@ -351,6 +381,17 @@ function buildDatacoreMiningLocationRows(
       };
       factsByLocation.set(locationName, facts);
     }
+    return facts;
+  };
+
+  for (const row of providerRows) {
+    const locationName = toDisplayLocationName(row);
+    const miningType = classifyMiningGroup(row['Group Name'] || '');
+    const compositionName =
+      compositionNames.get(row['Composition Class']) || cleanCompositionClass(row['Composition Class']);
+    if (!locationName || !miningType || !compositionName) continue;
+
+    const facts = getFacts(locationName);
     facts.weights[miningType][compositionName] =
       (facts.weights[miningType][compositionName] ?? 0) +
       parseWeight(row['Group Probability'], 1) * parseWeight(row['Relative Probability'], 1);
@@ -391,7 +432,8 @@ function buildDatacoreMiningLocationRows(
     if (densityClass && densityParamSummary) facts.densityParamSummaries.set(densityClass, densityParamSummary);
 
     const densityOverrideSummary = densityClass ? densityOverrideSummaries.get(densityClass) : undefined;
-    if (densityClass && densityOverrideSummary) facts.densityOverrideSummaries.set(densityClass, densityOverrideSummary);
+    if (densityClass && densityOverrideSummary)
+      facts.densityOverrideSummaries.set(densityClass, densityOverrideSummary);
 
     const clusteringClass = row['Clustering Class'];
     const clusteringSummary = clusteringSummaries.get(clusteringClass);
@@ -408,13 +450,25 @@ function buildDatacoreMiningLocationRows(
     const setupSummary = setupSummaries.get(setupClass);
     if (setupClass && setupSummary) facts.setupSummaries.set(setupClass, setupSummary);
 
-    for (const subHarvestableKey of [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']]) {
+    for (const subHarvestableKey of [
+      row['Harvestable Class'],
+      row['Harvestable Entity Class'],
+      row['Harvestable Setup Class'],
+    ]) {
       const subHarvestableSummary = subHarvestableSummaries.get(subHarvestableKey);
       if (subHarvestableKey && subHarvestableSummary) {
         facts.subHarvestableSummaries.set(subHarvestableKey, subHarvestableSummary);
       }
     }
   }
+
+  addSpecialDatacoreSitePools({
+    compositionNames,
+    getFacts,
+    mineableEntitiesByClass,
+    qualityDistributionRows,
+    subHarvestableConfigRows,
+  });
 
   return [...factsByLocation.entries()]
     .map(([locationName, facts]) => {
@@ -424,7 +478,7 @@ function buildDatacoreMiningLocationRows(
         'Ship Mineables': toWeightedMineableList(facts.weights.ship),
         'Hand Mineables': toWeightedMineableList(facts.weights.hand),
         'Ground Vehicle Mineables': toWeightedMineableList(facts.weights.ground),
-        'Quality Note': datacoreQualityNote || scmdbQualityNotes.get(locationName) || '',
+        'Quality Note': datacoreQualityNote,
         'DataCore Location Name Keys': sortedJoined(facts.locationNameKeys),
         'DataCore Location Description Keys': sortedJoined(facts.locationDescriptionKeys),
         'DataCore Location Label Source': sortedJoined(facts.labelSources),
@@ -440,7 +494,7 @@ function buildDatacoreMiningLocationRows(
         'DataCore Global Param Summary': sortedJoined(new Set(facts.globalParamSummaries.values())),
         'DataCore Audio Param Summary': sortedJoined(new Set(facts.audioParamSummaries.values())),
         'DataCore Density Param Summary': sortedJoined(new Set(facts.densityParamSummaries.values())),
-        Source: 'DataCore+SCMDB',
+        Source: 'DataCore',
       };
     })
     .filter((row) => row['Ship Mineables'] || row['Hand Mineables'] || row['Ground Vehicle Mineables'])
@@ -470,6 +524,72 @@ function relatedLocationLabelRows(
       .toLowerCase();
     return [...terms].some((term) => term.length >= 4 && hasLabelToken(haystack, term));
   });
+}
+
+function addSpecialDatacoreSitePools(context: {
+  compositionNames: Map<string, string>;
+  getFacts: (locationName: string) => {
+    weights: LocationWeights;
+    qualityRows: Map<string, Record<string, string>>;
+    mineableEntityClasses: Set<string>;
+    subHarvestableSummaries: Map<string, string>;
+  };
+  mineableEntitiesByClass: Map<string, Record<string, string>>;
+  qualityDistributionRows: Record<string, string>[];
+  subHarvestableConfigRows: Record<string, string>[];
+}): void {
+  const rowsByConfigClass = new Map<string, Record<string, string>[]>();
+  for (const row of context.subHarvestableConfigRows) {
+    const configClass = row['Config Class'];
+    if (!configClass) continue;
+    const rows = rowsByConfigClass.get(configClass) ?? [];
+    rows.push(row);
+    rowsByConfigClass.set(configClass, rows);
+  }
+
+  for (const pool of SPECIAL_DATACORE_SITE_POOLS) {
+    const rows = (rowsByConfigClass.get(pool.configClass) ?? []).filter(
+      (row) =>
+        (!pool.taggedConfigNames || pool.taggedConfigNames.has(row['Tagged Config Name'])) &&
+        (!pool.entityClassPattern ||
+          pool.entityClassPattern.test(row['Harvestable Entity Class'] || row['Harvestable Class'])),
+    );
+    if (rows.length === 0) continue;
+
+    const facts = context.getFacts(pool.locationName);
+    const sourceClasses = new Set<string>();
+    for (const row of rows) {
+      const entityClass = row['Harvestable Entity Class'] || row['Harvestable Class'];
+      const mineableEntity = context.mineableEntitiesByClass.get(entityClass);
+      const compositionClass = mineableEntity?.['Composition Class'] || '';
+      const elementName = normalizeSpecialMineableName(
+        pool.collapsedElementName ||
+          context.compositionNames.get(compositionClass) ||
+          cleanCompositionClass(compositionClass),
+      );
+      if (!elementName) continue;
+
+      const weight =
+        pool.explicitElementWeights?.get(elementName) ??
+        parseWeight(row['Initial Slots Probability'], 1) * parseWeight(row['Relative Probability'], 1);
+      facts.weights[pool.miningType][elementName] = (facts.weights[pool.miningType][elementName] ?? 0) + weight;
+      addIfPresent(facts.mineableEntityClasses, entityClass);
+      addIfPresent(sourceClasses, row['Config Class']);
+    }
+
+    if (sourceClasses.size > 0) {
+      facts.subHarvestableSummaries.set(pool.configClass, `${pool.configClass} (${[...sourceClasses].join(';')})`);
+    }
+
+    if (pool.qualityClassTerms) {
+      const qualityNote = toSpecialQualityNote(context.qualityDistributionRows, pool.qualityClassTerms);
+      if (qualityNote) {
+        facts.qualityRows.set(`special:${pool.locationName}`, {
+          'Special Quality Note': qualityNote,
+        });
+      }
+    }
+  }
 }
 
 function relatedQualityDistributionRows(
@@ -601,7 +721,9 @@ function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): Map<s
       row['Respawn In Slot Time'] ? `respawn ${row['Respawn In Slot Time']}` : '',
       row['Special Harvestable String'] ? `special ${row['Special Harvestable String']}` : '',
     ].filter(Boolean);
-    const summary = details.length ? `${row['Harvestable Preset Class']} (${details.join(', ')})` : row['Harvestable Preset Class'];
+    const summary = details.length
+      ? `${row['Harvestable Preset Class']} (${details.join(', ')})`
+      : row['Harvestable Preset Class'];
 
     for (const key of keys) {
       const values = summaries.get(key) ?? [];
@@ -611,7 +733,10 @@ function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): Map<s
   }
 
   return new Map(
-    [...summaries.entries()].map(([key, values]) => [key, [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | ')]),
+    [...summaries.entries()].map(([key, values]) => [
+      key,
+      [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | '),
+    ]),
   );
 }
 
@@ -640,7 +765,9 @@ function buildSetupSummaryMap(rows: Record<string, string>[]): Map<string, strin
 function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<string, string> {
   const summaries = new Map<string, string[]>();
   for (const row of rows) {
-    const keys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(Boolean);
+    const keys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(
+      Boolean,
+    );
     if (keys.length === 0) continue;
 
     const configLabel = [row['Config Class'], row['Tagged Config Name']].filter(Boolean).join('/');
@@ -650,7 +777,9 @@ function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<stri
       row['Deepest Relative Probability'] ? `deep ${row['Deepest Relative Probability']}` : '',
       row['Initial Slots Probability'] ? `slots ${row['Initial Slots Probability']}` : '',
       row['Config Respawn Time Multiplier'] ? `config respawn x${row['Config Respawn Time Multiplier']}` : '',
-      row['Harvestable Respawn Time Multiplier'] ? `harvest respawn x${row['Harvestable Respawn Time Multiplier']}` : '',
+      row['Harvestable Respawn Time Multiplier']
+        ? `harvest respawn x${row['Harvestable Respawn Time Multiplier']}`
+        : '',
       row['Geometry Tags'] ? `geometry ${row['Geometry Tags']}` : '',
     ].filter(Boolean);
     const summary = details.length ? `${configLabel} (${details.join(', ')})` : configLabel;
@@ -663,7 +792,10 @@ function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<stri
   }
 
   return new Map(
-    [...summaries.entries()].map(([key, values]) => [key, [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | ')]),
+    [...summaries.entries()].map(([key, values]) => [
+      key,
+      [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | '),
+    ]),
   );
 }
 
@@ -715,7 +847,9 @@ function toParamSummary(row: Record<string, string>): string {
     const details = [
       row['Cluster Detection Radius'] ? `cluster radius ${row['Cluster Detection Radius']}` : '',
       row['Cluster Upper Object Count DGS'] ? `DGS max ${row['Cluster Upper Object Count DGS']}` : '',
-      row['Cluster Upper Object Count Persistence'] ? `persistent max ${row['Cluster Upper Object Count Persistence']}` : '',
+      row['Cluster Upper Object Count Persistence']
+        ? `persistent max ${row['Cluster Upper Object Count Persistence']}`
+        : '',
       row['Cluster Persistence Timeout'] ? `timeout ${row['Cluster Persistence Timeout']}` : '',
       row['Reset Lifetime On Move'] ? `resetOnMove ${row['Reset Lifetime On Move']}` : '',
     ].filter(Boolean);
@@ -734,6 +868,9 @@ function rangeLabel(min: string | undefined, max: string | undefined): string {
 }
 
 function toQualityNote(qualityRows: Map<string, Record<string, string>>): string {
+  const specialNotes = [...qualityRows.values()].map((row) => row['Special Quality Note']).filter(Boolean);
+  if (specialNotes.length > 0) return [...new Set(specialNotes)].join('\n');
+
   const lines = [...qualityRows.entries()]
     .toSorted((a, b) => familyLabel(a[0]).localeCompare(familyLabel(b[0])))
     .map(([family, row]) => {
@@ -749,6 +886,46 @@ function toQualityNote(qualityRows: Map<string, Record<string, string>>): string
   return lines.join('\n');
 }
 
+function toSpecialQualityNote(rows: Record<string, string>[], classTerms: string[]): string {
+  const defaultsByRarity = new Map<string, Record<string, string>>();
+  const overridesByRarity = new Map<string, Record<string, string>>();
+
+  for (const row of rows) {
+    const distributionClass = row['Distribution Class'] || '';
+    const rarity = distributionClass.match(/^(Legendary|Uncommon)ShipMineable_/i)?.[1]?.toLowerCase();
+    if (!rarity || (row['Mineable Family'] || '').toLowerCase() !== 'shipmineables') continue;
+
+    const distributionType = row['Distribution Type'] || '';
+    if (distributionType === 'default') {
+      defaultsByRarity.set(rarity, row);
+      continue;
+    }
+
+    const haystack = [distributionClass, row['Location Class'], row['Location Path']].join(' ').toLowerCase();
+    if (distributionType === 'location-override' && classTerms.some((term) => haystack.includes(term.toLowerCase()))) {
+      overridesByRarity.set(rarity, row);
+    }
+  }
+
+  const labels: Record<string, string> = {
+    uncommon: 'Uncommon ship rocks',
+    legendary: 'Legendary ship rocks',
+  };
+
+  return ['uncommon', 'legendary']
+    .map((rarity) => {
+      const override = overridesByRarity.get(rarity);
+      if (!override) return '';
+      const floor = qualityPercent(override['Min Quality']);
+      const standard = qualityPercent(defaultsByRarity.get(rarity)?.['Min Quality']);
+      return standard
+        ? `${labels[rarity]}: quality floor ${floor} (standard ${standard})`
+        : `${labels[rarity]}: quality floor ${floor}`;
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
 function qualityPercent(value: string | undefined): string {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return '';
@@ -761,6 +938,14 @@ function familyLabel(family: string): string {
   if (normalized === 'fpsmineables') return 'Hand quality';
   if (normalized === 'groundmineables') return 'Ground vehicle quality';
   return family;
+}
+
+function normalizeSpecialMineableName(value: string): string {
+  const normalized = value.trim();
+  if (normalized === 'Carinitepure') return 'Carinite (Pure)';
+  if (normalized === 'Jaclium') return 'Jaclium (Ore)';
+  if (normalized === 'Saldynium') return 'Saldynium (Ore)';
+  return normalized;
 }
 
 function buildCompositionNameMap(compositionRows: Record<string, string>[]): Map<string, string> {
@@ -851,6 +1036,19 @@ function toLocationSlug(name: string): string {
 
 export default {
   csvFile: 'mining-locations.csv',
+  sourceFiles: [
+    { sourceDir: 'datacore', file: DATACORE_MINING_PROVIDER_PRESETS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_COMPOSITIONS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_LOCATION_LABELS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_QUALITY_DISTRIBUTIONS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINEABLE_ENTITIES_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_DENSITY_OVERRIDES_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_CLUSTERING_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_HARVESTABLE_PRESETS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_HARVESTABLE_SETUPS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_SUB_HARVESTABLE_CONFIGS_CSV },
+    { sourceDir: 'datacore', file: DATACORE_MINING_PARAMS_CSV },
+  ],
   loadSourceData: loadMiningLocationSourceData,
   label: 'Mining locations',
   requiredColumns: ['Location Name', 'Ship Mineables', 'Hand Mineables'],
