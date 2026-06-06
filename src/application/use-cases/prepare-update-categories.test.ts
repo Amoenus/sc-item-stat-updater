@@ -26,7 +26,7 @@ test('resolveLatestVersionDir selects the latest PTU directory', async () => {
   await fs.mkdir(path.join(root, '4.2.0-ptu.200'));
   await fs.mkdir(path.join(root, '4.3.0-ptu.300'));
 
-  const result = await resolveLatestVersionDir(root, true, 'SPViewer', 'scrape-spviewer.js');
+  const result = await resolveLatestVersionDir(root, true, 'DataCore', 'scrape-datacore.js');
 
   assert.equal(result, path.join(root, '4.3.0-ptu.300'));
 });
