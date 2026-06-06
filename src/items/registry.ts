@@ -7,7 +7,7 @@ const itemsDir = path.resolve(import.meta.dirname);
 const spviewerDir = path.join(itemsDir, 'spviewer');
 const missionsDir = path.join(itemsDir, 'missions');
 const datacoreDir = path.join(itemsDir, 'datacore');
-const NON_CATEGORY_FILES = new Set(['registry.ts', 'types.ts', 'shared-stat-sections.ts']);
+const NON_CATEGORY_FILES = new Set(['registry.ts', 'types.ts', 'shared-stat-sections.ts', 'mining-journal.ts']);
 
 function isCategoryConfigFile(entry: string): boolean {
   return entry.endsWith('.ts') && !entry.endsWith('.test.ts') && !NON_CATEGORY_FILES.has(entry);
@@ -70,6 +70,9 @@ export async function loadConfig(slug: string): Promise<ItemConfig> {
   try {
     await fs.access(filePath);
   } catch {
+    throw new Error(`Unknown category: ${slug}`);
+  }
+  if (!isCategoryConfigFile(path.basename(filePath))) {
     throw new Error(`Unknown category: ${slug}`);
   }
   const { default: config } = await import(pathToFileURL(filePath).href);

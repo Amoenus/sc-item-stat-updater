@@ -38,10 +38,10 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(optionalJournal?.sourceFiles.includes('fallback:mining-journal.csv'), true);
   assert.equal(optionalJournal?.activeForDatacoreProvider, false);
 
-  const journalCategory = audit.entries.find((entry) => entry.slug === 'mission-mining-journal');
-  assert.equal(journalCategory?.classification, 'SCMDB-only derived/generated');
-  assert.match(journalCategory?.reason ?? '', /no explicit per-element journal rarity field/);
-  assert.match(journalCategory?.reason ?? '', /DataCore journal use is limited to separately rendered insight summaries/);
+  assert.equal(
+    audit.entries.some((entry) => entry.slug === 'mission-mining-journal'),
+    false,
+  );
 
   const miningElements = audit.entries.find((entry) => entry.slug === 'mission-mining-elements');
   assert.equal(miningElements?.sourceFiles.includes('optional:mining-elements.csv'), true);

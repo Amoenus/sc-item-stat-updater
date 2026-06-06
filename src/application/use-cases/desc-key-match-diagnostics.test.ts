@@ -41,10 +41,6 @@ const samplesBySlug: Record<string, { positive: string[]; negative: string[] }> 
     positive: ['items_commodities_agricium_ore_desc'],
     negative: ['items_commodities_agricium_desc'],
   },
-  'mission-mining-journal': {
-    positive: ['journal_general_mining_agricium'],
-    negative: ['item_mining_resource_agricium_desc'],
-  },
   'mission-mining-locations': {
     positive: ['stanton_area18_mining_desc'],
     negative: ['items_commodities_agricium_desc'],

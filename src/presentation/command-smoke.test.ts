@@ -66,6 +66,13 @@ test('update-item rejects direct SPViewer category updates', async () => {
   assert.match(result.stderr, /Use the matching dc-\* category/);
 });
 
+test('update-item rejects mining journal helper as a direct category', async () => {
+  const result = await runCommand(['bin/update-item.ts', 'mission-mining-journal', '--dry-run']);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /Unknown category: mission-mining-journal/);
+});
+
 test('update-item list-categories reports provider and source metadata', async () => {
   const result = await runCommand(['bin/update-item.ts', '--list-categories']);
 

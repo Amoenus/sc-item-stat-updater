@@ -47,7 +47,7 @@ For `update-all`, the same audit is printed at startup before preflight. The `Da
 
 `update-all` no longer refreshes SCMDB-generated `mining-locations.csv`, and the SCMDB scraper no longer writes that retired CSV. DataCore-first mining-location updates do not read it.
 
-Mining location rendering no longer imports arbitrary SCMDB-only location rows or SCMDB quality-note fallback text. DataCore rows are authoritative for normal locations and now reconstruct the special-site pools for `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`. The mining-location SCMDB bridge is retired; `mining-journal.csv` remains a separate SCMDB dependency for journal rarity labels.
+Mining location rendering no longer imports arbitrary SCMDB-only location rows or SCMDB quality-note fallback text. DataCore rows are authoritative for normal locations and now reconstruct the special-site pools for `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`. The mining-location SCMDB bridge is retired; the optional mining journal extra step still uses `mining-journal.csv` for journal rarity labels.
 
 ## Migration slices
 
@@ -58,7 +58,7 @@ The current high-value replacement targets are:
 2. Blueprint and crafting relationships.
    Recover blueprint reward, chain, pool, and crafting-item joins from game-file records instead of SCMDB merged outputs.
 3. Mining location summaries and journal fallback removal.
-   Finish replacing SCMDB mining aggregations with DataCore mining provider, quality, composition, density, clustering, setup, and parameter joins. SCMDB remains authoritative for mining journal rarity labels because DataCore rarity inference has not proven equivalent; DataCore journal output is limited to separately rendered insight summaries.
+   Finish replacing SCMDB mining aggregations with DataCore mining provider, quality, composition, density, clustering, setup, and parameter joins. SCMDB remains the optional mining journal rarity source because DataCore rarity inference has not proven equivalent; DataCore journal output is limited to separately rendered insight summaries.
 4. Mining element residue (refinery hints).
    DataCore now supplies material name, rarity, asteroid/surface/ground/FPS scan signatures from `mining-rock-signatures.datacore.csv`, and quality bands from `mining-quality-quantizations.datacore.csv`. SCMDB cannot create active mining-element target rows and no longer backfills mining behavior, rarity, density, scan signatures, or quality bands. With the checked-in DataCore/SCMDB data, the active merged rows are now `DataCore` or `DataCore+SCMDB`, never `SCMDB` only. The remaining SCMDB bridge field on targetable merged element rows is the optional derived best-refinery hint; missing `mining-elements.csv` no longer blocks DataCore mining-element updates. Replace the hint with a first-party join if a station/material bonus source is found before retiring the SCMDB mining-elements bridge entirely.
    Density investigation so far: SCMDB density is not the physical `Mass` on generated carryable cargo entities and is not `Mass / SCU`; commodity entity records expose cargo occupancy and resource type/subtype GUIDs, but not the rendered density scalar. SCMDB density is intentionally omitted from active mining-element output until a DataCore source is proven.

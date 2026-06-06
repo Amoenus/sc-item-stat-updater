@@ -51,13 +51,6 @@ const MISSION_CLASSIFICATIONS: Record<
     migrationSlice:
       'Retired for mining locations; keep watching mining-journal.csv separately for journal rarity labels.',
   },
-  'mission-mining-journal': {
-    classification: 'SCMDB-only derived/generated',
-    reason:
-      'DataCore mining records contain rarity-named buckets in class/path names, but no explicit per-element journal rarity field has been found in the generated DataCore artifacts. The probability-based DataCore diagnostic does not match SCMDB closely enough, so SCMDB remains authoritative for journal rarity labels; DataCore journal use is limited to separately rendered insight summaries.',
-    migrationSlice:
-      'Keep SCMDB mining-journal.csv for journal rarity labels; use DataCore mining facts only for separately proven diagnostics and insights.',
-  },
   'mission-scmdb-descriptions': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
