@@ -161,7 +161,9 @@ npm run scrape:scmdb -- --raw
 node --import tsx/esm bin/update-item.ts -c <csv-directory> <category>
 ```
 
-Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/spviewer/<version>-live`). Available categories include DataCore, SPViewer, and mission sources. DataCore categories are prefixed with `dc-`, SPViewer categories with `sp-`, and mission categories with `mission-`.
+Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/datacore/<version>-live` for `dc-*` categories, or `-c ./csv/scmdb/<version>-live` for `mission-*` categories). Available categories include DataCore, SPViewer, and mission sources. DataCore categories are prefixed with `dc-`, SPViewer categories with `sp-`, and mission categories with `mission-`.
+
+Active updates accept DataCore (`dc-*`) and mission (`mission-*`) categories. SPViewer (`sp-*`) categories are listed for legacy comparison and retirement audits only; direct SPViewer updates are rejected.
 
 To list categories with source-file metadata:
 

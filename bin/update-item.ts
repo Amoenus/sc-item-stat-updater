@@ -83,7 +83,7 @@ if (values['spviewer-retirement-audit']) {
 
 if (values.help || !category) {
   const available = await listCategories();
-  const allSlugs = [...available.spviewer, ...available.datacore, ...available.missions];
+  const activeSlugs = [...available.datacore, ...available.missions];
   console.log('Usage: node update-item.js [options] <category>');
   console.log('\nOptions:');
   console.log('  -i, --ini-path <path>  Path to global.ini (default: ./global.ini)');
@@ -100,11 +100,21 @@ if (values.help || !category) {
   console.log('  -v, --verbose          Enable verbose logging');
   console.log('      --json-logs        Output logs as JSON (for log aggregation)');
   console.log('  -h, --help             Show this help message');
-  console.log(`\nAvailable categories:\n  ${allSlugs.join('\n  ')}`);
+  console.log(`\nAvailable active update categories:\n  ${activeSlugs.join('\n  ')}`);
+  console.log('\nSPViewer categories are legacy comparison only; use --list-categories or --spviewer-retirement-audit.');
   process.exit(values.help ? 0 : 1);
 }
 
 applyLogFlags(values);
+
+if (category.startsWith('sp-')) {
+  console.error(
+    `ERROR in ${category}: SPViewer categories are legacy comparison/audit only and cannot be used for active updates.`,
+  );
+  console.error('Use the matching dc-* category for game-file facts, or run --spviewer-retirement-audit for diagnostics.');
+  await shutdownLogger();
+  process.exit(1);
+}
 
 const options = {
   iniPath: values['ini-path'],

@@ -51,10 +51,19 @@ test('update-item help exits successfully and lists categories', async () => {
 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node update-item\.js \[options] <category>/);
-  assert.match(result.stdout, /Available categories:/);
-  assert.match(result.stdout, /sp-coolers/);
+  assert.match(result.stdout, /Available active update categories:/);
+  assert.doesNotMatch(result.stdout, /\n  sp-coolers/);
   assert.match(result.stdout, /dc-powerplants/);
   assert.match(result.stdout, /mission-scmdb-descriptions/);
+  assert.match(result.stdout, /SPViewer categories are legacy comparison only/);
+});
+
+test('update-item rejects direct SPViewer category updates', async () => {
+  const result = await runCommand(['bin/update-item.ts', 'sp-coolers', '--dry-run']);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /SPViewer categories are legacy comparison\/audit only/);
+  assert.match(result.stderr, /Use the matching dc-\* category/);
 });
 
 test('update-item list-categories reports provider and source metadata', async () => {
