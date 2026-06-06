@@ -78,8 +78,18 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records: DataCoreRecordNode[] = [
-    node(miningOverridePath, 'ad7b50ff-f32b-4156-a56e-f0ddfc48f76d', 'SEntityDensityClassOverridesRecord', 'Stanton_HighTechMiningOutpost'),
-    node(genericOverridePath, '11111111-1111-1111-1111-111111111111', 'SEntityDensityClassOverridesRecord', 'Generic_Dungeon_Default'),
+    node(
+      miningOverridePath,
+      'ad7b50ff-f32b-4156-a56e-f0ddfc48f76d',
+      'SEntityDensityClassOverridesRecord',
+      'Stanton_HighTechMiningOutpost',
+    ),
+    node(
+      genericOverridePath,
+      '11111111-1111-1111-1111-111111111111',
+      'SEntityDensityClassOverridesRecord',
+      'Generic_Dungeon_Default',
+    ),
     node(spaceshipDensityPath, 'b6cc39fd-7c14-4568-b261-197834e51116', 'SEntityDensityClass', 'SpaceShipDensityClass'),
   ];
 

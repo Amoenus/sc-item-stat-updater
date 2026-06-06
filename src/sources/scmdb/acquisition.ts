@@ -10,7 +10,10 @@ export interface ScmdbDataUrls {
   craftingBlueprintsUrl: string;
 }
 
-export type FetchJson = (url: string, init?: { headers?: Record<string, string> }) => Promise<{
+export type FetchJson = (
+  url: string,
+  init?: { headers?: Record<string, string> },
+) => Promise<{
   ok: boolean;
   status: number;
   statusText: string;

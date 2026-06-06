@@ -1,12 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { z } from 'zod';
-import {
-  buildScmdbDataUrls,
-  fetchAndValidateScmdbJson,
-  fetchScmdbJson,
-  SCMDB_BASE_URL,
-} from './acquisition';
+import { buildScmdbDataUrls, fetchAndValidateScmdbJson, fetchScmdbJson, SCMDB_BASE_URL } from './acquisition';
 
 test('buildScmdbDataUrls derives SCMDB companion data URLs from a merged file', () => {
   assert.deepEqual(buildScmdbDataUrls('merged-4.8.1-live.11875683.json'), {

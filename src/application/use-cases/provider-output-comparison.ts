@@ -46,7 +46,9 @@ function entriesByKey(entries: Array<{ key: string; value: string }>): Map<strin
   return new Map(entries.map((entry) => [entry.key, entry.value]));
 }
 
-export async function compareProviderCategoryOutputs(input: ProviderComparisonInput): Promise<ProviderOutputComparison> {
+export async function compareProviderCategoryOutputs(
+  input: ProviderComparisonInput,
+): Promise<ProviderOutputComparison> {
   const [datacorePlan, spviewerPlan] = await Promise.all([
     buildPatchPlanResult(input.datacore.config, {
       csvDir: input.datacore.csvDir,

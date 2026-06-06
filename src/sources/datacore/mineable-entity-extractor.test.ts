@@ -68,12 +68,48 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records = [
-    node(entityPath, 'entity-guid', 'EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium', 'EntityClassDefinition', 'AsteroidCTypeMineableRock_Aluminium'),
-    node(nonMineablePath, 'non-mineable-guid', 'EntityClassDefinition.Test_MiningDestroyable', 'EntityClassDefinition', 'Test_MiningDestroyable'),
-    node(compositionPath, 'composition-guid', 'MineableComposition.Asteroid_CType_Aluminium', 'MineableComposition', 'Asteroid_CType_Aluminium'),
-    node(globalParamsPath, 'global-guid', 'MiningGlobalParams.MiningGlobalParams_Ship', 'MiningGlobalParams', 'MiningGlobalParams_Ship'),
-    node(audioParamsPath, 'audio-guid', 'MiningAudioParams.MiningAudioParams_Ship', 'MiningAudioParams', 'MiningAudioParams_Ship'),
-    node(densityClassPath, 'density-guid', 'EntityDensityClass.EntityDensityClass_Mineable', 'EntityDensityClass', 'EntityDensityClass_Mineable'),
+    node(
+      entityPath,
+      'entity-guid',
+      'EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium',
+      'EntityClassDefinition',
+      'AsteroidCTypeMineableRock_Aluminium',
+    ),
+    node(
+      nonMineablePath,
+      'non-mineable-guid',
+      'EntityClassDefinition.Test_MiningDestroyable',
+      'EntityClassDefinition',
+      'Test_MiningDestroyable',
+    ),
+    node(
+      compositionPath,
+      'composition-guid',
+      'MineableComposition.Asteroid_CType_Aluminium',
+      'MineableComposition',
+      'Asteroid_CType_Aluminium',
+    ),
+    node(
+      globalParamsPath,
+      'global-guid',
+      'MiningGlobalParams.MiningGlobalParams_Ship',
+      'MiningGlobalParams',
+      'MiningGlobalParams_Ship',
+    ),
+    node(
+      audioParamsPath,
+      'audio-guid',
+      'MiningAudioParams.MiningAudioParams_Ship',
+      'MiningAudioParams',
+      'MiningAudioParams_Ship',
+    ),
+    node(
+      densityClassPath,
+      'density-guid',
+      'EntityDensityClass.EntityDensityClass_Mineable',
+      'EntityDensityClass',
+      'EntityDensityClass_Mineable',
+    ),
   ];
 
   return {

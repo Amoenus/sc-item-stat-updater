@@ -1,5 +1,5 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
+import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 
 const defaultMagazineRef = {
@@ -11,7 +11,10 @@ const defaultMagazineRef = {
     attr: 'entityClassReference',
   },
 };
-const defaultMagazineAmmoRef = [defaultMagazineRef, { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' }];
+const defaultMagazineAmmoRef = [
+  defaultMagazineRef,
+  { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' },
+];
 const fireActionSelector =
   'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
 
@@ -24,14 +27,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Damage Alpha': {
       ref: defaultMagazineAmmoRef,
       selector: 'DamageInfo',
-      attrs: [
-        'DamagePhysical',
-        'DamageEnergy',
-        'DamageDistortion',
-        'DamageThermal',
-        'DamageBiochemical',
-        'DamageStun',
-      ],
+      attrs: ['DamagePhysical', 'DamageEnergy', 'DamageDistortion', 'DamageThermal', 'DamageBiochemical', 'DamageStun'],
       format: 'sum',
     },
     'Rate of Fire': { selector: fireActionSelector, attr: 'fireRate' },

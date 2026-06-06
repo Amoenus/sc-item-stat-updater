@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningDensityOverrideRecord, DataCoreRecordGraphLookup } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_DENSITY_OVERRIDE_PATH_PREFIX = 'libs/foundry/records/densityclasses/overrides';
 

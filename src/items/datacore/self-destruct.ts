@@ -1,5 +1,5 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
+import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {

@@ -222,7 +222,7 @@ async function loadDatacoreMiningRockSignatureRows(datacoreDir: string | undefin
     );
   } catch (err) {
     if (isFileNotFound(err)) {
-      logger.warn('DataCore mining rock signatures CSV missing; scan signatures will fall back to SCMDB', {
+      logger.warn('DataCore mining rock signatures CSV missing; scan signatures will be omitted', {
         datacoreDir,
         csvFile: DATACORE_MINING_ROCK_SIGNATURES_CSV,
       });
@@ -247,7 +247,7 @@ async function loadDatacoreMiningQualityQuantizationRows(
     );
   } catch (err) {
     if (isFileNotFound(err)) {
-      logger.warn('DataCore mining quality quantizations CSV missing; quality bands will fall back to SCMDB', {
+      logger.warn('DataCore mining quality quantizations CSV missing; quality bands will be omitted', {
         datacoreDir,
         csvFile: DATACORE_MINING_QUALITY_QUANTIZATIONS_CSV,
       });
@@ -265,32 +265,32 @@ function toMiningElementRow(
   qualityBands: string,
 ): Record<string, string> {
   const behaviorFacts = toDatacoreBehaviorFacts(datacoreRow);
+  const bridgeDensity = scmdbRow?.Density || '';
+  const bridgeBestRefinery = scmdbRow?.['Best Refinery'] || '';
+  const source = bridgeDensity || bridgeBestRefinery ? 'DataCore+SCMDB' : 'DataCore';
   return {
-    'Element Name': datacoreRow['Element Name'] || scmdbRow?.['Element Name'] || '',
-    Rarity: rarity || scmdbRow?.Rarity || '',
-    'Ground Scan Signature': signatures.groundScan || scmdbRow?.['Ground Scan Signature'] || '',
-    'FPS Scan Signature': signatures.fpsScan || scmdbRow?.['FPS Scan Signature'] || '',
-    'Scan Signature': signatures.scan || scmdbRow?.['Scan Signature'] || '',
-    Resistance: datacoreRow.Resistance || scmdbRow?.Resistance || '',
-    Instability: datacoreRow.Instability || scmdbRow?.Instability || '',
-    Density: scmdbRow?.Density || '',
-    'Optimal Window Midpoint': datacoreRow['Optimal Window Midpoint'] || scmdbRow?.['Optimal Window Midpoint'] || '',
-    'Optimal Window Randomness':
-      datacoreRow['Optimal Window Randomness'] || scmdbRow?.['Optimal Window Randomness'] || '',
-    'Optimal Window Thinness': datacoreRow['Optimal Window Thinness'] || scmdbRow?.['Optimal Window Thinness'] || '',
-    'Explosion Multiplier': datacoreRow['Explosion Multiplier'] || scmdbRow?.['Explosion Multiplier'] || '',
-    'Cluster Factor': datacoreRow['Cluster Factor'] || scmdbRow?.['Cluster Factor'] || '',
-    'Quality Bands': qualityBands || scmdbRow?.['Quality Bands'] || '',
-    'Material Name': datacoreRow['Material Name'] || scmdbRow?.['Material Name'] || '',
-    'Mining Difficulty': behaviorFacts ? deriveMiningDifficulty(behaviorFacts) : scmdbRow?.['Mining Difficulty'] || '',
-    'Volatility Note': behaviorFacts ? deriveVolatilityNote(behaviorFacts) : scmdbRow?.['Volatility Note'] || '',
+    'Element Name': datacoreRow['Element Name'] || '',
+    Rarity: rarity,
+    'Ground Scan Signature': signatures.groundScan,
+    'FPS Scan Signature': signatures.fpsScan,
+    'Scan Signature': signatures.scan,
+    Resistance: datacoreRow.Resistance || '',
+    Instability: datacoreRow.Instability || '',
+    Density: bridgeDensity,
+    'Optimal Window Midpoint': datacoreRow['Optimal Window Midpoint'] || '',
+    'Optimal Window Randomness': datacoreRow['Optimal Window Randomness'] || '',
+    'Optimal Window Thinness': datacoreRow['Optimal Window Thinness'] || '',
+    'Explosion Multiplier': datacoreRow['Explosion Multiplier'] || '',
+    'Cluster Factor': datacoreRow['Cluster Factor'] || '',
+    'Quality Bands': qualityBands,
+    'Material Name': datacoreRow['Material Name'] || '',
+    'Mining Difficulty': behaviorFacts ? deriveMiningDifficulty(behaviorFacts) : '',
+    'Volatility Note': behaviorFacts ? deriveVolatilityNote(behaviorFacts) : '',
     'Cluster Note':
-      behaviorFacts?.clusterFactor !== undefined
-        ? deriveClusterNote(behaviorFacts.clusterFactor)
-        : scmdbRow?.['Cluster Note'] || '',
-    'Best Refinery': scmdbRow?.['Best Refinery'] || '',
+      behaviorFacts?.clusterFactor !== undefined ? deriveClusterNote(behaviorFacts.clusterFactor) : '',
+    'Best Refinery': bridgeBestRefinery,
     'Localization Key': datacoreRow['Inferred Description Key'] || '',
-    Source: scmdbRow ? 'DataCore+SCMDB' : 'DataCore',
+    Source: source,
   };
 }
 

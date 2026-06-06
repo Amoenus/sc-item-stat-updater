@@ -1,12 +1,11 @@
 import fs from 'node:fs/promises';
-import type { ItemConfig } from '../../enrichment/item-config';
-import type { ItemSourceDataContext } from '../../enrichment/item-config';
+import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
+import { getLogger } from '../../infrastructure/logger';
 import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
-import { getLogger } from '../../infrastructure/logger';
-import { resolveOptions, validateIntegrity, type UpdatePlanResult } from './update-planning';
 import type { PatchPlan } from '../../pipeline/types';
 import { buildPatchPlanResult } from './build-patch-plan';
+import { resolveOptions, type UpdatePlanResult, validateIntegrity } from './update-planning';
 
 export interface EnrichGlobalIniOptions {
   iniPath?: string;

@@ -101,10 +101,20 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records: DataCoreRecordNode[] = [
-    node(miningLocationPath, '544034db-6fde-44b4-aba8-c2ea35421ccd', 'StarMapObject', 'AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01'),
+    node(
+      miningLocationPath,
+      '544034db-6fde-44b4-aba8-c2ea35421ccd',
+      'StarMapObject',
+      'AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01',
+    ),
     node(pyroSystemPath, '286cb603-b4ae-4279-80a1-d4505fee1916', 'StarMapObject', 'PyroSolarSystem'),
     node(parentPath, 'a14bec87-5801-4440-8ca8-35597487ac9a', 'StarMapObject', 'PyroAsteroidBelt'),
-    node(qualityOverridePath, 'd4574707-cc74-423b-b098-d061bd500d39', 'CraftingQualityLocationOverrideRecord', 'FPSMineable_QualityDistribution_Pyro'),
+    node(
+      qualityOverridePath,
+      'd4574707-cc74-423b-b098-d061bd500d39',
+      'CraftingQualityLocationOverrideRecord',
+      'FPSMineable_QualityDistribution_Pyro',
+    ),
   ];
 
   return {

@@ -62,7 +62,9 @@ test('buildScmdbOutputRows populates stable blueprint marker fields', () => {
           id: 'blueprint-reward',
           debugName: 'Blueprint Reward',
           prerequisites: { completedContractTags: { tags: ['child-complete'] } },
-          blueprintRewards: [{ blueprintPool: 'pool-alpha', chance: 1, poolName: 'Alpha Pool', trigger: 'MissionSuccess' }],
+          blueprintRewards: [
+            { blueprintPool: 'pool-alpha', chance: 1, poolName: 'Alpha Pool', trigger: 'MissionSuccess' },
+          ],
         }),
         contract({
           id: 'unrelated',
@@ -141,7 +143,9 @@ function contract(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function markerFields(row: { isBlueprintReward: string; isBlueprintChainPrerequisite: string; blueprintChainDepth: string } | undefined) {
+function markerFields(
+  row: { isBlueprintReward: string; isBlueprintChainPrerequisite: string; blueprintChainDepth: string } | undefined,
+) {
   assert.ok(row, 'expected contract row to exist');
   return {
     isBlueprintReward: row.isBlueprintReward,

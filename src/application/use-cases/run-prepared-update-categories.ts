@@ -1,8 +1,8 @@
+import { readIniFile } from '../../localization/ini-file';
+import { type DescKeyMatchLogger, logDescKeyMatchOverlaps } from './desc-key-match-diagnostics';
 import type { EnrichGlobalIniOptions } from './enrich-global-ini';
 import { enrichGlobalIni } from './enrich-global-ini';
 import type { UpdateCategory } from './prepare-update-categories';
-import { readIniFile } from '../../localization/ini-file';
-import { logDescKeyMatchOverlaps, type DescKeyMatchLogger } from './desc-key-match-diagnostics';
 import { resolveOptions } from './update-planning';
 
 export interface BatchUpdateResult {
@@ -53,7 +53,9 @@ export async function runPreparedUpdateCategories(
     onCategoryStart?.(category, index);
 
     try {
-      results.push(await enrich(category, { ...sharedOptions, csvDir: category.csvDir, sourceDirs: category.sourceDirs }));
+      results.push(
+        await enrich(category, { ...sharedOptions, csvDir: category.csvDir, sourceDirs: category.sourceDirs }),
+      );
     } catch (err) {
       const error = toBatchUpdateError(category, err);
       errors.push(error);

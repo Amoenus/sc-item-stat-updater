@@ -3,9 +3,9 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { extractDataCoreManufacturers } from './manufacturer-extractor';
 import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import type { DataCoreRecordGraph } from './types';
-import { extractDataCoreManufacturers } from './manufacturer-extractor';
 
 test('extractDataCoreManufacturers reads raw manufacturer identity and asset metadata', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-manufacturers-'));

@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   createDefaultSpviewerBrowserLauncher,
-  SPVIEWER_BASE_URL,
   runSpviewerScrape,
+  SPVIEWER_BASE_URL,
   type SpviewerBrowser,
   type SpviewerPage,
 } from './run-spviewer-scrape';
@@ -92,7 +92,10 @@ test('runSpviewerScrape detects version, scrapes requested types, and writes CSV
   assert.equal(result.exitCode, 0);
   assert.equal(result.version, '4.8.0-live');
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(result.files.map((file) => file.fileName), ['shield.spviewer.csv']);
+  assert.deepEqual(
+    result.files.map((file) => file.fileName),
+    ['shield.spviewer.csv'],
+  );
   assert.deepEqual(madeDirs, ['repo\\csv\\spviewer\\4.8.0-live']);
   assert.deepEqual(writes, [
     {

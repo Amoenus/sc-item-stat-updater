@@ -69,11 +69,35 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records = [
-    node(asteroidPresetPath, 'asteroid-preset-guid', 'HarvestablePreset.Mining_AsteroidCommon_Aluminum', 'HarvestablePreset', 'Mining_AsteroidCommon_Aluminum'),
-    node(fpsPresetPath, 'fps-preset-guid', 'HarvestablePreset.FPSMining_Aphorite', 'HarvestablePreset', 'FPSMining_Aphorite'),
+    node(
+      asteroidPresetPath,
+      'asteroid-preset-guid',
+      'HarvestablePreset.Mining_AsteroidCommon_Aluminum',
+      'HarvestablePreset',
+      'Mining_AsteroidCommon_Aluminum',
+    ),
+    node(
+      fpsPresetPath,
+      'fps-preset-guid',
+      'HarvestablePreset.FPSMining_Aphorite',
+      'HarvestablePreset',
+      'FPSMining_Aphorite',
+    ),
     node(lootPresetPath, 'loot-preset-guid', 'HarvestablePreset.Weapons_CZ', 'HarvestablePreset', 'Weapons_CZ'),
-    node(asteroidEntityPath, 'asteroid-entity-guid', 'EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium', 'EntityClassDefinition', 'AsteroidCTypeMineableRock_Aluminium'),
-    node(fpsEntityPath, 'fps-entity-guid', 'EntityClassDefinition.AphoriteMineableRockFPS_Asteroid', 'EntityClassDefinition', 'AphoriteMineableRockFPS_Asteroid'),
+    node(
+      asteroidEntityPath,
+      'asteroid-entity-guid',
+      'EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium',
+      'EntityClassDefinition',
+      'AsteroidCTypeMineableRock_Aluminium',
+    ),
+    node(
+      fpsEntityPath,
+      'fps-entity-guid',
+      'EntityClassDefinition.AphoriteMineableRockFPS_Asteroid',
+      'EntityClassDefinition',
+      'AphoriteMineableRockFPS_Asteroid',
+    ),
     node(lootEntityPath, 'loot-entity-guid', 'EntityClassDefinition.Weapons_CZ', 'EntityClassDefinition', 'Weapons_CZ'),
   ];
 

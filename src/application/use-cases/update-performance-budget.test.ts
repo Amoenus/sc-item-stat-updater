@@ -70,7 +70,10 @@ test('large fixture planning and application stay within a loose performance bud
   assert.equal(applicationResult.appliedCount, ROW_COUNT * 2);
   assert.equal(applicationResult.lines[0], 'item_desc_perf_00000=Generated stat: 0');
   assert.equal(applicationResult.lines[1], 'item_desc_perf_00000,P=Generated stat: 0');
-  assert.equal(applicationResult.lines.at(-1), `item_desc_perf_${paddedIndex(ROW_COUNT - 1)},P=Generated stat: ${ROW_COUNT - 1}`);
+  assert.equal(
+    applicationResult.lines.at(-1),
+    `item_desc_perf_${paddedIndex(ROW_COUNT - 1)},P=Generated stat: ${ROW_COUNT - 1}`,
+  );
   assert.ok(
     planningMs < PLANNING_BUDGET_MS,
     `Planning took ${planningMs.toFixed(1)}ms, budget is ${PLANNING_BUDGET_MS}ms`,

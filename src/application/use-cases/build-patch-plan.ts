@@ -1,4 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { readIniFile } from '../../localization/ini-file';
+import type { PatchPlan } from '../../pipeline/types';
 import {
   buildUpdatePlan,
   findLastDescIndex,
@@ -8,8 +10,6 @@ import {
   type UpdateOptions,
   type UpdatePlanResult,
 } from './update-planning';
-import type { PatchPlan } from '../../pipeline/types';
-import { readIniFile } from '../../localization/ini-file';
 
 export type BuildPatchPlanOptions = Pick<
   UpdateOptions,

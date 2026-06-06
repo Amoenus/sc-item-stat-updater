@@ -10,14 +10,14 @@ import {
 } from '../../schema/scmdb.schemas';
 import {
   buildScmdbDataUrls,
-  fetchAndValidateScmdbJson,
   type FetchJson,
+  fetchAndValidateScmdbJson,
   fetchScmdbJson,
   SCMDB_VERSIONS_URL,
 } from '../../sources/scmdb/acquisition';
 import { planScmdbOutputFiles } from '../../sources/scmdb/output-files';
 import { buildScmdbOutputRows } from '../../sources/scmdb/outputs';
-import { selectScmdbVersion, type ScmdbVersionEntry } from '../../sources/scmdb/version-selection';
+import { type ScmdbVersionEntry, selectScmdbVersion } from '../../sources/scmdb/version-selection';
 
 export interface ScmdbWrittenFile {
   fileName: string;

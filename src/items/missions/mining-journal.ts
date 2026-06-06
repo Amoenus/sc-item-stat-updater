@@ -1,5 +1,5 @@
-import { deriveMiningDifficulty, deriveVolatilityNote } from '../../extractor/mining-parser';
 import type { ItemConfig } from '../../enrichment/item-config';
+import { deriveMiningDifficulty, deriveVolatilityNote } from '../../extractor/mining-parser';
 import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
@@ -91,7 +91,8 @@ export function buildDataCoreMiningJournalRows({
   for (const element of uniqueElements([...elementFacts.values()])) {
     if (!ORE_OR_RAW_SUFFIX.test(element.name)) continue;
 
-    const stats = compositionStats.get(element.guid.toLowerCase()) ?? compositionStats.get(element.elementClass.toLowerCase());
+    const stats =
+      compositionStats.get(element.guid.toLowerCase()) ?? compositionStats.get(element.elementClass.toLowerCase());
     if (!stats || stats.probabilityCount === 0) continue;
 
     const rarity = inferRarityCategory(stats.probabilitySum / stats.probabilityCount);
@@ -122,13 +123,17 @@ export function buildDataCoreMiningJournalRows({
   return rows;
 }
 
-export async function loadDataCoreMiningJournalRows(datacoreDir: string | undefined): Promise<Record<string, string>[]> {
+export async function loadDataCoreMiningJournalRows(
+  datacoreDir: string | undefined,
+): Promise<Record<string, string>[]> {
   if (!datacoreDir) return [];
 
   try {
     const [elements, compositions, qualityDistributions] = await Promise.all([
       readCsvFile(resolveChildPath(datacoreDir, DATACORE_MINING_ELEMENTS_CSV, 'DataCore mining elements CSV filename')),
-      readCsvFile(resolveChildPath(datacoreDir, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions CSV filename')),
+      readCsvFile(
+        resolveChildPath(datacoreDir, DATACORE_MINING_COMPOSITIONS_CSV, 'DataCore mining compositions CSV filename'),
+      ),
       readCsvFile(
         resolveChildPath(
           datacoreDir,
@@ -156,7 +161,9 @@ export async function loadDataCoreMiningJournalRows(datacoreDir: string | undefi
 }
 
 export function hasRenderableRarityRows(rows: Record<string, string>[]): boolean {
-  return rows.some((row) => row['Rarity Category'] && row['Rarity Category'] !== 'Unknown' && row['Element List']?.trim());
+  return rows.some(
+    (row) => row['Rarity Category'] && row['Rarity Category'] !== 'Unknown' && row['Element List']?.trim(),
+  );
 }
 
 function buildElementFacts(rows: Record<string, string>[]): Map<string, ElementFacts> {
@@ -186,7 +193,9 @@ function buildElementFacts(rows: Record<string, string>[]): Map<string, ElementF
 function buildCompositionStats(rows: Record<string, string>[]): Map<string, CompositionStats> {
   const stats = new Map<string, CompositionStats>();
   for (const row of rows) {
-    const keys = [row['Mineable Element GUID'], row['Mineable Element Class']].map((value) => value?.trim()).filter(Boolean);
+    const keys = [row['Mineable Element GUID'], row['Mineable Element Class']]
+      .map((value) => value?.trim())
+      .filter(Boolean);
     const probability = parseOptionalNumber(row.Probability);
     if (keys.length === 0 || probability === undefined) continue;
 
@@ -209,10 +218,7 @@ function inferRarityCategory(averageProbability: number): string {
   return 'Legendary';
 }
 
-function buildDataCoreInsightSummary(
-  elements: ElementFacts[],
-  qualityDistributions: Record<string, string>[],
-): string {
+function buildDataCoreInsightSummary(elements: ElementFacts[], qualityDistributions: Record<string, string>[]): string {
   const mineableElements = uniqueElements(elements).filter((element) => ORE_OR_RAW_SUFFIX.test(element.name));
   const hardest = mineableElements
     .toSorted((a, b) => difficultyScore(b) - difficultyScore(a))

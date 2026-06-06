@@ -1,23 +1,23 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readCsvFile } from '../../io/local/csv-parser';
-import { findIniKey } from '../../localization/ini-file';
-import { readJsonFile } from '../../io/local/json-file';
-import { buildLookupMap, loadMappingFile, saveMappingFile } from '../../io/local/mapping-store';
-import { resolveChildPath } from '../../io/local/path-conventions';
-import type { LocalizationPatchPlan } from '../../localization/patch-application';
 import { sanitizeIniValue } from '../../enrichment/formatter';
-import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
-import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
-import { getLogger } from '../../infrastructure/logger';
 import type {
   IssueRecord,
   ItemConfig,
   ItemSourceDataContext,
   ItemSourceFileDeclaration,
 } from '../../enrichment/item-config';
-import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
+import { getLogger } from '../../infrastructure/logger';
+import { readCsvFile } from '../../io/local/csv-parser';
+import { readJsonFile } from '../../io/local/json-file';
+import { buildLookupMap, loadMappingFile, saveMappingFile } from '../../io/local/mapping-store';
+import { resolveChildPath } from '../../io/local/path-conventions';
+import { findIniKey } from '../../localization/ini-file';
+import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
+import type { LocalizationPatchPlan } from '../../localization/patch-application';
+import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
 import type { RawFactListingEntry } from './category-listing';
+import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
 
 const logger = getLogger('updater');
 
@@ -315,7 +315,12 @@ function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']
 function resolveDeclaredSourceFiles(
   category: PreflightCategory,
 ): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider }> {
-  const staticFiles = [category.config.csvFile, category.config.jsonFile, category.config.lookupCsvFile]
+  const usesDeclaredCustomSources = Boolean(category.config.loadSourceData && category.config.sourceFiles?.length);
+  const staticFiles = [
+    usesDeclaredCustomSources ? undefined : category.config.csvFile,
+    category.config.jsonFile,
+    category.config.lookupCsvFile,
+  ]
     .filter((filename): filename is string => typeof filename === 'string')
     .map((filename) => ({ filename, baseDir: category.csvDir, provider: category.source?.provider }));
 

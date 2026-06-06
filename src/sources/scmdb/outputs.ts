@@ -1,8 +1,5 @@
-import {
-  buildMiningElementRows,
-  buildMiningJournalRows,
-  buildMiningLocationRows,
-} from './mining-parser';
+import type { ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
+import { buildMiningElementRows, buildMiningJournalRows, buildMiningLocationRows } from './mining-parser';
 import {
   buildBlueprintPoolRows,
   buildContractBlueprintRows,
@@ -13,7 +10,6 @@ import {
   toContractRowSource,
   toLegacyContractRowSource,
 } from './mission-parser';
-import type { ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
 
 export const SCMDB_MISSION_HEADERS = [
   'Localization Key',
@@ -140,7 +136,10 @@ export interface ScmdbOutputRows {
   miningLocationRows: ReturnType<typeof buildMiningLocationRows>;
 }
 
-export function buildScmdbOutputRows(mergedData: ScmdbMergedDTO, miningData: ScmdbMiningDataDTO | null): ScmdbOutputRows {
+export function buildScmdbOutputRows(
+  mergedData: ScmdbMergedDTO,
+  miningData: ScmdbMiningDataDTO | null,
+): ScmdbOutputRows {
   const chainData = collectBlueprintChainData(mergedData.contracts);
   const factionRewardsContext = buildFactionRewardsContext(
     mergedData.factionRewardsPools,

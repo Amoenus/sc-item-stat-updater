@@ -37,7 +37,10 @@ test('buildDataCoreMiningJournalRows infers renderable rarity groups from DataCo
   assert.equal(rows.find((row) => row['Rarity Category'] === 'Common')?.['Element List'], 'Copper (Ore)');
   assert.equal(rows.find((row) => row['Rarity Category'] === 'Uncommon')?.['Element List'], 'Agricium (Ore)');
   assert.equal(rows.find((row) => row['Rarity Category'] === 'Legendary')?.['Element List'], 'Quantainium (Raw)');
-  assert.equal(rows.some((row) => row['Element List'].includes('Hadanite')), false);
+  assert.equal(
+    rows.some((row) => row['Element List'].includes('Hadanite')),
+    false,
+  );
 });
 
 function elementRow(

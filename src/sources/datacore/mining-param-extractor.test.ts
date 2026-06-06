@@ -85,25 +85,40 @@ test('extractDataCoreMiningParams extracts mining param rows and only mineable-r
     graph: createDataCoreRecordGraphLookup(makeGraph()),
   });
 
-  assert.deepEqual(rows.map((row) => row.paramClass), [
-    'MiningGlobalAudioParams',
-    'MiningControllerParamsShip',
-    'MiningGlobalParamsShip',
-    'MiningLaserGlobalParams',
-    'HarvestableLootDensityClass',
-  ]);
-  assert.equal(rows.find((row) => row.paramClass === 'MiningControllerParamsShip')?.highlightDistantMineablesRange, '150');
+  assert.deepEqual(
+    rows.map((row) => row.paramClass),
+    [
+      'MiningGlobalAudioParams',
+      'MiningControllerParamsShip',
+      'MiningGlobalParamsShip',
+      'MiningLaserGlobalParams',
+      'HarvestableLootDensityClass',
+    ],
+  );
+  assert.equal(
+    rows.find((row) => row.paramClass === 'MiningControllerParamsShip')?.highlightDistantMineablesRange,
+    '150',
+  );
   assert.equal(rows.find((row) => row.paramClass === 'MiningControllerParamsShip')?.highlightColor, '1,0.5,0.25,0.75');
   assert.equal(rows.find((row) => row.paramClass === 'MiningControllerParamsShip')?.cameraShakeOffsetAngle, '2,2,2');
   assert.equal(rows.find((row) => row.paramClass === 'MiningLaserGlobalParams')?.throttleResetOnStopFire, '1');
-  assert.equal(rows.find((row) => row.paramClass === 'MiningLaserGlobalParams')?.throttleRtpc, 'Mineable_Laser_Throttle');
+  assert.equal(
+    rows.find((row) => row.paramClass === 'MiningLaserGlobalParams')?.throttleRtpc,
+    'Mineable_Laser_Throttle',
+  );
   assert.equal(rows.find((row) => row.paramClass === 'MiningGlobalParamsShip')?.powerCapacityPerMass, '10');
   assert.equal(rows.find((row) => row.paramClass === 'MiningGlobalParamsShip')?.instabilityWavePeriod, '3');
   assert.equal(rows.find((row) => row.paramClass === 'MiningGlobalParamsShip')?.fractureParticleEffect, 'fracture');
-  assert.equal(rows.find((row) => row.paramClass === 'MiningGlobalAudioParams')?.mineablePowerLevelRtpc, 'Mineable_Rock_Power_Level');
+  assert.equal(
+    rows.find((row) => row.paramClass === 'MiningGlobalAudioParams')?.mineablePowerLevelRtpc,
+    'Mineable_Rock_Power_Level',
+  );
   assert.equal(rows.find((row) => row.paramClass === 'MiningGlobalAudioParams')?.miningStartTrigger, 'Play_Mining');
   assert.equal(rows.find((row) => row.paramClass === 'HarvestableLootDensityClass')?.clusterDetectionRadius, '10');
-  assert.equal(rows.some((row) => row.paramClass === 'DefaultDensityClass'), false);
+  assert.equal(
+    rows.some((row) => row.paramClass === 'DefaultDensityClass'),
+    false,
+  );
 });
 
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
@@ -115,12 +130,48 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   const records = [
     node(entityPath, 'entity-guid', 'EntityClassDefinition.AgriciumRock', 'EntityClassDefinition', 'AgriciumRock'),
-    node(controllerPath, 'controller-guid', 'MiningControllerGlobalParams.MiningControllerParamsShip', 'MiningControllerGlobalParams', 'MiningControllerParamsShip'),
-    node(laserPath, 'laser-guid', 'MiningLaserGlobalParams.MiningLaserGlobalParams', 'MiningLaserGlobalParams', 'MiningLaserGlobalParams'),
-    node(globalPath, 'global-guid', 'MiningGlobalParams.MiningGlobalParamsShip', 'MiningGlobalParams', 'MiningGlobalParamsShip'),
-    node(audioPath, 'audio-guid', 'MiningAudioParams.MiningGlobalAudioParams', 'MiningAudioParams', 'MiningGlobalAudioParams'),
-    node(densityPath, 'density-guid', 'SEntityDensityClass.HarvestableLootDensityClass', 'SEntityDensityClass', 'HarvestableLootDensityClass'),
-    node(unreferencedDensityPath, 'unreferenced-density-guid', 'SEntityDensityClass.DefaultDensityClass', 'SEntityDensityClass', 'DefaultDensityClass'),
+    node(
+      controllerPath,
+      'controller-guid',
+      'MiningControllerGlobalParams.MiningControllerParamsShip',
+      'MiningControllerGlobalParams',
+      'MiningControllerParamsShip',
+    ),
+    node(
+      laserPath,
+      'laser-guid',
+      'MiningLaserGlobalParams.MiningLaserGlobalParams',
+      'MiningLaserGlobalParams',
+      'MiningLaserGlobalParams',
+    ),
+    node(
+      globalPath,
+      'global-guid',
+      'MiningGlobalParams.MiningGlobalParamsShip',
+      'MiningGlobalParams',
+      'MiningGlobalParamsShip',
+    ),
+    node(
+      audioPath,
+      'audio-guid',
+      'MiningAudioParams.MiningGlobalAudioParams',
+      'MiningAudioParams',
+      'MiningGlobalAudioParams',
+    ),
+    node(
+      densityPath,
+      'density-guid',
+      'SEntityDensityClass.HarvestableLootDensityClass',
+      'SEntityDensityClass',
+      'HarvestableLootDensityClass',
+    ),
+    node(
+      unreferencedDensityPath,
+      'unreferenced-density-guid',
+      'SEntityDensityClass.DefaultDensityClass',
+      'SEntityDensityClass',
+      'DefaultDensityClass',
+    ),
   ];
 
   return {

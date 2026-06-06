@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SCMDB_BASE_URL, SCMDB_VERSIONS_URL, type FetchJson } from '../../sources/scmdb/acquisition';
+import { type FetchJson, SCMDB_BASE_URL, SCMDB_VERSIONS_URL } from '../../sources/scmdb/acquisition';
 import { runScmdbScrape } from './run-scmdb-scrape';
 
 test('runScmdbScrape selects a version, writes raw SCMDB files, and reports written files', async () => {

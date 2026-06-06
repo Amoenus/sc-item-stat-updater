@@ -9,7 +9,6 @@ import type { ScmdbVersionEntry } from '../src/sources/scmdb/version-selection';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..');
 
-
 function usage() {
   console.log(`Usage: node scrape-scmdb.js [options]
 

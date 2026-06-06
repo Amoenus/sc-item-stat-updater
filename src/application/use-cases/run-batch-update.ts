@@ -1,9 +1,9 @@
 ﻿import path from 'node:path';
 import { backupIniFile } from '../../localization/ini-file';
-import { preflightCheckConfigs } from './update-planning';
+import { DATACORE_RAW_FACTS } from './category-listing';
 import {
-  prepareUpdateCategories,
   type PreparedUpdateCategories,
+  prepareUpdateCategories,
   type UpdateCategory,
   type UpdateProvider,
 } from './prepare-update-categories';
@@ -13,9 +13,9 @@ import {
   runPreparedUpdateCategories,
 } from './run-prepared-update-categories';
 import { getUpdateExtraStepLabels, runUpdateExtraSteps, type UpdateExtraStepLabel } from './run-update-extra-steps';
-import { buildSourceFreshnessDiagnostics, type SourceFreshnessDiagnostics } from './source-freshness-diagnostics';
-import { DATACORE_RAW_FACTS } from './category-listing';
 import { buildScmdbDependencyAudit, type ScmdbDependencyAudit } from './scmdb-dependency-audit';
+import { buildSourceFreshnessDiagnostics, type SourceFreshnessDiagnostics } from './source-freshness-diagnostics';
+import { preflightCheckConfigs } from './update-planning';
 
 export interface RunBatchUpdateOptions {
   repoRoot: string;

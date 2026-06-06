@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { applyLocalizationLinePatch, applyPatchPlanToIniLines } from './patch-application';
-import type { LocalizationPatchPlan } from './patch-application';
 import type { PatchPlan } from '../pipeline/types';
+import type { LocalizationPatchPlan } from './patch-application';
+import { applyLocalizationLinePatch, applyPatchPlanToIniLines } from './patch-application';
 
 describe('localization: patch application', () => {
   it('updates an existing INI line while preserving the actual line key suffix', () => {
@@ -58,7 +58,12 @@ describe('localization: patch application', () => {
   });
 
   it('applies all duplicate and plural/gender occurrences while preserving line keys', () => {
-    const lines = ['item_desc=old base', 'item_desc,P=old plural', 'item_desc,G=old gendered', 'item_desc=old duplicate'];
+    const lines = [
+      'item_desc=old base',
+      'item_desc,P=old plural',
+      'item_desc,G=old gendered',
+      'item_desc=old duplicate',
+    ];
     const plan: LocalizationPatchPlan = {
       entries: [
         { key: 'item_desc', value: 'new shared value', source: 'test', reason: 'fixture', existingLineIndex: 0 },

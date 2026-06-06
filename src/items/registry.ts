@@ -83,9 +83,7 @@ export async function listCategories(): Promise<{ spviewer: string[]; missions: 
   const readSlugs = async (dir: string, prefix: string): Promise<string[]> => {
     try {
       const entries = await fs.readdir(dir);
-      return entries
-        .filter(isCategoryConfigFile)
-        .map((e) => toSlug(e, prefix));
+      return entries.filter(isCategoryConfigFile).map((e) => toSlug(e, prefix));
     } catch {
       return [];
     }

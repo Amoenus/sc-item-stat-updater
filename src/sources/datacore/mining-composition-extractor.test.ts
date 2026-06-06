@@ -3,8 +3,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import { extractDataCoreMiningCompositions } from './mining-composition-extractor';
+import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import type { DataCoreRecordGraph } from './types';
 
 const compositionPath = 'libs/foundry/records/mining/rockcompositionpresets/asteroid_ctype_aluminium.xml';

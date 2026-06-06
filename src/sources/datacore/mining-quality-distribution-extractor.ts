@@ -1,11 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import type { DataCoreMiningQualityDistributionRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
-import type {
-  DataCoreMiningQualityDistributionRecord,
-  DataCoreRecordGraphLookup,
-  DataCoreRecordNode,
-} from './types';
 
 const DEFAULT_MINING_QUALITY_PATH_PREFIX = 'libs/foundry/records/crafting/qualitydistribution';
 const MINING_QUALITY_FAMILIES = new Set(['fpsmineables', 'groundmineables', 'shipmineables']);
@@ -49,7 +45,16 @@ export async function extractDataCoreMiningQualityDistributions(
 
       const locationGuid = entry.attr('location') ?? '';
       const location = locationGuid ? options.graph.getByRef(locationGuid) : undefined;
-      rows.push(rowFromDistribution(record, 'location-override', mineableFamily(record.path), locationGuid, location, distribution));
+      rows.push(
+        rowFromDistribution(
+          record,
+          'location-override',
+          mineableFamily(record.path),
+          locationGuid,
+          location,
+          distribution,
+        ),
+      );
     });
   }
 

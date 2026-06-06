@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { runBatchUpdate } from './run-batch-update';
 import type { PreparedUpdateCategories, UpdateCategory } from './prepare-update-categories';
+import { runBatchUpdate } from './run-batch-update';
 
 const config: ItemConfig = {
   label: 'Test category',
@@ -76,7 +76,10 @@ test('runBatchUpdate prepares diagnostics and preflight before running update st
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.totalDurationMs, 25);
-  assert.deepEqual(result.results.map((entry) => entry.summary), ['category ok', 'extra ok']);
+  assert.deepEqual(
+    result.results.map((entry) => entry.summary),
+    ['category ok', 'extra ok'],
+  );
   assert.deepEqual(result.errors, []);
   assert.deepEqual(categoryStarts, ['0:Test category']);
   assert.deepEqual(extraStepStarts, ['0:Component Titles']);

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningHarvestablePresetRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_HARVESTABLE_PRESET_PATH_PREFIX = 'libs/foundry/records/harvestable/harvestablepresets';
 
@@ -46,7 +46,10 @@ export async function extractDataCoreMiningHarvestablePresets(
   return rows;
 }
 
-function isMiningHarvestablePreset(record: DataCoreRecordNode, harvestableEntity: DataCoreRecordNode | undefined): boolean {
+function isMiningHarvestablePreset(
+  record: DataCoreRecordNode,
+  harvestableEntity: DataCoreRecordNode | undefined,
+): boolean {
   if (/mineable|mining/i.test(record.entityClass)) return true;
   return harvestableEntity?.path.includes('/entities/mineable/') ?? false;
 }

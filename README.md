@@ -96,6 +96,7 @@ The scraper emits component item-stat CSVs plus standalone raw fact datasets for
 - manufacturer identity, localization, logo, and style refs
 - faction flags, reputation UI keys, and relationship refs
 - StarMap law/location labels and mining-scoped location labels
+- mining behavior, composition, scan-signature, and quality-quantization facts
 
 To list supported DataCore item-stat types:
 

@@ -1,6 +1,6 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { stat } from '../../enrichment/stat-builder';
+import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   // Verified against real unforged XML cache. Entity files live at:

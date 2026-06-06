@@ -37,20 +37,12 @@ test('compareProviderCategoryOutputs reports coverage gaps and changed values wi
     await fs.writeFile(iniPath, originalIni, 'utf8');
     await fs.writeFile(
       path.join(datacoreDir, 'coolers.datacore.csv'),
-      [
-        'Localization Key,Stat',
-        'item_Name_COOL_SHARED,42',
-        'item_Name_COOL_DATACORE_ONLY,99',
-      ].join('\n'),
+      ['Localization Key,Stat', 'item_Name_COOL_SHARED,42', 'item_Name_COOL_DATACORE_ONLY,99'].join('\n'),
       'utf8',
     );
     await fs.writeFile(
       path.join(spviewerDir, 'coolers.spviewer.csv'),
-      [
-        'Localization Key,Stat',
-        'item_Name_COOL_SHARED,43',
-        'item_Name_COOL_SPVIEWER_ONLY,12',
-      ].join('\n'),
+      ['Localization Key,Stat', 'item_Name_COOL_SHARED,43', 'item_Name_COOL_SPVIEWER_ONLY,12'].join('\n'),
       'utf8',
     );
 

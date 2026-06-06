@@ -1,8 +1,8 @@
 import path from 'node:path';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { loadDatacoreConfigs, loadSpviewerConfigs } from '../../items/registry';
-import { resolveLatestVersionDir, type UpdateChannel } from './prepare-update-categories';
 import { buildPatchPlanResult } from './build-patch-plan';
+import { resolveLatestVersionDir, type UpdateChannel } from './prepare-update-categories';
 import { compareProviderCategoryOutputs, type ProviderOutputComparison } from './provider-output-comparison';
 
 export type SpviewerRetirementDecision = 'retire' | 'keep-active';

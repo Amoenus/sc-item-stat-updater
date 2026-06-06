@@ -4,8 +4,8 @@ import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
 import { runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
-import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
+import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 
 export interface RunFullPipelineOptions {
   rootDir: string;

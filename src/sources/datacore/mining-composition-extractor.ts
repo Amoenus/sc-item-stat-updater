@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_COMPOSITION_PATH_PREFIX = 'libs/foundry/records/mining/rockcompositionpresets';
 const COMMODITY_SLUG_ALIASES: Record<string, string> = {

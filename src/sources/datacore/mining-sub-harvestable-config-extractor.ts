@@ -1,11 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import type { DataCoreMiningSubHarvestableConfigRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
-import type {
-  DataCoreMiningSubHarvestableConfigRecord,
-  DataCoreRecordGraphLookup,
-  DataCoreRecordNode,
-} from './types';
 
 const DEFAULT_SUB_HARVESTABLE_CONFIG_PATH_PREFIX = 'libs/foundry/records/harvestable';
 
@@ -20,7 +16,10 @@ export async function extractDataCoreMiningSubHarvestableConfigs(
 ): Promise<DataCoreMiningSubHarvestableConfigRecord[]> {
   const records = options.graph
     .getByPathPrefix(options.pathPrefix ?? DEFAULT_SUB_HARVESTABLE_CONFIG_PATH_PREFIX)
-    .filter((record) => record.rootType === 'SubHarvestableConfigRecord' || record.rootType === 'SubHarvestableMultiConfigRecord')
+    .filter(
+      (record) =>
+        record.rootType === 'SubHarvestableConfigRecord' || record.rootType === 'SubHarvestableMultiConfigRecord',
+    )
     .sort((a, b) => a.path.localeCompare(b.path));
   const rows: Promise<DataCoreMiningSubHarvestableConfigRecord[]>[] = [];
   const harvestableCache = new Map<string, Promise<ResolvedHarvestable>>();
@@ -192,7 +191,8 @@ async function readSlot(
     harvestableSetupGuid,
     harvestableSetupClass: harvestableSetup?.entityClass ?? '',
     relativeProbability: slot.attr('relativeProbability') ?? '',
-    deepestRelativeProbability: slot.find('> relativeProbabilityDeepest > OptionalProbability').first().attr('probability') ?? '',
+    deepestRelativeProbability:
+      slot.find('> relativeProbabilityDeepest > OptionalProbability').first().attr('probability') ?? '',
     harvestableRespawnTimeMultiplier: slot.attr('harvestableRespawnTimeMultiplier') ?? '',
     geometryTags: slot
       .find('HarvestableGeometry[tag]')

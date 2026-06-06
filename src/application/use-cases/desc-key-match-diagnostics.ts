@@ -21,10 +21,7 @@ function normalizeKey(key: string): string {
   return key.toLowerCase();
 }
 
-export function findDescKeyMatchOverlaps(
-  configs: DescKeyMatchConfig[],
-  sampleKeys: string[],
-): DescKeyMatchOverlap[] {
+export function findDescKeyMatchOverlaps(configs: DescKeyMatchConfig[], sampleKeys: string[]): DescKeyMatchOverlap[] {
   const overlaps: DescKeyMatchOverlap[] = [];
 
   for (const key of sampleKeys) {

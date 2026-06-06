@@ -65,7 +65,9 @@ export function getLogger(name: string) {
   function emit(level: LogLevel, message: string, attributes?: LogAttributes): void {
     if (level.severity < minSeverity) return;
 
-    process.stderr.write(useJson ? formatJsonRecord(name, level, message, attributes) : formatTextRecord(level, message, attributes));
+    process.stderr.write(
+      useJson ? formatJsonRecord(name, level, message, attributes) : formatTextRecord(level, message, attributes),
+    );
   }
 
   return {

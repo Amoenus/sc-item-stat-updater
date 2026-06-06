@@ -3,9 +3,9 @@ import { describe, it } from 'node:test';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { listCategories, loadConfig } from '../../items/registry';
 import {
+  type DescKeyMatchConfig,
   findDescKeyMatchOverlaps,
   logDescKeyMatchOverlaps,
-  type DescKeyMatchConfig,
 } from './desc-key-match-diagnostics';
 
 type Provider = keyof Awaited<ReturnType<typeof listCategories>>;
@@ -41,10 +41,22 @@ const samplesBySlug: Record<string, { positive: string[]; negative: string[] }> 
     positive: ['items_commodities_agricium_ore_desc'],
     negative: ['items_commodities_agricium_desc'],
   },
-  'mission-mining-journal': { positive: ['journal_general_mining_agricium'], negative: ['item_mining_resource_agricium_desc'] },
-  'mission-mining-locations': { positive: ['stanton_area18_mining_desc'], negative: ['items_commodities_agricium_desc'] },
-  'mission-scmdb-descriptions': { positive: ['mission_contract_delivery_desc'], negative: ['mission_contract_delivery_title'] },
-  'mission-scmdb-titles': { positive: ['mission_contract_delivery_title'], negative: ['mission_contract_delivery_desc'] },
+  'mission-mining-journal': {
+    positive: ['journal_general_mining_agricium'],
+    negative: ['item_mining_resource_agricium_desc'],
+  },
+  'mission-mining-locations': {
+    positive: ['stanton_area18_mining_desc'],
+    negative: ['items_commodities_agricium_desc'],
+  },
+  'mission-scmdb-descriptions': {
+    positive: ['mission_contract_delivery_desc'],
+    negative: ['mission_contract_delivery_title'],
+  },
+  'mission-scmdb-titles': {
+    positive: ['mission_contract_delivery_title'],
+    negative: ['mission_contract_delivery_desc'],
+  },
   'sp-bombs': { positive: ['item_DescBOMB_AEGS_S01_Test'], negative: ['item_Desc_COOL_ACOM_S01_Test'] },
   'sp-coolers': { positive: ['item_Desc_COOL_ACOM_S01_Test'], negative: ['item_DescPOWR_AMRS_S1_Test'] },
   'sp-emps': { positive: ['item_Desc_EMP_Device_Test'], negative: ['item_Desc_QDRV_RSI_Test'] },
@@ -107,15 +119,17 @@ describe('registered descKeyMatch predicates', () => {
 describe('descKeyMatch overlap diagnostics', () => {
   it('reports sample keys matched by multiple configs', async () => {
     const configs = await loadRegisteredDescKeyMatchConfigs();
-    const overlaps = findDescKeyMatchOverlaps([...configs.values()], [
-      'item_Desc_COOL_ACOM_S01_Test',
-      'item_DescPOWR_AMRS_S1_Test',
-      'ui_MainMenu_Start',
-    ]);
+    const overlaps = findDescKeyMatchOverlaps(
+      [...configs.values()],
+      ['item_Desc_COOL_ACOM_S01_Test', 'item_DescPOWR_AMRS_S1_Test', 'ui_MainMenu_Start'],
+    );
 
     assert.deepEqual(overlaps, [
       { key: 'item_Desc_COOL_ACOM_S01_Test', labels: ['SP Coolers', 'SCMDB mission descriptions', 'DC Coolers'] },
-      { key: 'item_DescPOWR_AMRS_S1_Test', labels: ['SP Power Plants', 'SCMDB mission descriptions', 'DC Power Plants'] },
+      {
+        key: 'item_DescPOWR_AMRS_S1_Test',
+        labels: ['SP Power Plants', 'SCMDB mission descriptions', 'DC Power Plants'],
+      },
     ]);
   });
 

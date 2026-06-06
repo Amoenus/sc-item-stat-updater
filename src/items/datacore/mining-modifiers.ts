@@ -1,6 +1,6 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { stat } from '../../enrichment/stat-builder';
+import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 
 // Formats a raw damageMultiplier (e.g. 1.35 → '+35%', 0.85 → '-15%').
 function fmtPowerModifier(v: string): string {
@@ -58,13 +58,11 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     // Rock modifiers — raw integer/decimal percentage delta values
     // (e.g. value="15.5" = +15.5%, value="-30" = -30%)
     Resistance: {
-      selector:
-        'ItemMiningModifierParams MiningLaserModifier resistanceModifier FloatModifierMultiplicative',
+      selector: 'ItemMiningModifierParams MiningLaserModifier resistanceModifier FloatModifierMultiplicative',
       attr: 'value',
     },
     Instability: {
-      selector:
-        'ItemMiningModifierParams MiningLaserModifier laserInstability FloatModifierMultiplicative',
+      selector: 'ItemMiningModifierParams MiningLaserModifier laserInstability FloatModifierMultiplicative',
       attr: 'value',
     },
     'Optimal Charge Zone': {
@@ -78,13 +76,11 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
       attr: 'value',
     },
     'Shatter Damage': {
-      selector:
-        'ItemMiningModifierParams MiningLaserModifier shatterdamageModifier FloatModifierMultiplicative',
+      selector: 'ItemMiningModifierParams MiningLaserModifier shatterdamageModifier FloatModifierMultiplicative',
       attr: 'value',
     },
     'Cluster Factor': {
-      selector:
-        'ItemMiningModifierParams MiningLaserModifier clusterFactor FloatModifierMultiplicative',
+      selector: 'ItemMiningModifierParams MiningLaserModifier clusterFactor FloatModifierMultiplicative',
       attr: 'value',
     },
     // Note: the DataForge element is catastrophicChargeWindowRateModifier;
@@ -97,8 +93,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     // Filter modifier — stored in MiningFilterItemModifierParams (separate from MiningLaserModifier).
     // Raw value is positive (e.g. 20 = filter out 20% more inert material from ore).
     'Inert Materials': {
-      selector:
-        'MiningFilterItemModifierParams filterParams filterModifier FloatModifierMultiplicative',
+      selector: 'MiningFilterItemModifierParams filterParams filterModifier FloatModifierMultiplicative',
       attr: 'value',
     },
   },

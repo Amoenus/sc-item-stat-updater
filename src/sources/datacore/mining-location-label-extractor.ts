@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_STARMAP_PATH_PREFIX = 'libs/foundry/records/starmap';
 const DEFAULT_MINING_QUALITY_PATH_PREFIX = 'libs/foundry/records/crafting/qualitydistribution';
@@ -68,7 +68,9 @@ export async function extractDataCoreMiningLocationLabels(
   return rows;
 }
 
-async function collectMiningQualityLocationRefs(options: ExtractDataCoreMiningLocationLabelsOptions): Promise<Set<string>> {
+async function collectMiningQualityLocationRefs(
+  options: ExtractDataCoreMiningLocationLabelsOptions,
+): Promise<Set<string>> {
   const refs = new Set<string>();
   const qualityRecords = options.graph
     .getByPathPrefix(options.qualityPathPrefix ?? DEFAULT_MINING_QUALITY_PATH_PREFIX)
@@ -91,7 +93,8 @@ async function collectMiningQualityLocationRefs(options: ExtractDataCoreMiningLo
 function miningSourceReason(record: DataCoreRecordNode, qualityLocationRefs: Set<string>): string {
   const reasons: string[] = [];
   if (/mining/i.test(`${record.entityClass} ${record.path}`)) reasons.push('class-or-path-mining');
-  if (/\bmine\b|mine_|_mine|miner|mines/i.test(`${record.entityClass} ${record.path}`)) reasons.push('class-or-path-mine');
+  if (/\bmine\b|mine_|_mine|miner|mines/i.test(`${record.entityClass} ${record.path}`))
+    reasons.push('class-or-path-mine');
   if (qualityLocationRefs.has(record.ref)) reasons.push('mining-quality-location');
   return reasons.join(';');
 }

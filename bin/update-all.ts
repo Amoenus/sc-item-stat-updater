@@ -1,7 +1,11 @@
 ﻿import path from 'node:path';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
-import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
+import { DATACORE_RAW_FACTS } from '../src/application/use-cases/category-listing';
+import {
+  buildMiningJournalRarityComparison,
+  formatMiningJournalRarityComparison,
+} from '../src/application/use-cases/mining-journal-rarity-comparison';
 import { prepareUpdateCategories, type UpdateProvider } from '../src/application/use-cases/prepare-update-categories';
 import {
   type BatchUpdateError,
@@ -9,23 +13,19 @@ import {
   runPreparedUpdateCategories,
 } from '../src/application/use-cases/run-prepared-update-categories';
 import { getUpdateExtraStepLabels, runUpdateExtraSteps } from '../src/application/use-cases/run-update-extra-steps';
-import { backupIniFile } from '../src/localization/ini-file';
-import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
-import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
-import { preflightCheckConfigs } from '../src/application/use-cases/update-planning';
-import {
-  buildSourceFreshnessDiagnostics,
-  formatSourceFreshnessDiagnostics,
-} from '../src/application/use-cases/source-freshness-diagnostics';
-import { DATACORE_RAW_FACTS } from '../src/application/use-cases/category-listing';
 import {
   buildScmdbDependencyAudit,
   formatScmdbDependencyAudit,
 } from '../src/application/use-cases/scmdb-dependency-audit';
 import {
-  buildMiningJournalRarityComparison,
-  formatMiningJournalRarityComparison,
-} from '../src/application/use-cases/mining-journal-rarity-comparison';
+  buildSourceFreshnessDiagnostics,
+  formatSourceFreshnessDiagnostics,
+} from '../src/application/use-cases/source-freshness-diagnostics';
+import { preflightCheckConfigs } from '../src/application/use-cases/update-planning';
+import { type Artifact, generateArtifact, writeArtifactFile } from '../src/artifact/artifact';
+import { getLogger, shutdownLogger } from '../src/infrastructure/logger';
+import { backupIniFile } from '../src/localization/ini-file';
+import { applyLogFlags, registerUnhandledRejectionHandler } from '../src/presentation/cli';
 
 const logger = getLogger('update-all');
 

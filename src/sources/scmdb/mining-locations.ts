@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { buildLocationQualityNotes, buildMiningLocationRows } from './mining-parser';
 import { toCsv } from '../../infrastructure/csv';
 import { ScmdbMiningDataSchema } from '../../schema/scmdb.schemas';
+import { buildLocationQualityNotes, buildMiningLocationRows } from './mining-parser';
 
 export interface RegenMiningLocationsOptions {
   repoRoot: string;
@@ -19,7 +19,9 @@ export interface RegenMiningLocationsResult {
 function resolveTargetDir(repoRoot: string, scmdbDir: string | undefined): string {
   if (scmdbDir) return resolve(scmdbDir);
   const scmdbRoot = join(repoRoot, 'csv', 'scmdb');
-  const versions = readdirSync(scmdbRoot).filter((directory) => directory.includes('live') || directory.includes('ptu'));
+  const versions = readdirSync(scmdbRoot).filter(
+    (directory) => directory.includes('live') || directory.includes('ptu'),
+  );
   if (versions.length === 0) throw new Error('No scmdb version directories found');
   versions.toSorted((a, b) => a.localeCompare(b)).reverse();
   const latestVersion = versions[0];

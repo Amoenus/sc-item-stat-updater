@@ -1,3 +1,4 @@
+export type { CheerioDoc } from '../../extractor/datacore-xml-parser';
 export {
   extractAttachDef,
   extractEntityClass,
@@ -6,4 +7,3 @@ export {
   xmlAttr,
   xmlVal,
 } from '../../extractor/datacore-xml-parser';
-export type { CheerioDoc } from '../../extractor/datacore-xml-parser';

@@ -49,11 +49,10 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(miningElements?.sourceFiles.includes('datacore:mining-quality-quantizations.datacore.csv'), true);
   assert.match(miningElements?.reason ?? '', /rarity from mineable rock variants/);
   assert.match(miningElements?.reason ?? '', /SCMDB cannot create active mining-element target rows/);
-  assert.match(miningElements?.reason ?? '', /SCMDB still contributes density, best-refinery bonus joins/);
-  assert.match(miningElements?.reason ?? '', /unreconstructed ground scan fallbacks/);
+  assert.match(miningElements?.reason ?? '', /no longer backfills mining behavior, rarity, scan signatures, or quality bands/);
+  assert.match(miningElements?.reason ?? '', /SCMDB still contributes density and best-refinery bonus joins/);
   assert.match(miningElements?.reason ?? '', /refiningprocess records define only global process speed\/quality labels/);
   assert.match(miningElements?.migrationSlice ?? '', /avoid carryable Mass\/SCU/);
-  assert.match(miningElements?.migrationSlice ?? '', /ground scan/);
   assert.match(miningElements?.migrationSlice ?? '', /station\/material bonus source is proven/);
 
   const miningLocations = audit.entries.find((entry) => entry.slug === 'mission-mining-locations');

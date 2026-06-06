@@ -352,6 +352,30 @@ describe('preflightCheckConfigs', () => {
     }
   });
 
+  it('uses declared custom loader source files instead of csvFile for preflight', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'preflight-test-'));
+    const datacoreDir = path.join(dir, 'datacore');
+    try {
+      await touch(path.join(datacoreDir, 'mining-provider-presets.datacore.csv'));
+      const categories = [
+        {
+          config: makeConfig({
+            csvFile: 'mining-locations.csv',
+            sourceFiles: [{ file: 'mining-provider-presets.datacore.csv', sourceDir: 'datacore' }],
+            loadSourceData: async () => [],
+            label: 'Mining locations',
+          }),
+          csvDir: dir,
+          sourceDirs: { datacore: datacoreDir },
+        },
+      ];
+
+      await assert.doesNotReject(preflightCheckConfigs(categories));
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('resolves successfully for an empty categories list', async () => {
     await assert.doesNotReject(preflightCheckConfigs([]));
   });

@@ -94,16 +94,12 @@ describe('updater: buildUpdatePlan', () => {
   });
 
   it('records found rows without adding patch entries when values are unchanged', () => {
-    const result = buildUpdatePlan(
-      config,
-      [{ 'Localization Key': 'item_name', Stat: 'same stat' }],
-      {
-        lines: ['item_desc=stat: same stat'],
-        existingKeys: { item_desc: 0 },
-        lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
-        allOccurrences: new Map([['item_desc', [0]]]),
-      },
-    );
+    const result = buildUpdatePlan(config, [{ 'Localization Key': 'item_name', Stat: 'same stat' }], {
+      lines: ['item_desc=stat: same stat'],
+      existingKeys: { item_desc: 0 },
+      lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
+      allOccurrences: new Map([['item_desc', [0]]]),
+    });
 
     assert.strictEqual(result.updatedCount, 0);
     assert.strictEqual(result.foundCount, 1);
@@ -111,21 +107,12 @@ describe('updater: buildUpdatePlan', () => {
   });
 
   it('plans every duplicate and plural/gender occurrence with explicit line indexes', () => {
-    const result = buildUpdatePlan(
-      config,
-      [{ 'Localization Key': 'item_name', Stat: 'new collision stat' }],
-      {
-        lines: [
-          'item_desc=old base',
-          'item_desc,P=old plural',
-          'item_desc,G=old gendered',
-          'item_desc=old duplicate',
-        ],
-        existingKeys: { item_desc: 3 },
-        lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
-        allOccurrences: new Map([['item_desc', [0, 1, 2, 3]]]),
-      },
-    );
+    const result = buildUpdatePlan(config, [{ 'Localization Key': 'item_name', Stat: 'new collision stat' }], {
+      lines: ['item_desc=old base', 'item_desc,P=old plural', 'item_desc,G=old gendered', 'item_desc=old duplicate'],
+      existingKeys: { item_desc: 3 },
+      lowerCaseIndex: new Map([['item_desc', 'item_desc']]),
+      allOccurrences: new Map([['item_desc', [0, 1, 2, 3]]]),
+    });
 
     assert.strictEqual(result.updatedCount, 1);
     assert.deepStrictEqual(

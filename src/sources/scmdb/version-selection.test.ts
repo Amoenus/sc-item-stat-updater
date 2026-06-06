@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isLiveVersion, isPtuVersion, selectScmdbVersion, type ScmdbVersionEntry } from './version-selection';
+import { isLiveVersion, isPtuVersion, type ScmdbVersionEntry, selectScmdbVersion } from './version-selection';
 
 const versions: ScmdbVersionEntry[] = [
   { version: '4.8.1-live.11875683', file: 'merged-4.8.1-live.11875683.json' },

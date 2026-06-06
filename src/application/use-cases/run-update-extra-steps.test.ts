@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  getUpdateExtraStepLabels,
-  runUpdateExtraSteps,
-  type UpdateExtraStepLabel,
-} from './run-update-extra-steps';
+import { getUpdateExtraStepLabels, runUpdateExtraSteps, type UpdateExtraStepLabel } from './run-update-extra-steps';
 
 test('getUpdateExtraStepLabels includes mining journal only when requested', () => {
   assert.deepEqual(getUpdateExtraStepLabels(), [
@@ -80,9 +76,7 @@ function runnersFor(
   definitions: Partial<
     Record<
       UpdateExtraStepLabel,
-      | null
-      | { label: string; summary: string }
-      | (() => Promise<null | { label: string; summary: string } | undefined>)
+      null | { label: string; summary: string } | (() => Promise<null | { label: string; summary: string } | undefined>)
     >
   >,
 ) {

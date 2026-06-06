@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningHarvestableSetupRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_PROVIDER_PRESET_PATH_PREFIX = 'libs/foundry/records/harvestable/providerpresets/system';
 const DEFAULT_HARVESTABLE_SETUP_PATH_PREFIX = 'libs/foundry/records/harvestable/harvestablesetups';

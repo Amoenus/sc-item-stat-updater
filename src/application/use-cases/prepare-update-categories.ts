@@ -1,8 +1,7 @@
 import path from 'node:path';
-import type { ItemSourceDataContext } from '../../enrichment/item-config';
+import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
 import { findLatestMatchingDirectory } from '../../io/local/discovery';
 import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
-import type { ItemConfig } from '../../enrichment/item-config';
 
 export type UpdateProvider = 'datacore';
 export type UpdateSourceProvider = UpdateProvider | 'spviewer' | 'scmdb' | 'unknown';

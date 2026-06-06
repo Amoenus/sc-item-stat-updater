@@ -1,6 +1,6 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { getRawDataCoreTargetKeys, type DataCoreItemTypeConfig } from './types';
+import { stat } from '../../enrichment/stat-builder';
+import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 
 // Formats a raw integer percentage modifier (e.g. 25 → '+25%', -35 → '-35%').
 function fmtModifier(v: string): string {
@@ -39,13 +39,11 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
     // Per-laser rock modifiers (raw integer percentage points, e.g. 25 = +25%).
     'Instability Modifier': {
-      selector:
-        'SEntityComponentMiningLaserParams miningLaserModifiers laserInstability FloatModifierMultiplicative',
+      selector: 'SEntityComponentMiningLaserParams miningLaserModifiers laserInstability FloatModifierMultiplicative',
       attr: 'value',
     },
     'Resistance Modifier': {
-      selector:
-        'SEntityComponentMiningLaserParams miningLaserModifiers resistanceModifier FloatModifierMultiplicative',
+      selector: 'SEntityComponentMiningLaserParams miningLaserModifiers resistanceModifier FloatModifierMultiplicative',
       attr: 'value',
     },
     'Optimal Charge Zone': {
@@ -59,8 +57,7 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
       attr: 'value',
     },
     'Inert Materials': {
-      selector:
-        'SEntityComponentMiningLaserParams filterParams filterModifier FloatModifierMultiplicative',
+      selector: 'SEntityComponentMiningLaserParams filterParams filterModifier FloatModifierMultiplicative',
       attr: 'value',
     },
   },

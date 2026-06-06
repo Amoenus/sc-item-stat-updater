@@ -4,8 +4,9 @@
  * Handles keys matching `/_title/i` — strips any existing BP/Chain tag suffix
  * and optionally appends a TitleNote.
  */
-import { IniTag } from '../../localization/ini-tags';
+
 import type { ItemConfig } from '../../enrichment/item-config';
+import { IniTag } from '../../localization/ini-tags';
 
 function formatTitleNote(noteText: string): string {
   if (!noteText) {

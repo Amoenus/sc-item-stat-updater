@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningProviderPresetRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_PROVIDER_PRESET_PATH_PREFIX = 'libs/foundry/records/harvestable/providerpresets/system';
 
@@ -52,36 +52,36 @@ export async function extractDataCoreMiningProviderPresets(
             harvestable,
             directEntityGuid: entry.attr('harvestableEntityClass') ?? '',
           }).then((mineable) => ({
-          ref: record.ref,
-          path: record.path,
-          providerClass: record.entityClass,
-          ...providerLocationParts(record.path),
-          groupName,
-          groupProbability,
-          entryIndex: `${groupIndex}.${entryIndex}`,
-          harvestableGuid,
-          harvestableClass: harvestable?.entityClass ?? '',
-          harvestablePath: harvestable?.path ?? '',
-          harvestableEntityGuid: mineable.entityGuid,
-          harvestableEntityClass: mineable.entityClass,
-          harvestableEntityPath: mineable.entityPath,
-          harvestableSetupGuid,
-          harvestableSetupClass: harvestableSetup?.entityClass ?? '',
-          compositionGuid: mineable.compositionGuid,
-          compositionClass: mineable.compositionClass,
-          globalParamsGuid: mineable.globalParamsGuid,
-          audioParamsGuid: mineable.audioParamsGuid,
-          filledFactor: mineable.filledFactor,
-          clusteringGuid,
-          clusteringClass: clustering?.entityClass ?? '',
-          relativeProbability: entry.attr('relativeProbability') ?? '',
-          geometryTags: entry
-            .find('HarvestableGeometry[tag]')
-            .toArray()
-            .map((geometry) => $(geometry).attr('tag') ?? '')
-            .filter(Boolean)
-            .join(';'),
-        })),
+            ref: record.ref,
+            path: record.path,
+            providerClass: record.entityClass,
+            ...providerLocationParts(record.path),
+            groupName,
+            groupProbability,
+            entryIndex: `${groupIndex}.${entryIndex}`,
+            harvestableGuid,
+            harvestableClass: harvestable?.entityClass ?? '',
+            harvestablePath: harvestable?.path ?? '',
+            harvestableEntityGuid: mineable.entityGuid,
+            harvestableEntityClass: mineable.entityClass,
+            harvestableEntityPath: mineable.entityPath,
+            harvestableSetupGuid,
+            harvestableSetupClass: harvestableSetup?.entityClass ?? '',
+            compositionGuid: mineable.compositionGuid,
+            compositionClass: mineable.compositionClass,
+            globalParamsGuid: mineable.globalParamsGuid,
+            audioParamsGuid: mineable.audioParamsGuid,
+            filledFactor: mineable.filledFactor,
+            clusteringGuid,
+            clusteringClass: clustering?.entityClass ?? '',
+            relativeProbability: entry.attr('relativeProbability') ?? '',
+            geometryTags: entry
+              .find('HarvestableGeometry[tag]')
+              .toArray()
+              .map((geometry) => $(geometry).attr('tag') ?? '')
+              .filter(Boolean)
+              .join(';'),
+          })),
         );
       });
     });
@@ -100,7 +100,7 @@ function providerLocationParts(recordPath: string): { system: string; location: 
   const systemIndex = parts.indexOf('system');
   const system = systemIndex === -1 ? '' : (parts[systemIndex + 1] ?? '');
   const filename = parts.at(-1)?.replace(/\.xml$/i, '') ?? '';
-  const parent = parts.length > 1 ? parts.at(-2) ?? '' : '';
+  const parent = parts.length > 1 ? (parts.at(-2) ?? '') : '';
   const location = parent && parent !== system ? `${parent}/${filename}` : filename;
   return { system, location };
 }
@@ -141,10 +141,13 @@ async function loadMineableEntity(options: {
   harvestable: DataCoreRecordNode | undefined;
   directEntityGuid: string;
 }): Promise<ResolvedMineableEntity> {
-  const entityGuid = options.directEntityGuid || (await readEntityGuidFromHarvestable(options.xmlCacheDir, options.harvestable));
+  const entityGuid =
+    options.directEntityGuid || (await readEntityGuidFromHarvestable(options.xmlCacheDir, options.harvestable));
   const entity = entityGuid ? options.graph.getByRef(entityGuid) : undefined;
   const mineableParams = entity ? await readMineableParams(options.xmlCacheDir, entity) : emptyMineableParams();
-  const composition = mineableParams.compositionGuid ? options.graph.getByRef(mineableParams.compositionGuid) : undefined;
+  const composition = mineableParams.compositionGuid
+    ? options.graph.getByRef(mineableParams.compositionGuid)
+    : undefined;
 
   return {
     entityGuid,

@@ -10,9 +10,9 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import cliProgress from 'cli-progress';
 import {
+  type DataCoreTypeEntry,
   loadDataCoreTypeEntries,
   runDatacoreScrape,
-  type DataCoreTypeEntry,
 } from '../src/application/use-cases/run-datacore-scrape';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -195,6 +195,11 @@ console.log(
   `  ${'mining-quality-distributions'.padEnd(28)} ${String(result.miningQualityDistributionResult.rows).padStart(
     4,
   )} rows -> ${result.miningQualityDistributionResult.csvFile}${commodityDryNote}`,
+);
+console.log(
+  `  ${'mining-quality-quantizations'.padEnd(28)} ${String(result.miningQualityQuantizationResult.rows).padStart(
+    4,
+  )} rows -> ${result.miningQualityQuantizationResult.csvFile}${commodityDryNote}`,
 );
 console.log(
   `  ${'mining-params'.padEnd(28)} ${String(result.miningParamResult.rows).padStart(4)} rows -> ${

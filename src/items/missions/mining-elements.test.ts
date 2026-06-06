@@ -96,8 +96,8 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium['Mining Difficulty'], 'Difficult');
     assert.strictEqual(agricium['Volatility Note'], 'Unstable charge behavior');
     assert.strictEqual(agricium['Cluster Note'], 'Isolated');
-    assert.strictEqual(agricium.Rarity, 'uncommon');
-    assert.strictEqual(agricium['Scan Signature'], '3885');
+    assert.strictEqual(agricium.Rarity, '');
+    assert.strictEqual(agricium['Scan Signature'], '');
     assert.strictEqual(agricium['Best Refinery'], 'ARC-L1 Wide Forest Station (+5)');
 
     assert.equal(rows.some((row) => row['Element Name'] === 'Gold'), false);
@@ -174,7 +174,7 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium['Quality Bands'], '34.6% / 58.8% / 100.0%');
   });
 
-  it('falls back to SCMDB rarity, scan signatures, and quality bands when DataCore has no matching rows', () => {
+  it('does not fall back to SCMDB rarity, scan signatures, or quality bands when DataCore has no matching rows', () => {
     const rows = buildMiningElementRowsFromSources(
       [
         {
@@ -198,10 +198,11 @@ describe('mining element updater', () => {
 
     const bexalite = rows.find((row) => row['Element Name'] === 'Bexalite (Raw)');
     assert.ok(bexalite);
-    assert.strictEqual(bexalite.Rarity, 'rare');
-    assert.strictEqual(bexalite['Scan Signature'], '4100');
-    assert.strictEqual(bexalite['Ground Scan Signature'], '4000');
-    assert.strictEqual(bexalite['Quality Bands'], '30.2% / 59.7%');
+    assert.strictEqual(bexalite.Source, 'DataCore');
+    assert.strictEqual(bexalite.Rarity, '');
+    assert.strictEqual(bexalite['Scan Signature'], '');
+    assert.strictEqual(bexalite['Ground Scan Signature'], '');
+    assert.strictEqual(bexalite['Quality Bands'], '');
   });
 
   it('compares DataCore and SCMDB mining element coverage for diagnostics', () => {

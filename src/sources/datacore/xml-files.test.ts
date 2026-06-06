@@ -36,10 +36,7 @@ test('collectDataCoreXmlFiles recursively collects XML files only', async () => 
 
   const files = await collectDataCoreXmlFiles(root);
 
-  assert.deepEqual(
-    files.map((file) => path.basename(file)).sort(),
-    ['nested.XML', 'top.xml'],
-  );
+  assert.deepEqual(files.map((file) => path.basename(file)).sort(), ['nested.XML', 'top.xml']);
   assert.equal(await countDataCoreXmlFiles(root), 2);
 });
 
@@ -54,7 +51,10 @@ test('collectDataCoreXmlFilesMatching filters by normalized path substring', asy
 
   const matches = await collectDataCoreXmlFilesMatching(root, 'scitemvehicle/shield_generator');
 
-  assert.deepEqual(matches.map((file) => path.basename(file)), ['shield.xml']);
+  assert.deepEqual(
+    matches.map((file) => path.basename(file)),
+    ['shield.xml'],
+  );
 });
 
 async function makeTempDir(): Promise<string> {

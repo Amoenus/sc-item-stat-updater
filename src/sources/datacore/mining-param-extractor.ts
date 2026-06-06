@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreMiningParamRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_MINEABLE_ENTITY_PATH_PREFIX = 'libs/foundry/records/entities/mineable';
 const PARAM_ROOT_TYPES = new Set([

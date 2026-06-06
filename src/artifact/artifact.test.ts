@@ -3,10 +3,10 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { artifactToPatchPlan, generateArtifact, patchPlanToArtifactEntries, readArtifactFile } from './artifact';
-import type { Artifact } from './artifact';
-import type { LocalizationPatchPlan } from '../localization/patch-application';
 import type { ItemConfig } from '../enrichment/item-config';
+import type { LocalizationPatchPlan } from '../localization/patch-application';
+import type { Artifact } from './artifact';
+import { artifactToPatchPlan, generateArtifact, patchPlanToArtifactEntries, readArtifactFile } from './artifact';
 
 async function writeArtifactFixture(body: unknown): Promise<string> {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'sc-artifact-read-'));

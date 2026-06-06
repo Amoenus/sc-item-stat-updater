@@ -1,8 +1,8 @@
 ﻿import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
-import { IniKeySuffix } from './ini-tags';
 import { getLogger } from '../infrastructure/logger';
+import { IniKeySuffix } from './ini-tags';
 
 const logger = getLogger('ini-file');
 

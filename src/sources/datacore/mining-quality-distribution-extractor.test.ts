@@ -103,9 +103,24 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records: DataCoreRecordNode[] = [
-    node(defaultPath, 'ef749246-fa19-45bf-ae65-1d5a02e51c98', 'CraftingQualityDistributionRecord', 'FPSMineable_QualityDistribution_Default'),
-    node(overridePath, '6b3f9232-d6f7-4ce9-8c30-f21aab55f073', 'CraftingQualityLocationOverrideRecord', 'CommonShipMineable_QualityOverride_Pyro'),
-    node(gatherablePath, '99999999-9999-9999-9999-999999999999', 'CraftingQualityDistributionRecord', 'Gatherable_QualityDistribution_Default'),
+    node(
+      defaultPath,
+      'ef749246-fa19-45bf-ae65-1d5a02e51c98',
+      'CraftingQualityDistributionRecord',
+      'FPSMineable_QualityDistribution_Default',
+    ),
+    node(
+      overridePath,
+      '6b3f9232-d6f7-4ce9-8c30-f21aab55f073',
+      'CraftingQualityLocationOverrideRecord',
+      'CommonShipMineable_QualityOverride_Pyro',
+    ),
+    node(
+      gatherablePath,
+      '99999999-9999-9999-9999-999999999999',
+      'CraftingQualityDistributionRecord',
+      'Gatherable_QualityDistribution_Default',
+    ),
     node(pyroPath, '286cb603-b4ae-4279-80a1-d4505fee1916', 'StarMapObject', 'PyroSolarSystem'),
   ];
 

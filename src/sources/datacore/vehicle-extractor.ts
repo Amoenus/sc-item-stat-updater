@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { createDataCoreManufacturerResolver } from './manufacturer-resolver';
-import { loadXml } from './xml-parser';
 import type { DataCoreRecordGraphLookup, DataCoreVehicleRecord } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_VEHICLE_PATH_PREFIXES = [
   'libs/foundry/records/entities/spaceships',

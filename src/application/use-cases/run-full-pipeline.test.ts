@@ -178,6 +178,14 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
           rows: 0,
           csvFile: 'mining-quality-distributions.datacore.csv',
         },
+        miningQualityQuantizationResult: {
+          rows: 0,
+          csvFile: 'mining-quality-quantizations.datacore.csv',
+        },
+        miningRockSignatureResult: {
+          rows: 0,
+          csvFile: 'mining-rock-signatures.datacore.csv',
+        },
         miningLocationLabelResult: {
           rows: 0,
           csvFile: 'mining-location-labels.datacore.csv',

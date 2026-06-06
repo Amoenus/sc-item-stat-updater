@@ -1,5 +1,5 @@
-import { stat } from '../../enrichment/stat-builder';
 import type { ItemConfig } from '../../enrichment/item-config';
+import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
 const radarSignatureSelector = 'SCItemRadarComponentParams signatureDetection SCItemRadarSignatureDetection';
@@ -10,8 +10,14 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   entityClassPrefix: 'rdar_',
   nameKeyInfix: 'RADR_',
   fieldSelectors: {
-    'Aim Assist Distance (PiP) Min': { selector: 'SCItemRadarComponentParams aimAssist', attr: 'distanceMinAssignment' },
-    'Aim Assist Distance (PiP) Max': { selector: 'SCItemRadarComponentParams aimAssist', attr: 'distanceMaxAssignment' },
+    'Aim Assist Distance (PiP) Min': {
+      selector: 'SCItemRadarComponentParams aimAssist',
+      attr: 'distanceMinAssignment',
+    },
+    'Aim Assist Distance (PiP) Max': {
+      selector: 'SCItemRadarComponentParams aimAssist',
+      attr: 'distanceMaxAssignment',
+    },
     'Aim Assist Distance (PiP) Buffer': {
       selector: 'SCItemRadarComponentParams aimAssist',
       attr: 'outsideRangeBufferDistance',
@@ -36,7 +42,12 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
         const maximum = Number(row['Distortion Shutdown Damage']);
         const decayDelay = Number(row['Distortion Decay Delay']);
         const decayRate = Number(row['Distortion Decay Rate']);
-        if (!Number.isFinite(maximum) || !Number.isFinite(decayDelay) || !Number.isFinite(decayRate) || decayRate === 0) {
+        if (
+          !Number.isFinite(maximum) ||
+          !Number.isFinite(decayDelay) ||
+          !Number.isFinite(decayRate) ||
+          decayRate === 0
+        ) {
           return '';
         }
         return Number((decayDelay + maximum / decayRate).toFixed(2)).toString();

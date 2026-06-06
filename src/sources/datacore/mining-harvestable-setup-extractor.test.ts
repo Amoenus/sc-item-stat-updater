@@ -93,8 +93,7 @@ test('extractDataCoreMiningHarvestableSetups extracts mining setup conditions an
       setupClass: 'DefaultHarvestableSetup',
       respawnInSlotTime: '120',
       specialHarvestableString: 'Rare',
-      harvestConditionTypes:
-        'HarvestConditionHealth;HarvestConditionInteraction;HarvestConditionMovement',
+      harvestConditionTypes: 'HarvestConditionHealth;HarvestConditionInteraction;HarvestConditionMovement',
       healthRatio: '0',
       includeAttachedChildren: '0',
       allInteractionsClearSpawnPoint: '1',
@@ -151,11 +150,41 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records = [
-    node(providerPath, 'provider-guid', 'HarvestableProviderPreset.HPP_Stanton1', 'HarvestableProviderPreset', 'HPP_Stanton1'),
-    node(defaultSetupPath, 'default-setup-guid', 'HarvestableSetup.DefaultHarvestableSetup', 'HarvestableSetup', 'DefaultHarvestableSetup'),
-    node(mineableSetupPath, 'mineable-setup-guid', 'HarvestableSetup.MineableRockHarvestableSetup', 'HarvestableSetup', 'MineableRockHarvestableSetup'),
-    node(lootSetupPath, 'loot-setup-guid', 'HarvestableSetup.LootCrateHarvestableSetup', 'HarvestableSetup', 'LootCrateHarvestableSetup'),
-    node(harvestablePath, 'mineable-entity-guid', 'EntityClassDefinition.AgriciumRock', 'EntityClassDefinition', 'AgriciumRock'),
+    node(
+      providerPath,
+      'provider-guid',
+      'HarvestableProviderPreset.HPP_Stanton1',
+      'HarvestableProviderPreset',
+      'HPP_Stanton1',
+    ),
+    node(
+      defaultSetupPath,
+      'default-setup-guid',
+      'HarvestableSetup.DefaultHarvestableSetup',
+      'HarvestableSetup',
+      'DefaultHarvestableSetup',
+    ),
+    node(
+      mineableSetupPath,
+      'mineable-setup-guid',
+      'HarvestableSetup.MineableRockHarvestableSetup',
+      'HarvestableSetup',
+      'MineableRockHarvestableSetup',
+    ),
+    node(
+      lootSetupPath,
+      'loot-setup-guid',
+      'HarvestableSetup.LootCrateHarvestableSetup',
+      'HarvestableSetup',
+      'LootCrateHarvestableSetup',
+    ),
+    node(
+      harvestablePath,
+      'mineable-entity-guid',
+      'EntityClassDefinition.AgriciumRock',
+      'EntityClassDefinition',
+      'AgriciumRock',
+    ),
   ];
 
   return {

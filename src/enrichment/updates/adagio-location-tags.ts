@@ -7,9 +7,9 @@
  * matching the visual style of other mission description fields such as
  * ~mission(Destination|Address). This is unverified behaviour.
  */
+import { getLogger } from '../../infrastructure/logger';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { IniTag } from '../../localization/ini-tags';
-import { getLogger } from '../../infrastructure/logger';
 import { buildScannedUpdateResult } from './update-result';
 
 const logger = getLogger('adagio-location-tags-update');
