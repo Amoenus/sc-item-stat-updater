@@ -87,6 +87,11 @@ describe('mining element updater', () => {
           Resistance: '0.1',
           Instability: '10',
         },
+        {
+          'Element Name': 'Gold',
+          Rarity: 'common',
+          'Scan Signature': '999',
+        },
       ],
     );
 
@@ -105,6 +110,8 @@ describe('mining element updater', () => {
     const titanium = rows.find((row) => row['Element Name'] === 'Titanium (Ore)');
     assert.ok(titanium);
     assert.strictEqual(titanium.Source, 'SCMDB');
+
+    assert.equal(rows.some((row) => row['Element Name'] === 'Gold'), false);
   });
 
   it('prefers DataCore Material Name, rarity, scan signatures, and quality bands over SCMDB', () => {

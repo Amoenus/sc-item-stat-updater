@@ -73,11 +73,15 @@ export function buildMiningElementRowsFromSources(
   const signaturesByMaterial = buildSignatureLookup(signatureRows);
   const rarityByMaterial = buildRarityLookup(signatureRows);
   const qualityBandsByMaterial = buildQualityBandLookup(qualityQuantizationRows);
+  const datacoreTargetKeys = new Set(
+    datacoreRows
+      .map((row) => row['Inferred Description Key']?.trim().toLowerCase())
+      .filter((key): key is string => Boolean(key)),
+  );
 
   for (const row of scmdbRows) {
     const targetKey = inferTargetKeys(row)[0];
     if (targetKey) scmdbByTarget.set(targetKey.toLowerCase(), row);
-    mergedRows.push({ ...row, Source: row.Source || 'SCMDB' });
   }
 
   for (const datacoreRow of datacoreRows) {
@@ -98,6 +102,12 @@ export function buildMiningElementRowsFromSources(
     } else {
       mergedRows[existingIndex] = merged;
     }
+  }
+
+  for (const scmdbRow of scmdbRows) {
+    const targetKey = inferTargetKeys(scmdbRow)[0]?.toLowerCase();
+    if (!targetKey || datacoreTargetKeys.has(targetKey)) continue;
+    mergedRows.push({ ...scmdbRow, Source: scmdbRow.Source || 'SCMDB' });
   }
 
   return mergedRows;
