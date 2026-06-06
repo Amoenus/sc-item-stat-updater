@@ -96,7 +96,7 @@ function extractCarryableCommodityRows(
       entityClass: record.entityClass,
       nameKey,
       descriptionKey: selectDescriptionLocalizationKey(record, ['Description', 'description', 'displayDescription']),
-      displayNameKey: selectLocalizationKey(record, ['displayName', 'Name', 'name', 'ShortName']) || nameKey,
+      displayNameKey: selectLocalizationKey(record, ['Name', 'name', 'ShortName', 'displayName']) || nameKey,
       displayDescriptionKey: selectDescriptionLocalizationKey(record, [
         'displayDescription',
         'Description',
@@ -121,26 +121,29 @@ function extractCarryableCommodityRows(
 }
 
 function selectLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  const loweredAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const byAttribute = record.localizationKeys.find(
-    (reference) =>
-      loweredAttributes.has(reference.attribute.toLowerCase()) && isUpdaterCommodityLocalizationKey(reference.key),
-  );
-  if (byAttribute) return byAttribute.key;
+  for (const attribute of attributes) {
+    const byAttribute = record.localizationKeys.find(
+      (reference) =>
+        reference.attribute.toLowerCase() === attribute.toLowerCase() &&
+        isUpdaterCommodityLocalizationKey(reference.key),
+    );
+    if (byAttribute) return byAttribute.key;
+  }
 
   const byKey = record.localizationKeys.find((reference) => isUpdaterCommodityLocalizationKey(reference.key));
   return byKey?.key ?? '';
 }
 
 function selectDescriptionLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  const loweredAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const byAttribute = record.localizationKeys.find(
-    (reference) =>
-      loweredAttributes.has(reference.attribute.toLowerCase()) &&
-      reference.key.startsWith('items_commodities_') &&
-      reference.key.endsWith('_desc'),
-  );
-  if (byAttribute) return byAttribute.key;
+  for (const attribute of attributes) {
+    const byAttribute = record.localizationKeys.find(
+      (reference) =>
+        reference.attribute.toLowerCase() === attribute.toLowerCase() &&
+        reference.key.startsWith('items_commodities_') &&
+        reference.key.endsWith('_desc'),
+    );
+    if (byAttribute) return byAttribute.key;
+  }
 
   const byKey = record.localizationKeys.find(
     (reference) => reference.key.startsWith('items_commodities_') && reference.key.endsWith('_desc'),

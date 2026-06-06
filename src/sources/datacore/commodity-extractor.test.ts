@@ -199,8 +199,9 @@ function makeGraph(): DataCoreRecordGraph {
         rootType: 'EntityClassDefinition',
         entityClass: 'Harvestable_Mineral_1H_CarinitePure',
         localizationKeys: [
+          { attribute: 'displayName', key: 'items_commodities_carinite' },
+          { attribute: 'displayType', key: 'items_commodities_carinite_desc' },
           { attribute: 'Name', key: 'items_commodities_carinite_pure' },
-          { attribute: 'ShortName', key: 'items_commodities_carinite_pure' },
           { attribute: 'Description', key: 'items_commodities_carinite_pure_desc' },
         ],
         referencedGuids: [],
