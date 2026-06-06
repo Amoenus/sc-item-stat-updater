@@ -47,7 +47,7 @@ test('category listing includes representative provider families and source meta
   });
 
   const commodities = listing.categories.find((entry) => entry.slug === 'mission-commodities');
-  assert.equal(commodities?.sourceHint, 'dynamic JSON source resolved from the selected source directory');
+  assert.equal(commodities?.sourceHint, undefined);
   assert.deepEqual(commodities?.sourceFiles, ['datacore:commodities.datacore.csv']);
 
   assert.deepEqual(
@@ -85,7 +85,7 @@ test('formatted category listing distinguishes provider families and mixed-sourc
   );
   assert.match(
     output,
-    /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv; dynamic JSON source resolved/,
+    /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv/,
   );
   assert.match(
     output,

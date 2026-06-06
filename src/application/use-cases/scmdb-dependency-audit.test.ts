@@ -18,13 +18,14 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
 
   const commodities = audit.entries.find((entry) => entry.slug === 'mission-commodities');
   assert.equal(commodities?.classification, 'Already extractable from DataCore');
-  assert.equal(commodities?.sourceFiles.includes('dynamic SCMDB JSON: merged-*.json'), true);
+  assert.equal(commodities?.sourceFiles.includes('dynamic SCMDB JSON: merged-*.json'), false);
   assert.equal(commodities?.sourceFiles.includes('datacore:commodities.datacore.csv'), true);
   assert.match(commodities?.reason ?? '', /explicit carryable commodity localization keys/);
   assert.match(commodities?.reason ?? '', /first-party harvestable base aliases/);
   assert.match(commodities?.reason ?? '', /first-party hauling entity class labels/);
-  assert.match(commodities?.reason ?? '', /SCMDB remains only for loc_placeholder/);
-  assert.match(commodities?.migrationSlice ?? '', /placeholder bridge rows/);
+  assert.match(commodities?.reason ?? '', /no longer reads SCMDB resource pools/);
+  assert.match(commodities?.reason ?? '', /LOC_PLACEHOLDER resource-pool entries are ignored/);
+  assert.match(commodities?.migrationSlice ?? '', /Retired for commodities/);
 
   const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
   assert.equal(generatedMining?.kind, 'generated source step');

@@ -146,17 +146,18 @@ first-party DataCore records:
 - `Hauling_EntityClasses` records cover salvage component order labels via root
   `orderDisplayName` attributes.
 
-With the checked-in DataCore/SCMDB data, 128 / 129 SCMDB resource-pool
-localization keys are covered by DataCore commodity extraction. The remaining
-SCMDB-only key is:
+With the checked-in DataCore/SCMDB data, all non-placeholder SCMDB
+resource-pool localization keys are covered by DataCore commodity extraction.
+The remaining SCMDB-only resource-pool key is generic placeholder noise and is
+filtered out of commodity loading:
 
 ```text
 LOC_PLACEHOLDER
 ```
 
-Recommendation: keep DataCore as the commodity-key source. Keep SCMDB resource
-pools only as a placeholder bridge unless a new first-party DataCore record
-proves another target key.
+Recommendation: keep DataCore as the commodity-key source. Do not read SCMDB
+resource pools for active commodity loading unless a new first-party gap is
+proven and documented as a temporary bridge.
 
 ### Missions And Contracts
 

@@ -33,9 +33,9 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-commodities': {
     classification: 'Already extractable from DataCore',
     reason:
-      'DataCore commodities now supply commodity entity keys, explicit carryable commodity localization keys, first-party harvestable base aliases such as Armillaria and Molina Mold, and first-party hauling entity class labels for salvage component orders. SCMDB remains only for loc_placeholder.',
+      'DataCore commodities now supply commodity entity keys, explicit carryable commodity localization keys, first-party harvestable base aliases such as Armillaria and Molina Mold, and first-party hauling entity class labels for salvage component orders. The active commodity loader no longer reads SCMDB resource pools; generic LOC_PLACEHOLDER resource-pool entries are ignored as placeholder noise.',
     migrationSlice:
-      'Keep the SCMDB resource-pool fallback narrowed to placeholder bridge rows unless a first-party localization or contract/resource record proves another target key.',
+      'Retired for commodities; keep SCMDB resource pools out of active commodity loading unless a first-party gap is proven and documented as a temporary bridge.',
   },
   'mission-mining-elements': {
     classification: 'Probably extractable from DataCore with new graph traversal',
