@@ -1,0 +1,4 @@
+Entity Class,Manufacturer,Size,Grade,Class,Cooling Rate,Power Usage,EM Signature,EM Signature Decay,IR Signature,IR Signature Decay,Temperature to IR,Minimum Temperature for IR,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time,Health
+cool_acom_s01_iceplunge,ACOM,1,A,Competition,34,18,12,0,8,0,9,311,22,1.5,1.3333,18,69
+cool_acom_s02_winterstar,ACOM,2,B,Civilian,48,22,0,0,0,0,9,311,0,0,0,0,120
+cool_tars_s01_snowblind,TARS,1,C,Stealth,28,12,5,1,3,0.5,8,318,11,1.5,0.6667,18,55

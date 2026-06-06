@@ -53,26 +53,26 @@ async function applyFixtureCategory(slug: string, csvDir: string, iniPath: strin
   };
 }
 
-test('fixture pipeline updates SPViewer and DataCore category output without touching unrelated INI keys', async () => {
+test('fixture pipeline updates DataCore category output without touching unrelated INI keys', async () => {
   const csvDir = path.join(tmpDir, 'csv');
   const iniPath = path.join(tmpDir, 'global.ini');
   const before = stripBom(await fs.readFile(iniPath, 'utf-8'));
 
   const results = [
-    await applyFixtureCategory('sp-coolers', csvDir, iniPath),
+    await applyFixtureCategory('dc-coolers', csvDir, iniPath),
     await applyFixtureCategory('dc-powerplants', csvDir, iniPath),
   ];
   const afterText = stripBom(await fs.readFile(iniPath, 'utf-8'));
   const { index, lines } = await readIniFile(iniPath);
 
   assert.deepEqual(results, [
-    { label: 'SP Coolers', updatedCount: 3, skippedCount: 0, unresolvedCount: 0, appliedCount: 3 },
+    { label: 'DC Coolers', updatedCount: 3, skippedCount: 0, unresolvedCount: 0, appliedCount: 3 },
     { label: 'DC Power Plants', updatedCount: 3, skippedCount: 0, unresolvedCount: 0, appliedCount: 3 },
   ]);
 
   assert.equal(
     lines[index.item_Desc_COOL_ACOM_S01_ICEPLUNGE],
-    String.raw`item_Desc_COOL_ACOM_S01_ICEPLUNGE=Item Type: Cooler\nManufacturer: ACOM\nSize: 1\nGrade: A\nClass: Competition\n\n-- Cooling Stats --\nCooling Generation: 34\n\n-- Emission --\nEM Max: 12\nIR: 8\n\n-- Power --\nPower Max: 18\nPower Min: 3\n\n-- Durability --\nHealth: 69\nDistortion Shutdown: 22\n\nKeep chill.`,
+    String.raw`item_Desc_COOL_ACOM_S01_ICEPLUNGE=Item Type: Cooler\nManufacturer: ACOM\nSize: 1\nGrade: A\nClass: Competition\n\n-- Cooling Stats --\nCooling Rate: 34\nPower Usage: 18\n\n-- Signatures --\nEM: 12\nIR: 8\nTemperature to IR: 9\nMinimum Temperature for IR: 311\n\n-- Distortion --\nShutdown Damage: 22\nDecay Delay: 1.5\nDecay Rate: 1.3333\nShutdown Time: 18\n\n-- Durability --\nHealth: 69\n\nKeep chill.`,
   );
   assert.equal(
     lines[index.item_DescPOWR_AMRS_S1_HEARTBEAT],
