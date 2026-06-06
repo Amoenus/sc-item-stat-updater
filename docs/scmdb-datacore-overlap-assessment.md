@@ -161,18 +161,24 @@ proven and documented as a temporary bridge.
 
 ### Missions And Contracts
 
-SCMDB mission/contract overlap is low by the generic graph keys:
+SCMDB mission/contract overlap remains low even after exporting a dedicated
+DataCore mission-localization fact CSV:
 
-- 99 / 1,538 SCMDB contract localization keys overlap DataCore mission/contract
-  localization keys.
+- `csv/datacore/4.8.0.11875683-live/mission-localization.datacore.csv`
+  contains 5,087 mission/contract localization-reference rows and 1,027 unique
+  keys.
+- 71 / 1,449 SCMDB mission updater rows overlap those DataCore keys.
+- Title overlap is 38 / 694 rows.
+- Description overlap is 27 / 721 rows.
 - 407 / 4,007 SCMDB debug names overlap DataCore mission/contract entity class
   names.
 
-This does not mean game files lack mission data. It means the generic graph and
-current prefix inventory do not yet normalize the same contract/template
-surfaces SCMDB resolves. SCMDB is already merging mission broker records,
-contract generators, location pools, token substitutions, rewards, prerequisite
-chains, hauling orders, and blueprint reward relationships into readable rows.
+This does not mean game files lack mission data. It means the current
+localization-reference extractor does not yet normalize the same
+contract/template surfaces SCMDB resolves. SCMDB is already merging mission
+broker records, contract generators, location pools, token substitutions,
+rewards, prerequisite chains, hauling orders, and blueprint reward relationships
+into readable rows.
 
 Recommendation: keep SCMDB as the mission relationship and insight source for
 now. Build a first-party mission extractor incrementally:
