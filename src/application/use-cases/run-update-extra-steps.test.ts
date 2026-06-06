@@ -55,7 +55,7 @@ test('runUpdateExtraSteps records step errors and continues', async () => {
     onStepError: (error) => observedErrors.push(`${error.label}: ${error.message}`),
     runners: runnersFor({
       'Component Titles': async () => {
-        throw new Error('spviewer missing', { cause: new Error('weapon.csv') });
+        throw new Error('datacore missing', { cause: new Error('weapon.datacore.csv') });
       },
       'FPS title tags': { label: 'FPS title tags', summary: 'fps done' },
       'Missile title tags': null,
@@ -68,8 +68,10 @@ test('runUpdateExtraSteps records step errors and continues', async () => {
     { label: 'FPS title tags', summary: 'fps done' },
     { label: 'Raw commodity labels', summary: 'raw done' },
   ]);
-  assert.deepEqual(result.errors, [{ label: 'Component Titles', message: 'spviewer missing', cause: 'weapon.csv' }]);
-  assert.deepEqual(observedErrors, ['Component Titles: spviewer missing']);
+  assert.deepEqual(result.errors, [
+    { label: 'Component Titles', message: 'datacore missing', cause: 'weapon.datacore.csv' },
+  ]);
+  assert.deepEqual(observedErrors, ['Component Titles: datacore missing']);
 });
 
 function runnersFor(
