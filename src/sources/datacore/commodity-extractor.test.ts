@@ -3,13 +3,15 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import { extractDataCoreCommodities } from './commodity-extractor';
+import { createDataCoreRecordGraphLookup } from './record-graph-loader';
 import type { DataCoreRecordGraph } from './types';
 
 const atlasiumPath = 'libs/foundry/records/entities/commodities/alloys/atlasium.xml';
 const rantadungPath = 'libs/foundry/records/entities/commodities/agriculturalsupplies/rantadung.xml';
 const notCommodityPath = 'libs/foundry/records/entities/commodities/readme.xml';
+const carinitePurePath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_mineral_1h_carinitepure.xml';
+const armillariaPath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_armillaria.xml';
 
 test('extractDataCoreCommodities extracts first-party commodity facts discovered through the graph', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-'));
@@ -60,16 +62,46 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
       </EntityClassDefinition.NotActuallyCommodity>
     `,
   );
+  await writeXml(
+    xmlCacheDir,
+    carinitePurePath,
+    `
+      <EntityClassDefinition.Harvestable_Mineral_1H_CarinitePure __type="EntityClassDefinition" __ref="9904aaa2-9a13-48d2-a48d-7494e60d012f" __path="${carinitePurePath}">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef>
+              <Localization Name="@items_commodities_carinite_pure" ShortName="@items_commodities_carinite_pure" Description="@items_commodities_carinite_pure_desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+        </Components>
+      </EntityClassDefinition.Harvestable_Mineral_1H_CarinitePure>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    armillariaPath,
+    `
+      <EntityClassDefinition.Harvestable_Armillaria __type="EntityClassDefinition" __ref="0ece223a-df2b-4c7a-82e1-7f1467f9c5a1" __path="${armillariaPath}">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef>
+              <Localization Name="@harvestable_Armillaria" Description="@harvestable_Armillaria_desc" />
+            </AttachDef>
+          </SAttachableComponentParams>
+        </Components>
+      </EntityClassDefinition.Harvestable_Armillaria>
+    `,
+  );
 
   const rows = await extractDataCoreCommodities({
     xmlCacheDir,
     graph: createDataCoreRecordGraphLookup(makeGraph()),
   });
 
-  assert.equal(rows.length, 2);
+  assert.equal(rows.length, 3);
   assert.deepEqual(
     rows.map((row) => row.path),
-    [rantadungPath, atlasiumPath],
+    [rantadungPath, atlasiumPath, carinitePurePath],
   );
 
   const atlasium = rows.find((row) => row.entityClass === 'atlasium');
@@ -98,6 +130,16 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.equal(rantadung.boxable, '0');
   assert.equal(rantadung.isUnrefinedElement, '1');
   assert.equal(rantadung.isRaw, '1');
+
+  const carinitePure = rows.find((row) => row.entityClass === 'Harvestable_Mineral_1H_CarinitePure');
+  assert.ok(carinitePure);
+  assert.equal(carinitePure.nameKey, 'items_commodities_carinite_pure');
+  assert.equal(carinitePure.descriptionKey, 'items_commodities_carinite_pure_desc');
+  assert.equal(carinitePure.displayNameKey, 'items_commodities_carinite_pure');
+  assert.equal(carinitePure.displayDescriptionKey, 'items_commodities_carinite_pure_desc');
+  assert.equal(carinitePure.typeGuid, '');
+
+  assert.equal(rows.some((row) => row.nameKey === 'harvestable_armillaria'), false);
 });
 
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
@@ -109,7 +151,7 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 3,
+    recordCount: 5,
     records: [
       {
         path: atlasiumPath,
@@ -150,25 +192,56 @@ function makeGraph(): DataCoreRecordGraph {
         localizationKeys: [],
         referencedGuids: [],
       },
+      {
+        path: carinitePurePath,
+        ref: '9904aaa2-9a13-48d2-a48d-7494e60d012f',
+        rootTag: 'EntityClassDefinition.Harvestable_Mineral_1H_CarinitePure',
+        rootType: 'EntityClassDefinition',
+        entityClass: 'Harvestable_Mineral_1H_CarinitePure',
+        localizationKeys: [
+          { attribute: 'Name', key: 'items_commodities_carinite_pure' },
+          { attribute: 'ShortName', key: 'items_commodities_carinite_pure' },
+          { attribute: 'Description', key: 'items_commodities_carinite_pure_desc' },
+        ],
+        referencedGuids: [],
+      },
+      {
+        path: armillariaPath,
+        ref: '0ece223a-df2b-4c7a-82e1-7f1467f9c5a1',
+        rootTag: 'EntityClassDefinition.Harvestable_Armillaria',
+        rootType: 'EntityClassDefinition',
+        entityClass: 'Harvestable_Armillaria',
+        localizationKeys: [
+          { attribute: 'Name', key: 'harvestable_Armillaria' },
+          { attribute: 'Description', key: 'harvestable_Armillaria_desc' },
+        ],
+        referencedGuids: [],
+      },
     ],
     indexes: {
       byRef: {
         'af5dcf22-7a28-4b1e-88f0-4309d34be11a': atlasiumPath,
         '86c1fde0-1e2b-40d9-a3c7-1d39ef742c68': rantadungPath,
         '11111111-1111-1111-1111-111111111111': notCommodityPath,
+        '9904aaa2-9a13-48d2-a48d-7494e60d012f': carinitePurePath,
+        '0ece223a-df2b-4c7a-82e1-7f1467f9c5a1': armillariaPath,
       },
       byPath: {
         [atlasiumPath]: 0,
         [rantadungPath]: 1,
         [notCommodityPath]: 2,
+        [carinitePurePath]: 3,
+        [armillariaPath]: 4,
       },
       byRootType: {
-        EntityClassDefinition: [atlasiumPath, rantadungPath, notCommodityPath],
+        EntityClassDefinition: [atlasiumPath, rantadungPath, notCommodityPath, carinitePurePath, armillariaPath],
       },
       byEntityClass: {
         atlasium: [atlasiumPath],
         RantaDung: [rantadungPath],
         NotActuallyCommodity: [notCommodityPath],
+        Harvestable_Mineral_1H_CarinitePure: [carinitePurePath],
+        Harvestable_Armillaria: [armillariaPath],
       },
       byLocalizationKey: {},
       byReferencedGuid: {},

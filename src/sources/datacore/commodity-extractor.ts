@@ -2,10 +2,11 @@ import fs from 'node:fs/promises';
 import type { Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { loadXml } from './xml-parser';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { loadXml } from './xml-parser';
 
 const DEFAULT_COMMODITY_PATH_PREFIX = 'libs/foundry/records/entities/commodities';
+const DEFAULT_CARRYABLE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/carryables';
 
 export interface ExtractDataCoreCommoditiesOptions {
   xmlCacheDir: string;
@@ -21,6 +22,7 @@ export async function extractDataCoreCommodities(
     .filter((record) => record.rootType === 'EntityClassDefinition')
     .sort((a, b) => a.path.localeCompare(b.path));
   const commodities: DataCoreCommodityRecord[] = [];
+  const emittedKeys = new Set<string>();
 
   for (const record of records) {
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore commodity XML path');
@@ -33,7 +35,7 @@ export async function extractDataCoreCommodities(
     const uiDisplayParams = $('EntityUIDisplayParams').first();
     const occupancy = extractCargoOccupancy($);
 
-    commodities.push({
+    const commodity = {
       ref: record.ref,
       path: record.path,
       entityClass: record.entityClass,
@@ -63,10 +65,97 @@ export async function extractDataCoreCommodities(
       isUnrefinedElement: readAttribute(commodityParams, ['IsUnrefinedElement', 'isUnrefinedElement']),
       isRaw: readAttribute(commodityParams, ['raw', 'Raw', 'isRaw', 'IsRaw']),
       isRefined: readAttribute(commodityParams, ['refined', 'Refined', 'isRefined', 'IsRefined']),
-    });
+    };
+    markEmittedCommodityKeys(emittedKeys, commodity);
+    commodities.push(commodity);
   }
 
-  return commodities;
+  if (options.pathPrefix !== undefined) return commodities;
+
+  const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys);
+  return [...commodities, ...carryableRows];
+}
+
+function extractCarryableCommodityRows(
+  graph: DataCoreRecordGraphLookup,
+  emittedKeys: Set<string>,
+): DataCoreCommodityRecord[] {
+  const rows: DataCoreCommodityRecord[] = [];
+  const records = graph
+    .getByPathPrefix(DEFAULT_CARRYABLE_PATH_PREFIX)
+    .filter((record) => record.rootType === 'EntityClassDefinition')
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  for (const record of records) {
+    const nameKey = selectLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']);
+    if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
+
+    const row: DataCoreCommodityRecord = {
+      ref: record.ref,
+      path: record.path,
+      entityClass: record.entityClass,
+      nameKey,
+      descriptionKey: selectDescriptionLocalizationKey(record, ['Description', 'description', 'displayDescription']),
+      displayNameKey: selectLocalizationKey(record, ['displayName', 'Name', 'name', 'ShortName']) || nameKey,
+      displayDescriptionKey: selectDescriptionLocalizationKey(record, [
+        'displayDescription',
+        'Description',
+        'description',
+      ]),
+      displayTypeKey: '',
+      typeGuid: '',
+      subtypeGuid: '',
+      cargoOccupancyUnit: '',
+      cargoOccupancyValue: '',
+      cargoOccupancySCU: '',
+      boxable: '',
+      isUnrefinedElement: '',
+      isRaw: '',
+      isRefined: '',
+    };
+    markEmittedCommodityKeys(emittedKeys, row);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function selectLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const loweredAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const byAttribute = record.localizationKeys.find(
+    (reference) =>
+      loweredAttributes.has(reference.attribute.toLowerCase()) && isUpdaterCommodityLocalizationKey(reference.key),
+  );
+  if (byAttribute) return byAttribute.key;
+
+  const byKey = record.localizationKeys.find((reference) => isUpdaterCommodityLocalizationKey(reference.key));
+  return byKey?.key ?? '';
+}
+
+function selectDescriptionLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const loweredAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const byAttribute = record.localizationKeys.find(
+    (reference) =>
+      loweredAttributes.has(reference.attribute.toLowerCase()) &&
+      reference.key.startsWith('items_commodities_') &&
+      reference.key.endsWith('_desc'),
+  );
+  if (byAttribute) return byAttribute.key;
+
+  const byKey = record.localizationKeys.find(
+    (reference) => reference.key.startsWith('items_commodities_') && reference.key.endsWith('_desc'),
+  );
+  return byKey?.key ?? '';
+}
+
+function markEmittedCommodityKeys(emittedKeys: Set<string>, row: DataCoreCommodityRecord): void {
+  for (const key of [row.nameKey, row.displayNameKey]) {
+    if (isUpdaterCommodityLocalizationKey(key)) emittedKeys.add(key.toLowerCase());
+  }
+}
+
+function isUpdaterCommodityLocalizationKey(key: string): boolean {
+  return key.startsWith('items_commodities_') && !key.endsWith('_desc') && !key.startsWith('items_commodities_type_');
 }
 
 function extractCargoOccupancy($: ReturnType<typeof loadXml>): { unit: string; value: string; scu: string } {
