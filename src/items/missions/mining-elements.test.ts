@@ -78,6 +78,7 @@ describe('mining element updater', () => {
           'Mining Difficulty': 'Easy',
           'Volatility Note': 'Low volatility',
           'Cluster Note': 'Cluster-prone',
+          Density: '1.23',
           'Best Refinery': 'ARC-L1 Wide Forest Station (+5)',
         },
         {
@@ -98,6 +99,7 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium['Cluster Note'], 'Isolated');
     assert.strictEqual(agricium.Rarity, '');
     assert.strictEqual(agricium['Scan Signature'], '');
+    assert.strictEqual(agricium.Density, '');
     assert.strictEqual(agricium['Best Refinery'], 'ARC-L1 Wide Forest Station (+5)');
 
     assert.equal(rows.some((row) => row['Element Name'] === 'Gold'), false);
@@ -189,6 +191,7 @@ describe('mining element updater', () => {
           Rarity: 'rare',
           'Scan Signature': '4100',
           'Ground Scan Signature': '4000',
+          Density: '1.23',
           'Quality Bands': '30.2% / 59.7%',
         },
       ],
@@ -202,6 +205,7 @@ describe('mining element updater', () => {
     assert.strictEqual(bexalite.Rarity, '');
     assert.strictEqual(bexalite['Scan Signature'], '');
     assert.strictEqual(bexalite['Ground Scan Signature'], '');
+    assert.strictEqual(bexalite.Density, '');
     assert.strictEqual(bexalite['Quality Bands'], '');
   });
 

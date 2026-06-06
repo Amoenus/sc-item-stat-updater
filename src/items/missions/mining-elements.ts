@@ -265,9 +265,8 @@ function toMiningElementRow(
   qualityBands: string,
 ): Record<string, string> {
   const behaviorFacts = toDatacoreBehaviorFacts(datacoreRow);
-  const bridgeDensity = scmdbRow?.Density || '';
   const bridgeBestRefinery = scmdbRow?.['Best Refinery'] || '';
-  const source = bridgeDensity || bridgeBestRefinery ? 'DataCore+SCMDB' : 'DataCore';
+  const source = bridgeBestRefinery ? 'DataCore+SCMDB' : 'DataCore';
   return {
     'Element Name': datacoreRow['Element Name'] || '',
     Rarity: rarity,
@@ -276,7 +275,7 @@ function toMiningElementRow(
     'Scan Signature': signatures.scan,
     Resistance: datacoreRow.Resistance || '',
     Instability: datacoreRow.Instability || '',
-    Density: bridgeDensity,
+    Density: '',
     'Optimal Window Midpoint': datacoreRow['Optimal Window Midpoint'] || '',
     'Optimal Window Randomness': datacoreRow['Optimal Window Randomness'] || '',
     'Optimal Window Thinness': datacoreRow['Optimal Window Thinness'] || '',
