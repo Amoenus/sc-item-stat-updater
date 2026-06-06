@@ -127,6 +127,14 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
     description: 'first-party contract template display settings, objective keys, and location tags',
   },
   {
+    slug: 'datacore-contract-template-hauling',
+    label: 'Contract template hauling',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    sourceFiles: ['contract-template-hauling.datacore.csv'],
+    description: 'first-party contract template hauling orders and cargo resource refs',
+  },
+  {
     slug: 'datacore-commodities',
     label: 'Commodities',
     family: 'DataCore',

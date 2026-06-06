@@ -19,6 +19,7 @@ import { extractDataCoreCommodities } from '../../sources/datacore/commodity-ext
 import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
 import { buildDataCoreContractGeneratorIntel } from '../../sources/datacore/contract-generator-intel-builder';
 import { extractDataCoreContractTemplates } from '../../sources/datacore/contract-template-extractor';
+import { extractDataCoreContractTemplateHaulingOrders } from '../../sources/datacore/contract-template-hauling-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
@@ -53,6 +54,7 @@ import type {
   DataCoreCommodityRecord,
   DataCoreContractGeneratorIntelRecord,
   DataCoreContractGeneratorRecord,
+  DataCoreContractTemplateHaulingOrderRecord,
   DataCoreContractTemplateRecord,
   DataCoreFactionRecord,
   DataCoreLocationLabelRecord,
@@ -118,6 +120,11 @@ export interface DataCoreScrapeContractGeneratorIntelResult {
 }
 
 export interface DataCoreScrapeContractTemplateResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeContractTemplateHaulingResult {
   rows: number;
   csvFile: string;
 }
@@ -260,6 +267,7 @@ export interface RunDatacoreScrapeOptions {
   extractContractGenerators?: typeof extractDataCoreContractGenerators;
   buildContractGeneratorIntel?: typeof buildDataCoreContractGeneratorIntel;
   extractContractTemplates?: typeof extractDataCoreContractTemplates;
+  extractContractTemplateHaulingOrders?: typeof extractDataCoreContractTemplateHaulingOrders;
   extractCommodities?: typeof extractDataCoreCommodities;
   extractVehicles?: typeof extractDataCoreVehicles;
   extractFactions?: typeof extractDataCoreFactions;
@@ -302,6 +310,7 @@ export interface RunDatacoreScrapeOptions {
   onContractGeneratorsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractGeneratorIntelExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractTemplatesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onContractTemplateHaulingExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onVehiclesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onFactionsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -343,6 +352,7 @@ export interface RunDatacoreScrapeResult {
   contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
   contractGeneratorIntelResult: DataCoreScrapeContractGeneratorIntelResult;
   contractTemplateResult: DataCoreScrapeContractTemplateResult;
+  contractTemplateHaulingResult: DataCoreScrapeContractTemplateHaulingResult;
   commodityResult: DataCoreScrapeCommodityResult;
   vehicleResult: DataCoreScrapeVehicleResult;
   factionResult: DataCoreScrapeFactionResult;
@@ -384,6 +394,7 @@ const COMMON_HEADERS = [
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
 const CONTRACT_GENERATOR_INTEL_CSV_FILE = 'contract-generator-intel.datacore.csv';
 const CONTRACT_TEMPLATES_CSV_FILE = 'contract-templates.datacore.csv';
+const CONTRACT_TEMPLATE_HAULING_CSV_FILE = 'contract-template-hauling.datacore.csv';
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
 const VEHICLES_CSV_FILE = 'vehicles.datacore.csv';
 const FACTIONS_CSV_FILE = 'factions.datacore.csv';
@@ -513,6 +524,19 @@ const CONTRACT_TEMPLATE_HEADERS = [
   'String Hash Keys',
   'Location Tag GUIDs',
   'Location Tag Classes',
+  'Record GUID',
+  'Record Path',
+];
+const CONTRACT_TEMPLATE_HAULING_HEADERS = [
+  'Template Class',
+  'Objective Debug Name',
+  'Order Index',
+  'Resource GUID',
+  'Resource Class',
+  'Min SCU',
+  'Max SCU',
+  'Max Container Size',
+  'Order Summary',
   'Record GUID',
   'Record Path',
 ];
@@ -1054,6 +1078,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractContractGenerators = options.extractContractGenerators ?? extractDataCoreContractGenerators;
   const buildContractGeneratorIntel = options.buildContractGeneratorIntel ?? buildDataCoreContractGeneratorIntel;
   const extractContractTemplates = options.extractContractTemplates ?? extractDataCoreContractTemplates;
+  const extractContractTemplateHaulingOrders =
+    options.extractContractTemplateHaulingOrders ?? extractDataCoreContractTemplateHaulingOrders;
   const extractCommodities = options.extractCommodities ?? extractDataCoreCommodities;
   const extractVehicles = options.extractVehicles ?? extractDataCoreVehicles;
   const extractFactions = options.extractFactions ?? extractDataCoreFactions;
@@ -1173,6 +1199,16 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   options.onContractTemplatesExtracted?.(
     contractTemplateResult.rows,
     contractTemplateResult.csvFile,
+    Boolean(options.dryRun),
+  );
+  const contractTemplateHaulingRows = await extractContractTemplateHaulingOrders({ xmlCacheDir, graph: graphLookup });
+  const contractTemplateHaulingResult = await writeContractTemplateHaulingCsv(contractTemplateHaulingRows, {
+    outputBase,
+    dryRun: options.dryRun,
+  });
+  options.onContractTemplateHaulingExtracted?.(
+    contractTemplateHaulingResult.rows,
+    contractTemplateHaulingResult.csvFile,
     Boolean(options.dryRun),
   );
 
@@ -1472,6 +1508,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       [contractGeneratorResult.csvFile, contractGeneratorResult],
       [contractGeneratorIntelResult.csvFile, contractGeneratorIntelResult],
       [contractTemplateResult.csvFile, contractTemplateResult],
+      [contractTemplateHaulingResult.csvFile, contractTemplateHaulingResult],
       [commodityResult.csvFile, commodityResult],
       [vehicleResult.csvFile, vehicleResult],
       [factionResult.csvFile, factionResult],
@@ -1501,6 +1538,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     contractGeneratorResult,
     contractGeneratorIntelResult,
     contractTemplateResult,
+    contractTemplateHaulingResult,
     commodityResult,
     vehicleResult,
     factionResult,
@@ -1819,6 +1857,34 @@ async function writeContractTemplateCsv(
   }
 
   return { rows: rows.length, csvFile: CONTRACT_TEMPLATES_CSV_FILE };
+}
+
+async function writeContractTemplateHaulingCsv(
+  rows: DataCoreContractTemplateHaulingOrderRecord[],
+  options: { outputBase: string; dryRun?: boolean },
+): Promise<DataCoreScrapeContractTemplateHaulingResult> {
+  if (!options.dryRun) {
+    const csvRows = rows.map((row) => [
+      row.templateClass,
+      row.objectiveDebugName,
+      row.orderIndex,
+      row.resourceGuid,
+      row.resourceClass,
+      row.minSCU,
+      row.maxSCU,
+      row.maxContainerSize,
+      row.orderSummary,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+    await fs.writeFile(
+      path.join(options.outputBase, CONTRACT_TEMPLATE_HAULING_CSV_FILE),
+      stringify([CONTRACT_TEMPLATE_HAULING_HEADERS, ...csvRows]),
+      'utf8',
+    );
+  }
+
+  return { rows: rows.length, csvFile: CONTRACT_TEMPLATE_HAULING_CSV_FILE };
 }
 
 async function writeCommodityCsv(

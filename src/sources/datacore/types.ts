@@ -250,6 +250,20 @@ export interface DataCoreContractTemplateRecord {
   recordPath: string;
 }
 
+export interface DataCoreContractTemplateHaulingOrderRecord {
+  templateClass: string;
+  objectiveDebugName: string;
+  orderIndex: string;
+  resourceGuid: string;
+  resourceClass: string;
+  minSCU: string;
+  maxSCU: string;
+  maxContainerSize: string;
+  orderSummary: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreFactionRecord {
   ref: string;
   path: string;
