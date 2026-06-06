@@ -40,7 +40,7 @@ const MISSION_CLASSIFICATIONS: Record<
   'mission-mining-elements': {
     classification: 'Probably extractable from DataCore with new graph traversal',
     reason:
-      'DataCore now supplies core mining behavior facts, material labels, asteroid/surface scan signatures, rarity from mineable rock variants where present, and quality bands from quality quantization records. SCMDB-only mining-element fallback rows are no longer carried when DataCore covers the target key. SCMDB still contributes density, best-refinery bonus joins, and unreconstructed ground scan fallbacks; the current DataCore refiningprocess records define only global process speed/quality labels, not station/material bonus profiles.',
+      'DataCore now supplies core mining behavior facts, material labels, asteroid/surface scan signatures, rarity from mineable rock variants where present, and quality bands from quality quantization records. SCMDB cannot create active mining-element target rows; it only joins bridge fields onto DataCore rows. SCMDB still contributes density, best-refinery bonus joins, and unreconstructed ground scan fallbacks; the current DataCore refiningprocess records define only global process speed/quality labels, not station/material bonus profiles.',
     migrationSlice:
       'Extend DataCore mining extraction to density, ground scan, and refinery joins if first-party fields are found. Density investigation should avoid carryable Mass/SCU because it does not match SCMDB density values, and refinery replacement should not infer SCMDB profile IDs unless a station/material bonus source is proven.',
   },

@@ -81,13 +81,6 @@ describe('mining element updater', () => {
           'Best Refinery': 'ARC-L1 Wide Forest Station (+5)',
         },
         {
-          'Element Name': 'Titanium (Ore)',
-          Rarity: 'common',
-          'Scan Signature': '1000',
-          Resistance: '0.1',
-          Instability: '10',
-        },
-        {
           'Element Name': 'Gold',
           Rarity: 'common',
           'Scan Signature': '999',
@@ -106,10 +99,6 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium.Rarity, 'uncommon');
     assert.strictEqual(agricium['Scan Signature'], '3885');
     assert.strictEqual(agricium['Best Refinery'], 'ARC-L1 Wide Forest Station (+5)');
-
-    const titanium = rows.find((row) => row['Element Name'] === 'Titanium (Ore)');
-    assert.ok(titanium);
-    assert.strictEqual(titanium.Source, 'SCMDB');
 
     assert.equal(rows.some((row) => row['Element Name'] === 'Gold'), false);
   });
@@ -231,7 +220,7 @@ describe('mining element updater', () => {
     assert.deepStrictEqual(coverage.scmdbOnly, ['items_commodities_titanium_ore_desc']);
   });
 
-  it('loads DataCore mining elements beside SCMDB mining insight fallback rows', async () => {
+  it('loads DataCore mining elements with SCMDB insight joins but no SCMDB-only target rows', async () => {
     assert.ok(config.loadSourceData, 'loadSourceData must be defined on the mining elements config');
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'mining-element-sources-'));
     const scmdbDir = path.join(dir, 'scmdb');
@@ -285,6 +274,6 @@ describe('mining element updater', () => {
     assert.equal(agricium?.['Material Name'], 'Agricium');
     assert.equal(agricium?.['Scan Signature'], '3885', 'DataCore scan signature should win over SCMDB');
     assert.equal(agricium?.['Quality Bands'], '34.6% / 58.8% / 100.0%');
-    assert.equal(rows.find((row) => row['Element Name'] === 'Titanium (Ore)')?.Source, 'SCMDB');
+    assert.equal(rows.find((row) => row['Element Name'] === 'Titanium (Ore)'), undefined);
   });
 });
