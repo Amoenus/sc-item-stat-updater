@@ -160,7 +160,7 @@ npm run scrape:scmdb -- --raw
 node --import tsx/esm bin/update-item.ts -c <csv-directory> <category>
 ```
 
-Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/datacore/<version>-live` for `dc-*` categories, or `-c ./csv/scmdb/<version>-live` for `mission-*` categories). Available categories include DataCore, SPViewer, and mission sources. DataCore categories are prefixed with `dc-`, SPViewer categories with `sp-`, and mission categories with `mission-`.
+Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/datacore/<version>-live` for `dc-*` categories, or `-c ./csv/scmdb/<version>-live` for `mission-*` categories). Active update categories include DataCore (`dc-*`) and mission (`mission-*`) sources. SPViewer categories (`sp-*`) remain available only for legacy comparison metadata and retirement audits.
 
 Active updates accept DataCore (`dc-*`) and mission (`mission-*`) categories. SPViewer (`sp-*`) categories are listed for legacy comparison and retirement audits only; direct SPViewer updates are rejected.
 
@@ -257,6 +257,8 @@ Each active item rule module (`src/items/datacore/*.ts` or `src/items/missions/*
 Scripts are idempotent - running them multiple times produces no duplicates.
 
 ## CSV files
+
+SPViewer CSVs listed here are legacy diagnostic inputs only. Active game-derived item facts should come from DataCore CSVs.
 
 | CSV | Category | Source |
 |-----|----------|--------|
