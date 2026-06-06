@@ -8,16 +8,19 @@ import type {
 import { loadXml } from './xml-parser';
 
 const DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX = 'libs/foundry/records/contracts';
+const DEFAULT_CARRYABLE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/carryables';
 
 export interface ExtractDataCoreContractTemplateHaulingOptions {
   xmlCacheDir: string;
   graph: DataCoreRecordGraphLookup;
   contractTemplatePathPrefix?: string;
+  carryablePathPrefix?: string;
 }
 
 export async function extractDataCoreContractTemplateHaulingOrders(
   options: ExtractDataCoreContractTemplateHaulingOptions,
 ): Promise<DataCoreContractTemplateHaulingOrderRecord[]> {
+  const resourceResolver = await buildCarryableResourceResolver(options);
   const records = options.graph
     .getByPathPrefix(options.contractTemplatePathPrefix ?? DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX)
     .filter((record) => record.rootType === 'ContractTemplate')
@@ -40,17 +43,27 @@ export async function extractDataCoreContractTemplateHaulingOrders(
           const minSCU = $(order).attr('minSCU') ?? '';
           const maxSCU = $(order).attr('maxSCU') ?? '';
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
-          const resourceClass = linkedClass(options.graph.getByRef(resourceGuid));
+          const resolvedResource = resourceResolver.get(resourceGuid);
+          const resourceClass = resolvedResource?.resourceClass ?? linkedClass(options.graph.getByRef(resourceGuid));
+          const resourceNameKey = resolvedResource?.resourceNameKey ?? '';
           rows.push({
             templateClass: record.entityClass,
             objectiveDebugName,
             orderIndex: String(orderIndex + 1),
             resourceGuid,
             resourceClass,
+            resourceNameKey,
             minSCU,
             maxSCU,
             maxContainerSize,
-            orderSummary: formatOrderSummary({ resourceClass, resourceGuid, minSCU, maxSCU, maxContainerSize }),
+            orderSummary: formatOrderSummary({
+              resourceClass,
+              resourceNameKey,
+              resourceGuid,
+              minSCU,
+              maxSCU,
+              maxContainerSize,
+            }),
             recordGuid: record.ref,
             recordPath: record.path,
           });
@@ -61,18 +74,54 @@ export async function extractDataCoreContractTemplateHaulingOrders(
   return rows;
 }
 
+interface ResolvedHaulingResource {
+  resourceClass: string;
+  resourceNameKey: string;
+}
+
+async function buildCarryableResourceResolver(
+  options: ExtractDataCoreContractTemplateHaulingOptions,
+): Promise<Map<string, ResolvedHaulingResource>> {
+  const resources = new Map<string, ResolvedHaulingResource>();
+  const records = options.graph
+    .getByPathPrefix(options.carryablePathPrefix ?? DEFAULT_CARRYABLE_PATH_PREFIX)
+    .filter((record) => record.rootType === 'EntityClassDefinition')
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  for (const record of records) {
+    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore carryable XML path');
+    const xml = await fs.readFile(xmlPath, 'utf8');
+    const $ = loadXml(xml);
+    const resourceNameKey = firstLocalizationKey([
+      $('SAttachableComponentParams AttachDef > Localization').first().attr('Name') ?? '',
+      $('SCItemPurchasableParams').first().attr('displayName') ?? '',
+      $('LocStringUserVariable[name="ItemName"]').first().attr('defaultValue') ?? '',
+    ]);
+    const resourceClass = resourceClassFromNameKey(resourceNameKey) || record.entityClass;
+
+    $('ResourceContainerDefaultCompositionEntry[entry]').each((_, entry) => {
+      const resourceGuid = $(entry).attr('entry') ?? '';
+      if (!resourceGuid || resources.has(resourceGuid)) return;
+      resources.set(resourceGuid, { resourceClass, resourceNameKey });
+    });
+  }
+
+  return resources;
+}
+
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
 }
 
 function formatOrderSummary(order: {
   resourceClass: string;
+  resourceNameKey: string;
   resourceGuid: string;
   minSCU: string;
   maxSCU: string;
   maxContainerSize: string;
 }): string {
-  const resource = order.resourceClass || order.resourceGuid;
+  const resource = order.resourceClass || order.resourceNameKey || order.resourceGuid;
   const amount =
     order.minSCU && order.maxSCU
       ? `${formatRange(order.minSCU, order.maxSCU)} SCU`
@@ -90,4 +139,23 @@ function formatRange(min: string, max: string): string {
 function formatNumber(value: string): string {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? String(parsed) : value;
+}
+
+function firstLocalizationKey(values: string[]): string {
+  for (const value of values) {
+    const key = normalizeLocalizationKey(value);
+    if (key && key !== 'LOC_EMPTY' && key !== 'LOC_PLACEHOLDER' && key !== 'LOC_UNINITIALIZED') return key;
+  }
+  return '';
+}
+
+function normalizeLocalizationKey(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+}
+
+function resourceClassFromNameKey(nameKey: string): string {
+  if (!nameKey.startsWith('items_commodities_')) return '';
+  const slug = nameKey.slice('items_commodities_'.length);
+  return slug.replace(/_([a-z0-9])/gi, (_, char: string) => char.toUpperCase());
 }

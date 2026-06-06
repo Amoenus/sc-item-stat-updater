@@ -175,7 +175,9 @@ mission-localization fact CSVs:
   contains 459 ContractTemplate rows with display flags, objective handlers,
   objective/detail localization keys, and location-tag fields.
 - `csv/datacore/4.8.0.11875683-live/contract-template-hauling.datacore.csv`
-  contains 363 first-party hauling order rows across 167 templates.
+  contains 363 first-party hauling order rows across 167 templates. All rows
+  resolve a resource class through carryable resource composition entries, and
+  361 / 363 rows resolve a first-party resource name key.
 - `csv/datacore/4.8.0.11875683-live/mission-brokers.datacore.csv`
   contains 2,584 first-party MissionBrokerEntry rows with reward, timing,
   cooldown, mission type, giver, location, flag, and localization-key fields.

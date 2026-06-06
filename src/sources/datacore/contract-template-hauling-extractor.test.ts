@@ -29,6 +29,25 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
       </ContractTemplate.HaulTest>
     `,
   );
+  const carryablePath = 'libs/foundry/records/entities/scitem/carryables/carryable_carbon.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, carryablePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, carryablePath),
+    `
+      <EntityClassDefinition.CarryableCarbon __type="EntityClassDefinition" __ref="carryable-guid" __path="${carryablePath}">
+        <SAttachableComponentParams>
+          <AttachDef>
+            <Localization Name="@items_commodities_carbon" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <ResourceContainer>
+          <defaultComposition>
+            <ResourceContainerDefaultCompositionEntry entry="resource-guid" weight="1" />
+          </defaultComposition>
+        </ResourceContainer>
+      </EntityClassDefinition.CarryableCarbon>
+    `,
+  );
 
   assert.deepEqual(
     await extractDataCoreContractTemplateHaulingOrders({
@@ -41,11 +60,12 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
         objectiveDebugName: 'Hauling',
         orderIndex: '1',
         resourceGuid: 'resource-guid',
-        resourceClass: 'Carbon',
+        resourceClass: 'carbon',
+        resourceNameKey: 'items_commodities_carbon',
         minSCU: '12',
         maxSCU: '87',
         maxContainerSize: '8',
-        orderSummary: '12-87 SCU Carbon, max 8 SCU',
+        orderSummary: '12-87 SCU carbon, max 8 SCU',
         recordGuid: 'template-guid',
         recordPath: templatePath,
       },
@@ -56,7 +76,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 2,
+    recordCount: 3,
     records: [
       {
         path: templatePath,
@@ -68,7 +88,7 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         referencedGuids: [],
       },
       {
-        path: 'carbon.xml',
+        path: 'unresolved-resource.xml',
         ref: 'resource-guid',
         rootTag: 'EntityClassDefinition.Carbon',
         rootType: 'EntityClassDefinition',
@@ -76,11 +96,21 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         localizationKeys: [],
         referencedGuids: [],
       },
+      {
+        path: 'libs/foundry/records/entities/scitem/carryables/carryable_carbon.xml',
+        ref: 'carryable-guid',
+        rootTag: 'EntityClassDefinition.CarryableCarbon',
+        rootType: 'EntityClassDefinition',
+        entityClass: 'CarryableCarbon',
+        localizationKeys: [],
+        referencedGuids: [],
+      },
     ],
     indexes: {
       byRef: {
         'template-guid': templatePath,
-        'resource-guid': 'carbon.xml',
+        'resource-guid': 'unresolved-resource.xml',
+        'carryable-guid': 'libs/foundry/records/entities/scitem/carryables/carryable_carbon.xml',
       },
       byPath: {},
       byRootType: {},

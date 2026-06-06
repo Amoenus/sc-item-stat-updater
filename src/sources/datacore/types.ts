@@ -256,6 +256,7 @@ export interface DataCoreContractTemplateHaulingOrderRecord {
   orderIndex: string;
   resourceGuid: string;
   resourceClass: string;
+  resourceNameKey: string;
   minSCU: string;
   maxSCU: string;
   maxContainerSize: string;
