@@ -8,6 +8,7 @@ import { loadXml } from './xml-parser';
 const DEFAULT_COMMODITY_PATH_PREFIX = 'libs/foundry/records/entities/commodities';
 const DEFAULT_CARRYABLE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/carryables';
 const DEFAULT_HARVESTABLE_BASE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/harvestables/bases';
+const DEFAULT_HAULING_ENTITY_CLASS_PATH_PREFIX = 'libs/foundry/records/entities/haulingentityclass';
 
 export interface ExtractDataCoreCommoditiesOptions {
   xmlCacheDir: string;
@@ -75,7 +76,8 @@ export async function extractDataCoreCommodities(
 
   const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys);
   const harvestableRows = extractHarvestableCommodityRows(options.graph, emittedKeys);
-  return [...commodities, ...carryableRows, ...harvestableRows];
+  const haulingEntityClassRows = await extractHaulingEntityClassCommodityRows(options, emittedKeys);
+  return [...commodities, ...carryableRows, ...harvestableRows, ...haulingEntityClassRows];
 }
 
 function extractCarryableCommodityRows(
@@ -170,6 +172,51 @@ function extractHarvestableCommodityRows(
   return rows;
 }
 
+async function extractHaulingEntityClassCommodityRows(
+  options: ExtractDataCoreCommoditiesOptions,
+  emittedKeys: Set<string>,
+): Promise<DataCoreCommodityRecord[]> {
+  const rows: DataCoreCommodityRecord[] = [];
+  const records = options.graph
+    .getByPathPrefix(DEFAULT_HAULING_ENTITY_CLASS_PATH_PREFIX)
+    .filter((record) => record.rootType === 'Hauling_EntityClasses')
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  for (const record of records) {
+    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore hauling entity class XML path');
+    const xml = await fs.readFile(xmlPath, 'utf8');
+    const $ = loadXml(xml);
+    const root = $.root().children().first();
+    const nameKey = normalizeLocalizationKey(root.attr('orderDisplayName') ?? '');
+    if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
+    if (!isHaulingEntityClassNameKey(nameKey)) continue;
+
+    const row: DataCoreCommodityRecord = {
+      ref: record.ref,
+      path: record.path,
+      entityClass: record.entityClass,
+      nameKey,
+      descriptionKey: '',
+      displayNameKey: nameKey,
+      displayDescriptionKey: '',
+      displayTypeKey: '',
+      typeGuid: '',
+      subtypeGuid: '',
+      cargoOccupancyUnit: '',
+      cargoOccupancyValue: '',
+      cargoOccupancySCU: '',
+      boxable: '',
+      isUnrefinedElement: '',
+      isRaw: '',
+      isRefined: '',
+    };
+    markEmittedCommodityKeys(emittedKeys, row);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
 function selectLocalizationKey(
   record: DataCoreRecordNode,
   attributes: string[],
@@ -212,7 +259,7 @@ function markEmittedCommodityKeys(emittedKeys: Set<string>, row: DataCoreCommodi
 }
 
 function isDataCoreCommodityLocalizationKey(key: string): boolean {
-  return isUpdaterCommodityLocalizationKey(key) || isHarvestableNameKey(key);
+  return isUpdaterCommodityLocalizationKey(key) || isHarvestableNameKey(key) || isHaulingEntityClassNameKey(key);
 }
 
 function isUpdaterCommodityLocalizationKey(key: string): boolean {
@@ -225,6 +272,10 @@ function isHarvestableNameKey(key: string): boolean {
 
 function isHarvestableDescriptionKey(key: string): boolean {
   return key.startsWith('harvestable_') && key.endsWith('_desc');
+}
+
+function isHaulingEntityClassNameKey(key: string): boolean {
+  return key.startsWith('Salvage_Ship_Component_') && key.endsWith('_Name');
 }
 
 function extractCargoOccupancy($: ReturnType<typeof loadXml>): { unit: string; value: string; scu: string } {

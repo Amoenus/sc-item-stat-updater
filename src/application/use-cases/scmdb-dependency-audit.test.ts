@@ -22,8 +22,9 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(commodities?.sourceFiles.includes('datacore:commodities.datacore.csv'), true);
   assert.match(commodities?.reason ?? '', /explicit carryable commodity localization keys/);
   assert.match(commodities?.reason ?? '', /first-party harvestable base aliases/);
-  assert.match(commodities?.reason ?? '', /generated salvage component labels/);
-  assert.match(commodities?.migrationSlice ?? '', /first-party localization or contract\/resource record proves/);
+  assert.match(commodities?.reason ?? '', /first-party hauling entity class labels/);
+  assert.match(commodities?.reason ?? '', /SCMDB remains only for loc_placeholder/);
+  assert.match(commodities?.migrationSlice ?? '', /placeholder bridge rows/);
 
   const generatedMining = audit.entries.find((entry) => entry.slug === 'regen-mining-locations');
   assert.equal(generatedMining?.kind, 'generated source step');

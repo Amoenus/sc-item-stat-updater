@@ -136,25 +136,27 @@ reward pools and chain resolution until that is done.
 
 ### Commodities And Resource Pools
 
-SCMDB `resourcePools` are not equivalent to DataCore commodity entities:
+SCMDB `resourcePools` are not equivalent to DataCore commodity entities, but
+commodity-key extraction now combines commodity entities with adjacent
+first-party DataCore records:
 
-- 62 / 125 SCMDB resource-pool localization keys are present in DataCore
-  `entities/commodities`.
-- 102 / 125 are present somewhere in the full DataCore localization graph.
+- DataCore commodity rows cover commodity entity localization keys.
+- Carryable and harvestable base records cover explicit harvestable and
+  commodity aliases.
+- `Hauling_EntityClasses` records cover salvage component order labels via root
+  `orderDisplayName` attributes.
 
-Missing whole-graph keys are mostly salvage component pseudo-resources such as:
+With the checked-in DataCore/SCMDB data, 128 / 129 SCMDB resource-pool
+localization keys are covered by DataCore commodity extraction. The remaining
+SCMDB-only key is:
 
 ```text
-Salvage_Ship_Component_Shield_Generator_S1_Name
-Salvage_Ship_Component_Power_Plant_S1_Name
-Salvage_Ship_Component_Cooler_S1_Name
-Salvage_Ship_Component_Quantum_Drive_S1_Name
+LOC_PLACEHOLDER
 ```
 
-Recommendation: split this into subdomains. Use DataCore commodity entities for
-actual commodity metadata. Use SCMDB resource pools for hauling/resource
-relationship resolution until harvestables, salvage pseudo-resources, and other
-resource families are parsed directly.
+Recommendation: keep DataCore as the commodity-key source. Keep SCMDB resource
+pools only as a placeholder bridge unless a new first-party DataCore record
+proves another target key.
 
 ### Missions And Contracts
 
