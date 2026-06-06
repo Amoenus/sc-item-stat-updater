@@ -58,7 +58,7 @@ export function artifactToPatchPlan(artifact: Pick<ArtifactDTO, 'entries' | 'iss
  */
 export async function generateArtifact(
   categories: Array<{ config: ItemConfig; csvDir: string }>,
-  opts: { iniPath: string; scmdbVersion?: string; spviewerVersion?: string },
+  opts: { iniPath: string; scmdbVersion?: string },
 ): Promise<ArtifactDTO> {
   const entries: Record<string, string> = {};
   const issues: PatchPlan['issues'] = [];
@@ -81,7 +81,7 @@ export async function generateArtifact(
   return ArtifactSchema.parse({
     generatedAt: new Date().toISOString(),
     scmdbVersion: opts.scmdbVersion ?? null,
-    spviewerVersion: opts.spviewerVersion ?? null,
+    spviewerVersion: null,
     entries,
     stats: {
       categoryCount: categories.length,

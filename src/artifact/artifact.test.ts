@@ -121,7 +121,6 @@ describe('artifact patch-plan conversion', () => {
       const artifact = await generateArtifact([{ config, csvDir }], {
         iniPath,
         scmdbVersion: 'scmdb-test',
-        spviewerVersion: 'spviewer-test',
       });
 
       assert.deepStrictEqual(artifact.entries, {
@@ -131,6 +130,7 @@ describe('artifact patch-plan conversion', () => {
       assert.strictEqual(artifact.stats.totalEntries, 1);
       assert.strictEqual(artifact.stats.totalSkipped, 0);
       assert.strictEqual(artifact.stats.totalErrors, 0);
+      assert.strictEqual(artifact.spviewerVersion, null);
       assert.strictEqual(JSON.stringify(artifact).includes('existingLineIndex'), false);
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });

@@ -167,7 +167,6 @@ if (values['emit-artifact']) {
     plannedArtifact = await generateArtifact(categories, {
       iniPath,
       scmdbVersion,
-      spviewerVersion: undefined,
     });
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
