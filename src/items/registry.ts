@@ -4,7 +4,6 @@ import { pathToFileURL } from 'node:url';
 import type { ItemConfig } from '../enrichment/item-config';
 
 const itemsDir = path.resolve(import.meta.dirname);
-const spviewerDir = path.join(itemsDir, 'spviewer');
 const missionsDir = path.join(itemsDir, 'missions');
 const datacoreDir = path.join(itemsDir, 'datacore');
 const NON_CATEGORY_FILES = new Set(['registry.ts', 'types.ts', 'shared-stat-sections.ts', 'mining-journal.ts']);
@@ -41,10 +40,6 @@ async function loadConfigsFromDir(dir: string, prefix: string): Promise<Map<stri
   return configs;
 }
 
-export async function loadSpviewerConfigs(): Promise<Map<string, ItemConfig>> {
-  return loadConfigsFromDir(spviewerDir, 'sp-');
-}
-
 export async function loadDatacoreConfigs(): Promise<Map<string, ItemConfig>> {
   return loadConfigsFromDir(datacoreDir, 'dc-');
 }
@@ -58,9 +53,7 @@ export async function loadMissionConfigs(): Promise<Map<string, ItemConfig>> {
  */
 export async function loadConfig(slug: string): Promise<ItemConfig> {
   let filePath: string;
-  if (slug.startsWith('sp-')) {
-    filePath = path.join(spviewerDir, `${slug.slice(3)}.ts`);
-  } else if (slug.startsWith('mission-')) {
+  if (slug.startsWith('mission-')) {
     filePath = path.join(missionsDir, `${slug.slice(8)}.ts`);
   } else if (slug.startsWith('dc-')) {
     filePath = path.join(datacoreDir, `${slug.slice(3)}.ts`);
@@ -82,7 +75,7 @@ export async function loadConfig(slug: string): Promise<ItemConfig> {
 /**
  * Lists all available category slugs without loading the modules.
  */
-export async function listCategories(): Promise<{ spviewer: string[]; missions: string[]; datacore: string[] }> {
+export async function listCategories(): Promise<{ missions: string[]; datacore: string[] }> {
   const readSlugs = async (dir: string, prefix: string): Promise<string[]> => {
     try {
       const entries = await fs.readdir(dir);
@@ -91,10 +84,9 @@ export async function listCategories(): Promise<{ spviewer: string[]; missions: 
       return [];
     }
   };
-  const [spviewer, missions, datacore] = await Promise.all([
-    readSlugs(spviewerDir, 'sp-'),
+  const [missions, datacore] = await Promise.all([
     readSlugs(missionsDir, 'mission-'),
     readSlugs(datacoreDir, 'dc-'),
   ]);
-  return { spviewer, missions, datacore };
+  return { missions, datacore };
 }

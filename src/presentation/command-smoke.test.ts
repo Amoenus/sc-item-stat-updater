@@ -52,19 +52,10 @@ test('update-item help exits successfully and lists categories', async () => {
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node update-item\.js \[options] <category>/);
   assert.match(result.stdout, /Available active update categories:/);
-  assert.doesNotMatch(result.stdout, /\n  sp-coolers/);
   assert.match(result.stdout, /dc-powerplants/);
   assert.match(result.stdout, /mission-scmdb-descriptions/);
-  assert.match(result.stdout, /SPViewer categories are legacy comparison only/);
 });
 
-test('update-item rejects direct SPViewer category updates', async () => {
-  const result = await runCommand(['bin/update-item.ts', 'sp-coolers', '--dry-run']);
-
-  assert.equal(result.exitCode, 1);
-  assert.match(result.stderr, /SPViewer categories are legacy comparison\/audit only/);
-  assert.match(result.stderr, /Use the matching dc-\* category/);
-});
 
 test('update-item rejects mining journal helper as a direct category', async () => {
   const result = await runCommand(['bin/update-item.ts', 'mission-mining-journal', '--dry-run']);
@@ -77,8 +68,6 @@ test('update-item list-categories reports provider and source metadata', async (
   const result = await runCommand(['bin/update-item.ts', '--list-categories']);
 
   assert.equal(result.exitCode, 0, result.stderr);
-  assert.match(result.stdout, /SPViewer diagnostic categories:/);
-  assert.match(result.stdout, /sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/);
   assert.match(result.stdout, /DataCore active categories:/);
   assert.match(result.stdout, /dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/);
   assert.match(result.stdout, /SCMDB derived bridge categories:/);
@@ -98,11 +87,11 @@ test('update-item provider-matrix reports coverage status by provider', async ()
   assert.match(result.stdout, /Provider coverage matrix/);
   assert.match(
     result.stdout,
-    /\| Coolers \| primary \(dc-coolers\) \| legacy comparison \(sp-coolers\) \| unavailable \|/,
+    /\| Coolers \| primary \(dc-coolers\) \| unavailable \|/,
   );
   assert.match(
     result.stdout,
-    /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
+    /\| SCMDB mission descriptions \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
   assert.match(result.stdout, /Mixed-source batch modes:/);
 });
@@ -120,32 +109,6 @@ test('update-item scmdb-audit reports remaining SCMDB dependencies', async () =>
   assert.equal(result.stderr, '');
 });
 
-test('update-item spviewer-retirement-audit reports category pairing and decision', async () => {
-  const result = await runCommand(['bin/update-item.ts', '--spviewer-retirement-audit']);
-
-  assert.equal(result.exitCode, 0);
-  assert.match(result.stdout, /SPViewer retirement audit/);
-  assert.match(result.stdout, /Decision: keep SPViewer active for now/);
-  assert.match(result.stdout, /SPViewer categories: 22/);
-  assert.match(result.stdout, /Matched DataCore categories: 22/);
-  assert.match(result.stdout, /Missing DataCore categories: 0/);
-  assert.match(result.stdout, /Categories blocking retirement: 20/);
-  assert.match(result.stdout, /Changed values are diagnostic only/);
-  assert.match(
-    result.stdout,
-    /\| Coolers \| dc-coolers \| sp-coolers \| covered \| 79 SPViewer-only generated localization key\(s\) \| none \|/,
-  );
-  assert.match(
-    result.stdout,
-    /\| Turrets \| dc-turrets \| sp-turrets \| covered \| 47 SPViewer-only generated localization key\(s\) \| none \|/,
-  );
-
-  assert.match(result.stdout, /classified non-blocking=item_DescDRAK_Fixed_Mount_S4/);
-  assert.match(
-    result.stdout,
-    /\| Weapon Guns \| dc-weapon-guns \| sp-weapon-guns \| covered \| 144 SPViewer-only generated localization key\(s\) \| none \|/,
-  );
-});
 
 test('pipeline help exits successfully with orchestration options', async () => {
   const result = await runCommand(['bin/pipeline.ts', '--help']);

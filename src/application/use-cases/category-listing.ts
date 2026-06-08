@@ -1,8 +1,8 @@
 import type { ItemConfig } from '../../enrichment/item-config';
-import { loadDatacoreConfigs, loadMissionConfigs, loadSpviewerConfigs } from '../../items/registry';
+import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
 import { inferCategorySourceProvider } from './prepare-update-categories';
 
-export type CategoryListingFamily = 'SPViewer' | 'DataCore' | 'SCMDB';
+export type CategoryListingFamily = 'DataCore' | 'SCMDB';
 
 export interface CategoryListingEntry {
   slug: string;
@@ -36,7 +36,7 @@ export interface CategoryListing {
   mixedSources: MixedSourceListingEntry[];
 }
 
-export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'legacy comparison' | 'unavailable';
+export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'unavailable';
 
 export interface ProviderCoverageCell {
   status: ProviderCoverageStatus;
@@ -46,7 +46,6 @@ export interface ProviderCoverageCell {
 export interface ProviderCoverageRow {
   category: string;
   datacore: ProviderCoverageCell;
-  spviewer: ProviderCoverageCell;
   scmdb: ProviderCoverageCell;
 }
 
@@ -217,8 +216,7 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
 ];
 
 export async function buildCategoryListing(): Promise<CategoryListing> {
-  const [spviewer, datacore, missions] = await Promise.all([
-    loadSpviewerConfigs(),
+  const [datacore, missions] = await Promise.all([
     loadDatacoreConfigs(),
     loadMissionConfigs(),
   ]);
@@ -232,7 +230,6 @@ export async function buildCategoryListing(): Promise<CategoryListing> {
 
   return {
     categories: [
-      ...toEntries(spviewer, 'SPViewer', 'csv/spviewer'),
       ...toEntries(datacore, 'DataCore', 'csv/datacore'),
       ...toEntries(datacoreBackedMissions, 'DataCore', 'csv/datacore', 'SCMDB'),
       ...toEntries(scmdbBackedMissions, 'SCMDB', 'csv/scmdb'),
@@ -270,7 +267,6 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
       missionRows.push({
         category: entry.label,
         datacore: unavailableCell(),
-        spviewer: unavailableCell(),
         scmdb: coverageCell('derived bridge', entry.slug),
       });
       continue;
@@ -282,16 +278,12 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
       ({
         category: stripProviderPrefix(entry.label),
         datacore: unavailableCell(),
-        spviewer: unavailableCell(),
         scmdb: unavailableCell(),
       } satisfies ProviderCoverageRow);
 
     if (entry.family === 'DataCore') {
       existing.datacore = coverageCell('primary', entry.slug);
       existing.category = stripProviderPrefix(entry.label);
-    } else {
-      existing.spviewer = coverageCell('legacy comparison', entry.slug);
-      if (!itemRows.has(baseSlug)) existing.category = stripProviderPrefix(entry.label);
     }
     itemRows.set(baseSlug, existing);
   }
@@ -313,7 +305,6 @@ function formatSource(entry: CategoryListingEntry): string {
 }
 
 function sectionTitle(family: CategoryListingFamily): string {
-  if (family === 'SPViewer') return 'SPViewer diagnostic categories:';
   if (family === 'SCMDB') return 'SCMDB derived bridge categories:';
   return 'DataCore active categories:';
 }
@@ -343,7 +334,7 @@ function formatRawFactSection(entries: RawFactListingEntry[]): string[] {
 
 export function formatCategoryListing(listing: CategoryListing): string {
   const lines = ['Category inventory', ''];
-  const families: CategoryListingFamily[] = ['SPViewer', 'DataCore', 'SCMDB'];
+  const families: CategoryListingFamily[] = ['DataCore', 'SCMDB'];
 
   for (const family of families) {
     lines.push(
@@ -374,15 +365,15 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
   const lines = [
     'Provider coverage matrix',
     '',
-    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, legacy comparison = audit-only comparison source, unavailable = no category for that provider.',
+    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, unavailable = no category for that provider.',
     '',
-    '| Category | DataCore | SPViewer | SCMDB |',
-    '| --- | --- | --- | --- |',
+    '| Category | DataCore | SCMDB |',
+    '| --- | --- | --- |',
   ];
 
   for (const row of matrix.rows) {
     lines.push(
-      `| ${row.category} | ${formatCoverageCell(row.datacore)} | ${formatCoverageCell(row.spviewer)} | ${formatCoverageCell(row.scmdb)} |`,
+      `| ${row.category} | ${formatCoverageCell(row.datacore)} | ${formatCoverageCell(row.scmdb)} |`,
     );
   }
 

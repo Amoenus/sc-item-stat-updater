@@ -10,17 +10,6 @@ import {
 test('category listing includes representative provider families and source metadata', async () => {
   const listing = await buildCategoryListing();
 
-  const spCoolers = listing.categories.find((entry) => entry.slug === 'sp-coolers');
-  assert.deepEqual(spCoolers, {
-    slug: 'sp-coolers',
-    label: 'SP Coolers',
-    family: 'SPViewer',
-    sourceRoot: 'csv/spviewer',
-    channelExpectation: 'csv/spviewer/<latest LIVE or PTU version>',
-    sourceFiles: ['cooler.spviewer.csv'],
-    sourceHint: undefined,
-    skippedByBatch: false,
-  });
 
   const dcPowerPlants = listing.categories.find((entry) => entry.slug === 'dc-powerplants');
   assert.deepEqual(dcPowerPlants, {
@@ -93,10 +82,6 @@ test('formatted category listing distinguishes provider families and mixed-sourc
 
   assert.match(
     output,
-    /SPViewer diagnostic categories:\n(?:.*\n)*? {2}sp-coolers \| SP Coolers \| files: cooler\.spviewer\.csv/,
-  );
-  assert.match(
-    output,
     /DataCore active categories:\n(?:.*\n)*? {2}dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/,
   );
   assert.match(
@@ -125,7 +110,6 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
   assert.deepEqual(coolers, {
     category: 'Coolers',
     datacore: { status: 'primary', slug: 'dc-coolers' },
-    spviewer: { status: 'legacy comparison', slug: 'sp-coolers' },
     scmdb: { status: 'unavailable' },
   });
 
@@ -133,7 +117,6 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
   assert.deepEqual(missionDescriptions, {
     category: 'SCMDB mission descriptions',
     datacore: { status: 'unavailable' },
-    spviewer: { status: 'unavailable' },
     scmdb: { status: 'derived bridge', slug: 'mission-scmdb-descriptions' },
   });
 
@@ -142,7 +125,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     true,
   );
   assert.equal(
-    matrix.rows.some((row) => row.spviewer.status === 'legacy comparison'),
+    matrix.rows.some((row) => row.datacore.status === 'primary'),
     true,
   );
   assert.equal(
@@ -160,16 +143,15 @@ test('formatted provider coverage matrix includes provider statuses and mixed-so
   const output = formatProviderCoverageMatrix(await buildProviderCoverageMatrix());
 
   assert.match(output, /Provider coverage matrix/);
-  assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| legacy comparison \(sp-coolers\) \| unavailable \|/);
+  assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| unavailable \|/);
   assert.match(
     output,
-    /\| SCMDB mission descriptions \| unavailable \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
+    /\| SCMDB mission descriptions \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
   );
   assert.match(
     output,
     /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/,
   );
-  assert.match(output, /legacy comparison = audit-only comparison source/);
   assert.match(output, /\| update-all \| DataCore \+ SCMDB \|/);
   assert.doesNotMatch(output, /update-all --provider spviewer/);
 });

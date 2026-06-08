@@ -14,6 +14,7 @@ export interface RunFullPipelineOptions {
   dryRun?: boolean;
   ptu?: boolean;
   skipUnforge?: boolean;
+  forceExtract?: boolean;
   verbose?: boolean;
   log?: (message: string) => void;
   onStepComplete?: (summary: string) => void;
@@ -57,6 +58,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       repoRoot: options.rootDir,
       ptu: options.ptu,
       skipUnforge: options.skipUnforge,
+      forceExtract: options.forceExtract,
       onCacheExtractStart: options.onCacheExtractStart,
       onCacheExtractProgress: options.onCacheExtractProgress,
       onCacheExtractComplete: options.onCacheExtractComplete,

@@ -18,6 +18,7 @@ const { values } = parseArgs({
     'dry-run': { type: 'boolean', default: false },
     ptu: { type: 'boolean', default: false },
     'skip-unforge': { type: 'boolean', default: false },
+    'force-extract': { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
@@ -33,6 +34,7 @@ Options:
   --dry-run       Preview changes without writing
   --ptu           Use PTU scraped data
   --skip-unforge  Skip the long-running unforge extraction step and reuse cached XMLs
+  --force-extract Re-run unforge even if the XML cache already exists
   -v, --verbose   Enable verbose logging
   -h, --help      Show this message`);
   process.exit(0);
@@ -63,6 +65,7 @@ const result = await runFullPipeline({
   dryRun: values['dry-run'],
   ptu: values.ptu,
   skipUnforge: values['skip-unforge'],
+  forceExtract: values['force-extract'],
   verbose: values.verbose,
   log,
   onStepComplete: completeStep,
