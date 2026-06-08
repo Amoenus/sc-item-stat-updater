@@ -1,4 +1,0 @@
-Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Type,Damage Physical,Damage Energy,Damage Distortion,Detonation Delay,Explosion Radius,Explosion Pressure
-behr_gren_frag_01,item_Namebehr_frag_grenade_01,item_Namebehr_frag_grenade_01_short,item_Descbehr_frag_grenade_01,BEHR,1,1,Grenade,,Grenade,20,0,0,5,4 - 5.5,280
-fps_throwable_template,,,,,1,1,UNDEFINED,,UNDEFINED,,,,,,
-ksar_gren_frag_01,item_Nameksar_gren_frag_01,item_Nameksar_gren_frag_01_short,item_Descksar_gren_frag_01,KSAR,1,1,Grenade,,Grenade,0,0,0,0,4 - 5.5,5
