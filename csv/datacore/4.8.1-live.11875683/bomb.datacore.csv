@@ -1,0 +1,4 @@
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Physical,Damage Energy,Damage Distortion,Arm Delay,Ignite Delay,Explosion Radius,Explosion Proximity
+bomb_s03_fski_thunderball,item_NameBOMB_S03_FSKI_Thunderball,item_NameBOMB_S03_FSKI_Thunderball_short,item_DescBOMB_S03_FSKI_Thunderball,FSKI,3,1,Utility,1000,27000,12500,14500,0,0.5,0.1,40,0.5
+bomb_s05_fski,item_NameBOMB_S05_FSKI_Stormburst,item_NameBOMB_S05_FSKI_Stormburst_short,item_DescBOMB_S05_FSKI_Stormburst,FSKI,5,1,Utility,1000,46702,22346,24356,0,3,0.2,100,0.5
+bomb_s10_fski_colossus,item_NameBOMB_S10_FSKI_Colossus,item_NameBOMB_S10_FSKI_Colossus_short,item_DescBOMB_S10_FSKI_Colossus,FSKI,10,1,Utility,1000,568296.99,45676.59,522620.4,0,5,0.2,250,0.5

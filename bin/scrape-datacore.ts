@@ -131,6 +131,12 @@ const result = await runDatacoreScrape({
   onCacheExtractComplete: (count) => {
     console.log(`  Extraction complete: ${count.toLocaleString()} XML records cached.\n`);
   },
+  onRawFactStart: (slug, total) => {
+    bar.start(total, 0, { type: slug });
+  },
+  onRawFactProgress: (current) => {
+    bar.update(current);
+  },
   onTypeStart: (entry, index) => {
     if (index === 0) bar.start(selectedTypes.length, 0, { type: '' });
     bar.update(index, { type: entry.name });

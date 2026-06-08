@@ -13,6 +13,7 @@ export interface RunFullPipelineOptions {
   datacore?: boolean;
   dryRun?: boolean;
   ptu?: boolean;
+  skipUnforge?: boolean;
   verbose?: boolean;
   log?: (message: string) => void;
   onStepComplete?: (summary: string) => void;
@@ -21,6 +22,9 @@ export interface RunFullPipelineOptions {
   runScmdb?: typeof runScmdbScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
+  onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
+  onCacheExtractProgress?: (count: number) => void;
+  onCacheExtractComplete?: (count: number) => void;
 }
 
 export interface RunFullPipelineResult {
@@ -52,6 +56,10 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     const datacoreResult = await runDatacore({
       repoRoot: options.rootDir,
       ptu: options.ptu,
+      skipUnforge: options.skipUnforge,
+      onCacheExtractStart: options.onCacheExtractStart,
+      onCacheExtractProgress: options.onCacheExtractProgress,
+      onCacheExtractComplete: options.onCacheExtractComplete,
     });
     if (datacoreResult.exitCode !== 0) return { exitCode: datacoreResult.exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('DataCore scraped');
@@ -65,6 +73,8 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     dryRun: options.dryRun,
     ptu: options.ptu,
     provider: 'datacore',
+    onCategoryError: (error) => log(`[ERROR] Category ${error.label} failed: ${error.message}`),
+    onExtraStepError: (error) => log(`[ERROR] Extra step ${error.label} failed: ${error.message}`),
   });
   log(formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics));
   if (updateResult.scmdbDependencyAudit) {

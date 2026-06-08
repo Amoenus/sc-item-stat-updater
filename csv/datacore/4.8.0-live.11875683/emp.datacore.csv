@@ -1,0 +1,15 @@
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Total,Damage Radius,Damage Radius Min,Physical Radius,Physical Radius Min,Pressure,Charge Delay,Unleash Delay,Cooldown
+aegs_emp_device_s4,item_NameAEGS_EMP_Device,item_NameAEGS_EMP_Device,item_DescAEGS_EMP_Device,,4,1,UNDEFINED,150,2750,750,250,1000,250,0,20,1.5,22
+aegs_emp_sentinel_s4,item_NameAEGS_EMP_Sentinel_S4,item_NameAEGS_EMP_Sentinel_S4_short,item_DescAEGS_EMP_Sentinel_S4,,4,1,UNDEFINED,150,3300,900,250,1201,250,0,26,1.5,40
+anvl_hawk_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,2475,750,150,400,250,0,12,0.75,12
+mxox_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,MXOX,2,1,UNDEFINED,150,2750,600,150,400,250,0,15,0.75,12
+rsi_mantis_emp_device,item_NameMXOX_EMP_Device,,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,1800,750,250,400,250,0,12,0.75,12
+rsi_scorpius_emp_device,item_NameRSI_EMP_Magstrand_S4,item_NameRSI_EMP_Magstrand_S4,item_DescRSI_EMP_Magstrand_S4,,4,1,UNDEFINED,150,3300,1100,250,1001,250,0,22,1.5,16
+tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,UNDEFINED,150,1000,400,150,250,150,0,12,0.75,6
+aegs_emp_device_s4,item_NameAEGS_EMP_Device,item_NameAEGS_EMP_Device,item_DescAEGS_EMP_Device,,4,1,UNDEFINED,150,2750,750,250,1000,250,0,20,1.5,22
+aegs_emp_sentinel_s4,item_NameAEGS_EMP_Sentinel_S4,item_NameAEGS_EMP_Sentinel_S4_short,item_DescAEGS_EMP_Sentinel_S4,,4,1,UNDEFINED,150,3300,900,250,1201,250,0,26,1.5,40
+anvl_hawk_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,2475,750,150,400,250,0,12,0.75,12
+mxox_emp_device_s2,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,MXOX,2,1,UNDEFINED,150,2750,600,150,400,250,0,15,0.75,12
+rsi_mantis_emp_device,item_NameMXOX_EMP_Device,,item_DescMXOX_EMP_Device,,2,1,UNDEFINED,150,1800,750,250,400,250,0,12,0.75,12
+rsi_scorpius_emp_device,item_NameRSI_EMP_Magstrand_S4,item_NameRSI_EMP_Magstrand_S4,item_DescRSI_EMP_Magstrand_S4,,4,1,UNDEFINED,150,3300,1100,250,1001,250,0,22,1.5,16
+tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,UNDEFINED,150,1000,400,150,250,150,0,12,0.75,6

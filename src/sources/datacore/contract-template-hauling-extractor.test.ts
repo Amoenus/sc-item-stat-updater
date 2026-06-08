@@ -65,7 +65,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
         minSCU: '12',
         maxSCU: '87',
         maxContainerSize: '8',
-        orderSummary: '12-87 SCU carbon, max 8 SCU',
+        orderSummary: '',
         recordGuid: 'template-guid',
         recordPath: templatePath,
       },

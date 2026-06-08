@@ -68,7 +68,7 @@ test('runSpviewerScrape detects version, scrapes requested types, and writes CSV
     launchBrowser: async () => browser,
     extractVersions: (html) => {
       assert.equal(html, 'version-html');
-      return { live: '4.8.0' };
+      return { live: '4.8.1' };
     },
     parseTable: (html) => {
       assert.equal(html, 'shield-html');
@@ -90,16 +90,16 @@ test('runSpviewerScrape detects version, scrapes requested types, and writes CSV
   });
 
   assert.equal(result.exitCode, 0);
-  assert.equal(result.version, '4.8.0-live');
+  assert.equal(result.version, '4.8.1-live');
   assert.deepEqual(result.errors, []);
   assert.deepEqual(
     result.files.map((file) => file.fileName),
     ['shield.spviewer.csv'],
   );
-  assert.deepEqual(madeDirs, ['repo\\csv\\spviewer\\4.8.0-live']);
+  assert.deepEqual(madeDirs, ['repo\\csv\\spviewer\\4.8.1-live']);
   assert.deepEqual(writes, [
     {
-      path: 'repo\\csv\\spviewer\\4.8.0-live\\shield.spviewer.csv',
+      path: 'repo\\csv\\spviewer\\4.8.1-live\\shield.spviewer.csv',
       content: 'Name,Power\nAegis Shield,42\n',
     },
   ]);
@@ -115,7 +115,7 @@ test('runSpviewerScrape records per-type scrape errors without failing the whole
     repoRoot: 'repo',
     types: ['Radar'],
     launchBrowser: async () => browser,
-    extractVersions: () => ({ live: '4.8.0' }),
+    extractVersions: () => ({ live: '4.8.1' }),
     parseTable: () => {
       throw new Error('schema changed');
     },
@@ -165,7 +165,7 @@ test('runSpviewerScrape uses the requested item type in SPViewer URLs', async ()
     repoRoot: 'repo',
     types: ['Cooler'],
     launchBrowser: async () => browser,
-    extractVersions: () => ({ live: '4.8.0' }),
+    extractVersions: () => ({ live: '4.8.1' }),
     parseTable: () => ({ headers: ['Name'], rows: [['Cooler']] }),
     settle: async () => {},
     makeDir: async () => {},

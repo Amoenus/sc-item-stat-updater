@@ -57,8 +57,8 @@ export function inferCategorySourceProvider(config: ItemConfig, fallback: Update
  * Finds the latest versioned subfolder under a base directory that matches the
  * requested channel (live or ptu).
  *
- * SCMDB folders: "4.1.1-live.9800000" or "4.2.0-ptu.9900000"
- * DataCore folders: "4.7.2.11715810-live" or "4.8.0.11768487-ptu"
+ * SCMDB folders: "4.8.1-live.11875683"
+ * DataCore folders: "4.8.1-live.11875683"
  */
 export async function resolveLatestVersionDir(
   base: string,

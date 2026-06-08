@@ -212,6 +212,18 @@ export interface DataCoreContractGeneratorIntelRecord {
   recordPath: string;
 }
 
+export interface DataCoreContractHaulingSummaryRecord {
+  generatorClass: string;
+  contractId: string;
+  contractDebugName: string;
+  templateClass: string;
+  descriptionKey: string;
+  descriptionKeyRole: string;
+  haulingSummary: string;
+  recordGuid: string;
+  recordPath: string;
+}
+
 export interface DataCoreContractTemplateRecord {
   templateClass: string;
   contractClassType: string;

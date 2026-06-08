@@ -22,9 +22,9 @@ const LOCALIZATION_ATTRIBUTES = [
 export interface BuildDataCoreRecordGraphOptions {
   xmlCacheDir: string;
 }
-
 export async function buildDataCoreRecordGraph(options: BuildDataCoreRecordGraphOptions): Promise<DataCoreRecordGraph> {
   const xmlFiles = await collectDataCoreXmlFiles(options.xmlCacheDir);
+
   const records: DataCoreRecordNode[] = [];
 
   for (const xmlPath of xmlFiles.sort((a, b) => a.localeCompare(b))) {
@@ -42,7 +42,6 @@ export async function buildDataCoreRecordGraph(options: BuildDataCoreRecordGraph
 
     records.push(extractRecordNode($, rootElement, normalizedRecordPath(root, xmlPath, options.xmlCacheDir)));
   }
-
   return buildGraph(records);
 }
 
@@ -51,22 +50,27 @@ export async function writeDataCoreRecordGraph(graph: DataCoreRecordGraph, outpu
   await fs.writeFile(outputPath, `${JSON.stringify(graph, null, 2)}\n`, 'utf8');
 }
 
+function flattenString(str: string | undefined | null): string {
+  if (!str) return '';
+  return Buffer.from(str).toString();
+}
+
 function extractRecordNode($: CheerioAPI, rootElement: Element, recordPath: string): DataCoreRecordNode {
   const root = $(rootElement);
-  const rootTag = rootElement.name;
-  const rootType = root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag;
+  const rootTag = flattenString(rootElement.name);
+  const rootType = flattenString(root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag);
 
   return {
-    path: recordPath,
-    ref: root.attr('__ref') ?? '',
+    path: flattenString(recordPath),
+    ref: flattenString(root.attr('__ref')),
     rootTag,
     rootType,
-    entityClass: extractRecordEntityClass(rootTag),
+    entityClass: flattenString(extractRecordEntityClass(rootTag)),
     localizationKeys: extractLocalizationReferences($),
     referencedGuids: uniqueSorted(
       $('Reference[value]')
         .toArray()
-        .map((element) => $(element).attr('value')?.trim() ?? '')
+        .map((element) => flattenString($(element).attr('value')?.trim()))
         .filter(Boolean),
     ),
   };
@@ -89,10 +93,13 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
       const key = rawKey?.startsWith('@') ? rawKey.slice(1).trim() : '';
       if (!key) continue;
 
-      const fingerprint = `${attribute}\0${key}`;
+      const flatAttribute = flattenString(attribute);
+      const flatKey = flattenString(key);
+
+      const fingerprint = `${flatAttribute}\0${flatKey}`;
       if (seen.has(fingerprint)) continue;
       seen.add(fingerprint);
-      references.push({ attribute, key });
+      references.push({ attribute: flatAttribute, key: flatKey });
     }
   });
 

@@ -3,6 +3,7 @@ import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
+import { mapConcurrent } from './concurrency';
 
 const DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX = 'libs/foundry/records/contracts';
 
@@ -10,6 +11,7 @@ export interface ExtractDataCoreContractTemplatesOptions {
   xmlCacheDir: string;
   graph: DataCoreRecordGraphLookup;
   contractTemplatePathPrefix?: string;
+  onProgress?: (current: number, total: number) => void;
 }
 
 export async function extractDataCoreContractTemplates(
@@ -21,89 +23,105 @@ export async function extractDataCoreContractTemplates(
     .sort((a, b) => a.path.localeCompare(b.path));
   const rows: DataCoreContractTemplateRecord[] = [];
 
-  for (const record of records) {
-    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore ContractTemplate XML path');
-    const xml = await fs.readFile(xmlPath, 'utf8');
-    const $ = loadXml(xml);
-    const root = $(':root').first();
-    if (!root.length) continue;
+  let completed = 0;
+  const mapped = await mapConcurrent(
+    records,
+    async (record, index) => {
+      const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore ContractTemplate XML path');
+      const xml = await fs.readFile(xmlPath, 'utf8');
+      const $ = loadXml(xml);
+      const root = $(':root').first();
+      if (!root.length) {
+        completed++;
+        options.onProgress?.(completed, records.length);
+        return null;
+      }
 
-    const ownerGuid = root.attr('owner') ?? '';
-    const contractClass = root.find('> contractClass > *').first();
-    const contractClassType = contractClass[0]?.type === 'tag' ? contractClass[0].name : '';
-    const additionalParams = contractClass.find('> additionalParams').first();
-    const autoFinishSettings = contractClass.find('> autoFinishSettings').first();
-    const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
-    const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
-    const displayTypeGuid = contractDisplayInfo.attr('type') ?? '';
-    const locationTagGuids = uniqueStrings(
-      root
-        .find('MissionPropertyValue_Location Reference[value]')
-        .toArray()
-        .map((element) => $(element).attr('value') ?? ''),
-    );
-
-    rows.push({
-      templateClass: record.entityClass,
-      contractClassType,
-      ownerGuid,
-      ownerClass: linkedClass(options.graph.getByRef(ownerGuid)),
-      displayTypeGuid,
-      displayTypeClass: linkedClass(options.graph.getByRef(displayTypeGuid)),
-      illegal: contractDisplayInfo.attr('illegal') ?? '',
-      showLifeTimeInMobiGlas: contractDisplayInfo.attr('showLifeTimeInMobiGlas') ?? '',
-      preShowObjectives: contractDisplayInfo.attr('preShowObjectives') ?? '',
-      hasCompleteButton: additionalParams.attr('hasCompleteButton') ?? '',
-      handlesAbandonRequest: additionalParams.attr('handlesAbandonRequest') ?? '',
-      canBeShared: additionalParams.attr('canBeShared') ?? '',
-      displayAlliedMarkers: additionalParams.attr('displayAlliedMarkers') ?? '',
-      onlyOwnerCanComplete: additionalParams.attr('onlyOwnerCanComplete') ?? '',
-      failIfSentToPrison: autoFinishSettings.attr('failIfSentToPrison') ?? '',
-      failIfBecameCriminal: autoFinishSettings.attr('failIfBecameCriminal') ?? '',
-      failIfLeavePrison: autoFinishSettings.attr('failIfLeavePrison') ?? '',
-      missionCompletionTime: contractDeadline.attr('missionCompletionTime') ?? '',
-      missionAutoEnd: contractDeadline.attr('missionAutoEnd') ?? '',
-      missionResultAfterTimerEnd: contractDeadline.attr('missionResultAfterTimerEnd') ?? '',
-      remainingTimeToShowTimer: contractDeadline.attr('remainingTimeToShowTimer') ?? '',
-      objectiveCount: String(root.find('> objectiveTokens > ObjectiveToken').length),
-      missionPropertyCount: String(root.find('MissionProperty').length),
-      objectiveHandlerTypes: uniqueTagNames(root.find('ObjectiveToken > objectiveHandler > *').toArray()).join(' | '),
-      objectiveHandlerModules: uniqueStrings(
+      const ownerGuid = root.attr('owner') ?? '';
+      const contractClass = root.find('> contractClass > *').first();
+      const contractClassType = contractClass[0]?.type === 'tag' ? contractClass[0].name : '';
+      const additionalParams = contractClass.find('> additionalParams').first();
+      const autoFinishSettings = contractClass.find('> autoFinishSettings').first();
+      const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
+      const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
+      const displayTypeGuid = contractDisplayInfo.attr('type') ?? '';
+      const locationTagGuids = uniqueStrings(
         root
-          .find('ObjectiveToken > objectiveHandler > *[module]')
+          .find('MissionPropertyValue_Location Reference[value]')
           .toArray()
-          .map((element) => $(element).attr('module') ?? ''),
-      ).join(' | '),
-      objectiveDisplayKeys: readLocalizationAttrs($, root.find('ObjectiveToken > displayInfo').toArray(), [
-        'shortDescription',
-        'longDescription',
-        'objectiveMarkerLabel',
-      ]).join(' | '),
-      travelObjectiveKeys: readLocalizationAttrs($, root.find('travelObjectiveInfo').toArray(), [
-        'shortDescription',
-        'longDescription',
-        'objectiveMarkerLabel',
-      ]).join(' | '),
-      returnObjectiveKeys: readLocalizationAttrs($, root.find('returnObjectiveInfo').toArray(), [
-        'shortDescription',
-        'longDescription',
-        'objectiveMarkerLabel',
-      ]).join(' | '),
-      overrideMissionDetailsKeys: readLocalizationAttrs($, root.find('overrideMissionDetailsDisplayInfo').toArray(), [
-        'titleOverride',
-        'descriptionOverride',
-      ]).join(' | '),
-      navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(' | '),
-      stringHashKeys: readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), [
-        'textId',
-      ]).join(' | '),
-      locationTagGuids: locationTagGuids.join(' | '),
-      locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
-      recordGuid: record.ref,
-      recordPath: record.path,
-    });
-  }
+          .map((element) => $(element).attr('value') ?? ''),
+      );
 
+      const row = {
+        templateClass: record.entityClass,
+        contractClassType,
+        ownerGuid,
+        ownerClass: linkedClass(options.graph.getByRef(ownerGuid)),
+        displayTypeGuid,
+        displayTypeClass: linkedClass(options.graph.getByRef(displayTypeGuid)),
+        illegal: contractDisplayInfo.attr('illegal') ?? '',
+        showLifeTimeInMobiGlas: contractDisplayInfo.attr('showLifeTimeInMobiGlas') ?? '',
+        preShowObjectives: contractDisplayInfo.attr('preShowObjectives') ?? '',
+        hasCompleteButton: additionalParams.attr('hasCompleteButton') ?? '',
+        handlesAbandonRequest: additionalParams.attr('handlesAbandonRequest') ?? '',
+        canBeShared: additionalParams.attr('canBeShared') ?? '',
+        displayAlliedMarkers: additionalParams.attr('displayAlliedMarkers') ?? '',
+        onlyOwnerCanComplete: additionalParams.attr('onlyOwnerCanComplete') ?? '',
+        failIfSentToPrison: autoFinishSettings.attr('failIfSentToPrison') ?? '',
+        failIfBecameCriminal: autoFinishSettings.attr('failIfBecameCriminal') ?? '',
+        failIfLeavePrison: autoFinishSettings.attr('failIfLeavePrison') ?? '',
+        missionCompletionTime: contractDeadline.attr('missionCompletionTime') ?? '',
+        missionAutoEnd: contractDeadline.attr('missionAutoEnd') ?? '',
+        missionResultAfterTimerEnd: contractDeadline.attr('missionResultAfterTimerEnd') ?? '',
+        remainingTimeToShowTimer: contractDeadline.attr('remainingTimeToShowTimer') ?? '',
+        objectiveCount: String(root.find('> objectiveTokens > ObjectiveToken').length),
+        missionPropertyCount: String(root.find('MissionProperty').length),
+        objectiveHandlerTypes: uniqueTagNames(root.find('ObjectiveToken > objectiveHandler > *').toArray()).join(' | '),
+        objectiveHandlerModules: uniqueStrings(
+          root
+            .find('ObjectiveToken > objectiveHandler > *[module]')
+            .toArray()
+            .map((element) => $(element).attr('module') ?? ''),
+        ).join(' | '),
+        objectiveDisplayKeys: readLocalizationAttrs($, root.find('ObjectiveToken > displayInfo').toArray(), [
+          'shortDescription',
+          'longDescription',
+          'objectiveMarkerLabel',
+        ]).join(' | '),
+        travelObjectiveKeys: readLocalizationAttrs($, root.find('travelObjectiveInfo').toArray(), [
+          'shortDescription',
+          'longDescription',
+          'objectiveMarkerLabel',
+        ]).join(' | '),
+        returnObjectiveKeys: readLocalizationAttrs($, root.find('returnObjectiveInfo').toArray(), [
+          'shortDescription',
+          'longDescription',
+          'objectiveMarkerLabel',
+        ]).join(' | '),
+        overrideMissionDetailsKeys: readLocalizationAttrs($, root.find('overrideMissionDetailsDisplayInfo').toArray(), [
+          'titleOverride',
+          'descriptionOverride',
+        ]).join(' | '),
+        navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(' | '),
+        stringHashKeys: readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), [
+          'textId',
+        ]).join(' | '),
+        locationTagGuids: locationTagGuids.join(' | '),
+        locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
+        recordGuid: record.ref,
+        recordPath: record.path,
+      };
+
+      completed++;
+      options.onProgress?.(completed, records.length);
+      return row;
+    },
+    50
+  );
+
+  rows.push(...(mapped.filter((r) => r !== null) as DataCoreContractTemplateRecord[]));
+
+  options.onProgress?.(records.length, records.length);
   return rows;
 }
 

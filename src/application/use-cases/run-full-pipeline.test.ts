@@ -68,15 +68,16 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
     repoIniPath: 'repo\\global.ini',
   });
   assert.deepEqual(scmdbOptions, [{ repoRoot: 'repo', ptu: true }]);
-  assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: true }]);
-  assert.deepEqual(updateOptions, [
-    {
-      repoRoot: 'repo',
-      dryRun: true,
-      ptu: true,
-      provider: 'datacore',
-    },
-  ]);
+  assert.equal((updateOptions[0] as any).repoRoot, 'repo');
+  assert.equal((updateOptions[0] as any).dryRun, true);
+  assert.equal((updateOptions[0] as any).ptu, true);
+  assert.equal((updateOptions[0] as any).provider, 'datacore');
+  assert.equal(typeof (updateOptions[0] as any).onCategoryError, 'function');
+  assert.equal((datacoreOptions[0] as any).repoRoot, 'repo');
+  assert.equal((datacoreOptions[0] as any).ptu, true);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractStart, undefined);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractProgress, undefined);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractComplete, undefined);
   assert.deepEqual(completed, [
     'global.ini extracted & synced to repo',
     'SCMDB scraped',
@@ -89,6 +90,7 @@ test('runFullPipeline runs update in process instead of shelling out to update-a
 
 test('runFullPipeline returns the in-process update exit code and skips deployment on update errors', async () => {
   let deployed = false;
+  const updateOptions: unknown[] = [];
   const datacoreOptions: unknown[] = [];
   const logs: string[] = [];
 
@@ -110,17 +112,17 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
       datacoreOptions.push(options);
       return {
         exitCode: 0,
-        gameVersion: '4.8.0',
+        gameVersion: '4.8.1',
         channel: 'live',
-        versionTag: '4.8.0-live',
+        versionTag: '4.8.1-live',
         dcbPath: 'Game.dcb',
-        outputBase: 'repo/csv/datacore/4.8.0-live',
-        xmlCacheDir: 'repo/csv/datacore/.xmlcache/4.8.0-live',
+        outputBase: 'repo/csv/datacore/4.8.1-live',
+        xmlCacheDir: 'repo/csv/datacore/.xmlcache/4.8.1-live',
         allTypes: [],
         selectedTypes: [],
         recordGraph: {
           recordCount: 0,
-          outputPath: 'repo/csv/datacore/4.8.0-live/record-graph.json',
+          outputPath: 'repo/csv/datacore/4.8.1-live/record-graph.json',
         },
         contractGeneratorResult: {
           rows: 0,
@@ -129,6 +131,10 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
         contractGeneratorIntelResult: {
           rows: 0,
           csvFile: 'contract-generator-intel.datacore.csv',
+        },
+        contractHaulingSummaryResult: {
+          rows: 0,
+          csvFile: 'contract-hauling-summary.datacore.csv',
         },
         contractTemplateResult: {
           rows: 0,
@@ -231,39 +237,51 @@ test('runFullPipeline returns the in-process update exit code and skips deployme
         errors: [],
       };
     },
-    runUpdate: async (options) => ({
-      exitCode: 1,
-      results: [],
-      errors: [{ label: 'DataCore', message: 'failed' }],
-      prepared: {} as never,
-      sourceDiagnostics: {
-        versions: [],
-        warnings: [],
-      },
-      scmdbDependencyAudit: {
-        sourceHierarchy: ['DataCore/Data.p4k: authoritative source for game-derived raw facts.'],
-        entries: [
-          {
-            kind: 'update category',
-            slug: 'mission-scmdb-descriptions',
-            label: 'SCMDB mission descriptions',
-            sourceFiles: ['missions/scmdb-missions.csv'],
-            classification: 'Probably extractable from DataCore with new graph traversal',
-            reason: 'mission contract joins still come from SCMDB',
-            migrationSlice: 'Build a first-party mission/contract extractor.',
-            activeForDatacoreProvider: true,
-          },
-        ],
-      },
-      iniPath: `${options.repoRoot}\\global.ini`,
-      totalDurationMs: 0,
-    }),
+    runUpdate: async (options) => {
+      updateOptions.push(options);
+      return {
+        exitCode: 1,
+        results: [],
+        errors: [{ label: 'DataCore', message: 'failed' }],
+        prepared: {} as never,
+        sourceDiagnostics: {
+          versions: [],
+          warnings: [],
+        },
+        scmdbDependencyAudit: {
+          sourceHierarchy: ['DataCore/Data.p4k: authoritative source for game-derived raw facts.'],
+          entries: [
+            {
+              kind: 'update category',
+              slug: 'mission-scmdb-descriptions',
+              label: 'SCMDB mission descriptions',
+              sourceFiles: ['missions/scmdb-missions.csv'],
+              classification: 'Probably extractable from DataCore with new graph traversal',
+              reason: 'mission contract joins still come from SCMDB',
+              migrationSlice: 'Build a first-party mission/contract extractor.',
+              activeForDatacoreProvider: true,
+            },
+          ],
+        },
+        iniPath: `${options.repoRoot}\\global.ini`,
+        totalDurationMs: 0,
+      };
+    },
     log: (message) => logs.push(message),
   });
 
   assert.equal(result.exitCode, 1);
   assert.equal(deployed, false);
-  assert.deepEqual(datacoreOptions, [{ repoRoot: 'repo', ptu: undefined }]);
+  assert.equal((updateOptions[0] as any).repoRoot, 'repo');
+  assert.equal((updateOptions[0] as any).ptu, undefined);
+  assert.equal((updateOptions[0] as any).dryRun, undefined);
+  assert.equal((updateOptions[0] as any).provider, 'datacore');
+  assert.equal(typeof (updateOptions[0] as any).onCategoryError, 'function');
+  assert.equal((datacoreOptions[0] as any).repoRoot, 'repo');
+  assert.equal((datacoreOptions[0] as any).ptu, undefined);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractStart, undefined);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractProgress, undefined);
+  assert.equal((datacoreOptions[0] as any).onCacheExtractComplete, undefined);
   assert.ok(logs.some((message) => message.includes('SCMDB dependency audit')));
   assert.ok(logs.some((message) => message.includes('mission-scmdb-descriptions')));
 });

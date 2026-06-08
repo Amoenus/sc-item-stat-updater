@@ -49,6 +49,7 @@ npm run update
 Runs all active categories using DataCore item stats plus the remaining SCMDB-derived mission bridges. It automatically detects the latest versioned directories for LIVE data.
 
 Options:
+
 - `--ptu` to use latest scraped PTU data instead of LIVE.
 - `--dry-run` to preview changes without modifying `global.ini`.
 - `--provider datacore` is accepted for compatibility; DataCore is the only active batch item-stat provider.
@@ -76,6 +77,7 @@ node --import tsx/esm bin/scrape-spviewer.ts --list
 ```
 
 Options:
+
 - `--ptu` extracts and uses the PTU version label.
 - `--live` uses the LIVE version label (default).
 - `--json` saves outputs as JSON instead of CSV.
@@ -106,6 +108,7 @@ npm run scrape:datacore -- --list
 ```
 
 Options:
+
 - `--ptu` tags output as PTU data.
 - `--live` tags output as LIVE data (default).
 - `--dry-run` parses cached XML records without writing CSV files.
@@ -118,6 +121,7 @@ npm run scrape:scmdb
 ```
 
 This command downloads the latest SCMDB merged data file and writes outputs into `csv/scmdb/<version>/`, including:
+
 - `merged-*.json`
 - `contracts.csv` — now includes blueprint metadata and chain marker fields:
   - `isBlueprintReward`
@@ -148,7 +152,7 @@ By default, the scraper fetches the latest live SCMDB version. Use `--ptu` to fe
 To fetch a specific version by its full version string:
 
 ```sh
-npm run scrape:scmdb -- --version 4.8.0-ptu.11759767
+npm run scrape:scmdb -- --version 4.8.1-live.11875683
 ```
 
 To fetch only the raw SCMDB JSON file:
@@ -252,6 +256,7 @@ The update flow is split into two clearer steps:
 Planning, preflight, and integrity helpers live in `src/application/use-cases/update-planning.ts`; `enrichGlobalIni` applies the resulting patch plan through localization application helpers.
 
 Each active item rule module (`src/items/datacore/*.ts` or `src/items/missions/*.ts`) provides:
+
 - `csvFile` or `jsonFile` - which source file to read
 - `buildValue(row, flavorText)` - formats the replacement value
 - `descKeyMatch(key)` - identifies existing keys for insertion point

@@ -14,6 +14,7 @@ export interface ExtractDataCoreContractTemplateHaulingOptions {
   xmlCacheDir: string;
   graph: DataCoreRecordGraphLookup;
   contractTemplatePathPrefix?: string;
+  onProgress?: (current: number, total: number) => void;
   carryablePathPrefix?: string;
 }
 
@@ -27,7 +28,9 @@ export async function extractDataCoreContractTemplateHaulingOrders(
     .sort((a, b) => a.path.localeCompare(b.path));
   const rows: DataCoreContractTemplateHaulingOrderRecord[] = [];
 
-  for (const record of records) {
+  for (let i = 0; i < records.length; i++) {
+    const record = records[i];
+    options.onProgress?.(i, records.length);
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore ContractTemplate XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
@@ -56,14 +59,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
             minSCU,
             maxSCU,
             maxContainerSize,
-            orderSummary: formatOrderSummary({
-              resourceClass,
-              resourceNameKey,
-              resourceGuid,
-              minSCU,
-              maxSCU,
-              maxContainerSize,
-            }),
+            orderSummary: '', // formatted later
             recordGuid: record.ref,
             recordPath: record.path,
           });
@@ -71,6 +67,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
     });
   }
 
+  options.onProgress?.(records.length, records.length);
   return rows;
 }
 
@@ -113,33 +110,7 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
 }
 
-function formatOrderSummary(order: {
-  resourceClass: string;
-  resourceNameKey: string;
-  resourceGuid: string;
-  minSCU: string;
-  maxSCU: string;
-  maxContainerSize: string;
-}): string {
-  const resource = order.resourceClass || order.resourceNameKey || order.resourceGuid;
-  const amount =
-    order.minSCU && order.maxSCU
-      ? `${formatRange(order.minSCU, order.maxSCU)} SCU`
-      : order.minSCU
-        ? `${order.minSCU} SCU`
-        : '';
-  const container = Number(order.maxContainerSize) > 0 ? `, max ${formatNumber(order.maxContainerSize)} SCU` : '';
-  return `${amount ? `${amount} ` : ''}${resource}${container}`;
-}
 
-function formatRange(min: string, max: string): string {
-  return min === max ? formatNumber(min) : `${formatNumber(min)}-${formatNumber(max)}`;
-}
-
-function formatNumber(value: string): string {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? String(parsed) : value;
-}
 
 function firstLocalizationKey(values: string[]): string {
   for (const value of values) {

@@ -46,9 +46,18 @@ export async function collectDataCoreXmlFilesMatching(dir: string, filter: strin
 }
 
 export async function countDataCoreXmlFiles(dir: string): Promise<number> {
+  let count = 0;
   try {
-    return (await collectDataCoreXmlFiles(dir)).length;
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        count += await countDataCoreXmlFiles(path.join(dir, entry.name));
+      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.xml')) {
+        count++;
+      }
+    }
   } catch {
-    return 0;
+    // ignore
   }
+  return count;
 }

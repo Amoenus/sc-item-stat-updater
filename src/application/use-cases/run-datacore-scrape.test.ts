@@ -45,7 +45,7 @@ const typeEntry: DataCoreTypeEntry = {
 
 test('runDatacoreScrape parses cached XML records without writing during dry run', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
   await fs.writeFile(
@@ -69,26 +69,26 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
     dryRun: true,
     loadTypes: async () => [typeEntry],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   assert.equal(result.exitCode, 0);
-  assert.equal(result.versionTag, '4.8.0-live');
+  assert.equal(result.versionTag, '4.8.1-live');
   assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shields.datacore.csv' }]);
   assert.deepEqual(result.errors, []);
   assert.deepEqual(
     result.rawFactResults.map((entry) => [entry.slug, entry.csvFile, entry.rows]),
     DATACORE_RAW_FACTS.map((entry) => [entry.slug, entry.sourceFiles[0], 0]),
   );
-  await assert.rejects(() => fs.stat(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live')));
+  await assert.rejects(() => fs.stat(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live')));
 });
 
 test('runDatacoreScrape writes raw component identity keys and capitalized AttachDef stats', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-identity-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
   const manufacturerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'scitemmanufacturer', 'aegs.xml');
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
@@ -125,13 +125,13 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     repoRoot,
     loadTypes: async () => [typeEntry],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'shields.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shields.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shields.datacore.csv' }]);
   assert.match(
@@ -143,7 +143,7 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
 
 test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(
     xmlCacheDir,
     'libs',
@@ -216,14 +216,14 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'powerplant.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'powerplant.datacore.csv'),
     'utf8',
   );
 
@@ -240,7 +240,7 @@ test('runDatacoreScrape extracts power plant output from item resource generatio
 
 test('runDatacoreScrape extracts cooler resource and signature params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-coolers-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(
     xmlCacheDir,
     'libs',
@@ -313,13 +313,13 @@ test('runDatacoreScrape extracts cooler resource and signature params from real-
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'cooler.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'cooler.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'coolers', rows: 1, skipped: 0, csvFile: 'cooler.datacore.csv' }]);
   assert.match(
@@ -334,7 +334,7 @@ test('runDatacoreScrape extracts cooler resource and signature params from real-
 
 test('runDatacoreScrape extracts missile launcher carriage from item ports', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-missile-launcher-carriage-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(
     xmlCacheDir,
     'libs',
@@ -380,14 +380,14 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'missilelauncher.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'missilelauncher.datacore.csv'),
     'utf8',
   );
 
@@ -403,7 +403,7 @@ test('runDatacoreScrape extracts missile launcher carriage from item ports', asy
 
 test('runDatacoreScrape follows countermeasure ammo param refs from defensive weapon records', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-defensive-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const countermeasurePath = path.join(
     xmlCacheDir,
     'libs',
@@ -473,14 +473,14 @@ test('runDatacoreScrape follows countermeasure ammo param refs from defensive we
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 3,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weapondefensive.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weapondefensive.datacore.csv'),
     'utf8',
   );
 
@@ -499,7 +499,7 @@ test('runDatacoreScrape follows countermeasure ammo param refs from defensive we
 
 test('runDatacoreScrape extracts weapon attachment modifiers from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-attachments-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const attachmentPath = path.join(
     xmlCacheDir,
     'libs',
@@ -550,14 +550,14 @@ test('runDatacoreScrape extracts weapon attachment modifiers from real-shaped Da
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weaponattachment.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weaponattachment.datacore.csv'),
     'utf8',
   );
 
@@ -576,7 +576,7 @@ test('runDatacoreScrape extracts weapon attachment modifiers from real-shaped Da
 
 test('runDatacoreScrape extracts vehicle gun combat stats through linked ammo params', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-guns-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const gunPath = path.join(
     xmlCacheDir,
     'libs',
@@ -663,13 +663,13 @@ test('runDatacoreScrape extracts vehicle gun combat stats through linked ammo pa
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 3,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weapongun.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weapongun.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'weapon-guns', rows: 1, skipped: 0, csvFile: 'weapongun.datacore.csv' }]);
   assert.match(
@@ -684,7 +684,7 @@ test('runDatacoreScrape extracts vehicle gun combat stats through linked ammo pa
 
 test('runDatacoreScrape extracts personal weapon stats through default magazine ammo params', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-personal-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const weaponPath = path.join(
     xmlCacheDir,
     'libs',
@@ -792,14 +792,14 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 4,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weaponpersonal.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weaponpersonal.datacore.csv'),
     'utf8',
   );
 
@@ -818,7 +818,7 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
 
 test('runDatacoreScrape extracts bomb params and skips missile records in shared ordnance folder', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-bombs-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const ordnanceDir = path.join(
     xmlCacheDir,
     'libs',
@@ -877,13 +877,13 @@ test('runDatacoreScrape extracts bomb params and skips missile records in shared
     repoRoot,
     loadTypes: async () => [{ name: 'bombs', csvFile: 'bomb.datacore.csv', typeConfig: BOMB_TYPE_CONFIG }],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 3,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'bomb.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'bomb.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'bombs', rows: 1, skipped: 1, csvFile: 'bomb.datacore.csv' }]);
   assert.match(
@@ -898,7 +898,7 @@ test('runDatacoreScrape extracts bomb params and skips missile records in shared
 
 test('runDatacoreScrape extracts missile params and skips bomb records in shared ordnance folder', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-missiles-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const ordnanceDir = path.join(
     xmlCacheDir,
     'libs',
@@ -959,13 +959,13 @@ test('runDatacoreScrape extracts missile params and skips bomb records in shared
     repoRoot,
     loadTypes: async () => [{ name: 'missiles', csvFile: 'missile.datacore.csv', typeConfig: MISSILE_TYPE_CONFIG }],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 3,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'missile.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'missile.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'missiles', rows: 1, skipped: 1, csvFile: 'missile.datacore.csv' }]);
   assert.match(
@@ -980,7 +980,7 @@ test('runDatacoreScrape extracts missile params and skips bomb records in shared
 
 test('runDatacoreScrape extracts quantum drive params from DataCore item records', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-quantum-drives-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1023,14 +1023,14 @@ test('runDatacoreScrape extracts quantum drive params from DataCore item records
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'quantumdrive.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'quantumdrive.datacore.csv'),
     'utf8',
   );
 
@@ -1049,7 +1049,7 @@ test('runDatacoreScrape extracts quantum drive params from DataCore item records
 
 test('runDatacoreScrape extracts QED params from DataCore item records', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-qeds-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1096,13 +1096,13 @@ test('runDatacoreScrape extracts QED params from DataCore item records', async (
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'qed.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'qed.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'qeds', rows: 1, skipped: 0, csvFile: 'qed.datacore.csv' }]);
   assert.match(
@@ -1117,7 +1117,7 @@ test('runDatacoreScrape extracts QED params from DataCore item records', async (
 
 test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-jump-drives-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const jumpDrivePath = path.join(
     xmlCacheDir,
     'libs',
@@ -1175,13 +1175,13 @@ test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'jumpdrive.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'jumpdrive.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'jump-drives', rows: 1, skipped: 0, csvFile: 'jumpdrive.datacore.csv' }]);
   assert.match(
@@ -1196,7 +1196,7 @@ test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML
 
 test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-emps-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const empPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1247,13 +1247,13 @@ test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', asyn
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'emp.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'emp.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'emps', rows: 1, skipped: 0, csvFile: 'emp.datacore.csv' }]);
   assert.match(
@@ -1268,7 +1268,7 @@ test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', asyn
 
 test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-self-destruct-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const selfDestructPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1307,14 +1307,14 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'selfdestruct.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'selfdestruct.datacore.csv'),
     'utf8',
   );
 
@@ -1333,7 +1333,7 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
 
 test('runDatacoreScrape extracts throwable explosion params from triggerable devices', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-throwables-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const throwablePath = path.join(
     xmlCacheDir,
     'libs',
@@ -1409,13 +1409,13 @@ test('runDatacoreScrape extracts throwable explosion params from triggerable dev
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'throwable.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'throwable.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'throwables', rows: 1, skipped: 0, csvFile: 'throwable.datacore.csv' }]);
   assert.match(
@@ -1430,7 +1430,7 @@ test('runDatacoreScrape extracts throwable explosion params from triggerable dev
 
 test('runDatacoreScrape extracts radar stats from signature detection and aim assist params', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-radars-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const radarPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1491,13 +1491,13 @@ test('runDatacoreScrape extracts radar stats from signature detection and aim as
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'radar.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'radar.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'radars', rows: 1, skipped: 0, csvFile: 'radar.datacore.csv' }]);
   assert.match(
@@ -1512,7 +1512,7 @@ test('runDatacoreScrape extracts radar stats from signature detection and aim as
 
 test('runDatacoreScrape extracts turret rotation axis params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-turrets-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const turretPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1647,13 +1647,13 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
     repoRoot,
     loadTypes: async () => [{ name: 'turrets', csvFile: 'turret.datacore.csv', typeConfig: TURRET_TYPE_CONFIG }],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'turret.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'turret.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'turrets', rows: 3, skipped: 0, csvFile: 'turret.datacore.csv' }]);
   assert.match(
@@ -1676,7 +1676,7 @@ test('runDatacoreScrape extracts turret rotation axis params from real-shaped Da
 
 test('runDatacoreScrape extracts shield generator params from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-shields-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const shieldPath = path.join(
     xmlCacheDir,
     'libs',
@@ -1738,13 +1738,13 @@ test('runDatacoreScrape extracts shield generator params from real-shaped DataCo
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
-  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'shield.datacore.csv'), 'utf8');
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shield.datacore.csv'), 'utf8');
 
   assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shield.datacore.csv' }]);
   assert.match(
@@ -1759,7 +1759,7 @@ test('runDatacoreScrape extracts shield generator params from real-shaped DataCo
 
 test('runDatacoreScrape extracts tractor beam force and towing stats from weapon action params', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-tractor-beams-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const weaponDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons');
   const armDir = path.join(
     xmlCacheDir,
@@ -1832,14 +1832,14 @@ test('runDatacoreScrape extracts tractor beam force and towing stats from weapon
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 3,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'tractorbeam.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'tractorbeam.datacore.csv'),
     'utf8',
   );
 
@@ -1869,7 +1869,7 @@ test('runDatacoreScrape extracts XML cache when cached records are missing', asy
     dryRun: true,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async (_toolDir, log) => {
       log('tools ready');
@@ -1942,7 +1942,7 @@ test('runDatacoreScrape writes DataCore commodity CSV after building the record 
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -1982,7 +1982,7 @@ test('runDatacoreScrape writes DataCore commodity CSV after building the record 
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'commodities.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'commodities.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.commodityResult.rows, 1);
@@ -2001,7 +2001,7 @@ test('runDatacoreScrape writes DataCore vehicle CSV after building the record gr
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2046,7 +2046,7 @@ test('runDatacoreScrape writes DataCore vehicle CSV after building the record gr
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'vehicles.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'vehicles.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.vehicleResult.rows, 1);
@@ -2065,7 +2065,7 @@ test('runDatacoreScrape writes DataCore faction CSV after building the record gr
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2114,7 +2114,7 @@ test('runDatacoreScrape writes DataCore faction CSV after building the record gr
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'factions.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'factions.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.factionResult.rows, 1);
@@ -2133,7 +2133,7 @@ test('runDatacoreScrape writes DataCore manufacturer CSV after building the reco
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2173,7 +2173,7 @@ test('runDatacoreScrape writes DataCore manufacturer CSV after building the reco
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'manufacturers.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'manufacturers.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.manufacturerResult.rows, 1);
@@ -2192,7 +2192,7 @@ test('runDatacoreScrape writes DataCore location label CSV after building the re
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2263,7 +2263,7 @@ test('runDatacoreScrape writes DataCore location label CSV after building the re
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'location-labels.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'location-labels.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.locationLabelResult.rows, 1);
@@ -2283,7 +2283,7 @@ test('runDatacoreScrape writes DataCore mining element CSV after building the re
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2321,7 +2321,7 @@ test('runDatacoreScrape writes DataCore mining element CSV after building the re
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-elements.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-elements.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningElementResult.rows, 1);
@@ -2340,7 +2340,7 @@ test('runDatacoreScrape writes DataCore mining composition CSV after building th
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2379,7 +2379,7 @@ test('runDatacoreScrape writes DataCore mining composition CSV after building th
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-compositions.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-compositions.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningCompositionResult.rows, 1);
@@ -2398,7 +2398,7 @@ test('runDatacoreScrape writes DataCore mining provider preset CSV after buildin
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2449,7 +2449,7 @@ test('runDatacoreScrape writes DataCore mining provider preset CSV after buildin
     ],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-provider-presets.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-provider-presets.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningProviderPresetResult.rows, 1);
@@ -2468,7 +2468,7 @@ test('runDatacoreScrape writes DataCore mineable entity CSV after building the r
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2510,7 +2510,7 @@ test('runDatacoreScrape writes DataCore mineable entity CSV after building the r
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mineable-entities.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mineable-entities.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.mineableEntityResult.rows, 1);
@@ -2529,7 +2529,7 @@ test('runDatacoreScrape writes DataCore mining density override CSV after buildi
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2568,7 +2568,7 @@ test('runDatacoreScrape writes DataCore mining density override CSV after buildi
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-density-overrides.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-density-overrides.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningDensityOverrideResult.rows, 1);
@@ -2587,7 +2587,7 @@ test('runDatacoreScrape writes DataCore mining clustering CSV after building the
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2625,7 +2625,7 @@ test('runDatacoreScrape writes DataCore mining clustering CSV after building the
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-clustering.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-clustering.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningClusteringResult.rows, 1);
@@ -2644,7 +2644,7 @@ test('runDatacoreScrape writes DataCore mining harvestable preset CSV after buil
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2681,7 +2681,7 @@ test('runDatacoreScrape writes DataCore mining harvestable preset CSV after buil
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-harvestable-presets.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-harvestable-presets.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningHarvestablePresetResult.rows, 1);
@@ -2700,7 +2700,7 @@ test('runDatacoreScrape writes DataCore mining harvestable setup CSV after build
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2754,7 +2754,7 @@ test('runDatacoreScrape writes DataCore mining harvestable setup CSV after build
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-harvestable-setups.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-harvestable-setups.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningHarvestableSetupResult.rows, 1);
@@ -2773,7 +2773,7 @@ test('runDatacoreScrape writes DataCore mining sub-harvestable config CSV after 
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2828,7 +2828,7 @@ test('runDatacoreScrape writes DataCore mining sub-harvestable config CSV after 
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-sub-harvestable-configs.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-sub-harvestable-configs.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningSubHarvestableConfigResult.rows, 1);
@@ -2847,7 +2847,7 @@ test('runDatacoreScrape writes DataCore mining quality distribution CSV after bu
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2891,7 +2891,7 @@ test('runDatacoreScrape writes DataCore mining quality distribution CSV after bu
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-quality-distributions.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-quality-distributions.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningQualityDistributionResult.rows, 1);
@@ -2910,7 +2910,7 @@ test('runDatacoreScrape writes DataCore mining quality quantization CSV after bu
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -2949,7 +2949,7 @@ test('runDatacoreScrape writes DataCore mining quality quantization CSV after bu
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-quality-quantizations.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-quality-quantizations.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningQualityQuantizationResult.rows, 1);
@@ -2965,7 +2965,7 @@ test('runDatacoreScrape writes DataCore mining location label CSV after building
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -3023,7 +3023,7 @@ test('runDatacoreScrape writes DataCore mining location label CSV after building
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-location-labels.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-location-labels.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningLocationLabelResult.rows, 1);
@@ -3045,7 +3045,7 @@ test('runDatacoreScrape writes DataCore mining param CSV after building the reco
     repoRoot,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
@@ -3085,7 +3085,7 @@ test('runDatacoreScrape writes DataCore mining param CSV after building the reco
     extractMiningProviderPresets: async () => [],
   });
 
-  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'mining-params.datacore.csv');
+  const csvPath = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'mining-params.datacore.csv');
   const csv = await fs.readFile(csvPath, 'utf8');
 
   assert.equal(result.miningParamResult.rows, 1);
@@ -3106,7 +3106,7 @@ test('runDatacoreScrape reports whether force extract will clear an existing cac
     forceExtract: true,
     loadTypes: async () => [],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 7,
@@ -3244,7 +3244,7 @@ function miningParamRow(overrides: Partial<DataCoreMiningParamRecord>): DataCore
 
 test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-lasers-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const laserDir = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'scitem', 'ships', 'weapons');
   await fs.mkdir(laserDir, { recursive: true });
 
@@ -3354,14 +3354,14 @@ test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XM
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'weaponmining.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weaponmining.datacore.csv'),
     'utf8',
   );
 
@@ -3386,7 +3386,7 @@ test('runDatacoreScrape extracts mining laser stats from real-shaped DataCore XM
 
 test('runDatacoreScrape extracts mining modifier stats from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-mining-modifiers-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const miningArmDir = path.join(
     xmlCacheDir,
     'libs',
@@ -3502,14 +3502,14 @@ test('runDatacoreScrape extracts mining modifier stats from real-shaped DataCore
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 2,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'miningmodifier.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'miningmodifier.datacore.csv'),
     'utf8',
   );
 
@@ -3534,7 +3534,7 @@ test('runDatacoreScrape extracts mining modifier stats from real-shaped DataCore
 
 test('runDatacoreScrape extracts salvage modifier stats from real-shaped DataCore XML', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-salvage-modifiers-'));
-  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.0-live');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const salvageDir = path.join(
     xmlCacheDir,
     'libs',
@@ -3588,14 +3588,14 @@ test('runDatacoreScrape extracts salvage modifier stats from real-shaped DataCor
       },
     ],
     resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
-    readGameVersion: async () => '4.8.0',
+    readGameVersion: async () => '4.8.1',
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
   });
 
   const csv = await fs.readFile(
-    path.join(repoRoot, 'csv', 'datacore', '4.8.0-live', 'salvagemodifier.datacore.csv'),
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'salvagemodifier.datacore.csv'),
     'utf8',
   );
 

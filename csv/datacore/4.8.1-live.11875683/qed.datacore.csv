@@ -1,0 +1,7 @@
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Jammer Range,Interdiction Range,Charge Delay,Activation Delay,Cooldown
+qdmp_rsi_s03_captor,item_NameQDMP_RSI_S03_Captor,item_NameQDMP_RSI_S03_Captor,item_DescQDMP_RSI_S03_Captor,RSI,3,3,UNDEFINED,1100,4500,1,90,3,1
+qdmp_wetk_s01_burke,item_NameQDMP_WETK_S01_Burke,item_NameQDMP_WETK_S01_Burke,item_DescQDMP_WETK_S01_Burke,WETK,1,1,UNDEFINED,,4000,1,90,3,1
+qed_rsi_s03_scorpius,item_NameQED_RSI_S04_Tidelock,item_NameQED_RSI_S04_Tidelock,item_DescQED_RSI_S04_Tidelock,RSI,3,3,UNDEFINED,,5000,1,90,3,1
+qed_template,LOC_PLACEHOLDER,,,,1,1,UNDEFINED,,12000,20000,90,3,1
+qed_wetk_s03_reynie,item_NameQED_WETK_S03_Reynie,item_NameQED_WETK_S03_Reynie,item_DescQED_WETK_S03_Reynie,WETK,1,1,UNDEFINED,,12000,20000,90,3,1
+qig_prototype,LOC_PLACEHOLDER,,,,2,1,UNDEFINED,,8000,10,30,1,60

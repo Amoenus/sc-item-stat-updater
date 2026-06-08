@@ -9,6 +9,7 @@ export interface ExtractDataCoreMissionBrokerOptions {
   xmlCacheDir: string;
   graph: DataCoreRecordGraphLookup;
   missionBrokerPathPrefix?: string;
+  onProgress?: (current: number, total: number) => void;
 }
 
 export async function extractDataCoreMissionBrokers(
@@ -20,8 +21,10 @@ export async function extractDataCoreMissionBrokers(
     .sort((a, b) => a.path.localeCompare(b.path));
   const rows: DataCoreMissionBrokerRecord[] = [];
 
-  for (const record of records) {
-    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore MissionBrokerEntry XML path');
+  for (let i = 0; i < records.length; i++) {
+    const record = records[i];
+    options.onProgress?.(i, records.length);
+    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore MissionBroker XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const root = $(':root').first();
@@ -92,6 +95,7 @@ export async function extractDataCoreMissionBrokers(
     });
   }
 
+  options.onProgress?.(records.length, records.length);
   return rows;
 }
 

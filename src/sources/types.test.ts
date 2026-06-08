@@ -7,7 +7,7 @@ import type { SpviewerItemDataset } from './spviewer/types';
 test('provider source dataset contracts carry source metadata and provider records', () => {
   const datacore = {
     source: 'datacore',
-    version: '4.8.0.11875683',
+    version: '4.8.1.11875683',
     channel: 'live',
     records: [
       {
@@ -33,7 +33,7 @@ test('provider source dataset contracts carry source metadata and provider recor
 
   const spviewer = {
     source: 'spviewer',
-    version: '4.8.0.11825000-live',
+    version: '4.8.1.11875683-live',
     channel: 'live',
     records: [{ Name: 'CF-117 Bulldog', 'Localization Key': 'item_NameGUN_CF117' }],
   } satisfies SpviewerItemDataset;

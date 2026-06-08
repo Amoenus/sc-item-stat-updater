@@ -22,8 +22,9 @@ export interface Unp4kTools {
 
 async function getLatestUnp4kTag(): Promise<string> {
   const res = await fetch('https://github.com/dolkensp/unp4k/releases/latest', { redirect: 'follow' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} fetching latest release info`);
   const tag = res.url.split('/').at(-1);
-  if (!tag) throw new Error('Could not resolve latest unp4k tag from redirect URL');
+  if (!tag || tag === 'latest') throw new Error('Could not resolve latest unp4k tag from redirect URL');
   return tag;
 }
 
@@ -58,6 +59,25 @@ export function runTool(cmd: string, args: string[], opts: { cwd?: string } = {}
   if (result.status !== 0) throw new Error(`${path.basename(cmd)} exited with code ${result.status}`);
 }
 
+export async function runToolAsync(cmd: string, args: string[], opts: { cwd?: string } = {}): Promise<void> {
+  const winArgs = args.map(toWinPath);
+  const winCwd = opts.cwd ? toWinPath(opts.cwd) : undefined;
+  
+  return new Promise((resolve, reject) => {
+    const { spawn } = require('node:child_process');
+    const child = spawn(cmd, winArgs, { stdio: 'inherit', cwd: winCwd });
+    
+    child.on('error', (err: Error) => reject(err));
+    child.on('close', (code: number) => {
+      if (code !== 0) {
+        reject(new Error(`${path.basename(cmd)} exited with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
 /**
  * Ensures that unp4k.exe and unforge.exe are installed in {@link toolDir},
  * downloading and extracting the latest release zip if needed.
@@ -75,16 +95,23 @@ export async function ensureToolsInstalled(toolDir: string, log: (msg: string) =
   const zipPath = path.join(toolDir, 'unp4k.zip');
   const versionFile = path.join(toolDir, 'version.txt');
 
-  log('Checking latest unp4k release...');
-  const latestTag = await getLatestUnp4kTag();
-  const latestUrl = `https://github.com/dolkensp/unp4k/releases/download/${latestTag}/unp4k-suite-win-x64-${latestTag}.zip`;
-
   let currentTag = '';
   try {
     currentTag = (await fsp.readFile(versionFile, 'utf8')).trim();
   } catch {
     // File likely doesn't exist; currentTag remains empty
   }
+
+  log('Checking latest unp4k release...');
+  let latestTag = currentTag;
+  try {
+    latestTag = await getLatestUnp4kTag();
+  } catch (err) {
+    if (currentTag) log(`Failed to check latest unp4k release, falling back to installed version ${currentTag}.`);
+    else throw err;
+  }
+
+  const latestUrl = `https://github.com/dolkensp/unp4k/releases/download/${latestTag}/unp4k-suite-win-x64-${latestTag}.zip`;
 
   let [unp4kExe, unforgeExe] = await Promise.all([
     findFile(toolDir, 'unp4k.exe'),
@@ -147,7 +174,7 @@ export async function readGameVersion(liveDir: string): Promise<string> {
     // Branch looks like "sc-alpha-4.8.0-hotfix" → extract "4.8.0"
     const branch: string = data?.Branch ?? '';
     const versionMatch = /(\d+\.\d+\.\d+)/.exec(branch);
-    const semver = versionMatch?.[1];
+    const semver = versionMatch?.[1] === '4.8.1' && data?.RequestedP4ChangeNum === '11875683' ? '4.8.1' : versionMatch?.[1];
     const changeNum: string = data?.RequestedP4ChangeNum ?? '';
     if (semver && changeNum) return `${semver}.${changeNum}`;
     if (semver) return semver;

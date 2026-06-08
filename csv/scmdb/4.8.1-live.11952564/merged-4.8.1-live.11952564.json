@@ -1,5 +1,5 @@
 {
-  "version": "4.8.1-live.11875683",
+  "version": "4.8.1-live.11952564",
   "scopes": {
     "d31bd373-35ab-4ea4-b0a7-0ccc867ef082": {
       "scopeName": "FactionReputation",
@@ -13397,8 +13397,8 @@
       "RSI Zeus Mk II CL",
       "RSI Zeus Mk II ES"
     ],
-    "08b3e16b8d1a": [
-      "MISC Freelancer MAX"
+    "38cd4448651c": [
+      "MISC Freelancer"
     ],
     "f6b3aa8deab9": [
       "Drake Cutter"
@@ -14341,9 +14341,6 @@
       "Drake Cutlass Steel",
       "RSI Polaris",
       "RSI Scorpius"
-    ],
-    "38cd4448651c": [
-      "MISC Freelancer"
     ],
     "faa97af32d86": [
       "Argo RAFT"
@@ -78317,7 +78314,7 @@
           "groups": [
             {
               "role": "HeistShip",
-              "poolId": "08b3e16b8d1a",
+              "poolId": "38cd4448651c",
               "waves": [
                 {
                   "name": "Heist Ship",
@@ -78325,10 +78322,9 @@
                   "maxShips": 1,
                   "slots": [
                     {
-                      "poolId": "08b3e16b8d1a",
+                      "poolId": "38cd4448651c",
                       "minCount": 1,
                       "maxCount": 1,
-                      "inexact": true,
                       "cargoManifest": "shipheist/shipheist_freelancer_easy"
                     }
                   ]
@@ -94398,7 +94394,7 @@
           "groups": [
             {
               "role": "HeistShip",
-              "poolId": "08b3e16b8d1a",
+              "poolId": "38cd4448651c",
               "waves": [
                 {
                   "name": "Heist Ship",
@@ -94406,10 +94402,9 @@
                   "maxShips": 1,
                   "slots": [
                     {
-                      "poolId": "08b3e16b8d1a",
+                      "poolId": "38cd4448651c",
                       "minCount": 1,
                       "maxCount": 1,
-                      "inexact": true,
                       "cargoManifest": "shipheist/shipheist_freelancer_medium"
                     }
                   ]
@@ -300575,7 +300570,7 @@
           "groups": [
             {
               "role": "HeistShip",
-              "poolId": "08b3e16b8d1a",
+              "poolId": "38cd4448651c",
               "waves": [
                 {
                   "name": "Heist Ship",
@@ -300583,10 +300578,9 @@
                   "maxShips": 1,
                   "slots": [
                     {
-                      "poolId": "08b3e16b8d1a",
+                      "poolId": "38cd4448651c",
                       "minCount": 1,
                       "maxCount": 1,
-                      "inexact": true,
                       "cargoManifest": "shipheist/shipheist_freelancer_hard"
                     }
                   ]

@@ -12,12 +12,12 @@ test('runScmdbScrape selects a version, writes raw SCMDB files, and reports writ
   const fetchJson: FetchJson = async (url) => {
     fetchCalls.push(url);
     if (url === SCMDB_VERSIONS_URL) {
-      return ok([{ version: '4.8.0-live.1', file: 'merged-4.8.0-live.1.json' }]);
+      return ok([{ version: '4.8.1-live.1', file: 'merged-4.8.1-live.1.json' }]);
     }
-    if (url === `${SCMDB_BASE_URL}/merged-4.8.0-live.1.json`) {
+    if (url === `${SCMDB_BASE_URL}/merged-4.8.1-live.1.json`) {
       return ok({ contracts: [], legacyContracts: [], factions: {}, factionRewardsPools: {}, blueprintPools: {} });
     }
-    if (url === `${SCMDB_BASE_URL}/mining_data-4.8.0-live.1.json`) {
+    if (url === `${SCMDB_BASE_URL}/mining_data-4.8.1-live.1.json`) {
       return ok({ mineableElements: {}, compositions: {}, locations: [], qualityDistribution: {} });
     }
     return { ok: false, status: 404, statusText: 'Not Found', json: async () => ({}) };
@@ -38,29 +38,29 @@ test('runScmdbScrape selects a version, writes raw SCMDB files, and reports writ
     },
   });
 
-  assert.equal(result.selected.version, '4.8.0-live.1');
+  assert.equal(result.selected.version, '4.8.1-live.1');
   assert.deepEqual(fetchCalls, [
     SCMDB_VERSIONS_URL,
-    `${SCMDB_BASE_URL}/merged-4.8.0-live.1.json`,
-    `${SCMDB_BASE_URL}/mining_data-4.8.0-live.1.json`,
-    `${SCMDB_BASE_URL}/crafting_items-4.8.0-live.1.json`,
-    `${SCMDB_BASE_URL}/crafting_blueprints-4.8.0-live.1.json`,
+    `${SCMDB_BASE_URL}/merged-4.8.1-live.1.json`,
+    `${SCMDB_BASE_URL}/mining_data-4.8.1-live.1.json`,
+    `${SCMDB_BASE_URL}/crafting_items-4.8.1-live.1.json`,
+    `${SCMDB_BASE_URL}/crafting_blueprints-4.8.1-live.1.json`,
   ]);
   assert.deepEqual(observedFiles, [
-    'root:merged-4.8.0-live.1.json',
-    'root:mining_data-4.8.0-live.1.json',
+    'root:merged-4.8.1-live.1.json',
+    'root:mining_data-4.8.1-live.1.json',
     'root:mining_data.json',
   ]);
   assert.deepEqual(
     writes.map((write) => write.path),
     [
-      'repo\\csv\\scmdb\\4.8.0-live.1\\merged-4.8.0-live.1.json',
-      'repo\\csv\\scmdb\\4.8.0-live.1\\mining_data-4.8.0-live.1.json',
-      'repo\\csv\\scmdb\\4.8.0-live.1\\mining_data.json',
+      'repo\\csv\\scmdb\\4.8.1-live.1\\merged-4.8.1-live.1.json',
+      'repo\\csv\\scmdb\\4.8.1-live.1\\mining_data-4.8.1-live.1.json',
+      'repo\\csv\\scmdb\\4.8.1-live.1\\mining_data.json',
     ],
   );
-  assert.equal(madeDirs.includes('repo\\csv\\scmdb\\4.8.0-live.1'), true);
-  assert.equal(madeDirs.includes('repo\\csv\\scmdb\\4.8.0-live.1\\missions'), true);
+  assert.equal(madeDirs.includes('repo\\csv\\scmdb\\4.8.1-live.1'), true);
+  assert.equal(madeDirs.includes('repo\\csv\\scmdb\\4.8.1-live.1\\missions'), true);
 });
 
 test('runScmdbScrape forwards explicit version selection failures', async () => {
@@ -72,7 +72,7 @@ test('runScmdbScrape forwards explicit version selection failures', async () => 
         rawOnly: true,
         fetchJson: async (url) => {
           assert.equal(url, SCMDB_VERSIONS_URL);
-          return ok([{ version: '4.8.0-live.1', file: 'merged-4.8.0-live.1.json' }]);
+          return ok([{ version: '4.8.1-live.1', file: 'merged-4.8.1-live.1.json' }]);
         },
       }),
     /Version not found: missing/,

@@ -22,7 +22,7 @@ Options:
 Examples:
   node scrape-scmdb.js
   node scrape-scmdb.js --ptu
-  node scrape-scmdb.js --version 4.8.0-ptu.11759767
+  node scrape-scmdb.js --version 4.8.1-live.11875683
   node scrape-scmdb.js --list-versions
 `);
 }

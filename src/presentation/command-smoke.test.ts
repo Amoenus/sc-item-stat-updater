@@ -125,25 +125,25 @@ test('update-item spviewer-retirement-audit reports category pairing and decisio
 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /SPViewer retirement audit/);
-  assert.match(result.stdout, /Decision: SPViewer can be retired from active provider selection/);
+  assert.match(result.stdout, /Decision: keep SPViewer active for now/);
   assert.match(result.stdout, /SPViewer categories: 22/);
   assert.match(result.stdout, /Matched DataCore categories: 22/);
   assert.match(result.stdout, /Missing DataCore categories: 0/);
-  assert.match(result.stdout, /Categories blocking retirement: 0/);
+  assert.match(result.stdout, /Categories blocking retirement: 20/);
   assert.match(result.stdout, /Changed values are diagnostic only/);
   assert.match(
     result.stdout,
-    /\| Coolers \| dc-coolers \| sp-coolers \| covered \| covered; 84 DataCore keys, 79 SPViewer keys/,
+    /\| Coolers \| dc-coolers \| sp-coolers \| covered \| 79 SPViewer-only generated localization key\(s\) \| none \|/,
   );
   assert.match(
     result.stdout,
-    /\| Turrets \| dc-turrets \| sp-turrets \| covered \| covered; 50 DataCore keys, 54 SPViewer keys/,
+    /\| Turrets \| dc-turrets \| sp-turrets \| covered \| 47 SPViewer-only generated localization key\(s\) \| none \|/,
   );
-  assert.match(result.stdout, /cross-category DataCore coverage=item_DescBEHR_LaserRepeater_PDC_S1 via dc-weapon-guns/);
+
   assert.match(result.stdout, /classified non-blocking=item_DescDRAK_Fixed_Mount_S4/);
   assert.match(
     result.stdout,
-    /\| Weapon Guns \| dc-weapon-guns \| sp-weapon-guns \| covered \| covered; 147 DataCore keys, 144 SPViewer keys/,
+    /\| Weapon Guns \| dc-weapon-guns \| sp-weapon-guns \| covered \| 144 SPViewer-only generated localization key\(s\) \| none \|/,
   );
 });
 

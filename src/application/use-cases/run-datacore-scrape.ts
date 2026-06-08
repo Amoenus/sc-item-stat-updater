@@ -6,7 +6,7 @@ import {
   ensureToolsInstalled,
   readGameVersion,
   resolveLiveDir,
-  runTool,
+  runToolAsync,
   type Unp4kTools,
 } from '../../io/local/unp4k-tool';
 import type {
@@ -18,6 +18,7 @@ import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
 import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
 import { buildDataCoreContractGeneratorIntel } from '../../sources/datacore/contract-generator-intel-builder';
+import { buildDataCoreContractHaulingSummary } from '../../sources/datacore/contract-hauling-summary-builder';
 import { extractDataCoreContractTemplates } from '../../sources/datacore/contract-template-extractor';
 import { extractDataCoreContractTemplateHaulingOrders } from '../../sources/datacore/contract-template-hauling-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
@@ -54,6 +55,7 @@ import type {
   DataCoreCommodityRecord,
   DataCoreContractGeneratorIntelRecord,
   DataCoreContractGeneratorRecord,
+  DataCoreContractHaulingSummaryRecord,
   DataCoreContractTemplateHaulingOrderRecord,
   DataCoreContractTemplateRecord,
   DataCoreFactionRecord,
@@ -90,6 +92,7 @@ import {
   xmlVal,
 } from '../../sources/datacore/xml-parser';
 import { DATACORE_RAW_FACTS } from './category-listing';
+import { mapConcurrent } from '../../sources/datacore/concurrency';
 
 export interface DataCoreTypeEntry {
   name: string;
@@ -115,6 +118,11 @@ export interface DataCoreScrapeContractGeneratorResult {
 }
 
 export interface DataCoreScrapeContractGeneratorIntelResult {
+  rows: number;
+  csvFile: string;
+}
+
+export interface DataCoreScrapeContractHaulingSummaryResult {
   rows: number;
   csvFile: string;
 }
@@ -252,6 +260,7 @@ export interface RunDatacoreScrapeOptions {
   ptu?: boolean;
   dryRun?: boolean;
   forceExtract?: boolean;
+  skipUnforge?: boolean;
   types?: string[];
   loadTypes?: (repoRoot: string) => Promise<DataCoreTypeEntry[]>;
   resolveLiveDir?: (binDirname: string) => string;
@@ -266,6 +275,7 @@ export interface RunDatacoreScrapeOptions {
   writeRecordGraph?: (graph: DataCoreRecordGraph, outputPath: string) => Promise<void>;
   extractContractGenerators?: typeof extractDataCoreContractGenerators;
   buildContractGeneratorIntel?: typeof buildDataCoreContractGeneratorIntel;
+  buildContractHaulingSummary?: typeof buildDataCoreContractHaulingSummary;
   extractContractTemplates?: typeof extractDataCoreContractTemplates;
   extractContractTemplateHaulingOrders?: typeof extractDataCoreContractTemplateHaulingOrders;
   extractCommodities?: typeof extractDataCoreCommodities;
@@ -302,13 +312,17 @@ export interface RunDatacoreScrapeOptions {
   }) => void;
   onToolsLog?: (message: string) => void;
   onToolsReady?: (tools: Unp4kTools) => void;
+  onRawFactStart?: (slug: string, total: number) => void;
+  onRawFactProgress?: (current: number) => void;
   onTypeStart?: (entry: DataCoreTypeEntry, index: number) => void;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
+  onCacheExtractProgress?: (count: number) => void;
   onCacheExtractComplete?: (count: number) => void;
   onRecordGraphBuilt?: (recordCount: number, outputPath: string, dryRun: boolean) => void;
   onContractGeneratorsExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractGeneratorIntelExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
+  onContractHaulingSummaryExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractTemplatesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onContractTemplateHaulingExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
   onCommoditiesExtracted?: (rows: number, csvFile: string, dryRun: boolean) => void;
@@ -351,6 +365,7 @@ export interface RunDatacoreScrapeResult {
   };
   contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
   contractGeneratorIntelResult: DataCoreScrapeContractGeneratorIntelResult;
+  contractHaulingSummaryResult: DataCoreScrapeContractHaulingSummaryResult;
   contractTemplateResult: DataCoreScrapeContractTemplateResult;
   contractTemplateHaulingResult: DataCoreScrapeContractTemplateHaulingResult;
   commodityResult: DataCoreScrapeCommodityResult;
@@ -393,6 +408,7 @@ const COMMON_HEADERS = [
 ];
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
 const CONTRACT_GENERATOR_INTEL_CSV_FILE = 'contract-generator-intel.datacore.csv';
+const CONTRACT_HAULING_SUMMARY_CSV_FILE = 'contract-hauling-summary.datacore.csv';
 const CONTRACT_TEMPLATES_CSV_FILE = 'contract-templates.datacore.csv';
 const CONTRACT_TEMPLATE_HAULING_CSV_FILE = 'contract-template-hauling.datacore.csv';
 const COMMODITY_CSV_FILE = 'commodities.datacore.csv';
@@ -487,6 +503,17 @@ const CONTRACT_GENERATOR_INTEL_HEADERS = [
   'Time Limit',
   'Contract Buy In Amount',
   'Difficulty Profile Class',
+  'Record GUID',
+  'Record Path',
+];
+const CONTRACT_HAULING_SUMMARY_HEADERS = [
+  'Generator Class',
+  'Contract ID',
+  'Contract Debug Name',
+  'Template Class',
+  'Description Key',
+  'Description Key Role',
+  'Hauling Summary',
   'Record GUID',
   'Record Path',
 ];
@@ -1078,6 +1105,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const writeRecordGraph = options.writeRecordGraph ?? writeDataCoreRecordGraph;
   const extractContractGenerators = options.extractContractGenerators ?? extractDataCoreContractGenerators;
   const buildContractGeneratorIntel = options.buildContractGeneratorIntel ?? buildDataCoreContractGeneratorIntel;
+  const buildContractHaulingSummary = options.buildContractHaulingSummary ?? buildDataCoreContractHaulingSummary;
   const extractContractTemplates = options.extractContractTemplates ?? extractDataCoreContractTemplates;
   const extractContractTemplateHaulingOrders =
     options.extractContractTemplateHaulingOrders ?? extractDataCoreContractTemplateHaulingOrders;
@@ -1112,9 +1140,12 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const selectedTypes = selectTypes(allTypes, options.types ?? []);
   const binDirname = options.binDirname ?? path.join(options.repoRoot, 'bin');
   const liveDir = resolveLive(binDirname);
-  const gameVersion = await readVersion(liveDir);
-  const channel = options.ptu ? 'ptu' : 'live';
-  const versionTag = `${gameVersion}-${channel}`;
+  const version = await readVersion(liveDir);
+  const ptu = options.ptu ? '-ptu' : '-live';
+  const parts = version.split('.');
+  const versionTag = parts.length === 4 
+    ? `${parts.slice(0, 3).join('.')}${ptu}.${parts[3]}`
+    : `${version}${ptu}`;
   const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
   const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
   const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
@@ -1138,8 +1169,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   });
 
   options.onPrepared?.({
-    gameVersion,
-    channel,
+    gameVersion: version,
+    channel: options.ptu ? 'ptu' : 'live',
     dcbPath,
     outputBase,
     xmlCacheDir,
@@ -1150,7 +1181,10 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   const cachedCount = await countXmlFiles(xmlCacheDir);
 
-  if (cachedCount > 0 && !options.forceExtract && !dcbRefreshed) {
+  if ((cachedCount > 0 && !options.forceExtract && !dcbRefreshed) || (options.skipUnforge && cachedCount > 0)) {
+    if (options.skipUnforge && dcbRefreshed) {
+      options.onToolsLog?.('WARNING: Data.p4k is newer than the cache, but skipping unforge due to --skip-unforge flag. Using potentially stale XML cache.');
+    }
     options.onCacheHit?.(cachedCount, xmlCacheDir);
   } else {
     const clearExisting = cachedCount > 0 && Boolean(options.forceExtract || dcbRefreshed);
@@ -1159,7 +1193,16 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
       dcbPath,
       xmlCacheDir,
       clearExisting,
-      runUnforge: (cacheDir) => runTool(tools.unforge, [cacheDir]),
+      runUnforge: async (cacheDir) => {
+        try {
+          const actualP4kPath = path.join(liveDir, 'Data.p4k');
+          await runToolAsync(tools.unp4k, [actualP4kPath, '*Subsumption/Missions/PU/Missions/*.xml'], { cwd: cacheDir });
+        } catch (err) {
+          options.onToolsLog?.(`Failed to extract Subsumption XMLs: ${err}`);
+        }
+        await runToolAsync(tools.unforge, [cacheDir]);
+      },
+      onProgress: (count) => options.onCacheExtractProgress?.(count),
     });
     options.onCacheExtractComplete?.(xmlFileCount);
   }
@@ -1171,7 +1214,14 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
   const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
 
-  const contractGeneratorRows = await extractContractGenerators({ xmlCacheDir, graph: graphLookup });
+  const contractGeneratorRows = await extractContractGenerators({
+    xmlCacheDir,
+    graph: graphLookup,
+    onProgress: (current, total) => {
+      if (current === 0) options.onRawFactStart?.('contract-generators', total);
+      options.onRawFactProgress?.(current);
+    },
+  });
   const contractGeneratorResult = await writeContractGeneratorCsv(contractGeneratorRows, {
     outputBase,
     dryRun: options.dryRun,
@@ -1192,7 +1242,14 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     Boolean(options.dryRun),
   );
 
-  const contractTemplateRows = await extractContractTemplates({ xmlCacheDir, graph: graphLookup });
+  const contractTemplateRows = await extractContractTemplates({
+    xmlCacheDir,
+    graph: graphLookup,
+    onProgress: (current, total) => {
+      if (current === 0) options.onRawFactStart?.('contract-templates', total);
+      options.onRawFactProgress?.(current);
+    },
+  });
   const contractTemplateResult = await writeContractTemplateCsv(contractTemplateRows, {
     outputBase,
     dryRun: options.dryRun,
@@ -1202,7 +1259,14 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     contractTemplateResult.csvFile,
     Boolean(options.dryRun),
   );
-  const contractTemplateHaulingRows = await extractContractTemplateHaulingOrders({ xmlCacheDir, graph: graphLookup });
+  const contractTemplateHaulingRows = await extractContractTemplateHaulingOrders({
+    xmlCacheDir,
+    graph: graphLookup,
+    onProgress: (current, total) => {
+      if (current === 0) options.onRawFactStart?.('contract-template-hauling', total);
+      options.onRawFactProgress?.(current);
+    },
+  });
   const contractTemplateHaulingResult = await writeContractTemplateHaulingCsv(contractTemplateHaulingRows, {
     outputBase,
     dryRun: options.dryRun,
@@ -1213,7 +1277,25 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     Boolean(options.dryRun),
   );
 
-  const missionBrokerRows = await extractMissionBrokers({ xmlCacheDir, graph: graphLookup });
+  const contractHaulingSummaryRows = buildContractHaulingSummary(contractGeneratorRows, contractTemplateHaulingRows);
+  const contractHaulingSummaryResult = await writeContractHaulingSummaryCsv(contractHaulingSummaryRows, {
+    outputBase,
+    dryRun: Boolean(options.dryRun),
+  });
+  options.onContractHaulingSummaryExtracted?.(
+    contractHaulingSummaryResult.rows,
+    contractHaulingSummaryResult.csvFile,
+    Boolean(options.dryRun),
+  );
+
+  const missionBrokerRows = await extractMissionBrokers({
+    xmlCacheDir,
+    graph: graphLookup,
+    onProgress: (current, total) => {
+      if (current === 0) options.onRawFactStart?.('mission-brokers', total);
+      options.onRawFactProgress?.(current);
+    },
+  });
   const missionBrokerResult = await writeMissionBrokerCsv(missionBrokerRows, {
     outputBase,
     dryRun: options.dryRun,
@@ -1508,6 +1590,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     new Map([
       [contractGeneratorResult.csvFile, contractGeneratorResult],
       [contractGeneratorIntelResult.csvFile, contractGeneratorIntelResult],
+      [contractHaulingSummaryResult.csvFile, contractHaulingSummaryResult],
       [contractTemplateResult.csvFile, contractTemplateResult],
       [contractTemplateHaulingResult.csvFile, contractTemplateHaulingResult],
       [commodityResult.csvFile, commodityResult],
@@ -1524,8 +1607,8 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
 
   return {
     exitCode: errors.length > 0 ? 1 : 0,
-    gameVersion,
-    channel,
+    gameVersion: version,
+    channel: options.ptu ? 'ptu' : 'live',
     versionTag,
     dcbPath,
     outputBase,
@@ -1538,6 +1621,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     },
     contractGeneratorResult,
     contractGeneratorIntelResult,
+    contractHaulingSummaryResult,
     contractTemplateResult,
     contractTemplateHaulingResult,
     commodityResult,
@@ -1615,8 +1699,8 @@ async function resolveCurrentDcbFile(options: {
   return { dcbPath: packedDcbPath, refreshed };
 }
 
-function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, tools: Unp4kTools): void {
-  runTool(tools.unp4k, [p4kPath, 'Game2.dcb'], { cwd: dcbCacheDir });
+async function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, tools: Unp4kTools): Promise<void> {
+  await runToolAsync(tools.unp4k, [p4kPath, 'Game2.dcb'], { cwd: dcbCacheDir });
 }
 
 async function scrapeDataCoreType(
@@ -1644,77 +1728,83 @@ async function scrapeDataCoreType(
   const referencedXmlCache = new Map<string, ReturnType<typeof loadXml>>();
   let skipped = 0;
 
-  for (const xmlPath of xmlFiles) {
-    const xml = await fs.readFile(xmlPath, 'utf8');
-    let $: ReturnType<typeof loadXml>;
-    try {
-      $ = loadXml(xml);
-    } catch {
-      skipped++;
-      continue;
-    }
-
-    if (typeConfig.recordSelector && $(typeConfig.recordSelector).length === 0) {
-      skipped++;
-      continue;
-    }
-
-    let entityClass = extractEntityClass($);
-    if (!entityClass) {
-      entityClass = path.basename(xmlPath, path.extname(xmlPath));
-    }
-
-    if (!entityClass || entityClass.startsWith('__')) {
-      skipped++;
-      continue;
-    }
-
-    const attachDef = extractAttachDef($);
-    const health = extractHealth($);
-    const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
-    const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
-    const rowRecord: Record<string, string> = {
-      'Entity Class': entityClass,
-      'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
-      'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
-      'Description Key': localizationKey(attachLocalization.attr('Description') ?? ''),
-      Manufacturer: manufacturer,
-      Size: attachDef.size,
-      Grade: attachDef.grade,
-      Class: attachDef.subtype,
-      Health: health,
-    };
-
-    const typeFields: string[] = [];
-    for (const col of typeHeaders) {
-      const spec = typeConfig.fieldSelectors[col];
-      if (!spec) {
-        rowRecord[col] = '';
-        typeFields.push('');
-        continue;
+  const mappedRows = await mapConcurrent(
+    xmlFiles,
+    async (xmlPath) => {
+      const xml = await fs.readFile(xmlPath, 'utf8');
+      let $: ReturnType<typeof loadXml>;
+      try {
+        $ = loadXml(xml);
+      } catch {
+        skipped++;
+        return null;
       }
-      const value = await resolveField($, spec, rowRecord, {
-        graph: options.graph,
-        xmlCacheDir: options.xmlCacheDir,
-        referencedXmlCache,
-      });
-      rowRecord[col] = value;
-      typeFields.push(value);
-    }
 
-    rows.push([
-      entityClass,
-      rowRecord['Name Key'],
-      rowRecord['Short Name Key'],
-      rowRecord['Description Key'],
-      manufacturer,
-      attachDef.size,
-      attachDef.grade,
-      attachDef.subtype,
-      health,
-      ...typeFields,
-    ]);
-  }
+      if (typeConfig.recordSelector && $(typeConfig.recordSelector).length === 0) {
+        skipped++;
+        return null;
+      }
+
+      let entityClass = extractEntityClass($);
+      if (!entityClass) {
+        entityClass = path.basename(xmlPath, path.extname(xmlPath));
+      }
+
+      if (!entityClass || entityClass.startsWith('__')) {
+        skipped++;
+        return null;
+      }
+
+      const attachDef = extractAttachDef($);
+      const health = extractHealth($);
+      const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
+      const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
+      const rowRecord: Record<string, string> = {
+        'Entity Class': entityClass,
+        'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
+        'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
+        'Description Key': localizationKey(attachLocalization.attr('Description') ?? ''),
+        Manufacturer: manufacturer,
+        Size: attachDef.size,
+        Grade: attachDef.grade,
+        Class: attachDef.subtype,
+        Health: health,
+      };
+
+      const typeFields: string[] = [];
+      for (const col of typeHeaders) {
+        const spec = typeConfig.fieldSelectors[col];
+        if (!spec) {
+          rowRecord[col] = '';
+          typeFields.push('');
+          continue;
+        }
+        const value = await resolveField($, spec, rowRecord, {
+          graph: options.graph,
+          xmlCacheDir: options.xmlCacheDir,
+          referencedXmlCache,
+        });
+        rowRecord[col] = value;
+        typeFields.push(value);
+      }
+
+      return [
+        entityClass,
+        rowRecord['Name Key'],
+        rowRecord['Short Name Key'],
+        rowRecord['Description Key'],
+        manufacturer,
+        attachDef.size,
+        attachDef.grade,
+        attachDef.subtype,
+        health,
+        ...typeFields,
+      ];
+    },
+    50
+  );
+
+  rows.push(...mappedRows.filter((r) => r !== null));
 
   if (!options.dryRun && rows.length > 0) {
     const csvContent = stringify([headers, ...rows]);
@@ -1777,6 +1867,33 @@ async function writeContractGeneratorCsv(
   }
 
   return { rows: rows.length, csvFile: CONTRACT_GENERATORS_CSV_FILE };
+}
+
+async function writeContractHaulingSummaryCsv(
+  rows: DataCoreContractHaulingSummaryRecord[],
+  options: { outputBase: string; dryRun: boolean },
+): Promise<DataCoreScrapeContractHaulingSummaryResult> {
+  const csvFile = CONTRACT_HAULING_SUMMARY_CSV_FILE;
+  const filePath = path.join(options.outputBase, csvFile);
+
+  if (!options.dryRun) {
+    const records = rows.map((row) => [
+      row.generatorClass,
+      row.contractId,
+      row.contractDebugName,
+      row.templateClass,
+      row.descriptionKey,
+      row.descriptionKeyRole,
+      row.haulingSummary,
+      row.recordGuid,
+      row.recordPath,
+    ]);
+
+    const csvData = stringify(records, { header: true, columns: CONTRACT_HAULING_SUMMARY_HEADERS });
+    await fs.writeFile(filePath, csvData, 'utf8');
+  }
+
+  return { rows: rows.length, csvFile };
 }
 
 async function writeContractGeneratorIntelCsv(

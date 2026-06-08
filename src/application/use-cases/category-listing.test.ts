@@ -66,6 +66,7 @@ test('category listing includes representative provider families and source meta
       ['datacore-contract-generator-intel', 'contract-generator-intel.datacore.csv'],
       ['datacore-contract-templates', 'contract-templates.datacore.csv'],
       ['datacore-contract-template-hauling', 'contract-template-hauling.datacore.csv'],
+      ['datacore-contract-generator-hauling', 'contract-hauling-summary.datacore.csv'],
       ['datacore-commodities', 'commodities.datacore.csv'],
       ['datacore-vehicles', 'vehicles.datacore.csv'],
       ['datacore-manufacturers', 'manufacturers.datacore.csv'],
