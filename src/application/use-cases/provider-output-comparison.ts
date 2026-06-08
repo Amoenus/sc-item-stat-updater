@@ -54,11 +54,13 @@ export async function compareProviderCategoryOutputs(
       csvDir: input.datacore.csvDir,
       iniPath: input.iniPath,
       dryRun: true,
+      force: true,
     }),
     buildPatchPlanResult(input.spviewer.config, {
       csvDir: input.spviewer.csvDir,
       iniPath: input.iniPath,
       dryRun: true,
+      force: true,
     }),
   ]);
 

@@ -99,6 +99,10 @@ const NON_BLOCKING_SPVIEWER_ONLY_KEYS: Record<string, Record<string, string>> = 
       'DataCore raw fixed-mount record exists under scitem/ships/weapon_mounts/fixed; SPViewer legacy turret category boundary',
     item_DescANVL_Fixed_Mount_Hornet_Ball_S4:
       'DataCore raw fixed-mount record exists under scitem/ships/weapon_mounts/fixed; SPViewer legacy turret category boundary',
+    item_DescBEHR_LaserRepeater_PDC_S1:
+      'DataCore raw record exists under weapongun; SPViewer legacy turret category boundary',
+    item_DescBEHR_BallisticGatling_PDC_S1:
+      'DataCore raw record exists under weapongun; SPViewer legacy turret category boundary',
     item_DescAEGS_Idris_Large_Turret:
       'SPViewer resolves generic name "Turret" through a stale saved mapping; DataCore emits current Idris turret keys',
   },

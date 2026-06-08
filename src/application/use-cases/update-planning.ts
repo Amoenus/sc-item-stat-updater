@@ -373,7 +373,12 @@ type KeyUpdateResult = 'notFound' | 'found' | 'updated';
  * independently using its own existing value, so variant strings with different
  * surrounding text are handled correctly.
  */
-function tryPlanKey(targetKey: string, context: PlanningContext, row: Record<string, string>): KeyUpdateResult {
+function tryPlanKey(
+  targetKey: string,
+  context: PlanningContext,
+  row: Record<string, string>,
+  force: boolean,
+): KeyUpdateResult {
   const foundKey = findIniKey(context.existingKeys, context.lowerCaseIndex, targetKey);
   if (!foundKey) return 'notFound';
 
@@ -387,7 +392,7 @@ function tryPlanKey(targetKey: string, context: PlanningContext, row: Record<str
     const buildValue = context.config.buildValue;
     if (!buildValue) throw new Error(`buildValue is required for config "${context.config.label}"`);
     const newValue = sanitizeIniValue(buildValue(row, extractFlavorText(oldValue), oldValue, foundKey));
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue || force) {
       context.planPatch(foundKey, newValue, lineIndex);
       anyUpdated = true;
     }
@@ -400,7 +405,7 @@ function planRow(
   row: Record<string, string>,
   context: PlanningContext,
   deriveDescKey: (nameKey: string) => string,
-  _force = false,
+  force = false,
 ): void {
   const targetKeys = getTargetKeys(context.config, row, deriveDescKey);
   if (targetKeys.length === 0 || targetKeys.some((k) => context.updatedKeys.has(k.toLowerCase()))) {
@@ -412,7 +417,7 @@ function planRow(
   let anyFound = false;
 
   for (const targetKey of targetKeys) {
-    const result = tryPlanKey(targetKey, context, row);
+    const result = tryPlanKey(targetKey, context, row, force);
     if (result !== 'notFound') {
       anyFound = true;
       if (result === 'updated') anyUpdated = true;
