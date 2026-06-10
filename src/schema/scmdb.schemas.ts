@@ -65,3 +65,18 @@ export { CraftingItemsSchema as ScmdbCraftingItemsSchema } from './scmdb/craftin
 
 export type { CraftingBlueprints as ScmdbCraftingBlueprintsDTO } from './scmdb/crafting-blueprints/index.js';
 export { CraftingBlueprintsSchema as ScmdbCraftingBlueprintsSchema } from './scmdb/crafting-blueprints/index.js';
+
+// ---------------------------------------------------------------------------
+// mema-cache.json
+// ---------------------------------------------------------------------------
+
+export type {
+  MemaCache as ScmdbMemaCacheDTO,
+  MemaEntry as ScmdbMemaEntryDTO,
+  MemaTopShip as ScmdbMemaTopShipDTO,
+} from './scmdb/mema.schema.js';
+export {
+  MemaCacheSchema as ScmdbMemaCacheSchema,
+  MemaEntrySchema as ScmdbMemaEntrySchema,
+  MemaTopShipSchema as ScmdbMemaTopShipSchema,
+} from './scmdb/mema.schema.js';

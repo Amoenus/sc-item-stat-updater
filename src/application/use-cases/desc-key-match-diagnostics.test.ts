@@ -45,39 +45,14 @@ const samplesBySlug: Record<string, { positive: string[]; negative: string[] }> 
     positive: ['stanton_area18_mining_desc'],
     negative: ['items_commodities_agricium_desc'],
   },
-  'mission-scmdb-descriptions': {
+  'mission-datacore-descriptions': {
     positive: ['mission_contract_delivery_desc'],
     negative: ['mission_contract_delivery_title'],
   },
-  'mission-scmdb-titles': {
+  'mission-datacore-titles': {
     positive: ['mission_contract_delivery_title'],
     negative: ['mission_contract_delivery_desc'],
   },
-  'sp-bombs': { positive: ['item_DescBOMB_AEGS_S01_Test'], negative: ['item_Desc_COOL_ACOM_S01_Test'] },
-  'sp-coolers': { positive: ['item_Desc_COOL_ACOM_S01_Test'], negative: ['item_DescPOWR_AMRS_S1_Test'] },
-  'sp-emps': { positive: ['item_Desc_EMP_Device_Test'], negative: ['item_Desc_QDRV_RSI_Test'] },
-  'sp-jump-drives': { positive: ['item_Desc_JDRV_RSI_Test'], negative: ['item_DescSHLD_AEGS_Test'] },
-  'sp-mining-lasers': { positive: ['item_mininglaser_head_helix_desc'], negative: ['item_DescMISC_Test'] },
-  'sp-mining-modifiers': {
-    positive: ['item_mining_gadget_focus_desc'],
-    negative: ['item_Desc_COOL_ACOM_S01_Test'],
-  },
-  'sp-missile-launchers': { positive: ['item_DescMRCK_RSI_S01_Test'], negative: ['item_DescMISL_RSI_Test'] },
-  'sp-missiles': { positive: ['item_DescMISL_RSI_Test'], negative: ['item_DescMRCK_RSI_S01_Test'] },
-  'sp-powerplants': { positive: ['item_DescPOWR_AMRS_S1_Test'], negative: ['item_Desc_COOL_ACOM_S01_Test'] },
-  'sp-qeds': { positive: ['item_DescQED_RSI_Test'], negative: ['item_DescQDRV_RSI_Test'] },
-  'sp-quantum-drives': { positive: ['item_DescQDRV_RSI_Test'], negative: ['item_DescQDMP_RSI_Test'] },
-  'sp-radars': { positive: ['item_Desc_RADR_RSI_Test'], negative: ['item_DescQDRV_RSI_Test'] },
-  'sp-salvage-modifiers': { positive: ['item_scraper_trawler_desc'], negative: ['item_DescTRACTORBEAM_Test'] },
-  'sp-self-destruct': { positive: ['item_Desc_SelfDestruct_Charge_Test'], negative: ['item_Desc_EMP_Test'] },
-  'sp-shields': { positive: ['item_DescSHLD_AEGS_Test'], negative: ['item_DescPOWR_AMRS_S1_Test'] },
-  'sp-throwables': { positive: ['item_Desc_Grenade_Frag_Test'], negative: ['item_Desc_Rifle_Test'] },
-  'sp-tractor-beams': { positive: ['item_Desc_TractorBeam_Module_Test'], negative: ['item_Desc_Turret_Test'] },
-  'sp-turrets': { positive: ['item_Desc_Turret_Ball_Test'], negative: ['item_Desc_TractorBeam_Test'] },
-  'sp-weapon-attachments': { positive: ['item_Desc_Barrel_Stabilizer_Test'], negative: ['item_Desc_Rifle_Test'] },
-  'sp-weapon-defensive': { positive: ['item_Desc_Chaff_Countermeasure_Test'], negative: ['item_Desc_Rifle_Test'] },
-  'sp-weapon-guns': { positive: ['item_DescBEHR_LaserRepeater_Test'], negative: ['item_Desc_COOL_ACOM_Test'] },
-  'sp-weapon-personal': { positive: ['item_Desc_GMNI_Rifle_Test'], negative: ['item_Desc_Barrel_Test'] },
 };
 
 async function loadRegisteredDescKeyMatchConfigs(): Promise<Map<string, DescKeyMatchConfig>> {
@@ -121,10 +96,10 @@ describe('descKeyMatch overlap diagnostics', () => {
     );
 
     assert.deepEqual(overlaps, [
-      { key: 'item_Desc_COOL_ACOM_S01_Test', labels: ['SP Coolers', 'SCMDB mission descriptions', 'DC Coolers'] },
+      { key: 'item_Desc_COOL_ACOM_S01_Test', labels: ['DataCore mission descriptions', 'DC Coolers'] },
       {
         key: 'item_DescPOWR_AMRS_S1_Test',
-        labels: ['SP Power Plants', 'SCMDB mission descriptions', 'DC Power Plants'],
+        labels: ['DataCore mission descriptions', 'DC Power Plants'],
       },
     ]);
   });

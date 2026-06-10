@@ -119,6 +119,9 @@ const result = await runDatacoreScrape({
     console.log(`Using XML cache: ${count.toLocaleString()} files`);
     console.log(`  (${xmlCacheDir})`);
     console.log('  Run with --force-extract to re-run unforge.\n');
+    bar.start(count, count, { type: 'unforge (cached)' });
+    bar.stop();
+    console.log();
   },
   onCacheExtractStart: (dcbPath, xmlCacheDir, clearExisting) => {
     if (clearExisting) {
@@ -130,6 +133,23 @@ const result = await runDatacoreScrape({
   },
   onCacheExtractComplete: (count) => {
     console.log(`  Extraction complete: ${count.toLocaleString()} XML records cached.\n`);
+  },
+  onRecordGraphStart: (total) => {
+    console.log(`Building DataCore record graph (parsing ${total} XML files)...`);
+    bar.start(total, 0, { type: 'record-graph' });
+  },
+  onRecordGraphProgress: (current, total) => {
+    bar.update(current);
+    if (current >= total) {
+      bar.stop();
+      console.log();
+    }
+  },
+  onRecordGraphCacheHit: (recordCount, outputPath) => {
+    console.log(`Using cached DataCore record graph from ${path.basename(outputPath)}...`);
+    bar.start(recordCount, recordCount, { type: 'record-graph (cached)' });
+    bar.stop();
+    console.log();
   },
   onRawFactStart: (slug, total) => {
     bar.start(total, 0, { type: slug });

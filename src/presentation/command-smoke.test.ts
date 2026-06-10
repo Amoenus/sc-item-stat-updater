@@ -53,9 +53,8 @@ test('update-item help exits successfully and lists categories', async () => {
   assert.match(result.stdout, /Usage: node update-item\.js \[options] <category>/);
   assert.match(result.stdout, /Available active update categories:/);
   assert.match(result.stdout, /dc-powerplants/);
-  assert.match(result.stdout, /mission-scmdb-descriptions/);
+  assert.match(result.stdout, /mission-datacore-descriptions/);
 });
-
 
 test('update-item rejects mining journal helper as a direct category', async () => {
   const result = await runCommand(['bin/update-item.ts', 'mission-mining-journal', '--dry-run']);
@@ -70,8 +69,7 @@ test('update-item list-categories reports provider and source metadata', async (
   assert.equal(result.exitCode, 0, result.stderr);
   assert.match(result.stdout, /DataCore active categories:/);
   assert.match(result.stdout, /dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/);
-  assert.match(result.stdout, /SCMDB derived bridge categories:/);
-  assert.match(result.stdout, /mission-scmdb-descriptions \| SCMDB mission descriptions/);
+  assert.match(result.stdout, /mission-datacore-descriptions \| DataCore mission descriptions/);
   assert.match(result.stdout, /DataCore raw fact datasets:/);
   assert.match(result.stdout, /datacore-vehicles \| Vehicles \| files: vehicles\.datacore\.csv/);
   assert.match(result.stdout, /datacore-location-labels \| Law and location labels/);
@@ -85,13 +83,10 @@ test('update-item provider-matrix reports coverage status by provider', async ()
 
   assert.equal(result.exitCode, 0, result.stderr);
   assert.match(result.stdout, /Provider coverage matrix/);
+  assert.match(result.stdout, /\| Coolers \| primary \(dc-coolers\) \| unavailable \|/);
   assert.match(
     result.stdout,
-    /\| Coolers \| primary \(dc-coolers\) \| unavailable \|/,
-  );
-  assert.match(
-    result.stdout,
-    /\| SCMDB mission descriptions \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
+    /\| DataCore mission descriptions \| primary \(mission-datacore-descriptions\) \| unavailable \|/,
   );
   assert.match(result.stdout, /Mixed-source batch modes:/);
 });
@@ -104,11 +99,10 @@ test('update-item scmdb-audit reports remaining SCMDB dependencies', async () =>
   assert.match(result.stdout, /DataCore\/Data\.p4k: authoritative source/);
   assert.match(
     result.stdout,
-    /\| update category \| mission-scmdb-descriptions \(SCMDB mission descriptions\) \| missions\/scmdb-missions\.csv \| Probably extractable from DataCore with new graph traversal \| yes \|/,
+    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
   );
   assert.equal(result.stderr, '');
 });
-
 
 test('pipeline help exits successfully with orchestration options', async () => {
   const result = await runCommand(['bin/pipeline.ts', '--help']);

@@ -57,6 +57,9 @@ function completeStep(summary: string): void {
 }
 
 let extractBar: cliProgress.SingleBar | undefined;
+let recordGraphBar: cliProgress.SingleBar | undefined;
+let scrapeBar: cliProgress.SingleBar | undefined;
+let scrapeTypesCount = 0;
 
 const result = await runFullPipeline({
   rootDir: ROOT_DIR,
@@ -85,6 +88,17 @@ const result = await runFullPipeline({
       extractBar.update(count);
     }
   },
+  onCacheHit: (count) => {
+    log('Using cached XMLs (Skipping extraction)...');
+    extractBar = new cliProgress.SingleBar({
+      format: 'Unforge {bar} {value} XMLs extracted... (Cached)',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+    extractBar.start(count, count);
+    extractBar.stop();
+  },
   onCacheExtractComplete: (count) => {
     if (extractBar) {
       extractBar.setTotal(count);
@@ -92,7 +106,66 @@ const result = await runFullPipeline({
       extractBar.stop();
     }
   },
+  onDatacorePrepared: (ctx) => {
+    scrapeTypesCount = ctx.selectedTypes.length;
+  },
+  onRecordGraphStart: (total) => {
+    log('Building DataCore record graph (parsing all XML files)...');
+    recordGraphBar = new cliProgress.SingleBar({
+      format: 'Graph {bar} {percentage}% | {value}/{total} XMLs',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+    recordGraphBar.start(total, 0);
+  },
+  onRecordGraphProgress: (current, total) => {
+    recordGraphBar?.update(current);
+    if (current >= total) recordGraphBar?.stop();
+  },
+  onRecordGraphCacheHit: (recordCount, outputPath) => {
+    log(`Using cached DataCore record graph: ${outputPath}`);
+    recordGraphBar = new cliProgress.SingleBar({
+      format: 'Graph {bar} {percentage}% | {value}/{total} XMLs (Cached)',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+    recordGraphBar.start(recordCount, recordCount);
+    recordGraphBar.stop();
+  },
+  onRawFactStart: (slug, total) => {
+    if (!scrapeBar) {
+      scrapeBar = new cliProgress.SingleBar({
+        format: 'Scraping {bar} {percentage}% | {value}/{total} | {type}',
+        barCompleteChar: '\u2588',
+        barIncompleteChar: '\u2591',
+        hideCursor: true,
+      });
+    }
+    scrapeBar.start(total, 0, { type: slug });
+  },
+  onRawFactProgress: (current) => {
+    scrapeBar?.update(current);
+  },
+  onTypeStart: (entry, index) => {
+    if (!scrapeBar) {
+      scrapeBar = new cliProgress.SingleBar({
+        format: 'Scraping {bar} {percentage}% | {value}/{total} | {type}',
+        barCompleteChar: '\u2588',
+        barIncompleteChar: '\u2591',
+        hideCursor: true,
+      });
+    }
+    if (index === 0) scrapeBar.start(scrapeTypesCount, 0, { type: '' });
+    scrapeBar.update(index, { type: entry.name });
+  },
 });
+
+if (scrapeBar) {
+  scrapeBar.update(scrapeTypesCount, { type: '' });
+  scrapeBar.stop();
+}
 
 log('=== Done ===');
 if (result.exitCode !== 0) process.exit(result.exitCode);

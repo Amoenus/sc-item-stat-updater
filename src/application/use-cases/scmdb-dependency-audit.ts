@@ -51,19 +51,19 @@ const MISSION_CLASSIFICATIONS: Record<
     migrationSlice:
       'Retired for mining locations; keep watching mining-journal.csv separately for journal rarity labels.',
   },
-  'mission-scmdb-descriptions': {
-    classification: 'Probably extractable from DataCore with new graph traversal',
+  'mission-datacore-descriptions': {
+    classification: 'Already extractable from DataCore',
     reason:
-      'Mission descriptions are currently sourced from SCMDB contracts enriched with cooldowns, encounters, hauling details, blueprint rewards, and item reward joins. DataCore now emits contract-generators.datacore.csv for generated title/description variants, contract-generator-intel.datacore.csv for generated-contract time/buy-in text, contract-templates.datacore.csv for objective/detail keys and display flags, contract-template-hauling.datacore.csv for first-party hauling orders with resolved resource classes and mostly resolved resource name keys, mission-brokers.datacore.csv for first-party broker rewards/timing/flags, mission-contract-intel.datacore.csv for DataCore-derived reward/time/cooldown text, and mission-localization.datacore.csv from mission/contract record graph references. Combined checked-in DataCore keys overlap 227 of 720 SCMDB description rows; generator intel overlaps 143 SCMDB ContractIntel rows and is contained in 140 of those rendered rows, broker contract-intel rows overlap 26 SCMDB ContractIntel keys and exactly match 8 cooldown strings, and hauling templates map through generators to 21 of 208 SCMDB hauling rows. These are reconstruction inputs rather than active replacements.',
+      'Mission descriptions are now natively reconstructed from DataCore contract-generators.datacore.csv, mission-contract-intel.datacore.csv, and contract-hauling-summary.datacore.csv. SCMDB bridge is retired.',
     migrationSlice:
-      'Extend the DataCore mission extractor beyond localization references to recover contract text variants, cooldowns, encounters, hauling details, blueprint rewards, and item reward joins.',
+      'Retired for mission descriptions. Blueprint rewards and item reward joins will be reintroduced once fully mapped.',
   },
-  'mission-scmdb-titles': {
-    classification: 'Probably extractable from DataCore with new graph traversal',
+  'mission-datacore-titles': {
+    classification: 'Already extractable from DataCore',
     reason:
-      'Mission titles and chain tags currently come from the SCMDB mission CSV. DataCore now emits contract-generators.datacore.csv, contract-templates.datacore.csv, mission-brokers.datacore.csv, and mission-localization.datacore.csv from mission/contract records. Combined checked-in DataCore keys overlap 238 of 694 SCMDB title rows; contract template keys do not directly overlap SCMDB mission localization rows yet, so title replacement still needs deeper contract/variant traversal.',
+      'Mission titles are now natively reconstructed from DataCore contract-generators.datacore.csv, including intro variants. SCMDB bridge is retired.',
     migrationSlice:
-      'Extend the DataCore mission extractor to recover title variants plus blueprint, intro, and chain markers from first-party mission records.',
+      'Retired for mission titles. Blueprint markers will be reintroduced once blueprint reward structures are fully mapped.',
   },
 };
 

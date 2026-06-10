@@ -5,9 +5,9 @@ import path from 'node:path';
 import test from 'node:test';
 import { runAdagioLocationTagUpdate } from '../../enrichment/updates/adagio-location-tags';
 import { runComponentTitleUpdate } from '../../enrichment/updates/component-titles';
+import missionDescriptionsConfig from '../../items/missions/datacore-descriptions';
+import missionTitlesConfig from '../../items/missions/datacore-titles';
 import { buildJournalValue } from '../../items/missions/mining-journal';
-import missionDescriptionsConfig from '../../items/missions/scmdb-descriptions';
-import missionTitlesConfig from '../../items/missions/scmdb-titles';
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), 'generated-string-snapshot-'));
@@ -35,7 +35,7 @@ test('snapshot: SCMDB mission description preserves metadata ordering and whites
 
   assert.equal(
     result,
-    String.raw`Deliver the package to ~mission(Location|Address).\n\n** Contract Intel **\nReward: 12,000 aUEC\nTime Limit: 18 min\n\nCooldown: 45m\n\nAvoid collateral damage.\n\n[BP Reward]\n\nSchematic: Frostbite Cooler\n\n[Item Reward]\n\nUtility Pack`,
+    'Deliver the package to ~mission(Location|Address).\\n\\n** Contract Intel **\\nReward: 12,000 aUEC\\nTime Limit: 18 min\\n\\nAvoid collateral damage.\\n\\n[BP Reward]\\n\\nSchematic: Frostbite Cooler\\n\\n[Item Reward]\\n\\nUtility Pack',
   );
 });
 

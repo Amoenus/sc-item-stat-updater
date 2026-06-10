@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { mapConcurrent } from './concurrency';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
-import { mapConcurrent } from './concurrency';
 
 const DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX = 'libs/foundry/records/contracts';
 
@@ -102,7 +102,9 @@ export async function extractDataCoreContractTemplates(
           'titleOverride',
           'descriptionOverride',
         ]).join(' | '),
-        navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(' | '),
+        navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(
+          ' | ',
+        ),
         stringHashKeys: readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), [
           'textId',
         ]).join(' | '),
@@ -116,7 +118,7 @@ export async function extractDataCoreContractTemplates(
       options.onProgress?.(completed, records.length);
       return row;
     },
-    50
+    50,
   );
 
   rows.push(...(mapped.filter((r) => r !== null) as DataCoreContractTemplateRecord[]));

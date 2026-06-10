@@ -56,7 +56,6 @@ if (values['scmdb-audit']) {
   process.exit(0);
 }
 
-
 if (values.help || !category) {
   const available = await listCategories();
   const activeSlugs = [...available.datacore, ...available.missions];

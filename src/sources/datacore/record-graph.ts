@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
+import Piscina from 'piscina';
+import { mapConcurrent } from './concurrency';
 import type { DataCoreLocalizationReference, DataCoreRecordGraph, DataCoreRecordNode } from './types';
 import { collectDataCoreXmlFiles } from './xml-files';
-import { loadXml } from './xml-parser';
 
 const LOCALIZATION_ATTRIBUTES = [
   'Name',
@@ -19,29 +21,38 @@ const LOCALIZATION_ATTRIBUTES = [
   'vehicleDescription',
 ] as const;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const workerPath = path.resolve(__dirname, 'record-graph-worker.ts');
+
 export interface BuildDataCoreRecordGraphOptions {
   xmlCacheDir: string;
+  onStart?: (total: number) => void;
+  onProgress?: (current: number, total: number) => void;
 }
 export async function buildDataCoreRecordGraph(options: BuildDataCoreRecordGraphOptions): Promise<DataCoreRecordGraph> {
   const xmlFiles = await collectDataCoreXmlFiles(options.xmlCacheDir);
+  options.onStart?.(xmlFiles.length);
 
-  const records: DataCoreRecordNode[] = [];
+  let current = 0;
 
-  for (const xmlPath of xmlFiles.sort((a, b) => a.localeCompare(b))) {
-    const xml = await fs.readFile(xmlPath, 'utf8');
-    let $: CheerioAPI;
-    try {
-      $ = loadXml(xml);
-    } catch {
-      continue;
-    }
+  const piscina = new Piscina({
+    filename: workerPath,
+    execArgv: ['--import', 'tsx/esm'],
+  });
 
-    const root = $(':root').first();
-    const rootElement = root[0];
-    if (rootElement?.type !== 'tag') continue;
+  const rawRecords = await mapConcurrent(
+    xmlFiles.sort((a, b) => a.localeCompare(b)),
+    async (xmlPath) => {
+      const result = await piscina.run({ xmlPath, xmlCacheDir: options.xmlCacheDir });
+      current++;
+      if (current % 250 === 0) options.onProgress?.(current, xmlFiles.length);
+      return result as DataCoreRecordNode | null;
+    },
+    piscina.options.maxThreads * 2,
+  );
 
-    records.push(extractRecordNode($, rootElement, normalizedRecordPath(root, xmlPath, options.xmlCacheDir)));
-  }
+  const records = rawRecords.filter((r): r is DataCoreRecordNode => r !== null);
+  options.onProgress?.(xmlFiles.length, xmlFiles.length);
   return buildGraph(records);
 }
 
@@ -55,7 +66,7 @@ function flattenString(str: string | undefined | null): string {
   return Buffer.from(str).toString();
 }
 
-function extractRecordNode($: CheerioAPI, rootElement: Element, recordPath: string): DataCoreRecordNode {
+export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPath: string): DataCoreRecordNode {
   const root = $(rootElement);
   const rootTag = flattenString(rootElement.name);
   const rootType = flattenString(root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag);
@@ -106,7 +117,7 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
 }
 
-function normalizedRecordPath(root: ReturnType<CheerioAPI>, xmlPath: string, xmlCacheDir: string): string {
+export function normalizedRecordPath(root: ReturnType<CheerioAPI>, xmlPath: string, xmlCacheDir: string): string {
   const pathAttr = root.attr('__path');
   if (pathAttr) return pathAttr.replaceAll('\\', '/');
 

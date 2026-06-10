@@ -17,11 +17,9 @@ function buildMissionContractIntelRow(row: DataCoreMissionBrokerRecord): DataCor
   const cooldown = hasPersonalCooldown(row) ? formatCooldownMinutes(Number(row.personalCooldownTime)) : '';
   const rewardText = reward ? formatCurrency(reward, row.currencyType) : '';
   const timeLimitText = timeLimit ? formatTimeLimit(timeLimit) : '';
-  const efficiencyText = reward && timeLimit ? `${formatCurrency(reward / timeLimit, row.currencyType)}/min` : '';
   const lines = [
     rewardText ? `Reward: ${rewardText}` : '',
     timeLimitText ? `Time Limit: ${timeLimitText}` : '',
-    efficiencyText ? `Efficiency: ${efficiencyText}` : '',
     cooldown ? `Cooldown: ${cooldown}` : '',
   ].filter(Boolean);
 
@@ -35,7 +33,7 @@ function buildMissionContractIntelRow(row: DataCoreMissionBrokerRecord): DataCor
     reward: reward ? String(reward) : '',
     rewardCurrency: row.currencyType,
     timeLimit: timeLimit ? String(timeLimit) : '',
-    efficiency: reward && timeLimit ? String(reward / timeLimit) : '',
+    efficiency: '',
     missionDifficulty: row.missionDifficulty,
     recordGuid: row.recordGuid,
     recordPath: row.recordPath,

@@ -105,8 +105,6 @@ function emptyRows(): ScmdbOutputRows {
     missionRows: [],
     contractRows: [],
     legacyRows: [],
-    blueprintPoolRows: [],
-    contractBlueprintRows: [],
     miningElementRows: [],
     miningJournalRows: [],
   };

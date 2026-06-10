@@ -224,9 +224,7 @@ function selectLocalizationKey(
 ): string {
   for (const attribute of attributes) {
     const byAttribute = record.localizationKeys.find(
-      (reference) =>
-        reference.attribute.toLowerCase() === attribute.toLowerCase() &&
-        predicate(reference.key),
+      (reference) => reference.attribute.toLowerCase() === attribute.toLowerCase() && predicate(reference.key),
     );
     if (byAttribute) return byAttribute.key;
   }

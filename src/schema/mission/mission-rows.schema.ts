@@ -1,26 +1,5 @@
 import { z } from 'zod';
 
-export const BlueprintPoolRowSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-  source: z.string().optional(),
-  blueprints: z.string(),
-});
-export type BlueprintPoolRowDTO = z.infer<typeof BlueprintPoolRowSchema>;
-
-export const ContractBlueprintRowSchema = z.object({
-  contractId: z.string(),
-  debugName: z.string(),
-  title: z.string(),
-  blueprintPoolId: z.string(),
-  poolName: z.string(),
-  chance: z.number(),
-  trigger: z.string(),
-  blueprintSource: z.string().optional(),
-  blueprintItems: z.string(),
-});
-export type ContractBlueprintRowDTO = z.infer<typeof ContractBlueprintRowSchema>;
-
 export const MissionRowSchema = z.object({
   'Localization Key': z.string(),
   Description: z.string(),

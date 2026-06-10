@@ -1,8 +1,7 @@
 import type { ScmdbOutputRows } from './outputs';
 import {
-  SCMDB_BLUEPRINT_POOL_HEADERS,
-  SCMDB_CONTRACT_BLUEPRINT_HEADERS,
   SCMDB_CONTRACT_HEADERS,
+  SCMDB_MEMA_HEADERS,
   SCMDB_MINING_ELEMENT_HEADERS,
   SCMDB_MINING_JOURNAL_HEADERS,
   SCMDB_MISSION_HEADERS,
@@ -35,12 +34,7 @@ export function planScmdbOutputFiles(rows: ScmdbOutputRows): ScmdbOutputFile[] {
       rows: toCsvRows(rows.legacyRows),
       headers: SCMDB_CONTRACT_HEADERS,
     },
-    {
-      fileName: 'blueprint-pools.csv',
-      section: 'root',
-      rows: toCsvRows(rows.blueprintPoolRows),
-      headers: SCMDB_BLUEPRINT_POOL_HEADERS,
-    },
+
     {
       fileName: 'mining-elements.csv',
       section: 'root',
@@ -54,10 +48,10 @@ export function planScmdbOutputFiles(rows: ScmdbOutputRows): ScmdbOutputFile[] {
       headers: SCMDB_MINING_JOURNAL_HEADERS,
     },
     {
-      fileName: 'contract-blueprint-rewards.csv',
+      fileName: 'scmdb-mema.csv',
       section: 'root',
-      rows: toCsvRows(rows.contractBlueprintRows),
-      headers: SCMDB_CONTRACT_BLUEPRINT_HEADERS,
+      rows: toCsvRows(rows.memaRows),
+      headers: SCMDB_MEMA_HEADERS,
     },
   ];
   return files.filter((file) => file.rows.length > 0);

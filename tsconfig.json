@@ -14,7 +14,9 @@
     "sourceMap": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "isolatedModules": true
   },
   "include": ["src/**/*", "bin/**/*"],
   "exclude": ["node_modules", "dist"]

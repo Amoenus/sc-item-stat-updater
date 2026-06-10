@@ -8,6 +8,7 @@ export interface ScmdbDataUrls {
   miningUrl: string;
   craftingItemsUrl: string;
   craftingBlueprintsUrl: string;
+  memaUrl: string;
 }
 
 export type FetchJson = (
@@ -27,6 +28,7 @@ export function buildScmdbDataUrls(file: string): ScmdbDataUrls {
     miningUrl: `${SCMDB_BASE_URL}/mining_data-${versionFile}`,
     craftingItemsUrl: `${SCMDB_BASE_URL}/crafting_items-${versionFile}`,
     craftingBlueprintsUrl: `${SCMDB_BASE_URL}/crafting_blueprints-${versionFile}`,
+    memaUrl: `${SCMDB_BASE_URL}/mema-cache.json`,
   };
 }
 

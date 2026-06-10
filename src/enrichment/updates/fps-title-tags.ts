@@ -146,10 +146,7 @@ function isFpsNameKey(keyLower: string): boolean {
   return FPS_NAME_KEY_PARTS.some((part) => keyLower.includes(part));
 }
 
-function applyFpsTitleTags(
-  lines: string[],
-  keyToTag: Map<string, { tag: string }>,
-) {
+function applyFpsTitleTags(lines: string[], keyToTag: Map<string, { tag: string }>) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
   const processedFamilies = new Set();

@@ -13,8 +13,7 @@ const notCommodityPath = 'libs/foundry/records/entities/commodities/readme.xml';
 const carinitePurePath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_mineral_1h_carinitepure.xml';
 const armillariaPath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_armillaria.xml';
 const armillariaBasePath = 'libs/foundry/records/entities/scitem/harvestables/bases/harvestable_base_armillaria.xml';
-const salvageShieldPath =
-  'libs/foundry/records/entities/haulingentityclass/haulingentityclass_shieldgenerator_s01.xml';
+const salvageShieldPath = 'libs/foundry/records/entities/haulingentityclass/haulingentityclass_shieldgenerator_s01.xml';
 
 test('extractDataCoreCommodities extracts first-party commodity facts discovered through the graph', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-'));
@@ -275,9 +274,7 @@ function makeGraph(): DataCoreRecordGraph {
         rootTag: 'Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01',
         rootType: 'Hauling_EntityClasses',
         entityClass: 'HaulingEntityClass_ShieldGenerator_S01',
-        localizationKeys: [
-          { attribute: 'orderDisplayName', key: 'Salvage_Ship_Component_Shield_Generator_S1_Name' },
-        ],
+        localizationKeys: [{ attribute: 'orderDisplayName', key: 'Salvage_Ship_Component_Shield_Generator_S1_Name' }],
         referencedGuids: [],
       },
     ],

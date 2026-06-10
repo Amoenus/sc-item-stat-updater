@@ -9,8 +9,6 @@ test('buildScmdbOutputRows builds empty row groups for empty SCMDB data', () => 
   assert.deepEqual(rows.missionRows, []);
   assert.deepEqual(rows.contractRows, []);
   assert.deepEqual(rows.legacyRows, []);
-  assert.deepEqual(rows.blueprintPoolRows, []);
-  assert.deepEqual(rows.contractBlueprintRows, []);
   assert.deepEqual(rows.miningElementRows, []);
   assert.deepEqual(rows.miningJournalRows, []);
 });

@@ -1,4 +1,4 @@
-﻿import { createReadStream } from 'node:fs';
+import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { getLogger } from '../infrastructure/logger';
@@ -58,6 +58,27 @@ function recordDuplicate(
  * instead of iterating over all keys on every miss.
  */
 export async function readIniFile(filePath: string): Promise<{
+  lines: string[];
+  index: Record<string, number>;
+  lowerCaseIndex: Map<string, string>;
+  duplicates: Map<string, number[]>;
+  allOccurrences: Map<string, number[]>;
+}> {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      return await _readIniFile(filePath);
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (attempt === 5 || !(code === 'EPERM' || code === 'EBUSY' || code === 'UNKNOWN')) {
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
+    }
+  }
+  throw new Error('Unreachable');
+}
+
+async function _readIniFile(filePath: string): Promise<{
   lines: string[];
   index: Record<string, number>;
   lowerCaseIndex: Map<string, string>;
@@ -165,14 +186,27 @@ export async function writeIniFile(
   const content = `\ufeff${lines.join('\n')}`;
   const tmpPath = `${filePath}.tmp`;
   await fs.writeFile(tmpPath, content, 'utf-8');
-  try {
-    await fs.rename(tmpPath, filePath);
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'EPERM' || (err as NodeJS.ErrnoException).code === 'EBUSY') {
-      await fs.writeFile(filePath, content, 'utf-8');
-      await fs.unlink(tmpPath).catch(() => {});
-    } else {
-      throw err;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      await fs.rename(tmpPath, filePath);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EBUSY' || code === 'UNKNOWN') {
+        try {
+          await fs.writeFile(filePath, content, 'utf-8');
+          await fs.unlink(tmpPath).catch(() => {});
+          return;
+        } catch (writeErr) {
+          const writeCode = (writeErr as NodeJS.ErrnoException).code;
+          if (attempt === 5 || !(writeCode === 'EPERM' || writeCode === 'EBUSY' || writeCode === 'UNKNOWN')) {
+            throw writeErr;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
+        }
+      } else {
+        throw err;
+      }
     }
   }
 }

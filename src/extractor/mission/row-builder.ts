@@ -1,9 +1,5 @@
 import { IniTag } from '../../localization/ini-tags.js';
 import {
-  type BlueprintPoolRowDTO,
-  BlueprintPoolRowSchema,
-  type ContractBlueprintRowDTO,
-  ContractBlueprintRowSchema,
   type ContractRowDTO,
   ContractRowSchema,
   type MissionRowDTO,
@@ -302,39 +298,6 @@ export function buildContractRow(
     ...buildBlueprintRowFields(contract.id, chainData),
     ...buildDefaultedContractRowFields(contract),
     ...buildFactionRewardRowFields(contract.id, factionRewardsContext),
-  });
-}
-
-export function buildBlueprintPoolRows(blueprintPools: BlueprintPoolsDTO): BlueprintPoolRowDTO[] {
-  return Object.entries(blueprintPools).map(([id, pool]) =>
-    BlueprintPoolRowSchema.parse({
-      id,
-      name: pool.name,
-      source: pool.source,
-      blueprints: flattenValue(pool.blueprints),
-    }),
-  );
-}
-
-export function buildContractBlueprintRows(
-  contracts: ContractDTO[],
-  blueprintPools: BlueprintPoolsDTO,
-): ContractBlueprintRowDTO[] {
-  return contracts.flatMap((contract) => {
-    if (!contract.blueprintRewards) return [];
-    return contract.blueprintRewards.map((entry) =>
-      ContractBlueprintRowSchema.parse({
-        contractId: contract.id,
-        debugName: contract.debugName,
-        title: contract.title,
-        blueprintPoolId: entry.blueprintPool,
-        poolName: entry.poolName,
-        chance: entry.chance,
-        trigger: entry.trigger,
-        blueprintSource: blueprintPools[entry.blueprintPool]?.source,
-        blueprintItems: flattenValue(blueprintPools[entry.blueprintPool]?.blueprints),
-      }),
-    );
   });
 }
 

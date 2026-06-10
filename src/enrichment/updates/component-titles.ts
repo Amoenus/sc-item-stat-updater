@@ -54,10 +54,7 @@ function normalizeLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
 }
 
-function applyMiningTitlePrefixes(
-  lines: string[],
-  keyToPrefix: Map<string, { prefix: string }>,
-) {
+function applyMiningTitlePrefixes(lines: string[], keyToPrefix: Map<string, { prefix: string }>) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
   const processedFamilies = new Set();

@@ -11,10 +11,17 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
     'SPViewer: legacy comparison/audit source only.',
   ]);
 
-  const descriptions = audit.entries.find((entry) => entry.slug === 'mission-scmdb-descriptions');
-  assert.equal(descriptions?.classification, 'Probably extractable from DataCore with new graph traversal');
+  const descriptions = audit.entries.find((entry) => entry.slug === 'mission-datacore-descriptions');
+  assert.equal(descriptions?.classification, 'Already extractable from DataCore');
   assert.equal(descriptions?.activeForDatacoreProvider, true);
-  assert.deepEqual(descriptions?.sourceFiles, ['missions/scmdb-missions.csv']);
+  assert.deepEqual(descriptions?.sourceFiles, [
+    'datacore:contract-generator-intel.datacore.csv',
+    'datacore:mission-contract-intel.datacore.csv',
+    'optional:datacore:contract-hauling-summary.datacore.csv',
+    'datacore:contract-generators.datacore.csv',
+    'datacore:blueprint-pools.datacore.csv',
+    'datacore:crafting-blueprints.datacore.csv',
+  ]);
 
   const commodities = audit.entries.find((entry) => entry.slug === 'mission-commodities');
   assert.equal(commodities?.classification, 'Already extractable from DataCore');
@@ -49,10 +56,22 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
   assert.equal(miningElements?.sourceFiles.includes('datacore:mining-quality-quantizations.datacore.csv'), true);
   assert.match(miningElements?.reason ?? '', /rarity from mineable rock variants/);
   assert.match(miningElements?.reason ?? '', /SCMDB cannot create active mining-element target rows/);
-  assert.match(miningElements?.reason ?? '', /no longer backfills mining behavior, rarity, density, scan signatures, or quality bands/);
-  assert.match(miningElements?.reason ?? '', /Optional SCMDB rows can still contribute derived best-refinery bonus joins/);
-  assert.match(miningElements?.reason ?? '', /refiningprocess records define only global process speed\/quality labels/);
-  assert.match(miningElements?.migrationSlice ?? '', /Density is intentionally omitted until a DataCore source is proven/);
+  assert.match(
+    miningElements?.reason ?? '',
+    /no longer backfills mining behavior, rarity, density, scan signatures, or quality bands/,
+  );
+  assert.match(
+    miningElements?.reason ?? '',
+    /Optional SCMDB rows can still contribute derived best-refinery bonus joins/,
+  );
+  assert.match(
+    miningElements?.reason ?? '',
+    /refiningprocess records define only global process speed\/quality labels/,
+  );
+  assert.match(
+    miningElements?.migrationSlice ?? '',
+    /Density is intentionally omitted until a DataCore source is proven/,
+  );
   assert.match(miningElements?.migrationSlice ?? '', /station\/material bonus source is proven/);
 
   const miningLocations = audit.entries.find((entry) => entry.slug === 'mission-mining-locations');
@@ -73,7 +92,7 @@ test('formatted SCMDB dependency audit shows source hierarchy and migration slic
   assert.match(output, /DataCore\/Data\.p4k: authoritative source/);
   assert.match(
     output,
-    /\| update category \| mission-scmdb-descriptions \(SCMDB mission descriptions\) \| missions\/scmdb-missions\.csv \| Probably extractable from DataCore with new graph traversal \| yes \|/,
+    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
   );
   assert.doesNotMatch(output, /regen-mining-locations/);
   assert.match(output, /Why SCMDB is still used:/);

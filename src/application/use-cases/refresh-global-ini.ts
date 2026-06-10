@@ -31,6 +31,12 @@ export async function refreshGlobalIni(options: RefreshGlobalIniOptions): Promis
   }
 
   try {
+    try {
+      // Workaround for Windows UNKNOWN: unknown error, copyfile when destination is locked
+      await fs.unlink(options.repoIniPath);
+    } catch (e) {
+      // Ignore if file doesn't exist
+    }
     await copyFile(extractedGamePath, options.repoIniPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

@@ -4,6 +4,7 @@ import { toCsv } from '../../infrastructure/csv';
 import {
   ScmdbCraftingBlueprintsSchema,
   ScmdbCraftingItemsSchema,
+  ScmdbMemaCacheSchema,
   ScmdbMergedSchema,
   ScmdbMiningDataSchema,
   ScmdbVersionsSchema,
@@ -69,13 +70,17 @@ export async function runScmdbScrape(options: RunScmdbScrapeOptions): Promise<Ru
     options.onFileWritten?.(file);
   };
 
-  const { mergedUrl, miningUrl, craftingItemsUrl, craftingBlueprintsUrl } = buildScmdbDataUrls(selected.file);
+  const { mergedUrl, miningUrl, craftingItemsUrl, craftingBlueprintsUrl, memaUrl } = buildScmdbDataUrls(selected.file);
   const mergedRaw = await fetchScmdbJson(mergedUrl, fetchJson);
   await writeOutput(selected.file, JSON.stringify(mergedRaw, null, 2));
 
   const miningRaw = await fetchScmdbJson(miningUrl, fetchJson).catch(() => null);
   const craftingItemsRaw = await fetchScmdbJson(craftingItemsUrl, fetchJson).catch(() => null);
   const craftingBlueprintsRaw = await fetchScmdbJson(craftingBlueprintsUrl, fetchJson).catch(() => null);
+  const memaRaw = await fetchScmdbJson(memaUrl, fetchJson).catch((err) => {
+    console.error('Failed to fetch MEMA cache:', err);
+    return null;
+  });
 
   const versionFile = selected.file.replace('merged-', '');
   if (miningRaw) {
@@ -88,14 +93,18 @@ export async function runScmdbScrape(options: RunScmdbScrapeOptions): Promise<Ru
   if (craftingBlueprintsRaw) {
     await writeOutput(`crafting_blueprints-${versionFile}`, JSON.stringify(craftingBlueprintsRaw, null, 2));
   }
+  if (memaRaw) {
+    await writeOutput('mema-cache.json', JSON.stringify(memaRaw, null, 2));
+  }
 
   if (!options.rawOnly) {
     const mergedData = ScmdbMergedSchema.parse(mergedRaw);
     const miningData = miningRaw ? ScmdbMiningDataSchema.parse(miningRaw) : null;
+    const memaData = memaRaw ? ScmdbMemaCacheSchema.parse(memaRaw) : null;
     if (craftingItemsRaw) ScmdbCraftingItemsSchema.parse(craftingItemsRaw);
     if (craftingBlueprintsRaw) ScmdbCraftingBlueprintsSchema.parse(craftingBlueprintsRaw);
 
-    const outputRows = buildScmdbOutputRows(mergedData, miningData);
+    const outputRows = buildScmdbOutputRows(mergedData, miningData, memaData);
     for (const outputFile of planScmdbOutputFiles(outputRows)) {
       await writeOutput(outputFile.fileName, toCsv(outputFile.rows, outputFile.headers), outputFile.section);
     }

@@ -1,10 +1,7 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import { buildDataCoreContractHaulingSummary } from './contract-hauling-summary-builder';
-import type {
-  DataCoreContractGeneratorRecord,
-  DataCoreContractTemplateHaulingOrderRecord,
-} from './types';
+import type { DataCoreContractGeneratorRecord, DataCoreContractTemplateHaulingOrderRecord } from './types';
 
 describe('buildDataCoreContractHaulingSummary', () => {
   it('combines hauling orders with generators and formats summary', () => {
@@ -16,6 +13,7 @@ describe('buildDataCoreContractHaulingSummary', () => {
         templateClass: 'HaulCargo_AtoB_Supply_Carbon',
         descriptionKey: 'RedWind_HaulCargo_desc_intro',
         descriptionVariantKeys: 'RedWind_HaulCargo_desc_variant1 | @RedWind_HaulCargo_desc_variant2',
+        blueprintRewardPoolGuids: '',
         templateGuid: '6eb86e29-817a-4463-b37e-5a719004b4dc',
         handlerType: '',
         handlerDebugName: '',
@@ -83,7 +81,7 @@ describe('buildDataCoreContractHaulingSummary', () => {
     ];
 
     const result = buildDataCoreContractHaulingSummary(generators, haulingOrders);
-    
+
     assert.equal(result.length, 3); // primary + 2 variants
 
     assert.equal(result[0].descriptionKey, 'RedWind_HaulCargo_desc_intro');
@@ -109,6 +107,7 @@ describe('buildDataCoreContractHaulingSummary', () => {
         templateClass: 'NoHaulingTemplate',
         descriptionKey: 'desc',
         descriptionVariantKeys: '',
+        blueprintRewardPoolGuids: '',
         templateGuid: 'missing-guid',
         handlerType: '',
         handlerDebugName: '',

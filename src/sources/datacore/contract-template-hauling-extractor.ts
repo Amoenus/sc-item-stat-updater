@@ -110,8 +110,6 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
 }
 
-
-
 function firstLocalizationKey(values: string[]): string {
   for (const value of values) {
     const key = normalizeLocalizationKey(value);

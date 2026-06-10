@@ -104,7 +104,10 @@ describe('mining element updater', () => {
     assert.strictEqual(agricium.Density, '');
     assert.strictEqual(agricium['Best Refinery'], 'ARC-L1 Wide Forest Station (+5)');
 
-    assert.equal(rows.some((row) => row['Element Name'] === 'Gold'), false);
+    assert.equal(
+      rows.some((row) => row['Element Name'] === 'Gold'),
+      false,
+    );
   });
 
   it('prefers DataCore Material Name, rarity, scan signatures, and quality bands over SCMDB', () => {
@@ -281,7 +284,10 @@ describe('mining element updater', () => {
     assert.equal(agricium?.['Material Name'], 'Agricium');
     assert.equal(agricium?.['Scan Signature'], '3885', 'DataCore scan signature should win over SCMDB');
     assert.equal(agricium?.['Quality Bands'], '34.6% / 58.8% / 100.0%');
-    assert.equal(rows.find((row) => row['Element Name'] === 'Titanium (Ore)'), undefined);
+    assert.equal(
+      rows.find((row) => row['Element Name'] === 'Titanium (Ore)'),
+      undefined,
+    );
   });
 
   it('loads DataCore mining elements when optional SCMDB bridge rows are missing', async () => {

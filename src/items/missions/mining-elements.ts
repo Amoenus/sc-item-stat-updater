@@ -298,8 +298,7 @@ function toMiningElementRow(
     'Material Name': datacoreRow['Material Name'] || '',
     'Mining Difficulty': behaviorFacts ? deriveMiningDifficulty(behaviorFacts) : '',
     'Volatility Note': behaviorFacts ? deriveVolatilityNote(behaviorFacts) : '',
-    'Cluster Note':
-      behaviorFacts?.clusterFactor !== undefined ? deriveClusterNote(behaviorFacts.clusterFactor) : '',
+    'Cluster Note': behaviorFacts?.clusterFactor !== undefined ? deriveClusterNote(behaviorFacts.clusterFactor) : '',
     'Best Refinery': bridgeBestRefinery,
     'Localization Key': datacoreRow['Inferred Description Key'] || '',
     Source: source,

@@ -84,9 +84,6 @@ export async function listCategories(): Promise<{ missions: string[]; datacore: 
       return [];
     }
   };
-  const [missions, datacore] = await Promise.all([
-    readSlugs(missionsDir, 'mission-'),
-    readSlugs(datacoreDir, 'dc-'),
-  ]);
+  const [missions, datacore] = await Promise.all([readSlugs(missionsDir, 'mission-'), readSlugs(datacoreDir, 'dc-')]);
   return { missions, datacore };
 }

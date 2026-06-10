@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import type fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
@@ -62,11 +62,10 @@ export function runTool(cmd: string, args: string[], opts: { cwd?: string } = {}
 export async function runToolAsync(cmd: string, args: string[], opts: { cwd?: string } = {}): Promise<void> {
   const winArgs = args.map(toWinPath);
   const winCwd = opts.cwd ? toWinPath(opts.cwd) : undefined;
-  
+
   return new Promise((resolve, reject) => {
-    const { spawn } = require('node:child_process');
     const child = spawn(cmd, winArgs, { stdio: 'inherit', cwd: winCwd });
-    
+
     child.on('error', (err: Error) => reject(err));
     child.on('close', (code: number) => {
       if (code !== 0) {
@@ -171,11 +170,32 @@ export async function readGameVersion(liveDir: string): Promise<string> {
     const manifestContent = await fsp.readFile(manifestPath, 'utf8');
     const json = JSON.parse(manifestContent);
     const data = json?.Data ?? json;
+    const changeNum: string = data?.RequestedP4ChangeNum ?? '';
+
+    // Attempt to dynamically resolve the true semantic version from SCMDB 
+    // because build_manifest.id branch names are notoriously outdated.
+    if (changeNum) {
+      try {
+        const response = await fetch('https://scmdb.net/data/versions.json', { signal: AbortSignal.timeout(5000) });
+        if (response.ok) {
+          const versions = (await response.json()) as { version: string }[];
+          const match = versions.find((v) => v.version.endsWith(`.${changeNum}`));
+          if (match) {
+            // match.version is something like "4.8.1-live.11952564"
+            // We strip "-live" or "-ptu" so it returns "4.8.1.11952564", matching the expected format
+            // for downstream parts parsing in runDatacoreScrape.
+            return match.version.replace(/-(?:live|ptu)/i, '');
+          }
+        }
+      } catch {
+        // Network failure or no match, gracefully fall back to regex parsing
+      }
+    }
+
     // Branch looks like "sc-alpha-4.8.0-hotfix" → extract "4.8.0"
     const branch: string = data?.Branch ?? '';
     const versionMatch = /(\d+\.\d+\.\d+)/.exec(branch);
-    const semver = versionMatch?.[1] === '4.8.1' && data?.RequestedP4ChangeNum === '11875683' ? '4.8.1' : versionMatch?.[1];
-    const changeNum: string = data?.RequestedP4ChangeNum ?? '';
+    const semver = versionMatch?.[1];
     if (semver && changeNum) return `${semver}.${changeNum}`;
     if (semver) return semver;
   } catch {

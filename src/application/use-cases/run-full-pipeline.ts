@@ -2,7 +2,7 @@ import path from 'node:path';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
 import { runBatchUpdate } from './run-batch-update';
-import { runDatacoreScrape } from './run-datacore-scrape';
+import { type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
 import { runScmdbScrape } from './run-scmdb-scrape';
 import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
 import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
@@ -23,9 +23,17 @@ export interface RunFullPipelineOptions {
   runScmdb?: typeof runScmdbScrape;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
+  onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractProgress?: (count: number) => void;
   onCacheExtractComplete?: (count: number) => void;
+  onDatacorePrepared?: (context: { selectedTypes: DataCoreTypeEntry[] }) => void;
+  onRecordGraphStart?: (total: number) => void;
+  onRecordGraphProgress?: (current: number, total: number) => void;
+  onRecordGraphCacheHit?: (recordCount: number, outputPath: string) => void;
+  onRawFactStart?: (slug: string, total: number) => void;
+  onRawFactProgress?: (current: number) => void;
+  onTypeStart?: (entry: DataCoreTypeEntry, index: number) => void;
 }
 
 export interface RunFullPipelineResult {
@@ -59,9 +67,17 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       ptu: options.ptu,
       skipUnforge: options.skipUnforge,
       forceExtract: options.forceExtract,
+      onCacheHit: options.onCacheHit,
       onCacheExtractStart: options.onCacheExtractStart,
       onCacheExtractProgress: options.onCacheExtractProgress,
       onCacheExtractComplete: options.onCacheExtractComplete,
+      onPrepared: options.onDatacorePrepared,
+      onRecordGraphStart: options.onRecordGraphStart,
+      onRecordGraphProgress: options.onRecordGraphProgress,
+      onRecordGraphCacheHit: options.onRecordGraphCacheHit,
+      onRawFactStart: options.onRawFactStart,
+      onRawFactProgress: options.onRawFactProgress,
+      onTypeStart: options.onTypeStart,
     });
     if (datacoreResult.exitCode !== 0) return { exitCode: datacoreResult.exitCode, extractedGamePath, repoIniPath };
     options.onStepComplete?.('DataCore scraped');

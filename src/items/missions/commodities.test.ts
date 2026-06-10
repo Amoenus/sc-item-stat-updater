@@ -75,7 +75,10 @@ describe('commodities source loading', () => {
     assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold')?.Name, '');
     assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_gold_desc')?.Source, 'DataCore');
     assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_type_metal')?.Source, 'DataCore');
-    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_silver'), undefined);
+    assert.equal(
+      rows.find((row) => row['Localization Key'] === 'items_commodities_silver'),
+      undefined,
+    );
   });
 
   it('loads relative DataCore commodity CSV without requiring SCMDB JSON', async () => {

@@ -216,10 +216,7 @@ export const DATACORE_RAW_FACTS: RawFactListingEntry[] = [
 ];
 
 export async function buildCategoryListing(): Promise<CategoryListing> {
-  const [datacore, missions] = await Promise.all([
-    loadDatacoreConfigs(),
-    loadMissionConfigs(),
-  ]);
+  const [datacore, missions] = await Promise.all([loadDatacoreConfigs(), loadMissionConfigs()]);
   const missionEntries = [...missions.entries()];
   const datacoreBackedMissions = new Map(
     missionEntries.filter(([, config]) => inferCategorySourceProvider(config, 'scmdb') === 'datacore'),
@@ -372,9 +369,7 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
   ];
 
   for (const row of matrix.rows) {
-    lines.push(
-      `| ${row.category} | ${formatCoverageCell(row.datacore)} | ${formatCoverageCell(row.scmdb)} |`,
-    );
+    lines.push(`| ${row.category} | ${formatCoverageCell(row.datacore)} | ${formatCoverageCell(row.scmdb)} |`);
   }
 
   lines.push('', 'Mixed-source batch modes:', '| Command | Sources | Notes |', '| --- | --- | --- |');

@@ -1,8 +1,7 @@
-import type { ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
+import type { ScmdbMemaCacheDTO, ScmdbMergedDTO, ScmdbMiningDataDTO } from '../../schema/scmdb.schemas';
+import { buildMemaRows } from './mema-parser';
 import { buildMiningElementRows, buildMiningJournalRows } from './mining-parser';
 import {
-  buildBlueprintPoolRows,
-  buildContractBlueprintRows,
   buildContractRow,
   buildFactionRewardsContext,
   buildMissionRows,
@@ -79,7 +78,6 @@ export const SCMDB_CONTRACT_HEADERS = [
   'propertyValues',
 ];
 
-export const SCMDB_BLUEPRINT_POOL_HEADERS = ['id', 'name', 'source', 'blueprints'];
 
 export const SCMDB_MINING_ELEMENT_HEADERS = [
   'Element Name',
@@ -105,31 +103,30 @@ export const SCMDB_MINING_ELEMENT_HEADERS = [
 
 export const SCMDB_MINING_JOURNAL_HEADERS = ['Rarity Category', 'Element List', 'Insight Summary'];
 
-export const SCMDB_CONTRACT_BLUEPRINT_HEADERS = [
-  'contractId',
-  'debugName',
-  'title',
-  'blueprintPoolId',
-  'poolName',
-  'chance',
-  'trigger',
-  'blueprintSource',
-  'blueprintItems',
+export const SCMDB_MEMA_HEADERS = [
+  'description_key',
+  'mema_uec',
+  'rate_p50',
+  'dur_avg',
+  'avg_diff',
+  'avg_sat',
+  'runs',
 ];
+
 
 export interface ScmdbOutputRows {
   missionRows: ReturnType<typeof buildMissionRows>;
   contractRows: ReturnType<typeof buildContractRow>[];
   legacyRows: ReturnType<typeof buildContractRow>[];
-  blueprintPoolRows: ReturnType<typeof buildBlueprintPoolRows>;
-  contractBlueprintRows: ReturnType<typeof buildContractBlueprintRows>;
   miningElementRows: ReturnType<typeof buildMiningElementRows>;
   miningJournalRows: ReturnType<typeof buildMiningJournalRows>;
+  memaRows: ReturnType<typeof buildMemaRows>;
 }
 
 export function buildScmdbOutputRows(
   mergedData: ScmdbMergedDTO,
   miningData: ScmdbMiningDataDTO | null,
+  memaData: ScmdbMemaCacheDTO | null,
 ): ScmdbOutputRows {
   const chainData = collectBlueprintChainData(mergedData.contracts);
   const factionRewardsContext = buildFactionRewardsContext(
@@ -146,9 +143,8 @@ export function buildScmdbOutputRows(
     legacyRows: mergedData.legacyContracts.map((contract) =>
       buildContractRow(toLegacyContractRowSource(contract), chainData, factionRewardsContext),
     ),
-    blueprintPoolRows: buildBlueprintPoolRows(mergedData.blueprintPools),
-    contractBlueprintRows: buildContractBlueprintRows(mergedData.contracts, mergedData.blueprintPools),
     miningElementRows: miningData ? buildMiningElementRows(miningData) : [],
     miningJournalRows: miningData ? buildMiningJournalRows(miningData) : [],
+    memaRows: memaData ? buildMemaRows(memaData, mergedData) : [],
   };
 }

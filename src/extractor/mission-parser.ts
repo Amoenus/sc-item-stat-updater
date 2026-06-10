@@ -31,8 +31,6 @@ export {
 } from './mission/rewards.js';
 
 export {
-  buildBlueprintPoolRows,
-  buildContractBlueprintRows,
   buildContractRow,
   buildMissionRows,
   type ContractRowSource,

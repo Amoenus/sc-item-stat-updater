@@ -328,7 +328,9 @@ function resolveDeclaredSourceFiles(
     const sourceDir = sourceFile.sourceDir ?? 'csvDir';
     const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
     if (!baseDir) return [];
-    return [{ filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir), optional: sourceFile.optional }];
+    return [
+      { filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir), optional: sourceFile.optional },
+    ];
   });
 
   return [...staticFiles, ...companionFiles];

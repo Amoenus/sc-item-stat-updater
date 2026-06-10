@@ -10,7 +10,6 @@ import {
 test('category listing includes representative provider families and source metadata', async () => {
   const listing = await buildCategoryListing();
 
-
   const dcPowerPlants = listing.categories.find((entry) => entry.slug === 'dc-powerplants');
   assert.deepEqual(dcPowerPlants, {
     slug: 'dc-powerplants',
@@ -23,14 +22,21 @@ test('category listing includes representative provider families and source meta
     skippedByBatch: false,
   });
 
-  const missionDescriptions = listing.categories.find((entry) => entry.slug === 'mission-scmdb-descriptions');
+  const missionDescriptions = listing.categories.find((entry) => entry.slug === 'mission-datacore-descriptions');
   assert.deepEqual(missionDescriptions, {
-    slug: 'mission-scmdb-descriptions',
-    label: 'SCMDB mission descriptions',
-    family: 'SCMDB',
-    sourceRoot: 'csv/scmdb',
-    channelExpectation: 'csv/scmdb/<latest LIVE or PTU version>',
-    sourceFiles: ['missions/scmdb-missions.csv'],
+    slug: 'mission-datacore-descriptions',
+    label: 'DataCore mission descriptions',
+    family: 'DataCore',
+    sourceRoot: 'csv/datacore',
+    channelExpectation: 'csv/datacore/<latest LIVE or PTU version>',
+    sourceFiles: [
+      'datacore:contract-generator-intel.datacore.csv',
+      'datacore:mission-contract-intel.datacore.csv',
+      'optional:datacore:contract-hauling-summary.datacore.csv',
+      'datacore:contract-generators.datacore.csv',
+      'datacore:blueprint-pools.datacore.csv',
+      'datacore:crafting-blueprints.datacore.csv',
+    ],
     sourceHint: undefined,
     skippedByBatch: false,
   });
@@ -46,7 +52,7 @@ test('category listing includes representative provider families and source meta
   assert.equal(miningElements?.sourceFiles.includes('optional:scmdb:mining-elements.csv'), true);
 
   const scmdbSlugs = listing.categories.filter((entry) => entry.family === 'SCMDB').map((entry) => entry.slug);
-  assert.deepEqual(scmdbSlugs, ['mission-scmdb-descriptions', 'mission-scmdb-titles']);
+  assert.deepEqual(scmdbSlugs, []);
 
   assert.deepEqual(
     listing.rawFacts.map((entry) => [entry.slug, entry.sourceFiles[0]]),
@@ -84,10 +90,7 @@ test('formatted category listing distinguishes provider families and mixed-sourc
     output,
     /DataCore active categories:\n(?:.*\n)*? {2}dc-powerplants \| DC Power Plants \| files: powerplant\.datacore\.csv/,
   );
-  assert.match(
-    output,
-    /SCMDB derived bridge categories:\n(?:.*\n)*? {2}mission-scmdb-descriptions \| SCMDB mission descriptions \| files: missions\/scmdb-missions\.csv/,
-  );
+  assert.match(output, /SCMDB derived bridge categories:/);
   assert.match(output, /mission-commodities \| Commodities \| files: datacore:commodities\.datacore\.csv/);
   assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-commodities/);
   assert.doesNotMatch(output, /SCMDB derived bridge categories:\n(?:.*\n)*?mission-mining-locations/);
@@ -113,11 +116,16 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     scmdb: { status: 'unavailable' },
   });
 
-  const missionDescriptions = matrix.rows.find((row) => row.category === 'SCMDB mission descriptions');
-  assert.deepEqual(missionDescriptions, {
-    category: 'SCMDB mission descriptions',
-    datacore: { status: 'unavailable' },
-    scmdb: { status: 'derived bridge', slug: 'mission-scmdb-descriptions' },
+  const descriptions = matrix.rows.find((entry) => entry.category === 'DataCore mission descriptions');
+  assert.deepEqual(descriptions, {
+    category: 'DataCore mission descriptions',
+    datacore: {
+      slug: 'mission-datacore-descriptions',
+      status: 'primary',
+    },
+    scmdb: {
+      status: 'unavailable',
+    },
   });
 
   assert.equal(
@@ -128,14 +136,7 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     matrix.rows.some((row) => row.datacore.status === 'primary'),
     true,
   );
-  assert.equal(
-    matrix.rows.some((row) => row.scmdb.status === 'derived bridge'),
-    true,
-  );
-  assert.equal(
-    matrix.rows.some((row) => row.datacore.status === 'unavailable'),
-    true,
-  );
+
   assert.equal(matrix.mixedSources.length, 1);
 });
 
@@ -146,7 +147,7 @@ test('formatted provider coverage matrix includes provider statuses and mixed-so
   assert.match(output, /\| Coolers \| primary \(dc-coolers\) \| unavailable \|/);
   assert.match(
     output,
-    /\| SCMDB mission descriptions \| unavailable \| derived bridge \(mission-scmdb-descriptions\) \|/,
+    /\| DataCore mission descriptions \| primary \(mission-datacore-descriptions\) \| unavailable \|/,
   );
   assert.match(
     output,

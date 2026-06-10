@@ -193,6 +193,7 @@ export interface DataCoreContractGeneratorRecord {
   mentalLoad: string;
   riskOfLoss: string;
   gameKnowledge: string;
+  blueprintRewardPoolGuids: string;
   recordGuid: string;
   recordPath: string;
 }
@@ -770,6 +771,40 @@ export interface DataCoreLocalizationReference {
   attribute: string;
   key: string;
 }
+
+export interface DataCoreBlueprintPoolRecord {
+  ref: string;
+  path: string;
+  poolClass: string;
+  blueprintGuids: string;
+}
+
+export type DataCoreBlueprintPoolDataset = SourceDataset<DataCoreBlueprintPoolRecord> & {
+  source: 'datacore';
+};
+
+export interface DataCoreCraftingBlueprintRecord {
+  ref: string;
+  path: string;
+  blueprintClass: string;
+  targetEntityClassGuid: string;
+  targetEntityClass: string;
+  targetItemNameKey: string;
+  recipeCosts: string;
+}
+
+export type DataCoreCraftingBlueprintDataset = SourceDataset<DataCoreCraftingBlueprintRecord> & {
+  source: 'datacore';
+};
+
+export interface DataCoreMaterialLocalizationRecord {
+  resourceGuid: string;
+  localizationKey: string;
+}
+
+export type DataCoreMaterialLocalizationDataset = SourceDataset<DataCoreMaterialLocalizationRecord> & {
+  source: 'datacore';
+};
 
 export interface DataCoreRecordNode {
   path: string;

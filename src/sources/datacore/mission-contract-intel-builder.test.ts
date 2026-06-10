@@ -19,7 +19,7 @@ test('buildDataCoreMissionContractIntel derives rendered intel from broker facts
       {
         missionClass: 'BountyIntro',
         descriptionKey: 'bounty_intro_desc',
-        contractIntel: String.raw`Reward: 12,500 aUEC\nTime Limit: 25 min\nEfficiency: 500 aUEC/min\nCooldown: 1 h 15 min`,
+        contractIntel: String.raw`Reward: 12,500 aUEC\nTime Limit: 25 min\nCooldown: 1 h 15 min`,
         cooldown: '1 h 15 min',
         reward: '12500',
         rewardCurrency: 'UEC',

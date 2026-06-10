@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { mapConcurrent } from './concurrency';
 import type { DataCoreContractGeneratorRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
-import { mapConcurrent } from './concurrency';
 
 const DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX = 'libs/foundry/records/contracts/contractgenerator';
 
@@ -40,14 +40,20 @@ export async function extractDataCoreContractGenerators(
       root.find('> generators > *').each((_, handlerElement) => {
         const handler = $(handlerElement);
         const handlerType = handlerElement.type === 'tag' ? handlerElement.name : '';
-        const inheritedStringParams = readStringParamOverrides($, handler.find('> contractParams > stringParamOverrides'));
+        const inheritedStringParams = readStringParamOverrides(
+          $,
+          handler.find('> contractParams > stringParamOverrides'),
+        );
 
         for (const section of ['introContracts', 'contracts'] as const) {
           handler.find(`> ${section} > Contract`).each((__, contractElement) => {
             const contract = $(contractElement);
             const templateGuid = contract.attr('template') ?? '';
             const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
-            const contractStringParams = readStringParamOverrides($, contract.find('> paramOverrides > stringParamOverrides'));
+            const contractStringParams = readStringParamOverrides(
+              $,
+              contract.find('> paramOverrides > stringParamOverrides'),
+            );
             const stringParams = new Map([...inheritedStringParams, ...contractStringParams]);
             const generationParams = contract.find('> generationParams > *').first();
             const contractLifeTime = contract.find('> contractLifeTime > ContractLifeTime').first();
@@ -100,18 +106,24 @@ export async function extractDataCoreContractGenerators(
               mentalLoad: difficulty.attr('mentalLoad') ?? '',
               riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
               gameKnowledge: difficulty.attr('gameKnowledge') ?? '',
+              blueprintRewardPoolGuids: contractResults
+                .find('> BlueprintRewards')
+                .map((_, el) => $(el).attr('blueprintPool'))
+                .get()
+                .filter(Boolean)
+                .join(','),
               recordGuid: record.ref,
               recordPath: record.path,
             });
           });
         }
       });
-      
+
       completed++;
       options.onProgress?.(completed, records.length);
       return chunkRows;
     },
-    50
+    50,
   );
 
   rows.push(...mapped.flat());
@@ -120,7 +132,10 @@ export async function extractDataCoreContractGenerators(
   return rows;
 }
 
-function readStringParamOverrides($: ReturnType<typeof loadXml>, root: ReturnType<ReturnType<typeof loadXml>>): Map<string, string> {
+function readStringParamOverrides(
+  $: ReturnType<typeof loadXml>,
+  root: ReturnType<ReturnType<typeof loadXml>>,
+): Map<string, string> {
   const params = new Map<string, string>();
   root.find('> ContractStringParam[param]').each((_, element) => {
     const param = $(element).attr('param') ?? '';
