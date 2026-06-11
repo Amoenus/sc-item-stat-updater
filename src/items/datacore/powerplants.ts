@@ -1,8 +1,9 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('powr_', 'POWR_');
+const getPowerPlantAlternateDescKeys = makeAlternateDataCoreDescKeys('POWR', { includeScItemAlias: true });
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/powerplant',
@@ -42,27 +43,6 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
   },
 };
-
-function getPowerPlantAlternateDescKeys(descKey: string): string[] {
-  const altKeys = new Set<string>();
-  const candidates = [descKey];
-  if (/_SCItem$/i.test(descKey)) {
-    candidates.push(descKey.replace(/_SCItem$/i, ''));
-  } else {
-    candidates.push(`${descKey}_SCItem`);
-  }
-  for (const candidate of candidates) {
-    altKeys.add(candidate);
-    if (candidate.includes('item_Desc_POWR_')) {
-      altKeys.add(candidate.replace('item_Desc_POWR_', 'item_DescPOWR_'));
-    }
-    if (candidate.includes('item_DescPOWR_')) {
-      altKeys.add(candidate.replace('item_DescPOWR_', 'item_Desc_POWR_'));
-    }
-  }
-  altKeys.delete(descKey);
-  return [...altKeys];
-}
 
 export default {
   csvFile: 'powerplant.datacore.csv',

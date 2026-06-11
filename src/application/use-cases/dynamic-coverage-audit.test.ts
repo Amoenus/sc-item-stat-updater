@@ -23,8 +23,8 @@ test('dynamic coverage audit identifies DataCore mission grouping and enhancemen
 
   const commodities = audit.entries.find((entry) => entry.slug === 'mission-commodities');
   assert.equal(commodities?.provider, 'datacore');
-  assert.equal(commodities?.status, 'needs-review');
-  assert.match(commodities?.reviewSignals.join('\n') ?? '', /inline static key exception list/);
+  assert.equal(commodities?.status, 'dynamic');
+  assert.equal(commodities?.reviewSignals.length, 0);
 });
 
 test('dynamic coverage audit keeps any remaining SCMDB categories visible as source gaps', async () => {

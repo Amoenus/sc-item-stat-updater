@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { makeGetTargetKeys, makeGetTargetKeysFromPrefixMap } from './types';
+import { makeAlternateDataCoreDescKeys, makeGetTargetKeys, makeGetTargetKeysFromPrefixMap } from './types';
 
 test('makeGetTargetKeys prefers raw DataCore description keys over entity-class derivation', () => {
   const getTargetKeys = makeGetTargetKeys('shld_', 'SHLD_');
@@ -60,4 +60,20 @@ test('makeGetTargetKeysFromPrefixMap also prefers raw DataCore keys', () => {
     ),
     ['item_DescFPS_ATTACH_Behr_Suppressor'],
   );
+});
+
+test('makeAlternateDataCoreDescKeys creates underscore and SCItem localization variants', () => {
+  const alternateKeys = makeAlternateDataCoreDescKeys('QDRV', { includeScItemAlias: true });
+
+  assert.deepEqual(alternateKeys('item_DescQDRV_JUST_S03_Agni_SCItem'), [
+    'item_Desc_QDRV_JUST_S03_Agni_SCItem',
+    'item_DescQDRV_JUST_S03_Agni',
+    'item_Desc_QDRV_JUST_S03_Agni',
+  ]);
+});
+
+test('makeAlternateDataCoreDescKeys can omit SCItem variants for families that do not use them', () => {
+  const alternateKeys = makeAlternateDataCoreDescKeys('SHLD');
+
+  assert.deepEqual(alternateKeys('item_Desc_SHLD_GODI_S01_FR66'), ['item_DescSHLD_GODI_S01_FR66']);
 });

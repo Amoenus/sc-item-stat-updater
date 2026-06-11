@@ -1,8 +1,9 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
+const getCoolerAlternateDescKeys = makeAlternateDataCoreDescKeys('COOL', { includeScItemAlias: true });
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/cooler',
@@ -42,27 +43,6 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
   },
 };
-
-function getCoolerAlternateDescKeys(descKey: string): string[] {
-  const altKeys = new Set<string>();
-  const candidates = [descKey];
-  if (/_SCItem$/i.test(descKey)) {
-    candidates.push(descKey.replace(/_SCItem$/i, ''));
-  } else {
-    candidates.push(`${descKey}_SCItem`);
-  }
-  for (const candidate of candidates) {
-    altKeys.add(candidate);
-    if (candidate.includes('item_Desc_COOL_')) {
-      altKeys.add(candidate.replace('item_Desc_COOL_', 'item_DescCOOL_'));
-    }
-    if (candidate.includes('item_DescCOOL_')) {
-      altKeys.add(candidate.replace('item_DescCOOL_', 'item_Desc_COOL_'));
-    }
-  }
-  altKeys.delete(descKey);
-  return [...altKeys];
-}
 
 export default {
   csvFile: 'cooler.datacore.csv',

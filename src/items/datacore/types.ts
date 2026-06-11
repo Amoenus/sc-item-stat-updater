@@ -167,6 +167,38 @@ export function getRawDataCoreTargetKeys(
   return nameKey ? [deriveDescKey(nameKey)] : [];
 }
 
+export function makeAlternateDataCoreDescKeys(
+  infix: string,
+  options: { includeScItemAlias?: boolean } = {},
+): (descKey: string) => string[] {
+  return (descKey) => {
+    const altKeys = new Set<string>();
+    const candidates = [descKey];
+    if (options.includeScItemAlias) {
+      if (/_SCItem$/i.test(descKey)) {
+        candidates.push(descKey.replace(/_SCItem$/i, ''));
+      } else {
+        candidates.push(`${descKey}_SCItem`);
+      }
+    }
+
+    for (const candidate of candidates) {
+      altKeys.add(candidate);
+      const underscored = `item_Desc_${infix}_`;
+      const compact = `item_Desc${infix}_`;
+      if (candidate.includes(underscored)) {
+        altKeys.add(candidate.replace(underscored, compact));
+      }
+      if (candidate.includes(compact)) {
+        altKeys.add(candidate.replace(compact, underscored));
+      }
+    }
+
+    altKeys.delete(descKey);
+    return [...altKeys];
+  };
+}
+
 function usableLocalizationKey(value: string | undefined): string {
   const trimmed = value?.trim() ?? '';
   return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';

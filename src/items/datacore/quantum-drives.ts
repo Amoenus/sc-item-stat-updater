@@ -1,8 +1,9 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('qdrv_', 'QDRV_');
+const getQuantumDriveAlternateDescKeys = makeAlternateDataCoreDescKeys('QDRV', { includeScItemAlias: true });
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/quantumdrive',
@@ -20,30 +21,6 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     'Fuel Rate': { selector: 'SCItemQuantumDriveParams', attr: 'quantumFuelRequirement' },
   },
 };
-
-function getQuantumDriveAlternateDescKeys(descKey: string): string[] {
-  const altKeys = new Set<string>();
-  const candidates = [descKey];
-
-  if (/_SCItem$/i.test(descKey)) {
-    candidates.push(descKey.replace(/_SCItem$/i, ''));
-  } else {
-    candidates.push(`${descKey}_SCItem`);
-  }
-
-  for (const candidate of candidates) {
-    altKeys.add(candidate);
-    if (candidate.includes('item_Desc_QDRV_')) {
-      altKeys.add(candidate.replace('item_Desc_QDRV_', 'item_DescQDRV_'));
-    }
-    if (candidate.includes('item_DescQDRV_')) {
-      altKeys.add(candidate.replace('item_DescQDRV_', 'item_Desc_QDRV_'));
-    }
-  }
-
-  altKeys.delete(descKey);
-  return [...altKeys];
-}
 
 export default {
   csvFile: 'quantumdrive.datacore.csv',

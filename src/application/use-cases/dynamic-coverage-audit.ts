@@ -41,6 +41,12 @@ const GROUPING_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
   { pattern: /Description Variant Keys/, signal: 'handles shared description variant keys' },
 ];
 
+const DYNAMIC_TARGET_KEY_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
+  { pattern: /\bgetRawDataCoreTargetKeys\b/, signal: 'uses raw DataCore localization keys' },
+  { pattern: /\bmakeGetTargetKeys\b|\bmakeGetTargetKeysFromPrefixMap\b/, signal: 'uses shared DataCore target-key derivation' },
+  { pattern: /\bmakeAlternateDataCoreDescKeys\b/, signal: 'uses shared DataCore localization variant handling' },
+];
+
 function categorySourcePath(slug: string): string {
   const itemsDir = path.resolve(import.meta.dirname, '..', '..', 'items');
   if (slug.startsWith('mission-')) return path.join(itemsDir, 'missions', `${slug.slice('mission-'.length)}.ts`);
@@ -86,9 +92,13 @@ function sourceSignals(config: ItemConfig, sourceText: string): Pick<
   for (const marker of GROUPING_MARKERS) {
     if (marker.pattern.test(sourceText)) dynamicSignals.push(marker.signal);
   }
+  const usesKnownDynamicTargetKeyHelpers = DYNAMIC_TARGET_KEY_MARKERS.some((marker) => marker.pattern.test(sourceText));
+  for (const marker of DYNAMIC_TARGET_KEY_MARKERS) {
+    if (marker.pattern.test(sourceText)) dynamicSignals.push(marker.signal);
+  }
 
   if (config.lookupCsvFile) reviewSignals.push('declares lookup CSV mapping');
-  if (config.getAlternateDescKeys || config.nameKeyToDescKey) {
+  if ((config.getAlternateDescKeys || config.nameKeyToDescKey) && !usesKnownDynamicTargetKeyHelpers) {
     reviewSignals.push('uses category-specific target-key derivation');
   }
   for (const marker of STATIC_SOURCE_MARKERS) {

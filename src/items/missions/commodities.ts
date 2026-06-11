@@ -14,24 +14,21 @@ const DATACORE_KEY_COLUMNS = [
   'Display Type Key',
 ] as const;
 
-const ILLEGAL_COMMODITY_KEYS = new Set(
-  [
-    'items_commodities_altruciatoxin_unprocessed',
-    'items_commodities_altruciatoxin',
-    'items_commodities_GaspingWeevilEggs',
-    'items_commodities_widow',
-    'items_commodities_slam',
-    'items_commodities_neon',
-    'items_commodities_maze',
-    'items_commodities_etam',
-  ].map((key) => key.toLowerCase()),
-);
-
 export function buildCommodityRowsFromSources(datacoreRows: Record<string, string>[]): Record<string, string>[] {
   const datacoreSourceRows = datacoreRows.flatMap((row) =>
     DATACORE_KEY_COLUMNS.flatMap((column) => {
       const key = row[column]?.trim();
-      return key ? [{ 'Localization Key': key, Name: '', Source: 'DataCore', 'Commodity Field': column }] : [];
+      return key
+        ? [
+            {
+              'Localization Key': key,
+              Name: '',
+              Source: 'DataCore',
+              'Commodity Field': column,
+              'Warning Tag': shouldWarnCommodityKey(row, column) ? '1' : '',
+            },
+          ]
+        : [];
     }),
   );
 
@@ -85,6 +82,11 @@ function isFileNotFound(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && err.code === 'ENOENT';
 }
 
+function shouldWarnCommodityKey(row: Record<string, string>, column: (typeof DATACORE_KEY_COLUMNS)[number]): boolean {
+  if (column !== 'Name Key' && column !== 'Display Name Key') return false;
+  return row['Display Type Key'] === 'items_commodities_type_vice' || /[/\\]commodities[/\\]vice[/\\]/i.test(row['Record Path'] ?? '');
+}
+
 export default {
   sourceFiles: [{ file: DATACORE_COMMODITIES_CSV, sourceDir: 'datacore' }],
   loadSourceData: loadCommoditySourceData,
@@ -94,9 +96,9 @@ export default {
   getTargetKeys(row) {
     return [row['Localization Key']];
   },
-  buildValue(row, _flavorText, oldValue, targetKey) {
-    const isIllegal = ILLEGAL_COMMODITY_KEYS.has(targetKey.toLowerCase());
-    const prefix = isIllegal ? `${IniTag.EM3.wrap('[!]')} ` : '';
+  buildValue(row, _flavorText, oldValue, _targetKey) {
+    const showWarning = row['Warning Tag'] === '1';
+    const prefix = showWarning ? `${IniTag.EM3.wrap('[!]')} ` : '';
     const displayName = row.Name || oldValue.replace(`${IniTag.EM3.wrap('[!]')} `, '');
     return `${prefix}${displayName}`;
   },

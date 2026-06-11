@@ -1,8 +1,9 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('shld_', 'SHLD_');
+const getShieldAlternateDescKeys = makeAlternateDataCoreDescKeys('SHLD');
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/shieldgenerator',
@@ -86,17 +87,6 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     },
   },
 };
-
-function getShieldAlternateDescKeys(descKey: string): string[] {
-  const altKeys: string[] = [];
-  if (descKey.includes('item_Desc_SHLD_')) {
-    altKeys.push(descKey.replace('item_Desc_SHLD_', 'item_DescSHLD_'));
-  }
-  if (descKey.includes('item_DescSHLD_')) {
-    altKeys.push(descKey.replace('item_DescSHLD_', 'item_Desc_SHLD_'));
-  }
-  return altKeys;
-}
 
 export default {
   csvFile: 'shield.datacore.csv',

@@ -25,6 +25,61 @@ describe('commodities source loading', () => {
     );
   });
 
+  it('marks commodity name rows as warnings when DataCore classifies the source commodity as vice', () => {
+    const rows = buildCommodityRowsFromSources([
+      {
+        'Name Key': 'items_commodities_neon',
+        'Description Key': 'items_commodities_neon_desc',
+        'Display Name Key': 'items_commodities_neon',
+        'Display Type Key': 'items_commodities_type_vice',
+        'Record Path': 'libs/foundry/records/entities/commodities/vice/neon.xml',
+      },
+    ]);
+
+    assert.deepStrictEqual(
+      rows.map((row) => [row['Localization Key'], row['Commodity Field'], row['Warning Tag']]),
+      [
+        ['items_commodities_neon', 'Name Key', '1'],
+        ['items_commodities_neon_desc', 'Description Key', ''],
+        ['items_commodities_type_vice', 'Display Type Key', ''],
+      ],
+    );
+  });
+
+  it('does not warn non-vice commodity rows from static key names', () => {
+    const rows = buildCommodityRowsFromSources([
+      {
+        'Name Key': 'items_commodities_GaspingWeevilEggs',
+        'Description Key': 'items_commodities_GaspingWeevilEggs_desc',
+        'Display Type Key': 'items_commodities_type_food',
+        'Record Path': 'libs/foundry/records/entities/commodities/food/gaspingweevileggs.xml',
+      },
+    ]);
+
+    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_GaspingWeevilEggs')?.['Warning Tag'], '');
+  });
+
+  it('builds warning-prefixed commodity labels from source-derived warning tags', () => {
+    assert.equal(
+      config.buildValue?.(
+        { 'Localization Key': 'items_commodities_neon', 'Warning Tag': '1' },
+        '',
+        'Neon',
+        'items_commodities_neon',
+      ),
+      '<EM3>[!]</EM3> Neon',
+    );
+    assert.equal(
+      config.buildValue?.(
+        { 'Localization Key': 'items_commodities_GaspingWeevilEggs', 'Warning Tag': '' },
+        '',
+        '<EM3>[!]</EM3> Gasping Weevil Eggs',
+        'items_commodities_GaspingWeevilEggs',
+      ),
+      'Gasping Weevil Eggs',
+    );
+  });
+
   it('deduplicates keys repeated across DataCore columns', () => {
     const rows = buildCommodityRowsFromSources([
       {
