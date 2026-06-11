@@ -1,13 +1,8 @@
 import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
 import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
-import { readJsonRelative } from '../../io/local/json-file';
 import { resolveChildPath } from '../../io/local/path-conventions';
 
-const locationKeyMap = (await readJsonRelative(import.meta.url, './locationKeyMap.json', 'location key map')) as Record<
-  string,
-  unknown
->;
 const DATACORE_MINING_PROVIDER_PRESETS_CSV = 'mining-provider-presets.datacore.csv';
 const DATACORE_MINING_COMPOSITIONS_CSV = 'mining-compositions.datacore.csv';
 const DATACORE_MINING_LOCATION_LABELS_CSV = 'mining-location-labels.datacore.csv';
@@ -343,6 +338,7 @@ function buildDatacoreMiningLocationRows(
       weights: LocationWeights;
       locationNameKeys: Set<string>;
       locationDescriptionKeys: Set<string>;
+      locationSlugs: Set<string>;
       labelSources: Set<string>;
       qualityRows: Map<string, Record<string, string>>;
       mineableEntityClasses: Set<string>;
@@ -365,6 +361,7 @@ function buildDatacoreMiningLocationRows(
         weights: { ship: {}, hand: {}, ground: {} },
         locationNameKeys: new Set(),
         locationDescriptionKeys: new Set(),
+        locationSlugs: new Set(),
         labelSources: new Set(),
         qualityRows: new Map(),
         mineableEntityClasses: new Set(),
@@ -386,12 +383,14 @@ function buildDatacoreMiningLocationRows(
 
   for (const row of providerRows) {
     const locationName = toDisplayLocationName(row);
+    const locationSlug = toProviderLocationSlug(row);
     const miningType = classifyMiningGroup(row['Group Name'] || '');
     const compositionName =
       compositionNames.get(row['Composition Class']) || cleanCompositionClass(row['Composition Class']);
     if (!locationName || !miningType || !compositionName) continue;
 
     const facts = getFacts(locationName);
+    addIfPresent(facts.locationSlugs, locationSlug);
     facts.weights[miningType][compositionName] =
       (facts.weights[miningType][compositionName] ?? 0) +
       parseWeight(row['Group Probability'], 1) * parseWeight(row['Relative Probability'], 1);
@@ -479,6 +478,7 @@ function buildDatacoreMiningLocationRows(
         'Hand Mineables': toWeightedMineableList(facts.weights.hand),
         'Ground Vehicle Mineables': toWeightedMineableList(facts.weights.ground),
         'Quality Note': datacoreQualityNote,
+        'DataCore Location Slugs': sortedJoined(facts.locationSlugs),
         'DataCore Location Name Keys': sortedJoined(facts.locationNameKeys),
         'DataCore Location Description Keys': sortedJoined(facts.locationDescriptionKeys),
         'DataCore Location Label Source': sortedJoined(facts.labelSources),
@@ -972,8 +972,12 @@ function buildCompositionNameMap(compositionRows: Record<string, string>[]): Map
 }
 
 function toDisplayLocationName(row: Record<string, string>): string {
-  const slug = (row.Location || row['Provider Class'] || '').split('/').at(-1)?.toLowerCase() ?? '';
+  const slug = toProviderLocationSlug(row);
   return DATACORE_LOCATION_NAMES[slug] ?? cleanProviderLocation(row.Location || row['Provider Class'] || '');
+}
+
+function toProviderLocationSlug(row: Record<string, string>): string {
+  return (row.Location || row['Provider Class'] || '').split('/').at(-1)?.toLowerCase() ?? '';
 }
 
 function classifyMiningGroup(groupName: string): MiningType | null {
@@ -1034,6 +1038,37 @@ function toLocationSlug(name: string): string {
     .toLowerCase();
 }
 
+function toLocationDescKeyCandidates(row: Record<string, string>): string[] {
+  const slugs = String(row['DataCore Location Slugs'] ?? '')
+    .split(';')
+    .map((slug) => slug.trim())
+    .filter(Boolean);
+  const keys = slugs.flatMap((slug) => descKeysFromProviderSlug(slug, row['Location Name'] ?? ''));
+  if (keys.length > 0) return keys;
+
+  const name = row['Location Name'];
+  return name ? [`${toLocationSlug(name)}_desc`] : [];
+}
+
+function descKeysFromProviderSlug(slug: string, displayName: string): string[] {
+  const normalized = slug.replace(/^hpp[_-]/i, '').toLowerCase();
+  const stanton = /^stanton([1-4][a-z]?)(?:_belt)?$/i.exec(normalized);
+  if (stanton) return [`Stanton${stanton[1]}_Desc`];
+
+  const pyroBody = /^pyro(\d[a-z]?)$/i.exec(normalized);
+  if (pyroBody) {
+    const baseKey = `Pyro${pyroBody[1]}_desc`;
+    const parenthetical = displayName.match(/\(([^)]+)\)/)?.[1]?.trim();
+    return parenthetical ? [`Pyro${pyroBody[1]}_${toKeyToken(parenthetical)}_desc`, baseKey] : [baseKey];
+  }
+
+  return [`${toLocationSlug(displayName)}_desc`];
+}
+
+function toKeyToken(value: string): string {
+  return value.replaceAll(/[^A-Za-z0-9]+/g, '_').replaceAll(/^_+|_+$/g, '');
+}
+
 export default {
   csvFile: 'mining-locations.csv',
   sourceFiles: [
@@ -1059,12 +1094,9 @@ export default {
 
   /**
    * Derives the target INI key(s) for a location row.
-   * Priority: explicit entry in locationKeyMap.json, then slug-based derivation.
+   * Priority: DataCore provider location slug, then display-name slug fallback.
    */
   getTargetKeys(row) {
-    const name = row['Location Name'];
-    if (!name) return [];
-
     const withPVariants = (keys: string[]): string[] => {
       const out = [];
       const seen = new Set();
@@ -1083,13 +1115,7 @@ export default {
       return out;
     };
 
-    // 1. Static map override (handles irregular names / multiple keys per location)
-    const mapped = locationKeyMap[name];
-    if (mapped) return withPVariants(Array.isArray(mapped) ? mapped : [mapped]);
-
-    // 2. Slug fallback: "Aaron Halo" -> "aaronhalo_desc", "Pyro I" -> "pyro1_desc"
-    const slug = toLocationSlug(name);
-    return withPVariants([`${slug}_desc`]);
+    return withPVariants(toLocationDescKeyCandidates(row));
   },
 
   /** Builds the new INI value for a location description. */

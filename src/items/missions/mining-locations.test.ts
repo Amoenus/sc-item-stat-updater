@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildMiningLocationRowsFromSources, compareMiningLocationCoverage } from './mining-locations';
+import miningLocationsConfig, { buildMiningLocationRowsFromSources, compareMiningLocationCoverage } from './mining-locations';
 
 test('buildMiningLocationRowsFromSources prefers DataCore provider weights and quality overrides', () => {
   const rows = buildMiningLocationRowsFromSources(
@@ -220,6 +220,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hurston['Hand Mineables'], 'Hadanite - 100%');
   assert.equal(hurston['Ground Vehicle Mineables'], 'Beradom - 100%');
   assert.equal(hurston['Quality Note'], 'Ship quality 60%-100% (mean 80%, stddev 12.5%)');
+  assert.equal(hurston['DataCore Location Slugs'], 'hpp_stanton1');
   assert.equal(hurston['DataCore Location Name Keys'], 'AsteroidCluster_MiningBase_Stanton01_Medium_01');
   assert.equal(hurston['DataCore Location Description Keys'], 'AsteroidCluster_MiningBase_Desc');
   assert.equal(hurston['DataCore Location Label Source'], 'class-or-path-mining');
@@ -266,6 +267,32 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hathor.Source, 'DataCore');
   assert.equal(hathor['Hand Mineables'], 'Aphorite - 60%\nJaclium (Ore) - 40%');
   assert.equal(hathor['Ship Mineables'], '');
+});
+
+test('mining location target keys are derived from DataCore provider slugs instead of static map rows', () => {
+  assert.deepEqual(
+    miningLocationsConfig.getTargetKeys?.({
+      'Location Name': 'Hurston',
+      'DataCore Location Slugs': 'hpp_stanton1',
+    }),
+    ['Stanton1_Desc', 'Stanton1_Desc,P'],
+  );
+
+  assert.deepEqual(
+    miningLocationsConfig.getTargetKeys?.({
+      'Location Name': 'Pyro V-a (Ignis)',
+      'DataCore Location Slugs': 'hpp_pyro5a',
+    }),
+    ['Pyro5a_Ignis_desc', 'Pyro5a_Ignis_desc,P', 'Pyro5a_desc', 'Pyro5a_desc,P'],
+  );
+
+  assert.deepEqual(
+    miningLocationsConfig.getTargetKeys?.({
+      'Location Name': 'Pyro II (Monox)',
+      'DataCore Location Slugs': 'hpp_pyro2',
+    }),
+    ['Pyro2_Monox_desc', 'Pyro2_Monox_desc,P', 'Pyro2_desc', 'Pyro2_desc,P'],
+  );
 });
 
 test('compareMiningLocationCoverage reports DataCore and SCMDB location overlap', () => {
