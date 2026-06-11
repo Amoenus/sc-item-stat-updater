@@ -502,6 +502,8 @@ const CONTRACT_GENERATOR_HEADERS = [
   'String Param Overrides',
   'Location Tag GUIDs',
   'Location Tag Classes',
+  'Success Reputation Rewards',
+  'Failure Reputation Rewards',
   'Max Instances',
   'Max Instances Per Player',
   'Respawn Time',
@@ -516,6 +518,9 @@ const CONTRACT_GENERATOR_HEADERS = [
   'Mental Load',
   'Risk Of Loss',
   'Game Knowledge',
+  'Blueprint Reward Pool Guids',
+  'Required Completed Contract Tags',
+  'Completion Tags',
   'Record GUID',
   'Record Path',
 ];
@@ -1230,11 +1235,12 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
           const actualP4kPath = path.join(liveDir, 'Data.p4k');
           await runToolAsync(tools.unp4k, [actualP4kPath, '*Subsumption/Missions/PU/Missions/*.xml'], {
             cwd: cacheDir,
+            stdio: 'ignore',
           });
         } catch (err) {
           options.onToolsLog?.(`Failed to extract Subsumption XMLs: ${err}`);
         }
-        await runToolAsync(tools.unforge, [cacheDir]);
+        await runToolAsync(tools.unforge, [cacheDir], { stdio: 'ignore' });
       },
       onProgress: (count) => options.onCacheExtractProgress?.(count),
     });
@@ -1283,7 +1289,7 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     contractGeneratorResult.csvFile,
     Boolean(options.dryRun),
   );
-  const contractGeneratorIntelRows = buildContractGeneratorIntel(contractGeneratorRows);
+  const contractGeneratorIntelRows = buildContractGeneratorIntel(contractGeneratorRows, { graph: graphLookup });
   const contractGeneratorIntelResult = await writeContractGeneratorIntelCsv(contractGeneratorIntelRows, {
     outputBase,
     dryRun: options.dryRun,
@@ -1804,7 +1810,7 @@ async function resolveCurrentDcbFile(options: {
 }
 
 async function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, tools: Unp4kTools): Promise<void> {
-  await runToolAsync(tools.unp4k, [p4kPath, 'Game2.dcb'], { cwd: dcbCacheDir });
+  await runToolAsync(tools.unp4k, [p4kPath, 'Game2.dcb'], { cwd: dcbCacheDir, stdio: 'ignore' });
 }
 
 async function scrapeDataCoreType(
@@ -1946,6 +1952,8 @@ async function writeContractGeneratorCsv(
       row.stringParamOverrides,
       row.locationTagGuids,
       row.locationTagClasses,
+      row.successReputationRewards,
+      row.failureReputationRewards,
       row.maxInstances,
       row.maxInstancesPerPlayer,
       row.respawnTime,
@@ -1960,6 +1968,9 @@ async function writeContractGeneratorCsv(
       row.mentalLoad,
       row.riskOfLoss,
       row.gameKnowledge,
+      row.blueprintRewardPoolGuids,
+      row.requiredCompletedContractTags,
+      row.completionTags,
       row.recordGuid,
       row.recordPath,
     ]);

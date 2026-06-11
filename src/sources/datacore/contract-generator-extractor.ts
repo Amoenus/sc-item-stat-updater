@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
@@ -16,16 +17,17 @@ export interface ExtractDataCoreContractGeneratorsOptions {
 export async function extractDataCoreContractGenerators(
   options: ExtractDataCoreContractGeneratorsOptions,
 ): Promise<DataCoreContractGeneratorRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.contractGeneratorPathPrefix ?? DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX)
-    .filter((record) => record.rootType === 'ContractGenerator')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = uniqueRecords(
+    options.graph
+      .getByPathPrefix(options.contractGeneratorPathPrefix ?? DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX)
+      .filter((record) => record.rootType === 'ContractGenerator'),
+  ).sort((a, b) => a.path.localeCompare(b.path));
   const rows: DataCoreContractGeneratorRecord[] = [];
 
   let completed = 0;
   const mapped = await mapConcurrent(
     records,
-    async (record, index) => {
+    async (record) => {
       const chunkRows: DataCoreContractGeneratorRecord[] = [];
       const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore ContractGenerator XML path');
       const xml = await fs.readFile(xmlPath, 'utf8');
@@ -46,7 +48,13 @@ export async function extractDataCoreContractGenerators(
         );
 
         for (const section of ['introContracts', 'contracts'] as const) {
-          handler.find(`> ${section} > Contract`).each((__, contractElement) => {
+          handler
+            .find(`> ${section} > *`)
+            .filter((_, element) => {
+              const contract = $(element);
+              return Boolean(contract.attr('id') && contract.attr('template'));
+            })
+            .each((__, contractElement) => {
             const contract = $(contractElement);
             const templateGuid = contract.attr('template') ?? '';
             const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
@@ -59,6 +67,35 @@ export async function extractDataCoreContractGenerators(
             const contractLifeTime = contract.find('> contractLifeTime > ContractLifeTime').first();
             const contractResults = contract.find('> contractResults').first();
             const difficulty = contractResults.find('> difficulty > ContractDifficulty').first();
+            const successReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
+            const failureReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
+            contractResults.find('> contractResults > ContractResult_LegacyReputation').each((_, repElement) => {
+              const rep = $(repElement);
+              const missionResults = rep.find('> missionResults > Bool').map((_, el) => $(el).attr('value') === '1').get();
+              rep.find('> contractResultReputationAmounts').each((_, amountElement) => {
+                const amountEl = $(amountElement);
+                const factionGuid = amountEl.attr('factionReputation') ?? '';
+                const scopeGuid = amountEl.attr('reputationScope') ?? '';
+                const rewardGuid = amountEl.attr('reward') ?? '';
+                if (rewardGuid && (missionResults[0] || missionResults[1] || missionResults[2])) {
+                  const rewardRecord = options.graph.getByRef(rewardGuid);
+                  let amount = 0;
+                  if (rewardRecord) {
+                    try {
+                      const xmlPath = resolveChildPath(options.xmlCacheDir, rewardRecord.path, 'DataCore SReputationRewardAmount XML path');
+                      const xml = readFileSync(xmlPath, 'utf8');
+                      const reward$ = loadXml(xml);
+                      amount = Number(reward$(':root').first().attr('reputationAmount') ?? 0);
+                    } catch {}
+                  }
+                  if (amount !== 0) {
+                    const rewardObj = { amount, factionGuid, scopeGuid };
+                    if (missionResults[0]) successReputationRewards.push(rewardObj);
+                    if (missionResults[1] || missionResults[2]) failureReputationRewards.push(rewardObj);
+                  }
+                }
+              });
+            });
             const titleVariantKeys = readStringHashKeys(
               $,
               contract.find('MissionProperty[missionVariableName="Mission_Title_StringHash"]'),
@@ -92,6 +129,8 @@ export async function extractDataCoreContractGenerators(
               stringParamOverrides: formatStringParams(stringParams),
               locationTagGuids: locationTagGuids.join(' | '),
               locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
+              successReputationRewards: successReputationRewards.length ? JSON.stringify(successReputationRewards) : '',
+              failureReputationRewards: failureReputationRewards.length ? JSON.stringify(failureReputationRewards) : '',
               maxInstances: generationParams.attr('maxInstances') ?? '',
               maxInstancesPerPlayer: generationParams.attr('maxInstancesPerPlayer') ?? '',
               respawnTime: generationParams.attr('respawnTime') ?? '',
@@ -107,8 +146,20 @@ export async function extractDataCoreContractGenerators(
               riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
               gameKnowledge: difficulty.attr('gameKnowledge') ?? '',
               blueprintRewardPoolGuids: contractResults
-                .find('> BlueprintRewards')
+                .find('BlueprintRewards[blueprintPool]')
                 .map((_, el) => $(el).attr('blueprintPool'))
+                .get()
+                .filter(Boolean)
+                .join(','),
+              requiredCompletedContractTags: contract
+                .find('ContractPrerequisite_CompletedContractTags requiredCompletedContractTags Reference[value]')
+                .map((_, el) => $(el).attr('value'))
+                .get()
+                .filter(Boolean)
+                .join(','),
+              completionTags: contractResults
+                .find('ContractResult_CompletionTags completionTags ContractResult_CompletionTag[tag]')
+                .map((_, el) => $(el).attr('tag'))
                 .get()
                 .filter(Boolean)
                 .join(','),
@@ -142,6 +193,14 @@ function readStringParamOverrides(
     if (param) params.set(param, $(element).attr('value') ?? '');
   });
   return params;
+}
+
+function uniqueRecords(records: DataCoreRecordNode[]): DataCoreRecordNode[] {
+  const unique = new Map<string, DataCoreRecordNode>();
+  for (const record of records) {
+    unique.set(`${record.ref}\0${record.path}`, record);
+  }
+  return [...unique.values()];
 }
 
 function readStringHashKeys($: ReturnType<typeof loadXml>, root: ReturnType<ReturnType<typeof loadXml>>): string[] {

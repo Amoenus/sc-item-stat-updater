@@ -42,6 +42,8 @@ export const ContractRowSchema = z.object({
   blueprintChainDepth: z.string(),
   personalCooldownTime: z.number().optional(),
   rewardRepCalculated: z.number().optional(),
+  successReputationRewards: z.string().optional(),
+  failureReputationRewards: z.string().optional(),
   factionRewards: z.string(),
   factionRewardsRaw: z.string(),
   shipEncounters: z.string().optional(),

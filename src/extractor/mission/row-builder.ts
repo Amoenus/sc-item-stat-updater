@@ -24,6 +24,11 @@ import {
 } from './formatters.js';
 import { buildBlueprintRewardList, buildItemRewardList, type FactionRewardsContext } from './rewards.js';
 
+type ContractWithOptionalReputation = ContractDTO & {
+  successReputationRewards?: string | null;
+  failureReputationRewards?: string | null;
+};
+
 export interface ContractRowSource {
   id: string;
   debugName: string | null | undefined;
@@ -47,6 +52,8 @@ export interface ContractRowSource {
   minStanding: unknown;
   maxStanding: unknown;
   blueprintRewards: unknown;
+  successReputationRewards: string | null | undefined;
+  failureReputationRewards: string | null | undefined;
   personalCooldownTime: number | null | undefined;
   rewardRepCalculated: number | null | undefined;
   factionRewardsIndex: number | null | undefined;
@@ -76,6 +83,7 @@ export interface ContractRowSource {
 }
 
 export function toContractRowSource(contract: ContractDTO): ContractRowSource {
+  const reputationContract = contract as ContractWithOptionalReputation;
   return {
     id: contract.id,
     debugName: contract.debugName,
@@ -99,6 +107,8 @@ export function toContractRowSource(contract: ContractDTO): ContractRowSource {
     minStanding: contract.minStanding,
     maxStanding: contract.maxStanding,
     blueprintRewards: contract.blueprintRewards,
+    successReputationRewards: reputationContract.successReputationRewards,
+    failureReputationRewards: reputationContract.failureReputationRewards,
     personalCooldownTime: contract.personalCooldownTime,
     rewardRepCalculated: contract.rewardRepCalculated,
     factionRewardsIndex: contract.factionRewardsIndex,
@@ -152,6 +162,8 @@ export function toLegacyContractRowSource(contract: LegacyContractDTO): Contract
     minStanding: contract.minStanding,
     maxStanding: undefined,
     blueprintRewards: undefined,
+    successReputationRewards: undefined,
+    failureReputationRewards: undefined,
     personalCooldownTime: contract.personalCooldownTime,
     rewardRepCalculated: undefined,
     factionRewardsIndex: contract.factionRewardsIndex,
@@ -294,6 +306,8 @@ export function buildContractRow(
     canBeShared: contract.canBeShared,
     illegal: contract.illegal,
     factionGuid: contract.factionGuid,
+    successReputationRewards: contract.successReputationRewards ?? '',
+    failureReputationRewards: contract.failureReputationRewards ?? '',
     ...buildFlattenedContractRowFields(contract),
     ...buildBlueprintRowFields(contract.id, chainData),
     ...buildDefaultedContractRowFields(contract),
@@ -307,10 +321,6 @@ function resolveFactionName(factionGuid: string, context?: MissionEnrichmentCont
   return context?.factions?.[factionGuid]?.name ?? factionGuid;
 }
 
-function hasRuntimeRewardToken(description: string): boolean {
-  return /~mission\(reward\)|~missions\([^)]*reward/i.test(description);
-}
-
 function getContractCooldownText(contract: ContractDTO): string {
   if (!contract.hasPersonalCooldown || contract.personalCooldownTime <= 0) return '';
   return formatCooldownMinutes(contract.personalCooldownTime);
@@ -318,32 +328,40 @@ function getContractCooldownText(contract: ContractDTO): string {
 
 function buildContractIntel(contract: ContractDTO, context?: MissionEnrichmentContext): string {
   const lines: string[] = [];
-  const reward = contract.rewardUEC;
   const timeLimit = contract.timeToComplete;
   const buyIn = contract.buyIn;
+  const reputationContract = contract as ContractWithOptionalReputation;
 
-  if (typeof reward === 'number' && reward > 0 && !hasRuntimeRewardToken(contract.description)) {
-    lines.push(`Reward: ${formatUec(reward)}`);
-  }
   if (typeof timeLimit === 'number' && timeLimit > 0) {
     lines.push(`Time Limit: ${formatTimeLimit(timeLimit)}`);
-    if (typeof reward === 'number' && reward > 0) {
-      lines.push(`Efficiency: ${formatUec(reward / timeLimit)}/min`);
-    }
   }
   const cooldown = getContractCooldownText(contract);
   if (cooldown) lines.push(`Cooldown: ${cooldown}`);
   if (typeof buyIn === 'number' && buyIn > 0) {
     lines.push(`Buy-in: ${formatUec(buyIn)}`);
-    if (typeof reward === 'number') lines.push(`Net Reward: ${formatUec(reward - buyIn)}`);
   }
   if (contract.minStanding?.name) lines.push(`Requires: ${contract.minStanding.name}`);
-  if (typeof contract.rewardRepCalculated === 'number' && contract.rewardRepCalculated !== 0 && contract.factionGuid) {
-    const sign = contract.rewardRepCalculated > 0 ? '+' : '';
-    lines.push(
-      `Faction Rep: ${resolveFactionName(contract.factionGuid, context)} ${sign}${contract.rewardRepCalculated}`,
-    );
-  }
+
+  try {
+    if (reputationContract.successReputationRewards) {
+      const successRep = JSON.parse(reputationContract.successReputationRewards) as Array<{
+        amount: number;
+        factionGuid: string;
+      }>;
+      for (const reward of successRep) {
+        lines.push(`Success: +${reward.amount} ${resolveFactionName(reward.factionGuid, context)}`);
+      }
+    }
+    if (reputationContract.failureReputationRewards) {
+      const failureRep = JSON.parse(reputationContract.failureReputationRewards) as Array<{
+        amount: number;
+        factionGuid: string;
+      }>;
+      for (const reward of failureRep) {
+        lines.push(`Failure: ${reward.amount} ${resolveFactionName(reward.factionGuid, context)}`);
+      }
+    }
+  } catch {}
 
   return lines.join(String.raw`\n`);
 }

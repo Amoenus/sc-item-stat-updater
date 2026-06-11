@@ -4,7 +4,7 @@ import type { ScmdbMergedDTO } from '../../schema/scmdb.schemas';
 import { buildScmdbOutputRows, SCMDB_CONTRACT_HEADERS, SCMDB_MINING_ELEMENT_HEADERS } from './outputs';
 
 test('buildScmdbOutputRows builds empty row groups for empty SCMDB data', () => {
-  const rows = buildScmdbOutputRows(emptyMergedData(), null);
+  const rows = buildScmdbOutputRows(emptyMergedData(), null, null);
 
   assert.deepEqual(rows.missionRows, []);
   assert.deepEqual(rows.contractRows, []);
@@ -14,19 +14,23 @@ test('buildScmdbOutputRows builds empty row groups for empty SCMDB data', () => 
 });
 
 test('buildScmdbOutputRows includes mining output groups when mining data is present', () => {
-  const rows = buildScmdbOutputRows(emptyMergedData(), {
-    mineableElements: {
-      agricium: {
-        name: 'Agricium (Ore)',
-        rarity: 'uncommon',
-        scanSignature: 3885,
-        resistance: 0.5,
-        instability: 350,
+  const rows = buildScmdbOutputRows(
+    emptyMergedData(),
+    {
+      mineableElements: {
+        agricium: {
+          name: 'Agricium (Ore)',
+          rarity: 'uncommon',
+          scanSignature: 3885,
+          resistance: 0.5,
+          instability: 350,
+        },
       },
-    },
-    refineryProfiles: {},
-    refineries: {},
-  } as never);
+      refineryProfiles: {},
+      refineries: {},
+    } as never,
+    null,
+  );
 
   assert.equal(rows.miningElementRows.length, 1);
   assert.equal(rows.miningJournalRows.length > 0, true);
@@ -68,6 +72,7 @@ test('buildScmdbOutputRows populates stable blueprint marker fields', () => {
         }),
       ],
     } as never,
+    null,
     null,
   );
   const byId = new Map(rows.contractRows.map((row) => [row.id, row]));

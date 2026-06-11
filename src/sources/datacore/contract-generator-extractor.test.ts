@@ -74,7 +74,24 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                 <contractLifeTime>
                   <ContractLifeTime instanceLifeTime="30" instanceLifeTimeVariation="4" />
                 </contractLifeTime>
+                <additionalPrerequisites>
+                  <ContractPrerequisite_CompletedContractTags>
+                    <requiredCompletedContractTags>
+                      <tags>
+                        <Reference value="required-tag" />
+                      </tags>
+                    </requiredCompletedContractTags>
+                  </ContractPrerequisite_CompletedContractTags>
+                </additionalPrerequisites>
                 <contractResults contractBuyInAmount="10" timeToComplete="20">
+                  <contractResults>
+                    <BlueprintRewards blueprintPool="blueprint-pool" />
+                    <ContractResult_CompletionTags>
+                      <completionTags>
+                        <ContractResult_CompletionTag count="1" tag="completion-tag" />
+                      </completionTags>
+                    </ContractResult_CompletionTags>
+                  </contractResults>
                   <difficulty>
                     <ContractDifficulty difficultyProfile="difficulty-guid" mechanicalSkill="Hands_free" mentalLoad="Low" riskOfLoss="Safe" gameKnowledge="Basic" />
                   </difficulty>
@@ -113,6 +130,8 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
       stringParamOverrides: 'Contractor=contractor_from | Description=intro_desc | Title=intro_title',
       locationTagGuids: 'location-guid',
       locationTagClasses: 'Area18',
+      successReputationRewards: '',
+      failureReputationRewards: '',
       maxInstances: '5',
       maxInstancesPerPlayer: '1',
       respawnTime: '5',
@@ -127,18 +146,74 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
       mentalLoad: 'Low',
       riskOfLoss: 'Safe',
       gameKnowledge: 'Basic',
-      blueprintRewardPoolGuids: '',
+      blueprintRewardPoolGuids: 'blueprint-pool',
+      requiredCompletedContractTags: 'required-tag',
+      completionTags: 'completion-tag',
       recordGuid: 'generator-guid',
       recordPath: generatorPath,
     },
   ]);
 });
 
+test('extractDataCoreContractGenerators emits career contract rows', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-generator-career-'));
+  const generatorPath = 'libs/foundry/records/contracts/contractgenerator/career_generator.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, generatorPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, generatorPath),
+    `
+      <ContractGenerator.CareerGenerator __type="ContractGenerator" __ref="generator-guid" __path="${generatorPath}">
+        <generators>
+          <ContractGeneratorHandler_Career debugName="Career_Handler">
+            <contracts>
+              <CareerContract id="career-contract-guid" debugName="Career_Intro" template="template-guid">
+                <paramOverrides>
+                  <stringParamOverrides>
+                    <ContractStringParam param="Title" value="@career_title" />
+                    <ContractStringParam param="Description" value="@career_desc" />
+                  </stringParamOverrides>
+                </paramOverrides>
+                <contractResults timeToComplete="45">
+                  <contractResults>
+                    <BlueprintRewards blueprintPool="blueprint-pool" />
+                  </contractResults>
+                </contractResults>
+              </CareerContract>
+            </contracts>
+          </ContractGeneratorHandler_Career>
+        </generators>
+      </ContractGenerator.CareerGenerator>
+    `,
+  );
+
+  const [row] = await extractDataCoreContractGenerators({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graphFixture(generatorPath)),
+  });
+
+  assert.equal(row.contractId, 'career-contract-guid');
+  assert.equal(row.contractDebugName, 'Career_Intro');
+  assert.equal(row.templateClass, 'TemplateClass');
+  assert.equal(row.titleKey, 'career_title');
+  assert.equal(row.descriptionKey, 'career_desc');
+  assert.equal(row.timeToComplete, '45');
+  assert.equal(row.blueprintRewardPoolGuids, 'blueprint-pool');
+});
+
 function graphFixture(generatorPath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 4,
+    recordCount: 5,
     records: [
+      {
+        path: generatorPath,
+        ref: 'generator-guid',
+        rootTag: 'ContractGenerator.TestGenerator',
+        rootType: 'ContractGenerator',
+        entityClass: 'TestGenerator',
+        localizationKeys: [],
+        referencedGuids: [],
+      },
       {
         path: generatorPath,
         ref: 'generator-guid',

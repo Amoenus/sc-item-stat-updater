@@ -26,15 +26,15 @@ export async function extractDataCoreCraftingBlueprints(
       const xml = await fs.readFile(xmlPath, 'utf8');
       const $ = loadXml(xml);
 
-      // Extract Target Entity Class
-      const targetEntityClass = $('processSpecificData > CraftingProcess_Creation').attr('entityClass') ?? '';
-      
-      // Extract target entity class GUID via lookup (not implicitly guaranteed)
-      // Usually DataCore doesn't have a direct ref to entityClass string from here, we rely on the string itself
-      // or we can look it up in graph by entityClass.
-      const targetEntityNode = targetEntityClass ? options.graph.getByEntityClass(targetEntityClass)[0] : undefined;
-      const targetEntityClassGuid = targetEntityNode?.ref ?? '';
-      const targetItemNameKey = targetEntityNode?.localizationKeys.find((l) => /_name|Name/i.test(l.key))?.key ?? targetEntityNode?.localizationKeys[0]?.key ?? '';
+      const targetEntityClassRef = $('processSpecificData > CraftingProcess_Creation').attr('entityClass') ?? '';
+      const targetEntityNode =
+        options.graph.getByRef(targetEntityClassRef) ?? options.graph.getByEntityClass(targetEntityClassRef)[0];
+      const targetEntityClassGuid = targetEntityNode?.ref ?? targetEntityClassRef;
+      const targetEntityClass = targetEntityNode?.entityClass ?? targetEntityClassRef;
+      const targetItemNameKey =
+        targetEntityNode?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && !/^LOC_/i.test(l.key))?.key ??
+        targetEntityNode?.localizationKeys.find((l) => !/^LOC_/i.test(l.key))?.key ??
+        '';
 
       // Extract Recipes
       const recipeCosts: { resource: string; minQuality: number; amount: number }[] = [];

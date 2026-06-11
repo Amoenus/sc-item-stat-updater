@@ -74,8 +74,7 @@ describe('SCMDB mission parser enrichment', () => {
       rewardUEC: 10000,
       buyIn: 1000,
       illegal: true,
-      factionGuid: 'faction-1',
-      rewardRepCalculated: 50,
+      successReputationRewards: JSON.stringify([{ amount: 50, factionGuid: 'faction-1' }]),
       prerequisites: {},
       haulingOrders: null,
       shipEncounters: null,
@@ -91,7 +90,7 @@ describe('SCMDB mission parser enrichment', () => {
     assert.match(descRow.ContractIntel, /Time Limit: 20 min/);
     assert.match(descRow.ContractIntel, /Cooldown: 1 h/);
     assert.match(descRow.ContractIntel, /Buy-in: 1,000 aUEC/);
-    assert.match(descRow.ContractIntel, /Faction Rep: Head Hunters \+50/);
+    assert.match(descRow.ContractIntel, /Success: \+50 Head Hunters/);
     assert.doesNotMatch(descRow.ContractIntel, /Illegal|Location|~mission/);
     assert.doesNotMatch(descRow.ContractIntel, /Reward: 10,000 aUEC/);
   });

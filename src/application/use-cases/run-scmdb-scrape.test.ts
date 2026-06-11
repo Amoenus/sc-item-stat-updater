@@ -20,6 +20,9 @@ test('runScmdbScrape selects a version, writes raw SCMDB files, and reports writ
     if (url === `${SCMDB_BASE_URL}/mining_data-4.8.1-live.1.json`) {
       return ok({ mineableElements: {}, compositions: {}, locations: [], qualityDistribution: {} });
     }
+    if (url === `${SCMDB_BASE_URL}/mema-cache.json`) {
+      return ok({});
+    }
     return { ok: false, status: 404, statusText: 'Not Found', json: async () => ({}) };
   };
 
@@ -45,11 +48,13 @@ test('runScmdbScrape selects a version, writes raw SCMDB files, and reports writ
     `${SCMDB_BASE_URL}/mining_data-4.8.1-live.1.json`,
     `${SCMDB_BASE_URL}/crafting_items-4.8.1-live.1.json`,
     `${SCMDB_BASE_URL}/crafting_blueprints-4.8.1-live.1.json`,
+    `${SCMDB_BASE_URL}/mema-cache.json`,
   ]);
   assert.deepEqual(observedFiles, [
     'root:merged-4.8.1-live.1.json',
     'root:mining_data-4.8.1-live.1.json',
     'root:mining_data.json',
+    'root:mema-cache.json',
   ]);
   assert.deepEqual(
     writes.map((write) => write.path),
@@ -57,6 +62,7 @@ test('runScmdbScrape selects a version, writes raw SCMDB files, and reports writ
       'repo\\csv\\scmdb\\4.8.1-live.1\\merged-4.8.1-live.1.json',
       'repo\\csv\\scmdb\\4.8.1-live.1\\mining_data-4.8.1-live.1.json',
       'repo\\csv\\scmdb\\4.8.1-live.1\\mining_data.json',
+      'repo\\csv\\scmdb\\4.8.1-live.1\\mema-cache.json',
     ],
   );
   assert.equal(madeDirs.includes('repo\\csv\\scmdb\\4.8.1-live.1'), true);

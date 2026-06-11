@@ -7,7 +7,7 @@
 #   ./update-global-ini.sh [options]
 #
 # Options:
-#   --scrape        Run scrape:scmdb and scrape:spviewer before updating
+#   --scrape        Run scrape:scmdb before updating
 #   --dry-run       Pass --dry-run through to update-all (no file writes)
 #   --ptu           Use PTU scraped data
 #   --verbose, -v   Enable verbose logging

@@ -46,6 +46,59 @@ test('buildDataCoreContractGeneratorIntel emits primary and variant description 
   );
 });
 
+test('buildDataCoreContractGeneratorIntel emits single reputation awards in contract intel', () => {
+  assert.deepEqual(
+    buildDataCoreContractGeneratorIntel([
+      generator({
+        successReputationRewards: JSON.stringify([{ amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+      }),
+    ]),
+    [
+      {
+        generatorClass: 'DeliveryGenerator',
+        contractId: 'contract-id',
+        contractDebugName: 'Delivery_Debug',
+        templateClass: 'DeliveryTemplate',
+        descriptionKey: 'mission_desc',
+        descriptionKeyRole: 'primary',
+        contractIntel: 'Reputation Awarded: 100',
+        timeLimit: '',
+        contractBuyInAmount: '',
+        difficultyProfileClass: 'General',
+        recordGuid: 'generator-guid',
+        recordPath: 'libs/foundry/records/contracts/contractgenerator/delivery.xml',
+      },
+    ],
+  );
+});
+
+test('buildDataCoreContractGeneratorIntel groups shared descriptions as reputation by difficulty in contract intel', () => {
+  assert.deepEqual(
+    buildDataCoreContractGeneratorIntel([
+      generator({
+        contractId: 'easy',
+        contractDebugName: 'Easy_Debug',
+        successReputationRewards: JSON.stringify([{ amount: 75, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+      }),
+      generator({
+        contractId: 'hard',
+        contractDebugName: 'Hard_Debug',
+        successReputationRewards: JSON.stringify([{ amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+      }),
+    ]).map(({ contractId, contractIntel }) => ({ contractId, contractIntel })),
+    [
+      {
+        contractId: 'easy',
+        contractIntel: 'Reputation Awarded (by difficulty): 75 / 100',
+      },
+      {
+        contractId: 'hard',
+        contractIntel: 'Reputation Awarded (by difficulty): 75 / 100',
+      },
+    ],
+  );
+});
+
 test('buildDataCoreContractGeneratorIntel skips rows without description keys or intel fields', () => {
   assert.deepEqual(
     buildDataCoreContractGeneratorIntel([
@@ -81,6 +134,8 @@ function generator(overrides: Partial<DataCoreContractGeneratorRecord> = {}): Da
     stringParamOverrides: '',
     locationTagGuids: '',
     locationTagClasses: '',
+    successReputationRewards: '',
+    failureReputationRewards: '',
     maxInstances: '',
     maxInstancesPerPlayer: '',
     respawnTime: '',
@@ -95,6 +150,8 @@ function generator(overrides: Partial<DataCoreContractGeneratorRecord> = {}): Da
     mentalLoad: '',
     riskOfLoss: '',
     gameKnowledge: '',
+    requiredCompletedContractTags: '',
+    completionTags: '',
     recordGuid: 'generator-guid',
     recordPath: 'libs/foundry/records/contracts/contractgenerator/delivery.xml',
     ...overrides,

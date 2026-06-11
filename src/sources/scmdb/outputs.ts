@@ -51,6 +51,8 @@ export const SCMDB_CONTRACT_HEADERS = [
   'blueprintChainDepth',
   'personalCooldownTime',
   'rewardRepCalculated',
+  'successReputationRewards',
+  'failureReputationRewards',
   'factionRewards',
   'factionRewardsRaw',
   'shipEncounters',

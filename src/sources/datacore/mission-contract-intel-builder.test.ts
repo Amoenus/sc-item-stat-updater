@@ -24,7 +24,7 @@ test('buildDataCoreMissionContractIntel derives rendered intel from broker facts
         reward: '12500',
         rewardCurrency: 'UEC',
         timeLimit: '25',
-        efficiency: '500',
+        efficiency: '',
         missionDifficulty: 'Easy',
         recordGuid: 'broker-guid',
         recordPath: 'libs/foundry/records/missionbroker/bountyintro.xml',

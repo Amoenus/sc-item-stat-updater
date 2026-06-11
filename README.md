@@ -7,10 +7,9 @@ The long-term architecture is a local enrichment pipeline:
 1. Extract a fresh `global.ini` from the game files.
 2. Extract additional game-file data from DataCore/Data.p4k as the authoritative source for raw facts.
 3. Use SCMDB only as a temporary derived-data bridge for mission, blueprint, crafting, mining aggregation, or generated joins not yet reconstructed from DataCore.
-4. Optionally scrape SPViewer as a legacy comparison source for audits.
-5. Build localization patch plans.
-6. Apply those patches to the repo copy of `global.ini`.
-7. Deploy the enriched `global.ini` back into the game folder.
+4. Build localization patch plans.
+5. Apply those patches to the repo copy of `global.ini`.
+6. Deploy the enriched `global.ini` back into the game folder.
 
 See [docs/architecture-overview.md](docs/architecture-overview.md) for the current architecture direction.
 See [docs/source-hierarchy-and-scmdb-audit.md](docs/source-hierarchy-and-scmdb-audit.md) for the DataCore-first source hierarchy and current SCMDB migration checklist.
@@ -24,18 +23,6 @@ See [docs/source-hierarchy-and-scmdb-audit.md](docs/source-hierarchy-and-scmdb-a
 
 ```sh
 npm install
-```
-
-Updater-only installs can skip the scraper browser dependency:
-
-```sh
-npm install --omit=optional
-```
-
-`scrape:spviewer` requires the optional `puppeteer` package. If you installed without optional dependencies, add it before running the SPViewer scraper:
-
-```sh
-npm install puppeteer
 ```
 
 ## Usage
@@ -55,32 +42,6 @@ Options:
 - `--provider datacore` is accepted for compatibility; DataCore is the only active batch item-stat provider.
 
 > Note: `npm run update` only updates `global.ini` from existing CSV files. It does not fetch or scrape new data.
-
-### Scrape SPViewer data
-
-```sh
-node --import tsx/esm bin/scrape-spviewer.ts --all
-```
-
-This legacy comparison command scrapes SPViewer item tables and saves CSV files into versioned directories based on the channel, e.g., `csv/spviewer/<version>-live/` or `csv/spviewer/<version>-ptu/`. SPViewer CSVs are retained for diagnostics and retirement audits, not active batch provider selection.
-
-To scrape only specific item types:
-
-```sh
-node --import tsx/esm bin/scrape-spviewer.ts Radar Shield
-```
-
-To list supported SPViewer item types:
-
-```sh
-node --import tsx/esm bin/scrape-spviewer.ts --list
-```
-
-Options:
-
-- `--ptu` extracts and uses the PTU version label.
-- `--live` uses the LIVE version label (default).
-- `--json` saves outputs as JSON instead of CSV.
 
 ### Scrape DataCore game-file data
 
@@ -167,9 +128,9 @@ npm run scrape:scmdb -- --raw
 node --import tsx/esm bin/update-item.ts -c <csv-directory> <category>
 ```
 
-Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/datacore/<version>-live` for `dc-*` categories, or `-c ./csv/scmdb/<version>-live` for `mission-*` categories). Active update categories include DataCore (`dc-*`) and mission (`mission-*`) sources. SPViewer categories (`sp-*`) remain available only for legacy comparison metadata and retirement audits.
+Since the CSVs are in versioned directories, you must provide the `-c` or `--csv-dir` flag to point to the correct directory containing the files (e.g. `-c ./csv/datacore/<version>-live` for `dc-*` categories, or `-c ./csv/scmdb/<version>-live` for `mission-*` categories). Active update categories include DataCore (`dc-*`) and mission (`mission-*`) sources.
 
-Active updates accept DataCore (`dc-*`) and mission (`mission-*`) categories. SPViewer (`sp-*`) categories are listed for legacy comparison and retirement audits only; direct SPViewer updates are rejected.
+Active updates accept DataCore (`dc-*`) and mission (`mission-*`) categories.
 
 To list categories with source-file metadata:
 
@@ -190,14 +151,6 @@ node --import tsx/esm bin/update-item.ts --scmdb-audit
 ```
 
 When `update-all` runs, it also prints this audit before preflight so SCMDB-backed outputs remain visible as a shrinking checklist.
-
-To audit whether SPViewer can be retired from active provider selection:
-
-```sh
-npm run audit:spviewer-retirement
-```
-
-The audit compares every legacy SPViewer item category with its DataCore counterpart using the latest LIVE source directories. A retirement decision requires all SPViewer categories to have DataCore counterparts and no SPViewer-only generated keys that still need classification. Changed generated values are diagnostic only because DataCore is the current game-file authority and SPViewer can lag or miss patches. Use `-- --ptu`, `-- --datacore-dir <path>`, or `-- --spviewer-dir <path>` to compare specific source sets.
 
 ### Type checking
 
@@ -225,7 +178,6 @@ bin/
   update-item.ts          # CLI to run a single category
   scrape-datacore.ts      # DataCore acquisition CLI
   scrape-scmdb.ts         # SCMDB acquisition CLI
-  scrape-spviewer.ts      # Legacy comparison SPViewer acquisition CLI
 src/
   application/            # Use cases and workflow orchestration
   artifact/               # Patch artifact generation/loading/application
@@ -238,11 +190,10 @@ src/
   pipeline/               # Core pipeline data contracts
   presentation/           # CLI argument and presentation helpers
   schema/                 # Runtime schemas
-  sources/                # DataCore, SCMDB, and SPViewer source acquisition/normalization
+  sources/                # DataCore, SCMDB source acquisition/normalization
 csv/
   datacore/               # DataCore cache/output data
   scmdb/                  # SCMDB mission/mining output data
-  spviewer/               # SPViewer source CSVs
 global.ini                # Star Citizen localization file
 ```
 
@@ -266,7 +217,7 @@ Scripts are idempotent - running them multiple times produces no duplicates.
 
 ## CSV files
 
-SPViewer CSVs listed here are legacy diagnostic inputs only. Active game-derived item facts should come from DataCore CSVs.
+Active game-derived item facts should come from DataCore CSVs.
 
 | CSV | Category | Source |
 |-----|----------|--------|
@@ -276,30 +227,6 @@ SPViewer CSVs listed here are legacy diagnostic inputs only. Active game-derived
 | `datacore/<version>-[live\|ptu]/factions.datacore.csv` | Raw faction and reputation metadata | DataCore |
 | `datacore/<version>-[live\|ptu]/location-labels.datacore.csv` | Raw law and location labels | DataCore |
 | `datacore/<version>-[live\|ptu]/mining-location-labels.datacore.csv` | Raw mining location labels | DataCore |
-| `spviewer/<version>-[live\|ptu]/bomb.spviewer.csv` | Bombs | SPViewer |
-| `spviewer/<version>-[live\|ptu]/cooler.spviewer.csv` | Coolers | SPViewer |
-| `spviewer/<version>-[live\|ptu]/emp.spviewer.csv` | EMPs | SPViewer |
-| `spviewer/<version>-[live\|ptu]/jumpdrive.spviewer.csv` | Jump Drives | SPViewer |
-| `spviewer/<version>-[live\|ptu]/miningmodifier.spviewer.csv` | Mining Modifiers | SPViewer |
-| `spviewer/<version>-[live\|ptu]/missile.spviewer.csv` | Missiles | SPViewer |
-| `spviewer/<version>-[live\|ptu]/missilelauncher.spviewer.csv` | Missile Launchers | SPViewer |
-| `spviewer/<version>-[live\|ptu]/powerplant.spviewer.csv` | Power Plants | SPViewer |
-| `spviewer/<version>-[live\|ptu]/qed.spviewer.csv` | QEDs | SPViewer |
-| `spviewer/<version>-[live\|ptu]/quantumdrive.spviewer.csv` | Quantum Drives | SPViewer |
-| `spviewer/<version>-[live\|ptu]/quantuminterdictiongenerator.spviewer.csv` | Quantum Interdiction Generator | SPViewer |
-| `spviewer/<version>-[live\|ptu]/radar.spviewer.csv` | Radars | SPViewer |
-| `spviewer/<version>-[live\|ptu]/salvagemodifier.spviewer.csv` | Salvage Modifiers | SPViewer |
-| `spviewer/<version>-[live\|ptu]/selfdestruct.spviewer.csv` | Self Destruct | SPViewer |
-| `spviewer/<version>-[live\|ptu]/shield.spviewer.csv` | Shields | SPViewer |
-| `spviewer/<version>-[live\|ptu]/shieldcontroller.spviewer.csv` | Shield Controller | SPViewer |
-| `spviewer/<version>-[live\|ptu]/throwable.spviewer.csv` | Throwables | SPViewer |
-| `spviewer/<version>-[live\|ptu]/tractorbeam.spviewer.csv` | Tractor Beams | SPViewer |
-| `spviewer/<version>-[live\|ptu]/turret.spviewer.csv` | Turrets | SPViewer |
-| `spviewer/<version>-[live\|ptu]/weaponattachment.spviewer.csv` | Weapon Attachments | SPViewer |
-| `spviewer/<version>-[live\|ptu]/weapondefensive.spviewer.csv` | Weapon Defensive | SPViewer |
-| `spviewer/<version>-[live\|ptu]/weapongun.spviewer.csv` | Weapon Guns | SPViewer |
-| `spviewer/<version>-[live\|ptu]/weaponmining.spviewer.csv` | Weapon Mining | SPViewer |
-| `spviewer/<version>-[live\|ptu]/weaponpersonal.spviewer.csv` | Weapon Personal | SPViewer |
 | `datacore/<version>-[live\|ptu]/contract-generators.datacore.csv` | Generated contract variants, title/description overrides, timing, and location tags | DataCore |
 | `datacore/<version>-[live\|ptu]/contract-generator-intel.datacore.csv` | DataCore-derived generated-contract time limit and buy-in text | DataCore |
 | `datacore/<version>-[live\|ptu]/contract-templates.datacore.csv` | Contract template display settings, objective keys, and location tags | DataCore |
@@ -321,7 +248,6 @@ The included `global.ini` is based on localization work from:
 CSV component data is sourced from:
 
 - DataCore extracted from local Star Citizen game files
-- SPViewer: [spviewer.eu](https://www.spviewer.eu/) for legacy comparison/audit CSVs
 - SCMDB: [scmdb.net](https://www.scmdb.net/)
 
 ## Disclaimer
@@ -332,7 +258,6 @@ Star Citizen and Squadron 42 are trademarks of Cloud Imperium Rights LLC. All ga
 
 This project also has no affiliation with the third-party data services it relies on:
 
-- [SPViewer](https://www.spviewer.eu/) — an independent community tool for browsing Star Citizen item stats
 - [SCMDB](https://www.scmdb.net/) — an independent community database for Star Citizen mission and crafting data
 - [StarMeld](https://github.com/BeltaKoda/StarMeld) and [StarStrings](https://github.com/MrKraken/StarStrings) — independent community localization projects
 

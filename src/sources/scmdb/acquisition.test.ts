@@ -9,6 +9,7 @@ test('buildScmdbDataUrls derives SCMDB companion data URLs from a merged file', 
     miningUrl: `${SCMDB_BASE_URL}/mining_data-4.8.1-live.11875683.json`,
     craftingItemsUrl: `${SCMDB_BASE_URL}/crafting_items-4.8.1-live.11875683.json`,
     craftingBlueprintsUrl: `${SCMDB_BASE_URL}/crafting_blueprints-4.8.1-live.11875683.json`,
+    memaUrl: `${SCMDB_BASE_URL}/mema-cache.json`,
   });
 });
 

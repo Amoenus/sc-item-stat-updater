@@ -179,6 +179,8 @@ export interface DataCoreContractGeneratorRecord {
   stringParamOverrides: string;
   locationTagGuids: string;
   locationTagClasses: string;
+  successReputationRewards: string;
+  failureReputationRewards: string;
   maxInstances: string;
   maxInstancesPerPlayer: string;
   respawnTime: string;
@@ -194,6 +196,8 @@ export interface DataCoreContractGeneratorRecord {
   riskOfLoss: string;
   gameKnowledge: string;
   blueprintRewardPoolGuids: string;
+  requiredCompletedContractTags: string;
+  completionTags: string;
   recordGuid: string;
   recordPath: string;
 }

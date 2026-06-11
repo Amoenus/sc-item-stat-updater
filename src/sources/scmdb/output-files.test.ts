@@ -31,6 +31,8 @@ const EXPECTED_LEGACY_CONTRACT_HEADERS = [
   'blueprintChainDepth',
   'personalCooldownTime',
   'rewardRepCalculated',
+  'successReputationRewards',
+  'failureReputationRewards',
   'factionRewards',
   'factionRewardsRaw',
   'shipEncounters',
@@ -107,5 +109,6 @@ function emptyRows(): ScmdbOutputRows {
     legacyRows: [],
     miningElementRows: [],
     miningJournalRows: [],
+    memaRows: [],
   };
 }

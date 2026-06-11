@@ -38,7 +38,7 @@ export async function extractGlobalIni(p4kFile?: string, log: (msg: string) => v
   }
 
   // unp4k extracts relative to cwd; run from outputDir
-  runTool(toolExe, [resolvedP4k, FILTER], { cwd: outputDir });
+  runTool(toolExe, [resolvedP4k, FILTER], { cwd: outputDir, stdio: 'ignore' });
 
   if (!fs.existsSync(resultPath)) {
     throw new Error(`Extraction completed but global.ini not found at: ${resultPath}`);

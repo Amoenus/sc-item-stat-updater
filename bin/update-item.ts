@@ -5,6 +5,10 @@ import {
   formatCategoryListing,
   formatProviderCoverageMatrix,
 } from '../src/application/use-cases/category-listing';
+import {
+  buildDynamicCoverageAudit,
+  formatDynamicCoverageAudit,
+} from '../src/application/use-cases/dynamic-coverage-audit';
 import { enrichGlobalIni } from '../src/application/use-cases/enrich-global-ini';
 import {
   buildScmdbDependencyAudit,
@@ -26,6 +30,7 @@ const { values, positionals } = parseArgs({
     'list-categories': { type: 'boolean', default: false },
     'provider-matrix': { type: 'boolean', default: false },
     'scmdb-audit': { type: 'boolean', default: false },
+    'dynamic-audit': { type: 'boolean', default: false },
     ptu: { type: 'boolean', default: false },
     force: { type: 'boolean', default: false },
     verbose: { type: 'boolean', short: 'v', default: false },
@@ -56,6 +61,12 @@ if (values['scmdb-audit']) {
   process.exit(0);
 }
 
+if (values['dynamic-audit']) {
+  console.log(formatDynamicCoverageAudit(await buildDynamicCoverageAudit()));
+  await shutdownLogger();
+  process.exit(0);
+}
+
 if (values.help || !category) {
   const available = await listCategories();
   const activeSlugs = [...available.datacore, ...available.missions];
@@ -67,6 +78,7 @@ if (values.help || !category) {
   console.log('      --list-categories  List categories with provider and source file metadata');
   console.log('      --provider-matrix  List provider coverage by category');
   console.log('      --scmdb-audit      List remaining SCMDB dependencies and migration classifications');
+  console.log('      --dynamic-audit    List dynamic coverage signals, source gaps, and static mapping risks');
   console.log('      --ptu              Use latest PTU source directories for report commands');
   console.log('      --force            Force update even when values are unchanged');
   console.log('  -v, --verbose          Enable verbose logging');
