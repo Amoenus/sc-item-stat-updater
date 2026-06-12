@@ -22,20 +22,23 @@ export function createCommandTaskList<Ctx>(
   ctx: Ctx,
   options: CommandTaskListOptions = {},
 ): Listr<Ctx, 'default', 'simple'> {
-  const processOutput = new ProcessOutput(
-    createWritable((chunk) => {
-      io.stdout.write(chunk);
-    }) as NodeJS.WriteStream,
-    createWritable((chunk) => {
-      io.stderr.write(chunk);
-    }) as NodeJS.WriteStream,
-    { leaveEmptyLine: false },
-  );
+  const useLiveRenderer = io.stdout === process.stdout && io.stderr === process.stderr && io.stdout.isTTY === true;
+  const processOutput = useLiveRenderer
+    ? new ProcessOutput(process.stdout, process.stderr, { leaveEmptyLine: false })
+    : new ProcessOutput(
+        createWritable((chunk) => {
+          io.stdout.write(chunk);
+        }) as NodeJS.WriteStream,
+        createWritable((chunk) => {
+          io.stderr.write(chunk);
+        }) as NodeJS.WriteStream,
+        { leaveEmptyLine: false },
+      );
 
   return new Listr<Ctx, 'default', 'simple'>(wrapTaskLoggerOutput(tasks), {
     ctx,
     fallbackRenderer: 'simple',
-    fallbackRendererCondition: !io.stdout.isTTY,
+    fallbackRendererCondition: !useLiveRenderer,
     registerSignalListeners: false,
     rendererOptions: {
       processOutput,
