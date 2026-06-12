@@ -32,8 +32,10 @@ npm install
 | Goal | Command | What it does |
 |---|---|---|
 | Full normal run | `npm run pipeline` | Refreshes source caches, extracts a fresh baseline `global.ini`, updates the repo copy, and deploys to the game folder. |
+| Full run with rebuilt DataCore cache | `npm run pipeline:force` | Runs the full pipeline and rebuilds the expensive DataCore DCB/XML cache instead of reusing it. |
 | Re-run after mapping/formatting changes | `npm run pipeline:cached` | Extracts a fresh baseline `global.ini`, uses existing source caches, updates the repo copy, and deploys. |
 | Refresh all source caches only | `npm run cache` | Refreshes DataCore and SCMDB outputs without touching `global.ini`. |
+| Rebuild source caches only | `npm run cache:force` | Refreshes source outputs without touching `global.ini` and rebuilds the expensive DataCore DCB/XML cache. |
 | Refresh one source cache | `npm run cache:datacore` or `npm run cache:scmdb` | Refreshes only that source's outputs. |
 | Update repo copy but do not deploy | `npm run pipeline -- --repo-only` or `npm run pipeline:cached -- --repo-only` | Runs the selected pipeline mode and leaves the game folder untouched. |
 | Deploy the current repo file | `npm run deploy` | Copies repo `global.ini` to the resolved game localization path with a backup. |
@@ -56,7 +58,7 @@ Options:
 - `--ptu` uses PTU source data instead of LIVE.
 - `--dry-run` previews updates without writing `global.ini`.
 
-When passing options through `npm run`, prefer the npm separator form, for example `npm run pipeline -- --rebuild-cache`. The separator keeps npm from interpreting app options as npm options.
+Use `npm run pipeline:force` for the common rebuild-cache case. When passing less common options through `npm run`, use the npm separator form, for example `npm run pipeline -- --repo-only`. The separator keeps npm from interpreting app options as npm options.
 
 ### Run from cached source outputs
 
@@ -70,13 +72,14 @@ Use this while iterating on mapping or formatting logic. It still refreshes the 
 
 ```sh
 npm run cache
+npm run cache:force
 npm run cache:datacore
 npm run cache:scmdb
 ```
 
 These commands refresh versioned source outputs under `csv/datacore/<version>-live|ptu>/` and `csv/scmdb/<version>/` without touching `global.ini`.
 
-DataCore cache refreshes first-party game-file facts from the local Star Citizen DataForge database. It reuses valid DCB/XML caches by default and writes derived CSV outputs plus `record-graph.json`. Use `--rebuild-cache` to rebuild the expensive DCB/XML cache.
+DataCore cache refreshes first-party game-file facts from the local Star Citizen DataForge database. It reuses valid DCB/XML caches by default and writes derived CSV outputs plus `record-graph.json`. Use `npm run cache:force` to rebuild the expensive DCB/XML cache without updating `global.ini`.
 
 SCMDB cache refresh downloads the latest SCMDB merged data and companion files, then writes derived mission/mining outputs.
 

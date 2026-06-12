@@ -93,58 +93,64 @@ function createSourceTasks(
   ptu: boolean,
   force: boolean,
 ): CommandTask<Record<string, never>>[] {
-  return selectSources(target).map((source) => ({
-    title: `${source.toUpperCase()} cache`,
-    task: async (_ctx, task) => {
-      let scrapeTypesCount = 0;
-      const result = await refresh({
-        repoRoot: ROOT_DIR,
-        target: source,
-        ptu,
-        force,
-        log: (message) => {
-          task.output = message;
-        },
-        onCacheExtractStart: () => {
-          task.output = 'Unforge: extracting XML records. This can take several minutes.';
-        },
-        onCacheExtractProgress: (count) => {
-          task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
-        },
-        onCacheExtractComplete: (count) => {
-          task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
-        },
-        onCacheHit: (count) => {
-          task.output = `DataCore XML cache reused: ${count.toLocaleString()} files`;
-        },
-        onDatacorePrepared: (context) => {
-          scrapeTypesCount = context.selectedTypes.length;
-          task.output = `Prepared ${scrapeTypesCount.toLocaleString()} DataCore type extractors`;
-        },
-        onRecordGraphStart: (total) => {
-          task.output = `Building record graph from ${total.toLocaleString()} XML files`;
-        },
-        onRecordGraphProgress: (current, total) => {
-          task.output = `Record graph: ${current.toLocaleString()}/${total.toLocaleString()}`;
-        },
-        onRecordGraphCacheHit: (recordCount) => {
-          task.output = `DataCore record graph reused: ${recordCount.toLocaleString()} records`;
-        },
-        onRawFactStart: (slug, total) => {
-          task.output = `Extracting ${slug}: 0/${total.toLocaleString()}`;
-        },
-        onRawFactProgress: (current) => {
-          task.output = `Extracting raw facts: ${current.toLocaleString()}`;
-        },
-        onTypeStart: (entry: DataCoreTypeEntry, index) => {
-          task.output = `Scraping ${index + 1}/${scrapeTypesCount}: ${entry.name}`;
-        },
-      });
+  return selectSources(target).map((source) => {
+    const baseTitle = `${source.toUpperCase()} cache`;
 
-      if (result.exitCode !== 0) {
-        throw new Error(`${source.toUpperCase()} cache refresh failed.`);
-      }
-      task.output = `${source.toUpperCase()} source outputs refreshed`;
-    },
-  }));
+    return {
+      title: baseTitle,
+      task: async (_ctx, task) => {
+        let scrapeTypesCount = 0;
+        const result = await refresh({
+          repoRoot: ROOT_DIR,
+          target: source,
+          ptu,
+          force,
+          log: (message) => {
+            task.output = message;
+          },
+          onCacheExtractStart: () => {
+            task.title = `${baseTitle} - unforge extraction can take several minutes`;
+            task.output = 'Unforge: extracting XML records. This can take several minutes.';
+          },
+          onCacheExtractProgress: (count) => {
+            task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
+          },
+          onCacheExtractComplete: (count) => {
+            task.title = baseTitle;
+            task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
+          },
+          onCacheHit: (count) => {
+            task.output = `DataCore XML cache reused: ${count.toLocaleString()} files`;
+          },
+          onDatacorePrepared: (context) => {
+            scrapeTypesCount = context.selectedTypes.length;
+            task.output = `Prepared ${scrapeTypesCount.toLocaleString()} DataCore type extractors`;
+          },
+          onRecordGraphStart: (total) => {
+            task.output = `Building record graph from ${total.toLocaleString()} XML files`;
+          },
+          onRecordGraphProgress: (current, total) => {
+            task.output = `Record graph: ${current.toLocaleString()}/${total.toLocaleString()}`;
+          },
+          onRecordGraphCacheHit: (recordCount) => {
+            task.output = `DataCore record graph reused: ${recordCount.toLocaleString()} records`;
+          },
+          onRawFactStart: (slug, total) => {
+            task.output = `Extracting ${slug}: 0/${total.toLocaleString()}`;
+          },
+          onRawFactProgress: (current) => {
+            task.output = `Extracting raw facts: ${current.toLocaleString()}`;
+          },
+          onTypeStart: (entry: DataCoreTypeEntry, index) => {
+            task.output = `Scraping ${index + 1}/${scrapeTypesCount}: ${entry.name}`;
+          },
+        });
+
+        if (result.exitCode !== 0) {
+          throw new Error(`${source.toUpperCase()} cache refresh failed.`);
+        }
+        task.output = `${source.toUpperCase()} source outputs refreshed`;
+      },
+    };
+  });
 }

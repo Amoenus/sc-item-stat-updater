@@ -207,8 +207,9 @@ function createSourceRefreshTask(
     refreshSourcesUseCase: typeof refreshSourceCache;
   },
 ): CommandTask<PipelineTaskContext> {
+  const baseTitle = `${source.toUpperCase()} cache`;
   return {
-    title: `${source.toUpperCase()} cache`,
+    title: baseTitle,
     task: async (_ctx, task) => {
       let scrapeTypesCount = 0;
       const result = await options.refreshSourcesUseCase({
@@ -220,12 +221,14 @@ function createSourceRefreshTask(
           task.output = message;
         },
         onCacheExtractStart: () => {
+          task.title = `${baseTitle} - unforge extraction can take several minutes`;
           task.output = 'Unforge: extracting XML records. This can take several minutes.';
         },
         onCacheExtractProgress: (count) => {
           task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
         },
         onCacheExtractComplete: (count) => {
+          task.title = baseTitle;
           task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
         },
         onCacheHit: (count) => {
