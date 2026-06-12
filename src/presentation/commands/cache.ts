@@ -65,6 +65,14 @@ export async function runCacheCommand(
     ptu: values.ptu,
     force,
     log: (message) => writeLine(io, `[cache] ${message}`),
+    onSourceStart: (source) => {
+      renderer.emit({
+        type: 'phase:start',
+        id: `${source}-cache`,
+        label: `${source.toUpperCase()} cache`,
+        detail: 'refreshing source outputs',
+      });
+    },
     onCacheExtractStart: () => {
       writeLine(io, '[cache] WARNING: DataCore unforge can take several minutes.');
       renderer.emit({ type: 'activity:start', id: 'unforge', label: 'Unforge', detail: 'extracting XML records...' });
@@ -76,13 +84,17 @@ export async function runCacheCommand(
       renderer.emit({ type: 'activity:stop', id: 'unforge', count, unit: 'XMLs extracted' });
     },
     onCacheHit: (count) => {
-      writeLine(io, `[cache] Using DataCore XML cache (${count.toLocaleString()} files).`);
+      renderer.emit({
+        type: 'task:success',
+        id: 'unforge-cache',
+        label: 'DataCore XML cache',
+        detail: `${count.toLocaleString()} files reused`,
+      });
     },
     onDatacorePrepared: (context) => {
       scrapeTypesCount = context.selectedTypes.length;
     },
     onRecordGraphStart: (total) => {
-      writeLine(io, '[cache] Building DataCore record graph...');
       renderer.emit({ type: 'progress:start', id: 'graph', label: 'Graph', total });
     },
     onRecordGraphProgress: (current, total) => {
@@ -90,7 +102,12 @@ export async function runCacheCommand(
       if (current >= total) renderer.emit({ type: 'progress:stop', id: 'graph' });
     },
     onRecordGraphCacheHit: (_recordCount, outputPath) => {
-      writeLine(io, `[cache] Using cached DataCore record graph: ${outputPath}`);
+      renderer.emit({
+        type: 'task:success',
+        id: 'record-graph-cache',
+        label: 'DataCore record graph',
+        detail: `cached at ${outputPath}`,
+      });
     },
     onRawFactStart: (slug, total) => {
       renderer.emit({ type: 'progress:start', id: 'scrape', label: 'DataCore', total });
@@ -109,6 +126,6 @@ export async function runCacheCommand(
   renderer.emit({ type: 'progress:update', id: 'scrape', value: scrapeTypesCount });
   renderer.emit({ type: 'progress:stop', id: 'scrape' });
   renderer.stopAll();
-  writeLine(io, `[cache] Refreshed: ${result.refreshed.join(', ') || 'none'}`);
+  renderer.emit({ type: 'summary', message: `\nCache refresh complete: ${result.refreshed.join(', ') || 'none'}` });
   return result.exitCode;
 }

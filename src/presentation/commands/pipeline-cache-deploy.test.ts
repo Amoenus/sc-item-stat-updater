@@ -46,6 +46,34 @@ test('pipeline command defaults to source refresh and deploy', async () => {
   assert.equal(io.stderrText(), '');
 });
 
+test('pipeline command renders phases and task completions', async () => {
+  const io = createFakeIO();
+
+  const exitCode = await runPipelineCommand([], io, {
+    runFullPipeline: async (options) => {
+      options.onPhaseStart?.({ id: 'extract-global-ini', label: 'Extract global.ini' });
+      options.onStepComplete?.('global.ini extracted & synced to repo');
+      options.onPhaseStart?.({ id: 'refresh-sources', label: 'Refresh source caches' });
+      options.onSourceStart?.('scmdb');
+      options.onStepComplete?.('SCMDB cache refreshed');
+      options.onPhaseStart?.({ id: 'apply-updates', label: 'Apply localization updates' });
+      options.onStepComplete?.('Stat updates applied');
+      options.onPhaseStart?.({ id: 'deploy-global-ini', label: 'Deploy global.ini' });
+      options.onStepComplete?.('global.ini deployed to game directory');
+      return { exitCode: 0, repoIniPath: 'repo/global.ini', extractedGamePath: 'game/global.ini' };
+    },
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(io.stdoutText(), /\[1\/4\] Extract global\.ini/);
+  assert.match(io.stdoutText(), /OK global\.ini extracted & synced to repo/);
+  assert.match(io.stdoutText(), /\[2\/4\] Refresh source caches/);
+  assert.match(io.stdoutText(), /- SCMDB cache - refreshing source outputs/);
+  assert.match(io.stdoutText(), /OK SCMDB cache refreshed/);
+  assert.match(io.stdoutText(), /\[4\/4\] Deploy global\.ini/);
+  assert.match(io.stdoutText(), /Pipeline complete/);
+});
+
 test('pipeline command maps cached, repo-only, and rebuild-cache flags', async () => {
   const io = createFakeIO();
   const observed: unknown[] = [];
@@ -108,7 +136,7 @@ test('cache command refreshes source outputs without global.ini workflow hooks',
   assert.equal(exitCode, 0);
   assert.equal((observed[0] as { target: string }).target, 'datacore');
   assert.equal((observed[0] as { force: boolean }).force, true);
-  assert.match(io.stdoutText(), /Refreshed: datacore/);
+  assert.match(io.stdoutText(), /Cache refresh complete: datacore/);
   assert.equal(io.stderrText(), '');
 });
 

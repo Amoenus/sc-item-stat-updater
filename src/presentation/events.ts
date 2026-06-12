@@ -3,6 +3,10 @@ import type { CommandIO } from './cli';
 
 export type CliEvent =
   | { type: 'phase'; message: string }
+  | { type: 'phase:start'; id: string; label: string; detail?: string; index?: number; total?: number }
+  | { type: 'task:start'; id: string; label: string; detail?: string }
+  | { type: 'task:success'; id: string; label: string; detail?: string }
+  | { type: 'task:skip'; id: string; label: string; detail?: string }
   | { type: 'progress:start'; id: string; label: string; total: number; value?: number }
   | { type: 'progress:update'; id: string; value: number; label?: string; total?: number }
   | { type: 'progress:stop'; id: string }
@@ -42,6 +46,10 @@ export function createCliEventRenderer(io: CommandIO): CliEventRenderer {
     io.stderr.write(`${message}\n`);
   }
 
+  function formatDetail(detail?: string): string {
+    return detail ? ` - ${detail}` : '';
+  }
+
   function activityDetail(activity: { detail?: string; count?: number; unit?: string }): string {
     if (activity.detail) return activity.detail;
     if (activity.count !== undefined) {
@@ -77,6 +85,20 @@ export function createCliEventRenderer(io: CommandIO): CliEventRenderer {
       switch (event.type) {
         case 'phase':
           write(event.message);
+          return;
+        case 'phase:start': {
+          const prefix = event.index && event.total ? `[${event.index}/${event.total}] ` : '';
+          write(`\n${prefix}${event.label}${formatDetail(event.detail)}`);
+          return;
+        }
+        case 'task:start':
+          write(`  - ${event.label}${formatDetail(event.detail)}`);
+          return;
+        case 'task:success':
+          write(`  OK ${event.label}${formatDetail(event.detail)}`);
+          return;
+        case 'task:skip':
+          write(`  SKIP ${event.label}${formatDetail(event.detail)}`);
           return;
         case 'line':
           write(event.message ?? '');

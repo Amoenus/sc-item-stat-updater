@@ -57,22 +57,13 @@ export async function runPipelineCommand(
   const force = values['rebuild-cache'] || isNpmConfigFlagEnabled('rebuild-cache');
   const refreshSources = !values.cached;
   const deployUpdatedIni = !values['repo-only'];
-  const totalSteps = 2 + (refreshSources ? 2 : 0) + (deployUpdatedIni ? 1 : 0);
-  let completedSteps = 0;
+  const phaseTotal = 4;
+  let phaseIndex = 0;
   let scrapeTypesCount = 0;
 
   const log = (message: string) => writeLine(io, `[pipeline] ${message}`);
   const completeStep = (summary: string) => {
-    completedSteps++;
-    renderer.emit({
-      type: 'progress:start',
-      id: 'pipeline',
-      label: 'Pipeline',
-      total: totalSteps,
-      value: completedSteps,
-    });
-    renderer.emit({ type: 'progress:update', id: 'pipeline', value: completedSteps, label: summary });
-    renderer.emit({ type: 'progress:stop', id: 'pipeline' });
+    renderer.emit({ type: 'task:success', id: summary, label: summary });
   };
 
   const run = dependencies.runFullPipeline ?? runFullPipeline;
@@ -88,7 +79,19 @@ export async function runPipelineCommand(
     force,
     verbose: values.verbose,
     log,
+    onPhaseStart: (phase) => {
+      phaseIndex++;
+      renderer.emit({ type: 'phase:start', index: phaseIndex, total: phaseTotal, ...phase });
+    },
     onStepComplete: completeStep,
+    onSourceStart: (source) => {
+      renderer.emit({
+        type: 'task:start',
+        id: `${source}-cache`,
+        label: `${source.toUpperCase()} cache`,
+        detail: 'refreshing source outputs',
+      });
+    },
     onCacheExtractStart: () => {
       log('WARNING: The unforge step is intensive, long-running, and will take a while.');
       renderer.emit({ type: 'activity:start', id: 'unforge', label: 'Unforge', detail: 'extracting XML records...' });
@@ -97,10 +100,12 @@ export async function runPipelineCommand(
       renderer.emit({ type: 'activity:update', id: 'unforge', count, unit: 'XMLs extracted' });
     },
     onCacheHit: (count) => {
-      log('Using cached XMLs (Skipping extraction)...');
-      renderer.emit({ type: 'progress:start', id: 'unforge', label: 'Unforge', total: count, value: count });
-      renderer.emit({ type: 'progress:update', id: 'unforge', value: count, label: 'Cached' });
-      renderer.emit({ type: 'progress:stop', id: 'unforge' });
+      renderer.emit({
+        type: 'task:success',
+        id: 'unforge-cache',
+        label: 'DataCore XML cache',
+        detail: `${count.toLocaleString()} files reused`,
+      });
     },
     onCacheExtractComplete: (count) => {
       renderer.emit({ type: 'activity:stop', id: 'unforge', count, unit: 'XMLs extracted' });
@@ -109,7 +114,6 @@ export async function runPipelineCommand(
       scrapeTypesCount = context.selectedTypes.length;
     },
     onRecordGraphStart: (total) => {
-      log('Building DataCore record graph (parsing all XML files)...');
       renderer.emit({ type: 'progress:start', id: 'graph', label: 'Graph', total });
     },
     onRecordGraphProgress: (current, total) => {
@@ -117,7 +121,12 @@ export async function runPipelineCommand(
       if (current >= total) renderer.emit({ type: 'progress:stop', id: 'graph' });
     },
     onRecordGraphCacheHit: (_recordCount, outputPath) => {
-      log(`Using cached DataCore record graph: ${outputPath}`);
+      renderer.emit({
+        type: 'task:success',
+        id: 'record-graph-cache',
+        label: 'DataCore record graph',
+        detail: `cached at ${outputPath}`,
+      });
     },
     onRawFactStart: (slug, total) => {
       renderer.emit({ type: 'progress:start', id: 'scrape', label: 'Scraping', total });
@@ -137,6 +146,6 @@ export async function runPipelineCommand(
   renderer.emit({ type: 'progress:stop', id: 'scrape' });
   renderer.stopAll();
 
-  log('=== Done ===');
+  renderer.emit({ type: 'summary', message: '\nPipeline complete.' });
   return result.exitCode;
 }

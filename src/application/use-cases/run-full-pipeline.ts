@@ -20,11 +20,13 @@ export interface RunFullPipelineOptions {
   forceExtract?: boolean;
   verbose?: boolean;
   log?: (message: string) => void;
+  onPhaseStart?: (phase: { id: string; label: string; detail?: string }) => void;
   onStepComplete?: (summary: string) => void;
   runUpdate?: typeof runBatchUpdate;
   refreshSourcesUseCase?: typeof refreshSourceCache;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
+  onSourceStart?: (source: 'scmdb' | 'datacore') => void;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractProgress?: (count: number) => void;
@@ -54,18 +56,30 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const deploy = options.deploy ?? deployGlobalIni;
   const shouldRefreshSources = options.refreshSources ?? options.scrape ?? options.datacore ?? true;
   const shouldDeploy = options.deployUpdatedIni ?? true;
+  const startPhase = (phase: { id: string; label: string; detail?: string }, fallbackMessage: string): void => {
+    if (options.onPhaseStart) {
+      options.onPhaseStart(phase);
+    } else {
+      log(fallbackMessage);
+    }
+  };
 
-  log('=== Step 1: Extracting global.ini from Data.p4k ===');
+  startPhase(
+    { id: 'extract-global-ini', label: 'Extract global.ini', detail: 'fresh game localization' },
+    '=== Step 1: Extracting global.ini from Data.p4k ===',
+  );
   const { extractedGamePath } = await refresh({ repoIniPath, log });
   options.onStepComplete?.('global.ini extracted & synced to repo');
 
   if (shouldRefreshSources) {
+    startPhase({ id: 'refresh-sources', label: 'Refresh source caches' }, '=== Step 2: Refreshing source caches ===');
     const cacheResult = await refreshSourcesUseCase({
       repoRoot: options.rootDir,
       target: options.datacore && !options.scrape ? 'datacore' : 'all',
       ptu: options.ptu,
       force: options.force ?? options.forceExtract,
       log,
+      onSourceStart: options.onSourceStart,
       onCacheHit: options.onCacheHit,
       onCacheExtractStart: options.onCacheExtractStart,
       onCacheExtractProgress: options.onCacheExtractProgress,
@@ -83,10 +97,13 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       options.onStepComplete?.(`${source.toUpperCase()} cache refreshed`);
     }
   } else {
-    log('=== Step 2: Using cached source outputs ===');
+    startPhase(
+      { id: 'use-cached-sources', label: 'Use cached source outputs' },
+      '=== Step 2: Using cached source outputs ===',
+    );
   }
 
-  log('=== Step 3: Applying stat updates ===');
+  startPhase({ id: 'apply-updates', label: 'Apply localization updates' }, '=== Step 3: Applying stat updates ===');
   const updateResult = await runUpdate({
     repoRoot: options.rootDir,
     dryRun: options.dryRun,
@@ -103,12 +120,18 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   options.onStepComplete?.('Stat updates applied');
 
   if (shouldDeploy) {
-    log('=== Step 4: Deploying updated global.ini -> game directory ===');
+    startPhase(
+      { id: 'deploy-global-ini', label: 'Deploy global.ini', detail: 'copy enriched file to game folder' },
+      '=== Step 4: Deploying updated global.ini -> game directory ===',
+    );
     await deploy({ repoIniPath, targetIniPath: extractedGamePath });
     log(`Deployed: ${extractedGamePath}`);
     options.onStepComplete?.('global.ini deployed to game directory');
   } else {
-    log('=== Step 4: Skipping deploy (--repo-only) ===');
+    startPhase(
+      { id: 'skip-deploy', label: 'Skip deployment', detail: '--repo-only' },
+      '=== Step 4: Skipping deploy (--repo-only) ===',
+    );
   }
 
   return { exitCode: 0, extractedGamePath, repoIniPath };

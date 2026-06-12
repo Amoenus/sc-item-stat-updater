@@ -12,6 +12,7 @@ export interface RefreshSourceCacheOptions {
   log?: (message: string) => void;
   runDatacore?: typeof runDatacoreScrape;
   runScmdb?: typeof runScmdbScrape;
+  onSourceStart?: (source: 'scmdb' | 'datacore') => void;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractProgress?: (count: number) => void;
@@ -38,13 +39,21 @@ export async function refreshSourceCache(options: RefreshSourceCacheOptions): Pr
   const refreshed: Array<'datacore' | 'scmdb'> = [];
 
   if (target === 'all' || target === 'scmdb') {
-    log('=== Refreshing SCMDB source cache ===');
+    if (options.onSourceStart) {
+      options.onSourceStart('scmdb');
+    } else {
+      log('=== Refreshing SCMDB source cache ===');
+    }
     await runScmdb({ repoRoot: options.repoRoot, ptu: options.ptu });
     refreshed.push('scmdb');
   }
 
   if (target === 'all' || target === 'datacore') {
-    log('=== Refreshing DataCore source cache ===');
+    if (options.onSourceStart) {
+      options.onSourceStart('datacore');
+    } else {
+      log('=== Refreshing DataCore source cache ===');
+    }
     const datacoreResult = await runDatacore({
       repoRoot: options.repoRoot,
       ptu: options.ptu,
