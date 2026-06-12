@@ -402,9 +402,11 @@ function shouldUseRepeatOnlyMultiPoolBlock(
   poolGuids: string[],
 ): boolean {
   if (!descriptionKeyResolution.usedTemplateFallback || poolGuids.length < 2) return false;
-  return /(?:^|[_\s-])repeat(?:$|[_\s-])/i.test(
-    `${row['Contract Debug Name'] ?? ''} ${row['Handler Debug Name'] ?? ''}`,
-  );
+  return hasContractPrerequisiteTags(row);
+}
+
+function hasContractPrerequisiteTags(row: Record<string, string>): boolean {
+  return parseGuidList(row['Required Completed Contract Tags']).length > 0;
 }
 
 function formatRepeatOnlyMultiPoolBlueprintList(

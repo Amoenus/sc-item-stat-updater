@@ -24,11 +24,11 @@ async function makeWorkspace() {
   await fs.writeFile(
     path.join(datacoreDir, 'contract-generators.datacore.csv'),
     [
-      'Contract ID,Contract Debug Name,Handler Debug Name,Template GUID,Description Key,Description Variant Keys,Blueprint Reward Pool Guids,Min Standing Name Key',
+      'Contract ID,Contract Debug Name,Handler Debug Name,Template GUID,Description Key,Description Variant Keys,Blueprint Reward Pool Guids,Min Standing Name Key,Required Completed Contract Tags',
       'contract-1,RewardVariant,,template-ref,test_desc,test_desc_variant,pool-ref,RepScope_Contractor_Rank3',
       'contract-2,NoRewardVariant,,template-ref,shared_desc,,',
       'contract-3,StantonRewardVariant,,template-ref,shared_desc,,pool-ref,RepScope_Contractor_Rank3',
-      'contract-4,Facility_Repeat,RepeatHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",',
+      'contract-4,FacilityFollowup,FacilityHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",,completed-contract-tag',
     ].join('\n'),
     'utf8',
   );
