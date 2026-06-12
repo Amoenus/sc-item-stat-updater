@@ -63,6 +63,10 @@ import {
   writeDataCoreRecordGraph,
 } from '../../sources/datacore/record-graph';
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
+import {
+  createDataCoreRelationshipIndex,
+  type DataCoreRelationshipIndex,
+} from '../../sources/datacore/relationship-index';
 import type {
   DataCoreCommodityRecord,
   DataCoreContractGeneratorIntelRecord,
@@ -2118,7 +2122,8 @@ async function scrapeDataCoreType(
   const headers = [...COMMON_HEADERS, ...typeHeaders];
   const rows: string[][] = [];
   const referencedXmlCache = new Map<string, ReturnType<typeof loadXml>>();
-  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(options.graph);
+  const relationships = createDataCoreRelationshipIndex(options.graph);
+  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(relationships);
   const scmdbComponentClassByRef = await loadScmdbComponentClassLookup({
     repoRoot: options.repoRoot,
     versionTag: path.basename(options.outputBase),
@@ -2158,7 +2163,7 @@ async function scrapeDataCoreType(
       const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
       let componentClass = resolveDataCoreComponentClass(attachDef.subtype, entityClass, entityClassToHaulingClass);
       if (!isDisplayDataCoreComponentClass(componentClass)) {
-        const record = getDataCoreRecordForEntityClass(entityClass, options.graph);
+        const record = getDataCoreRecordForEntityClass(entityClass, relationships);
         componentClass = scmdbComponentClassByRef.get(record?.ref.toLowerCase() ?? '') ?? componentClass;
       }
       const rowRecord: Record<string, string> = {
@@ -2243,7 +2248,10 @@ async function readScmdbComponentClassLookup(repoRoot: string, versionTag: strin
     return classByRef;
   }
 
-  const craftingFile = entries.filter((entry) => /^crafting_items-.*\.json$/i.test(entry)).sort().at(-1);
+  const craftingFile = entries
+    .filter((entry) => /^crafting_items-.*\.json$/i.test(entry))
+    .sort()
+    .at(-1);
   if (!craftingFile) {
     return classByRef;
   }
@@ -2264,11 +2272,10 @@ async function readScmdbComponentClassLookup(repoRoot: string, versionTag: strin
   return classByRef;
 }
 
-function getDataCoreRecordForEntityClass(entityClass: string, graph: DataCoreRecordGraphLookup | undefined) {
-  if (!graph) return undefined;
+function getDataCoreRecordForEntityClass(entityClass: string, relationships: DataCoreRelationshipIndex) {
   const normalized = normalizeDataCoreEntityClass(entityClass);
   if (!normalized) return undefined;
-  return graph.graph.records.find((record) => normalizeDataCoreEntityClass(record.entityClass) === normalized);
+  return relationships.getRecordForEntityClass(normalized);
 }
 
 function buildDerivedComponentClassLookup(rows: Array<Record<string, string>>, csvFile: string): Map<string, string> {
@@ -3570,7 +3577,8 @@ async function ensureDataCoreXmlCache(options: EnsureDataCoreXmlCacheOptions): P
     return { xmlFileCount: options.cachedCount, reused: true };
   }
 
-  const clearExisting = options.cachedCount > 0 && Boolean(options.forceExtract || options.dcbRefreshed || !metadataMatches);
+  const clearExisting =
+    options.cachedCount > 0 && Boolean(options.forceExtract || options.dcbRefreshed || !metadataMatches);
   options.onCacheExtractStart?.(options.dcbPath, options.xmlCacheDir, clearExisting);
   const { xmlFileCount } = await options.extractXmlCache({
     dcbPath: options.dcbPath,
