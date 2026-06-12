@@ -10,15 +10,33 @@ async function makeWorkspace() {
   const datacoreDir = path.join(dir, 'csv', 'datacore', '4.8.test-live');
   await fs.mkdir(datacoreDir, { recursive: true });
 
-  await fs.writeFile(path.join(dir, 'global.ini'), 'item_Name_Test_Target=[S1|PST|ENG] Test Blueprint Item', 'utf8');
+  await fs.writeFile(
+    path.join(dir, 'global.ini'),
+    [
+      'item_Name_Test_Target=[S1|PST|ENG] Test Blueprint Item',
+      'item_Name_Test_Repeat_A=Repeat Blueprint A',
+      'item_Name_Test_Repeat_B=Repeat Blueprint B',
+      'item_Name_Test_Repeat_C=Repeat Powerplant',
+      'RepScope_Contractor_Rank3=Sr. Contractor',
+    ].join('\n'),
+    'utf8',
+  );
   await fs.writeFile(
     path.join(datacoreDir, 'contract-generators.datacore.csv'),
     [
-      'Contract ID,Contract Debug Name,Description Key,Description Variant Keys,Blueprint Reward Pool Guids',
-      'contract-1,RewardVariant,test_desc,test_desc_variant,pool-ref',
-      'contract-2,NoRewardVariant,shared_desc,,',
-      'contract-3,StantonRewardVariant,shared_desc,,pool-ref',
+      'Contract ID,Contract Debug Name,Handler Debug Name,Template GUID,Description Key,Description Variant Keys,Blueprint Reward Pool Guids,Min Standing Name Key',
+      'contract-1,RewardVariant,,template-ref,test_desc,test_desc_variant,pool-ref,RepScope_Contractor_Rank3',
+      'contract-2,NoRewardVariant,,template-ref,shared_desc,,',
+      'contract-3,StantonRewardVariant,,template-ref,shared_desc,,pool-ref,RepScope_Contractor_Rank3',
+      'contract-4,Facility_Repeat,RepeatHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",',
     ].join('\n'),
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(datacoreDir, 'contract-templates.datacore.csv'),
+    ['Template Class,Record GUID,Record Path', 'RepeatTemplate,template-repeat-ref,templates/repeat-template.xml'].join(
+      '\n',
+    ),
     'utf8',
   );
   await fs.writeFile(
@@ -37,9 +55,12 @@ async function makeWorkspace() {
   );
   await fs.writeFile(
     path.join(datacoreDir, 'blueprint-pools.datacore.csv'),
-    ['PoolClass,BlueprintGuids,Ref,Path', 'Pool,"[{""guid"":""blueprint-ref"",""weight"":1}]",pool-ref,pool.xml'].join(
-      '\n',
-    ),
+    [
+      'PoolClass,BlueprintGuids,Ref,Path',
+      'Pool,"[{""guid"":""blueprint-ref"",""weight"":1}]",pool-ref,pool.xml',
+      'RepeatPool1,"[{""guid"":""repeat-blueprint-a"",""weight"":1},{""guid"":""repeat-blueprint-b"",""weight"":1}]",repeat-pool-1,repeat-pool-1.xml',
+      'RepeatPool2,"[{""guid"":""repeat-blueprint-c"",""weight"":1}]",repeat-pool-2,repeat-pool-2.xml',
+    ].join('\n'),
     'utf8',
   );
   await fs.writeFile(
@@ -47,6 +68,27 @@ async function makeWorkspace() {
     [
       'BlueprintClass,TargetEntityClassGuid,TargetEntityClass,TargetItemNameKey,RecipeCosts,Ref,Path',
       'Blueprint,,target-ref,,"[]",blueprint-ref,blueprint.xml',
+      'RepeatBlueprintA,,,item_Name_Test_Repeat_A,"[]",repeat-blueprint-a,repeat-a.xml',
+      'RepeatBlueprintB,,,item_Name_Test_Repeat_B,"[]",repeat-blueprint-b,repeat-b.xml',
+      'RepeatBlueprintC,powerplant-ref,,,"[]",repeat-blueprint-c,repeat-c.xml',
+    ].join('\n'),
+    'utf8',
+  );
+  const xmlCacheDir = path.join(dir, 'csv', 'datacore', '.xmlcache', '4.8.test-live');
+  await fs.mkdir(path.join(xmlCacheDir, 'templates'), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, 'templates', 'repeat-template.xml'),
+    [
+      '<ContractTemplate.RepeatTemplate __type="ContractTemplate" __ref="template-repeat-ref" __path="templates/repeat-template.xml">',
+      '  <contractDisplayInfo>',
+      '    <ContractDisplayInfo>',
+      '      <displayString>',
+      '        <LocID value="@repeat_title" />',
+      '        <LocID value="@repeat_desc" />',
+      '      </displayString>',
+      '    </ContractDisplayInfo>',
+      '  </contractDisplayInfo>',
+      '</ContractTemplate.RepeatTemplate>',
     ].join('\n'),
     'utf8',
   );
@@ -54,7 +96,7 @@ async function makeWorkspace() {
     path.join(datacoreDir, 'record-graph.json'),
     JSON.stringify({
       source: 'datacore-record-graph',
-      recordCount: 1,
+      recordCount: 2,
       records: [
         {
           path: 'target.xml',
@@ -65,13 +107,33 @@ async function makeWorkspace() {
           localizationKeys: [{ attribute: 'Name', key: 'item_Name_Test_Target' }],
           referencedGuids: [],
         },
+        {
+          path: 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml',
+          ref: 'powerplant-ref',
+          rootTag: 'EntityClassDefinition.Test_Powerplant',
+          rootType: 'EntityClassDefinition',
+          entityClass: 'Test_Powerplant',
+          localizationKeys: [{ attribute: 'Name', key: 'item_Name_Test_Repeat_C' }],
+          referencedGuids: [],
+        },
       ],
       indexes: {
-        byRef: { 'target-ref': 'target.xml' },
-        byPath: { 'target.xml': 0 },
-        byRootType: { EntityClassDefinition: ['target.xml'] },
-        byEntityClass: { Test_Target: ['target.xml'] },
-        byLocalizationKey: { item_Name_Test_Target: ['target.xml'] },
+        byRef: {
+          'target-ref': 'target.xml',
+          'powerplant-ref': 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml',
+        },
+        byPath: { 'target.xml': 0, 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml': 1 },
+        byRootType: {
+          EntityClassDefinition: ['target.xml', 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+        },
+        byEntityClass: {
+          Test_Target: ['target.xml'],
+          Test_Powerplant: ['libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+        },
+        byLocalizationKey: {
+          item_Name_Test_Target: ['target.xml'],
+          item_Name_Test_Repeat_C: ['libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+        },
         byReferencedGuid: {},
       },
     }),
@@ -88,11 +150,14 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       const rows = await loadDatacoreDescriptionsSourceData({ sourceDirs: { datacore: datacoreDir } } as never);
       const row = rows.find((candidate) => candidate['Localization Key'] === 'test_desc');
 
-      assert.equal(row?.RewardList, String.raw`<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`);
+      assert.equal(
+        row?.RewardList,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
+      );
       assert.equal(row?.ContractIntel, String.raw`Time Limit: 12 min\nReputation Awarded: 100`);
       assert.equal(
         missionDescriptionValue(row ?? {}, 'Base description.'),
-        String.raw`Base description.\n\n<EM4>Reputation Awarded:</EM4> 100\n\n** Contract Intel **\nTime Limit: 12 min\n\n<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`Base description.\n\n<EM4>Reputation Awarded:</EM4> 100\n\n** Contract Intel **\nTime Limit: 12 min\n\n<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
       );
 
       const brokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_desc');
@@ -117,12 +182,21 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       );
 
       const variantRow = rows.find((candidate) => candidate['Localization Key'] === 'test_desc_variant');
-      assert.equal(variantRow?.RewardList, String.raw`<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`);
+      assert.equal(
+        variantRow?.RewardList,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
+      );
 
       const sharedRow = rows.find((candidate) => candidate['Localization Key'] === 'shared_desc');
       assert.equal(
         sharedRow?.RewardList,
-        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Applies only to variants containing: StantonRewardVariant</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n<EM4>Applies only to variants containing: StantonRewardVariant</EM4>\n- Test Blueprint Item (100%)`,
+      );
+
+      const repeatRow = rows.find((candidate) => candidate['Localization Key'] === 'repeat_desc');
+      assert.equal(
+        repeatRow?.RewardList,
+        String.raw`<EM4>Multiple Blueprint Pools (Repeat Only)</EM4>\n<EM4>Pool 1</EM4>\n- Repeat Blueprint A\n- Repeat Blueprint B\n\n<EM4>Pool 2</EM4>\n- Repeat Powerplant (Powerplant)`,
       );
     } finally {
       await fs.rm(dir, { recursive: true, force: true });

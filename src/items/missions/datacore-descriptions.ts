@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
 import { getLogger } from '../../infrastructure/logger';
@@ -5,6 +6,7 @@ import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
+import { loadXml } from '../../sources/datacore/xml-parser';
 
 const logger = getLogger('datacore-descriptions-config');
 
@@ -16,7 +18,13 @@ interface BlueprintDescriptionFacts {
   rewardContractIds: Set<string>;
   rewardDebugNames: Set<string>;
   nonRewardDebugNames: Set<string>;
+  rewardStandingLabels: Set<string>;
   rewardLines: Set<string>;
+}
+
+interface DescriptionKeyResolution {
+  keys: string[];
+  usedTemplateFallback: boolean;
 }
 
 function appendParagraph(value: string): string {
@@ -111,6 +119,7 @@ export async function loadDatacoreDescriptionsSourceData(
   );
 
   const generatorsPath = resolveChildPath(datacoreDir, 'contract-generators.datacore.csv', 'generators csv');
+  const templatesPath = resolveChildPath(datacoreDir, 'contract-templates.datacore.csv', 'templates csv');
   const poolsPath = resolveChildPath(datacoreDir, 'blueprint-pools.datacore.csv', 'pools csv');
   const blueprintsPath = resolveChildPath(datacoreDir, 'crafting-blueprints.datacore.csv', 'blueprints csv');
 
@@ -121,6 +130,7 @@ export async function loadDatacoreDescriptionsSourceData(
   let missionIntel: Record<string, string>[] = [];
   let haulingSummary: Record<string, string>[] = [];
   let generators: Record<string, string>[] = [];
+  let templates: Record<string, string>[] = [];
   let pools: Record<string, string>[] = [];
   let craftingBlueprints: Record<string, string>[] = [];
   let memaStats: Record<string, string>[] = [];
@@ -147,6 +157,12 @@ export async function loadDatacoreDescriptionsSourceData(
     generators = await readCsvFile(generatorsPath);
   } catch (err) {
     logger.warn('Failed to read contract-generators.datacore.csv', { err: String(err) });
+  }
+
+  try {
+    templates = await readCsvFile(templatesPath);
+  } catch (err) {
+    logger.warn('Failed to read contract-templates.datacore.csv', { err: String(err) });
   }
 
   try {
@@ -233,6 +249,9 @@ export async function loadDatacoreDescriptionsSourceData(
   // 4. Precompute Blueprint Data
   const localizationValues = await loadLocalizationValues(datacoreDir);
   const recordGraph = await loadRecordGraph(datacoreDir);
+  const xmlCacheDir = await resolveXmlCacheDir(datacoreDir);
+  const templateDescriptionKeysByGuid = await loadTemplateDescriptionKeysByGuid(templates, xmlCacheDir);
+  const standingLabelCache = new Map<string, string>();
   const blueprintByGuid = new Map<string, string>();
   for (const row of craftingBlueprints) {
     const guid = row['Ref'];
@@ -259,13 +278,26 @@ export async function loadDatacoreDescriptionsSourceData(
 
   // 5. Build Blueprint Rewards strings, preserving shared-string caveats.
   const blueprintFactsByDescriptionKey = new Map<string, BlueprintDescriptionFacts>();
+  const repeatBlueprintListsByDescriptionKey = new Map<string, string>();
   for (const row of generators) {
-    const descriptionKeys = getDescriptionKeys(row);
+    const descriptionKeyResolution = getDescriptionKeys(row, templateDescriptionKeysByGuid);
+    const { keys: descriptionKeys } = descriptionKeyResolution;
     if (descriptionKeys.length === 0) continue;
 
     const contractId = row['Contract ID'] || row['Contract Debug Name'] || row['Record GUID'] || JSON.stringify(row);
     const debugName = row['Contract Debug Name'] || contractId;
-    const rewardLines = resolveBlueprintRewardLines(row['Blueprint Reward Pool Guids'], poolByGuid);
+    const poolGuids = parseGuidList(row['Blueprint Reward Pool Guids']);
+    const repeatBlueprintList = shouldUseRepeatOnlyMultiPoolBlock(row, descriptionKeyResolution, poolGuids)
+      ? formatRepeatOnlyMultiPoolBlueprintList(poolGuids, poolByGuid)
+      : '';
+    const rewardLines = repeatBlueprintList ? [] : resolveBlueprintRewardLines(row['Blueprint Reward Pool Guids'], poolByGuid);
+
+    if (repeatBlueprintList) {
+      for (const key of descriptionKeys) {
+        repeatBlueprintListsByDescriptionKey.set(key, repeatBlueprintList);
+      }
+      continue;
+    }
 
     for (const key of descriptionKeys) {
       const facts = getOrCreateBlueprintFacts(blueprintFactsByDescriptionKey, key);
@@ -273,6 +305,14 @@ export async function loadDatacoreDescriptionsSourceData(
       if (rewardLines.length > 0) {
         facts.rewardContractIds.add(contractId);
         facts.rewardDebugNames.add(debugName);
+        const standingLabel = await resolveContractStandingLabel(
+          row,
+          xmlCacheDir,
+          localizationValues,
+          recordGraph,
+          standingLabelCache,
+        );
+        if (standingLabel) facts.rewardStandingLabels.add(standingLabel);
         for (const line of rewardLines) facts.rewardLines.add(line);
       } else {
         facts.nonRewardDebugNames.add(debugName);
@@ -282,20 +322,25 @@ export async function loadDatacoreDescriptionsSourceData(
 
   for (const [key, facts] of blueprintFactsByDescriptionKey) {
     if (facts.rewardLines.size === 0) continue;
-    const caveat =
-      facts.rewardContractIds.size < facts.totalContractIds.size
-        ? String.raw`\n<EM4>Applies only to ${describeBlueprintVariantScope(facts)}</EM4>`
-        : '';
+    const caveat = formatBlueprintCaveat(facts);
     const dest = getOrCreateRow(key);
     dest['RewardList'] =
       String.raw`<EM4>Potential Blueprints</EM4>${caveat}\n${[...facts.rewardLines].join(String.raw`\n`)}`;
   }
 
+  for (const [key, rewardList] of repeatBlueprintListsByDescriptionKey) {
+    const dest = getOrCreateRow(key);
+    dest['RewardList'] = rewardList;
+  }
+
   return [...merged.values()];
 }
 
-function getDescriptionKeys(row: Record<string, string>): string[] {
-  return [
+function getDescriptionKeys(
+  row: Record<string, string>,
+  templateDescriptionKeysByGuid: Map<string, string[]>,
+): DescriptionKeyResolution {
+  const directKeys = [
     row['Description Key'],
     ...String(row['Description Variant Keys'] ?? '')
       .split('|')
@@ -303,6 +348,11 @@ function getDescriptionKeys(row: Record<string, string>): string[] {
   ]
     .map((key) => key.replace(/^@/, '').trim())
     .filter((key, index, keys) => key && keys.indexOf(key) === index);
+  if (directKeys.length > 0) return { keys: directKeys, usedTemplateFallback: false };
+
+  const templateGuid = row['Template GUID'] || row['Template Guid'] || row['Template Ref'];
+  const templateKeys = templateGuid ? (templateDescriptionKeysByGuid.get(templateGuid) ?? []) : [];
+  return { keys: templateKeys, usedTemplateFallback: templateKeys.length > 0 };
 }
 
 function getOrCreateBlueprintFacts(
@@ -316,6 +366,7 @@ function getOrCreateBlueprintFacts(
       rewardContractIds: new Set<string>(),
       rewardDebugNames: new Set<string>(),
       nonRewardDebugNames: new Set<string>(),
+      rewardStandingLabels: new Set<string>(),
       rewardLines: new Set<string>(),
     };
     factsByDescriptionKey.set(key, facts);
@@ -345,6 +396,82 @@ function resolveBlueprintRewardLines(
   return [...rewardLines];
 }
 
+function shouldUseRepeatOnlyMultiPoolBlock(
+  row: Record<string, string>,
+  descriptionKeyResolution: DescriptionKeyResolution,
+  poolGuids: string[],
+): boolean {
+  if (!descriptionKeyResolution.usedTemplateFallback || poolGuids.length < 2) return false;
+  return /(?:^|[_\s-])repeat(?:$|[_\s-])/i.test(
+    `${row['Contract Debug Name'] ?? ''} ${row['Handler Debug Name'] ?? ''}`,
+  );
+}
+
+function formatRepeatOnlyMultiPoolBlueprintList(
+  poolGuids: string[],
+  poolByGuid: Map<string, { weight: number; nameKey: string }[]>,
+): string {
+  const poolBlocks = poolGuids
+    .map((poolGuid, index) => {
+      const lines = resolveBlueprintPoolLines(poolGuid, poolByGuid);
+      if (lines.length === 0) return '';
+      return `<EM4>Pool ${index + 1}</EM4>${String.raw`\n`}${lines.join(String.raw`\n`)}`;
+    })
+    .filter(Boolean);
+
+  if (poolBlocks.length === 0) return '';
+  return `<EM4>Multiple Blueprint Pools (Repeat Only)</EM4>${String.raw`\n`}${poolBlocks.join(String.raw`\n\n`)}`;
+}
+
+function resolveBlueprintPoolLines(
+  poolGuid: string,
+  poolByGuid: Map<string, { weight: number; nameKey: string }[]>,
+): string[] {
+  const poolEntries = poolByGuid.get(poolGuid);
+  if (!poolEntries || poolEntries.length === 0) return [];
+  return poolEntries.map((entry) => `- ${entry.nameKey}`);
+}
+
+function parseGuidList(value: string): string[] {
+  return value
+    .split(',')
+    .map((guid) => guid.trim())
+    .filter(Boolean);
+}
+
+function formatBlueprintCaveat(facts: BlueprintDescriptionFacts): string {
+  const lines: string[] = [];
+  const standingText = formatRewardStandingText(facts.rewardStandingLabels);
+  if (standingText) lines.push(standingText);
+  if (facts.rewardContractIds.size < facts.totalContractIds.size) {
+    lines.push(`Applies only to ${describeBlueprintVariantScope(facts)}`);
+  }
+  return lines.map((line) => String.raw`\n<EM4>${line}</EM4>`).join('');
+}
+
+function formatRewardStandingText(labels: Set<string>): string {
+  const sorted = [...labels].sort(compareStandingLabels);
+  if (sorted.length === 0) return '';
+  if (sorted.length === 1) return `Awarded from ${sorted[0]} level variants`;
+  return `Awarded from ${sorted.join(' / ')} level variants`;
+}
+
+function compareStandingLabels(a: string, b: string): number {
+  return standingLabelRank(a) - standingLabelRank(b) || a.localeCompare(b);
+}
+
+function standingLabelRank(label: string): number {
+  const normalized = label.toLowerCase();
+  if (normalized === 'applicant') return 0;
+  if (normalized === 'jr. contractor') return 1;
+  if (normalized === 'contractor') return 2;
+  if (normalized === 'sr. contractor') return 3;
+  if (normalized === 'veteran contractor') return 4;
+  if (normalized === 'head contractor') return 5;
+  if (normalized === 'elite contractor') return 6;
+  return 99;
+}
+
 function describeBlueprintVariantScope(facts: BlueprintDescriptionFacts): string {
   const distinguishingTokens = findDistinguishingTokens(facts.rewardDebugNames, facts.nonRewardDebugNames);
   if (distinguishingTokens.length > 0) {
@@ -354,6 +481,157 @@ function describeBlueprintVariantScope(facts: BlueprintDescriptionFacts): string
   const examples = [...facts.rewardDebugNames].slice(0, 3);
   const suffix = facts.rewardDebugNames.size > examples.length ? ', ...' : '';
   return `${facts.rewardContractIds.size} of ${facts.totalContractIds.size} DataCore variants${examples.length ? `: ${examples.join(', ')}${suffix}` : ''}`;
+}
+
+async function resolveContractStandingLabel(
+  row: Record<string, string>,
+  xmlCacheDir: string | null,
+  localizationValues: Map<string, string>,
+  recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+  cache: Map<string, string>,
+): Promise<string> {
+  const cacheKey = `${row['Record Path'] ?? ''}\0${row['Contract ID'] ?? ''}`;
+  const cached = cache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const explicitKey = row['Min Standing Name Key'] || row['MinStandingNameKey'];
+  if (explicitKey) {
+    const label = resolveLocalizedValue(explicitKey, localizationValues) || explicitKey;
+    cache.set(cacheKey, label);
+    return label;
+  }
+
+  const explicitGuid = row['Min Standing GUID'] || row['MinStandingGuid'];
+  const standingGuid = explicitGuid || (await readContractMinStandingGuid(row, xmlCacheDir));
+  if (!standingGuid) {
+    cache.set(cacheKey, '');
+    return '';
+  }
+
+  const standingRecord = recordGraph?.getByRef(standingGuid);
+  const standingKey =
+    standingRecord?.localizationKeys.find((l) => /displayname|name/i.test(l.attribute))?.key ??
+    standingRecord?.localizationKeys[0]?.key ??
+    '';
+  if (standingKey) {
+    const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
+    cache.set(cacheKey, label);
+    return label;
+  }
+
+  const label = inferStandingLabel(standingRecord?.entityClass ?? standingGuid);
+  cache.set(cacheKey, label);
+  return label;
+}
+
+async function readContractMinStandingGuid(row: Record<string, string>, xmlCacheDir: string | null): Promise<string> {
+  const recordPath = row['Record Path'];
+  const contractId = row['Contract ID'];
+  if (!xmlCacheDir || !recordPath || !contractId) return '';
+
+  try {
+    const xml = await fs.readFile(resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractGenerator XML path'), 'utf8');
+    const $ = loadXml(xml);
+    return $(`[id="${contractId}"]`).first().attr('minStanding') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+async function resolveXmlCacheDir(datacoreDir: string): Promise<string | null> {
+  const version = path.basename(datacoreDir);
+  const candidates = [path.join(path.dirname(datacoreDir), '.xmlcache', version), path.join(datacoreDir, '.xmlcache')];
+
+  for (const candidate of candidates) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch {}
+  }
+
+  return null;
+}
+
+async function loadTemplateDescriptionKeysByGuid(
+  templates: Record<string, string>[],
+  xmlCacheDir: string | null,
+): Promise<Map<string, string[]>> {
+  const keysByGuid = new Map<string, string[]>();
+  for (const row of templates) {
+    const guid = row['Record GUID'];
+    if (!guid) continue;
+
+    const csvKeys = parseTemplateDescriptionKeys(row);
+    if (csvKeys.length > 0) {
+      keysByGuid.set(guid, csvKeys);
+      continue;
+    }
+
+    const xmlKeys = await readTemplateDisplayDescriptionKeys(row, xmlCacheDir);
+    if (xmlKeys.length > 0) keysByGuid.set(guid, xmlKeys);
+  }
+  return keysByGuid;
+}
+
+function parseTemplateDescriptionKeys(row: Record<string, string>): string[] {
+  return uniqueOrderedStrings(
+    [row['Display Description Keys'], row['Description Keys'], row['Contract Description Keys']]
+      .flatMap((value) => String(value ?? '').split('|'))
+      .map(normalizeLocalizationKey)
+      .filter(Boolean),
+  );
+}
+
+async function readTemplateDisplayDescriptionKeys(
+  row: Record<string, string>,
+  xmlCacheDir: string | null,
+): Promise<string[]> {
+  const recordPath = row['Record Path'];
+  if (!xmlCacheDir || !recordPath) return [];
+
+  try {
+    const xml = await fs.readFile(resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractTemplate XML path'), 'utf8');
+    const $ = loadXml(xml);
+    const locIds = $('contractDisplayInfo ContractDisplayInfo > displayString > LocID[value]')
+      .map((_, element) => normalizeLocalizationKey($(element).attr('value') ?? ''))
+      .get()
+      .filter(Boolean);
+    const descriptionKeys = locIds.filter((key) => /(?:^|_)desc(?:ription)?(?:_|$)/i.test(key));
+    return uniqueOrderedStrings(descriptionKeys);
+  } catch {
+    return [];
+  }
+}
+
+function normalizeLocalizationKey(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  return trimmed.replace(/^@/, '');
+}
+
+function uniqueOrderedStrings(values: string[]): string[] {
+  return values.filter((value, index) => value && values.indexOf(value) === index);
+}
+
+function resolveLocalizedValue(key: string, localizationValues: Map<string, string>): string {
+  const normalized = key.replace(/^@/, '');
+  return localizationValues.get(normalized.toLowerCase()) ?? '';
+}
+
+function inferStandingLabel(value: string): string {
+  const match = /Rank([0-6])/i.exec(value);
+  if (!match) return '';
+  return (
+    [
+      'Applicant',
+      'Jr. Contractor',
+      'Contractor',
+      'Sr. Contractor',
+      'Veteran Contractor',
+      'Head Contractor',
+      'Elite Contractor',
+    ][Number(match[1])] ?? ''
+  );
 }
 
 function findDistinguishingTokens(rewardDebugNames: Set<string>, nonRewardDebugNames: Set<string>): string[] {
@@ -419,34 +697,34 @@ function resolveBlueprintDisplayName(
   localizationValues: Map<string, string>,
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
 ): string {
-  const targetKey = resolveBlueprintTargetNameKey(row, recordGraph);
+  const targetRecord = resolveBlueprintTargetRecord(row, recordGraph);
+  const targetKey = resolveBlueprintTargetNameKey(row, recordGraph, targetRecord);
+  let name = '';
   if (targetKey) {
-    return localizationValues.get(targetKey.toLowerCase()) ?? `@${targetKey}`;
+    name = localizationValues.get(targetKey.toLowerCase()) ?? `@${targetKey}`;
+  } else {
+    name = row['TargetEntityClass'] || row['BlueprintClass'] || '';
   }
 
-  return row['TargetEntityClass'] || row['BlueprintClass'] || '';
+  return appendBlueprintDisplayType(name, targetRecord);
 }
 
 function resolveBlueprintTargetNameKey(
   row: Record<string, string>,
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+  resolvedTargetRecord?: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
 ): string {
   const csvKey = row['TargetItemNameKey'];
   if (csvKey && !/^LOC_/i.test(csvKey)) return csvKey;
 
-  const targetRef = row['TargetEntityClassGuid'];
-  const targetClass = row['TargetEntityClass'];
-  const targetRecord = targetRef
-    ? recordGraph?.getByRef(targetRef)
-    : targetClass
-      ? recordGraph?.getByRef(targetClass)
-      : undefined;
+  const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph);
   const graphKey =
     targetRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && !/^LOC_/i.test(l.key))?.key ??
     targetRecord?.localizationKeys.find((l) => !/^LOC_/i.test(l.key))?.key ??
     '';
   if (graphKey) return graphKey;
 
+  const targetClass = row['TargetEntityClass'];
   if (targetClass && !isGuid(targetClass)) {
     const classRecord = recordGraph?.getByEntityClass(targetClass)[0];
     return (
@@ -456,6 +734,42 @@ function resolveBlueprintTargetNameKey(
     );
   }
 
+  return '';
+}
+
+function resolveBlueprintTargetRecord(
+  row: Record<string, string>,
+  recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+) {
+  const targetRef = row['TargetEntityClassGuid'];
+  const targetClass = row['TargetEntityClass'];
+  return targetRef
+    ? recordGraph?.getByRef(targetRef)
+    : targetClass
+      ? recordGraph?.getByRef(targetClass) ?? recordGraph?.getByEntityClass(targetClass)[0]
+      : undefined;
+}
+
+function appendBlueprintDisplayType(
+  name: string,
+  targetRecord: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
+): string {
+  if (!name || /\([^)]+\)$/.test(name)) return name;
+  const type = inferBlueprintDisplayType(targetRecord);
+  return type ? `${name} (${type})` : name;
+}
+
+function inferBlueprintDisplayType(
+  targetRecord: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
+): string {
+  const pathValue = targetRecord?.path.toLowerCase() ?? '';
+  if (!pathValue.includes('/entities/scitem/ships/')) return '';
+  if (pathValue.includes('/powerplant/')) return 'Powerplant';
+  if (pathValue.includes('/cooler/')) return 'Cooler';
+  if (pathValue.includes('/shield/')) return 'Shield';
+  if (pathValue.includes('/radar/')) return 'Radar';
+  if (pathValue.includes('/quantumdrive/')) return 'Quantum Drive';
+  if (pathValue.includes('/jumpdrive/')) return 'Jump Drive';
   return '';
 }
 
@@ -477,6 +791,7 @@ export default {
     { file: 'mission-contract-intel.datacore.csv', sourceDir: 'datacore' },
     { file: 'contract-hauling-summary.datacore.csv', sourceDir: 'datacore', optional: true },
     { file: 'contract-generators.datacore.csv', sourceDir: 'datacore' },
+    { file: 'contract-templates.datacore.csv', sourceDir: 'datacore', optional: true },
     { file: 'blueprint-pools.datacore.csv', sourceDir: 'datacore' },
     { file: 'crafting-blueprints.datacore.csv', sourceDir: 'datacore' },
   ],
