@@ -8,8 +8,10 @@ import { runComponentTitleUpdate } from './component-titles';
 async function makeTempWorkspace() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'component-titles-'));
   const datacoreDir = path.join(dir, 'datacore');
+  const scmdbDir = path.join(dir, 'scmdb');
   const iniPath = path.join(dir, 'global.ini');
   await fs.mkdir(datacoreDir);
+  await fs.mkdir(scmdbDir);
 
   await fs.writeFile(
     path.join(datacoreDir, 'miningmodifier.datacore.csv'),
@@ -99,12 +101,22 @@ async function makeTempWorkspace() {
             localizationKeys: [],
             referencedGuids: [],
           },
+          {
+            path: 'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml',
+            ref: 'xl1-ref',
+            rootTag: 'EntityClassDefinition.QDRV_WETK_S02_XL1_SCItem',
+            rootType: 'EntityClassDefinition',
+            entityClass: 'QDRV_WETK_S02_XL1_SCItem',
+            localizationKeys: [{ attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' }],
+            referencedGuids: [],
+          },
         ],
         indexes: {
           byRef: {
             'snowfall-ref': 'cooler/cool_just_s02_snowfall.xml',
             'solarflare-ref': 'power/powr_acom_s02_solarflare.xml',
             'bolide-ref': 'power/powr_aegs_s02_bolide.xml',
+            'xl1-ref': 'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml',
           },
           byPath: {
             'hauling/cooler_s02_industrial.xml': 0,
@@ -113,6 +125,7 @@ async function makeTempWorkspace() {
             'power/powr_acom_s02_solarflare.xml': 3,
             'hauling/powerplant_s02_military.xml': 4,
             'power/powr_aegs_s02_bolide.xml': 5,
+            'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml': 6,
           },
           byRootType: {
             Hauling_EntityClasses: [
@@ -124,6 +137,7 @@ async function makeTempWorkspace() {
               'cooler/cool_just_s02_snowfall.xml',
               'power/powr_acom_s02_solarflare.xml',
               'power/powr_aegs_s02_bolide.xml',
+              'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml',
             ],
           },
           byEntityClass: {},
@@ -137,7 +151,7 @@ async function makeTempWorkspace() {
     'utf8',
   );
 
-  return { dir, datacoreDir, iniPath };
+  return { dir, datacoreDir, scmdbDir, iniPath };
 }
 
 describe('runComponentTitleUpdate', () => {
@@ -175,6 +189,43 @@ describe('runComponentTitleUpdate', () => {
       assert.match(updated, /item_NameCOOL_JUST_S02_Snowfall=Ind\/2\/B Snowfall/);
       assert.match(updated, /item_Name_COOL_JUST_S02_Snowfall=Ind\/2\/B Snowfall/);
       assert.match(updated, /item_name_unrelated=Brandt/);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('discovers component CSVs and fills missing component class from SCMDB by DataCore ref', async () => {
+    const { dir, datacoreDir, scmdbDir, iniPath } = await makeTempWorkspace();
+    try {
+      await fs.writeFile(
+        path.join(datacoreDir, 'quantumdrive.datacore.csv'),
+        [
+          'Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
+          'qdrv_wetk_s02_xl1,item_nameQDRV_WETK_S02_XL1_SCItem,,item_descQDRV_WETK_S02_XL1_SCItem,WETK,2,1,UNDEFINED,840',
+        ].join('\n'),
+        'utf8',
+      );
+      await fs.writeFile(
+        path.join(scmdbDir, 'crafting_items-test.json'),
+        JSON.stringify({
+          version: 'test',
+          items: [
+            {
+              entityClass: 'xl1-ref',
+              itemType: 'shipcomponent',
+              componentClass: 'Military',
+            },
+          ],
+        }),
+        'utf8',
+      );
+      await fs.writeFile(iniPath, 'item_nameQDRV_WETK_S02_XL1_SCItem=XL-1\n', 'utf8');
+
+      const result = await runComponentTitleUpdate({ iniPath, datacoreDir, scmdbDir, dryRun: false });
+      const updated = await fs.readFile(iniPath, 'utf8');
+
+      assert.equal(result.updatedCount, 1);
+      assert.match(updated, /item_nameQDRV_WETK_S02_XL1_SCItem=Mil\/2\/A XL-1/);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }

@@ -3,15 +3,21 @@ import { parseArgs } from 'node:util';
 import { formatScmdbDependencyAudit } from '../../application/diagnostics/scmdb-dependency-audit';
 import { formatSourceFreshnessDiagnostics } from '../../application/diagnostics/source-freshness-diagnostics';
 import { deployGlobalIni } from '../../application/use-cases/deploy-global-ini';
+import type { PreparedUpdateCategories } from '../../application/use-cases/prepare-update-categories';
 import { refreshGlobalIni } from '../../application/use-cases/refresh-global-ini';
 import {
   refreshSourceCache,
   type SourceCacheSource,
   type SourceCacheTarget,
 } from '../../application/use-cases/refresh-source-cache';
-import { runBatchUpdate } from '../../application/use-cases/run-batch-update';
-import type { DataCoreTypeEntry } from '../../application/use-cases/run-datacore-scrape';
+import { createBatchUpdatePlan, runBatchUpdate } from '../../application/use-cases/run-batch-update';
+import { createDataCoreScrapePlan } from '../../application/use-cases/run-datacore-scrape';
+import { createScmdbScrapePlan } from '../../application/use-cases/run-scmdb-scrape';
 import { type CommandIO, defaultCommandIO, isNpmConfigFlagEnabled, writeErrorLine, writeLine } from '../cli';
+import { createDataCoreProgressCallbacks } from '../datacore-progress';
+import { createDataCoreScrapeTask } from '../datacore-task';
+import { createScmdbScrapeTask } from '../scmdb-task';
+import { createIndexedTasks, createPlannedChildTaskList } from '../task-builders';
 import { type CommandTask, createCommandTaskList } from '../task-list';
 
 const ROOT_DIR = path.resolve(import.meta.dirname, '..', '..', '..');
@@ -19,13 +25,17 @@ const ROOT_DIR = path.resolve(import.meta.dirname, '..', '..', '..');
 interface PipelineCommandDependencies {
   refreshGlobalIni?: typeof refreshGlobalIni;
   refreshSourceCache?: typeof refreshSourceCache;
+  createDataCoreScrapePlan?: typeof createDataCoreScrapePlan;
+  createScmdbScrapePlan?: typeof createScmdbScrapePlan;
   runBatchUpdate?: typeof runBatchUpdate;
+  createBatchUpdatePlan?: typeof createBatchUpdatePlan;
   deployGlobalIni?: typeof deployGlobalIni;
 }
 
 interface PipelineTaskContext {
   extractedGamePath?: string;
   repoIniPath: string;
+  reports: string[];
 }
 
 function printHelp(io: CommandIO): void {
@@ -78,7 +88,10 @@ export async function runPipelineCommand(
   const repoIniPath = path.join(ROOT_DIR, 'global.ini');
   const refresh = dependencies.refreshGlobalIni ?? refreshGlobalIni;
   const refreshSourcesUseCase = dependencies.refreshSourceCache ?? refreshSourceCache;
+  const dataCoreScrapePlanFactory = dependencies.createDataCoreScrapePlan ?? createDataCoreScrapePlan;
+  const scmdbScrapePlanFactory = dependencies.createScmdbScrapePlan ?? createScmdbScrapePlan;
   const runUpdate = dependencies.runBatchUpdate ?? runBatchUpdate;
+  const batchUpdatePlanFactory = dependencies.createBatchUpdatePlan ?? createBatchUpdatePlan;
   const deploy = dependencies.deployGlobalIni ?? deployGlobalIni;
 
   const tasks = createPipelineTasks({
@@ -88,12 +101,20 @@ export async function runPipelineCommand(
     dryRun: values['dry-run'],
     ptu: values.ptu,
     force,
+    verbose: values.verbose,
     refresh,
     refreshSourcesUseCase,
+    dataCoreScrapePlanFactory,
+    useDataCoreScrapePlan: !dependencies.refreshSourceCache || Boolean(dependencies.createDataCoreScrapePlan),
+    scmdbScrapePlanFactory,
+    useScmdbScrapePlan: !dependencies.refreshSourceCache || Boolean(dependencies.createScmdbScrapePlan),
     runUpdate,
+    batchUpdatePlanFactory,
+    useBatchUpdatePlan: !dependencies.runBatchUpdate || Boolean(dependencies.createBatchUpdatePlan),
     deploy,
   });
-  const taskList = createCommandTaskList<PipelineTaskContext>(tasks, io, { repoIniPath });
+  const context: PipelineTaskContext = { repoIniPath, reports: [] };
+  const taskList = createCommandTaskList<PipelineTaskContext>(tasks, io, context, { verbose: values.verbose });
 
   try {
     await taskList.run();
@@ -102,6 +123,9 @@ export async function runPipelineCommand(
     return 1;
   }
 
+  if (context.reports.length > 0) {
+    writeLine(io, `\n${context.reports.join('\n\n')}`);
+  }
   writeLine(io, '\nPipeline complete.');
   return 0;
 }
@@ -113,9 +137,16 @@ function createPipelineTasks(options: {
   dryRun: boolean;
   ptu: boolean;
   force: boolean;
+  verbose: boolean;
   refresh: typeof refreshGlobalIni;
   refreshSourcesUseCase: typeof refreshSourceCache;
+  dataCoreScrapePlanFactory: typeof createDataCoreScrapePlan;
+  useDataCoreScrapePlan: boolean;
+  scmdbScrapePlanFactory: typeof createScmdbScrapePlan;
+  useScmdbScrapePlan: boolean;
   runUpdate: typeof runBatchUpdate;
+  batchUpdatePlanFactory: typeof createBatchUpdatePlan;
+  useBatchUpdatePlan: boolean;
   deploy: typeof deployGlobalIni;
 }): CommandTask<PipelineTaskContext>[] {
   return [
@@ -140,43 +171,26 @@ function createPipelineTasks(options: {
           return;
         }
 
-        return task.newListr(
-          selectSources(options.sourceTarget).map((source) => createSourceRefreshTask(source, options)),
-          {
-            concurrent: 2,
-          },
+        const sourceTasks = selectSources(options.sourceTarget).map((source) =>
+          createSourceRefreshTask(source, options),
         );
+        return createPlannedChildTaskList(task, {
+          title: 'Refresh source caches',
+          tasks: sourceTasks,
+          unit: 'source',
+          plannedUnit: 'source cache',
+          concurrent: 2,
+        });
       },
     },
     {
       title: 'Apply localization updates',
-      task: async (_ctx, task) => {
-        const updateResult = await options.runUpdate({
-          repoRoot: ROOT_DIR,
-          dryRun: options.dryRun,
-          ptu: options.ptu,
-          provider: 'datacore',
-          onCategoryStart: (category, index) => {
-            task.output = `Updating ${index + 1}: ${category.config.label}`;
-          },
-          onCategoryError: (error) => {
-            task.output = `Category ${error.label} failed: ${error.message}`;
-          },
-          onExtraStepStart: (label, index) => {
-            task.output = `Extra step ${index + 1}: ${label}`;
-          },
-          onExtraStepError: (error) => {
-            task.output = `Extra step ${error.label} failed: ${error.message}`;
-          },
-        });
-        task.output = formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics);
-        if (updateResult.scmdbDependencyAudit) {
-          task.output = formatScmdbDependencyAudit(updateResult.scmdbDependencyAudit);
+      task: (ctx, task) => {
+        if (options.useBatchUpdatePlan) {
+          return createBatchUpdateTask(ctx, task, options);
         }
-        if (updateResult.exitCode !== 0) {
-          throw new Error('Localization update failed.');
-        }
-        task.output = `Applied updates in ${updateResult.totalDurationMs}ms`;
+
+        return runBatchUpdateWithTitleProgress(ctx, task, options);
       },
     },
     {
@@ -193,6 +207,159 @@ function createPipelineTasks(options: {
   ];
 }
 
+async function runBatchUpdateWithTitleProgress(
+  ctx: PipelineTaskContext,
+  task: Parameters<CommandTask<PipelineTaskContext>['task']>[1],
+  options: {
+    dryRun: boolean;
+    ptu: boolean;
+    verbose: boolean;
+    runUpdate: typeof runBatchUpdate;
+  },
+): Promise<void> {
+  const baseTitle = 'Apply localization updates';
+  const updateResult = await options.runUpdate({
+    repoRoot: ROOT_DIR,
+    dryRun: options.dryRun,
+    ptu: options.ptu,
+    provider: 'datacore',
+    onCategoryStart: (category, index) => {
+      task.title = `${baseTitle} - updating ${index + 1}: ${category.config.label}`;
+    },
+    onCategoryError: (error) => {
+      task.output = `Category ${error.label} failed: ${error.message}`;
+    },
+    onExtraStepStart: (label, index) => {
+      task.title = `${baseTitle} - extra step ${index + 1}: ${label}`;
+    },
+    onExtraStepError: (error) => {
+      task.output = `Extra step ${error.label} failed: ${error.message}`;
+    },
+  });
+
+  collectBatchUpdateReports(ctx, updateResult, options.verbose);
+
+  if (updateResult.exitCode !== 0) {
+    throw new Error('Localization update failed.');
+  }
+  task.title = baseTitle;
+  task.output = formatBatchUpdateSummary(updateResult);
+}
+
+function createBatchUpdateTask(
+  ctx: PipelineTaskContext,
+  task: Parameters<CommandTask<PipelineTaskContext>['task']>[1],
+  options: {
+    dryRun: boolean;
+    ptu: boolean;
+    verbose: boolean;
+    batchUpdatePlanFactory: typeof createBatchUpdatePlan;
+  },
+) {
+  const plan = options.batchUpdatePlanFactory({
+    repoRoot: ROOT_DIR,
+    dryRun: options.dryRun,
+    ptu: options.ptu,
+    provider: 'datacore',
+    onCategoryError: (error) => {
+      task.output = `Category ${error.label} failed: ${error.message}`;
+    },
+    onExtraStepError: (error) => {
+      task.output = `Extra step ${error.label} failed: ${error.message}`;
+    },
+  });
+  let prepared: PreparedUpdateCategories | undefined;
+
+  return task.newListr(
+    [
+      {
+        title: 'Prepare update sources',
+        task: async (_childCtx, childTask) => {
+          prepared = await plan.prepare();
+          childTask.output = `${prepared.categories.length.toLocaleString()} categories ready`;
+        },
+      },
+      {
+        title: 'Validate source coverage',
+        task: () => plan.preflight(),
+      },
+      {
+        title: 'Backup global.ini',
+        skip: options.dryRun ? 'dry run' : false,
+        task: () => plan.backup(),
+      },
+      {
+        title: 'Update categories',
+        task: (_childCtx, childTask) => {
+          if (!prepared) throw new Error('Update categories were not prepared.');
+          return createPlannedChildTaskList(childTask, {
+            title: 'Update categories',
+            tasks: createIndexedTasks(prepared.categories, {
+              title: (category) => category.config.label,
+              task: (category, index) => async (_categoryCtx, categoryTask) => {
+                const result = await plan.runCategory(category, index);
+                categoryTask.output = result?.summary ?? 'No changes';
+              },
+            }),
+            unit: 'category',
+          });
+        },
+      },
+      {
+        title: 'Run extra update steps',
+        task: (_childCtx, childTask) => {
+          const labels = plan.getExtraStepLabels();
+          return createPlannedChildTaskList(childTask, {
+            title: 'Run extra update steps',
+            tasks: createIndexedTasks(labels, {
+              title: (label) => label,
+              task: (label, index) => async (_stepCtx, stepTask) => {
+                const result = await plan.runExtraStep(label, index);
+                stepTask.output = result?.summary ?? 'Skipped';
+              },
+            }),
+            unit: 'step',
+            plannedUnit: 'extra step',
+          });
+        },
+      },
+      {
+        title: 'Complete localization updates',
+        task: (_childCtx, childTask) => {
+          const updateResult = plan.result();
+          collectBatchUpdateReports(ctx, updateResult, options.verbose);
+          if (updateResult.exitCode !== 0) {
+            throw new Error('Localization update failed.');
+          }
+          childTask.output = formatBatchUpdateSummary(updateResult);
+        },
+      },
+    ],
+    { concurrent: false },
+  );
+}
+
+function collectBatchUpdateReports(
+  ctx: PipelineTaskContext,
+  updateResult: Awaited<ReturnType<typeof runBatchUpdate>>,
+  verbose: boolean,
+): void {
+  if (verbose) {
+    ctx.reports.push(formatSourceFreshnessDiagnostics(updateResult.sourceDiagnostics));
+    if (updateResult.scmdbDependencyAudit) {
+      ctx.reports.push(formatScmdbDependencyAudit(updateResult.scmdbDependencyAudit));
+    }
+  }
+}
+
+function formatBatchUpdateSummary(updateResult: Awaited<ReturnType<typeof runBatchUpdate>>): string {
+  const warningSummary =
+    updateResult.sourceDiagnostics.warnings.length > 0
+      ? `; ${updateResult.sourceDiagnostics.warnings.length.toLocaleString()} source warning(s), rerun with --verbose for details`
+      : '';
+  return `Applied updates in ${updateResult.totalDurationMs}ms${warningSummary}`;
+}
+
 function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
   if (target === 'scmdb') return ['scmdb'];
   if (target === 'datacore') return ['datacore'];
@@ -205,63 +372,62 @@ function createSourceRefreshTask(
     ptu: boolean;
     force: boolean;
     refreshSourcesUseCase: typeof refreshSourceCache;
+    dataCoreScrapePlanFactory: typeof createDataCoreScrapePlan;
+    useDataCoreScrapePlan: boolean;
+    scmdbScrapePlanFactory: typeof createScmdbScrapePlan;
+    useScmdbScrapePlan: boolean;
   },
 ): CommandTask<PipelineTaskContext> {
   const baseTitle = `${source.toUpperCase()} cache`;
+  if (source === 'datacore' && options.useDataCoreScrapePlan) {
+    return createDataCoreRefreshTask(baseTitle, options);
+  }
+  if (source === 'scmdb' && options.useScmdbScrapePlan) {
+    return createScmdbScrapeTask({
+      title: baseTitle,
+      repoRoot: ROOT_DIR,
+      ptu: options.ptu,
+      planFactory: options.scmdbScrapePlanFactory,
+    });
+  }
+
   return {
     title: baseTitle,
-    task: async (_ctx, task) => {
-      let scrapeTypesCount = 0;
-      const result = await options.refreshSourcesUseCase({
-        repoRoot: ROOT_DIR,
-        target: source,
-        ptu: options.ptu,
-        force: options.force,
-        log: (message) => {
-          task.output = message;
-        },
-        onCacheExtractStart: () => {
-          task.title = `${baseTitle} - unforge extraction can take several minutes`;
-          task.output = 'Unforge: extracting XML records. This can take several minutes.';
-        },
-        onCacheExtractProgress: (count) => {
-          task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
-        },
-        onCacheExtractComplete: (count) => {
+    task: (_ctx, task) => {
+      return options
+        .refreshSourcesUseCase({
+          repoRoot: ROOT_DIR,
+          target: source,
+          ptu: options.ptu,
+          force: options.force,
+          log: (message) => {
+            task.output = message;
+          },
+          ...(source === 'datacore' ? createDataCoreProgressCallbacks({ task, baseTitle }) : {}),
+        })
+        .then((result) => {
+          if (result.exitCode !== 0) {
+            throw new Error(`${source.toUpperCase()} cache refresh failed.`);
+          }
           task.title = baseTitle;
-          task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
-        },
-        onCacheHit: (count) => {
-          task.output = `DataCore XML cache reused: ${count.toLocaleString()} files`;
-        },
-        onDatacorePrepared: (context) => {
-          scrapeTypesCount = context.selectedTypes.length;
-          task.output = `Prepared ${scrapeTypesCount.toLocaleString()} DataCore type extractors`;
-        },
-        onRecordGraphStart: (total) => {
-          task.output = `Building record graph from ${total.toLocaleString()} XML files`;
-        },
-        onRecordGraphProgress: (current, total) => {
-          task.output = `Record graph: ${current.toLocaleString()}/${total.toLocaleString()}`;
-        },
-        onRecordGraphCacheHit: (recordCount) => {
-          task.output = `DataCore record graph reused: ${recordCount.toLocaleString()} records`;
-        },
-        onRawFactStart: (slug, total) => {
-          task.output = `Extracting ${slug}: 0/${total.toLocaleString()}`;
-        },
-        onRawFactProgress: (current) => {
-          task.output = `Extracting raw facts: ${current.toLocaleString()}`;
-        },
-        onTypeStart: (entry: DataCoreTypeEntry, index) => {
-          task.output = `Scraping ${index + 1}/${scrapeTypesCount}: ${entry.name}`;
-        },
-      });
-
-      if (result.exitCode !== 0) {
-        throw new Error(`${source.toUpperCase()} cache refresh failed.`);
-      }
-      task.output = `${source.toUpperCase()} source outputs refreshed`;
+        });
     },
   };
+}
+
+function createDataCoreRefreshTask(
+  baseTitle: string,
+  options: {
+    ptu: boolean;
+    force: boolean;
+    dataCoreScrapePlanFactory: typeof createDataCoreScrapePlan;
+  },
+): CommandTask<PipelineTaskContext> {
+  return createDataCoreScrapeTask({
+    title: baseTitle,
+    repoRoot: ROOT_DIR,
+    ptu: options.ptu,
+    forceExtract: options.force,
+    planFactory: options.dataCoreScrapePlanFactory,
+  });
 }

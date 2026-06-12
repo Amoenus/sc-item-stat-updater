@@ -1,12 +1,13 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
-  type DataCoreTypeEntry,
+  createDataCoreScrapePlan,
   loadDataCoreTypeEntries,
-  runDatacoreScrape,
+  type RunDatacoreScrapeResult,
 } from '../../application/use-cases/run-datacore-scrape';
 import { type CommandIO, defaultCommandIO, writeErrorLine, writeLine } from '../cli';
-import { createCliEventRenderer } from '../events';
+import { createDataCoreScrapeTask } from '../datacore-task';
+import { createCommandTaskList } from '../task-list';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..', '..', '..');
 
@@ -50,6 +51,10 @@ function printDatasetResult(
   writeLine(io, `  ${label.padEnd(28)} ${String(rows).padStart(4)} rows -> ${csvFile}${dryNote}${skippedNote}`);
 }
 
+interface ScrapeDatacoreTaskContext {
+  result?: RunDatacoreScrapeResult;
+}
+
 export async function runScrapeDatacoreCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -81,119 +86,48 @@ export async function runScrapeDatacoreCommand(argv: string[], io: CommandIO = d
     return 0;
   }
 
-  let selectedTypes: DataCoreTypeEntry[];
   try {
-    selectedTypes =
-      positionals.length === 0
-        ? allTypes
-        : positionals.map((name) => {
-            const found = allTypes.find((type) => type.name === name);
-            if (!found) throw new Error(`Unknown item type: "${name}". Run with --list to see valid types.`);
-            return found;
-          });
+    for (const name of positionals) {
+      if (!allTypes.some((type) => type.name === name)) {
+        throw new Error(`Unknown item type: "${name}". Run with --list to see valid types.`);
+      }
+    }
   } catch (error) {
     writeErrorLine(io, error instanceof Error ? error.message : String(error));
     return 1;
   }
 
-  const renderer = createCliEventRenderer(io);
+  const context: ScrapeDatacoreTaskContext = {};
+  const taskList = createCommandTaskList(
+    [
+      createDataCoreScrapeTask<ScrapeDatacoreTaskContext>({
+        title: 'Scrape DataCore',
+        repoRoot: REPO_ROOT,
+        binDirname: path.join(REPO_ROOT, 'bin'),
+        ptu: values.ptu,
+        dryRun: values['dry-run'],
+        forceExtract: values['force-extract'],
+        types: positionals,
+        loadTypes: async () => allTypes,
+        planFactory: createDataCoreScrapePlan,
+        onResult: (result) => {
+          context.result = result;
+        },
+      }),
+    ],
+    io,
+    context,
+  );
 
-  const result = await runDatacoreScrape({
-    repoRoot: REPO_ROOT,
-    binDirname: path.join(REPO_ROOT, 'bin'),
-    ptu: values.ptu,
-    dryRun: values['dry-run'],
-    forceExtract: values['force-extract'],
-    types: positionals,
-    loadTypes: async () => allTypes,
-    onPrepared: ({ gameVersion, channel, dcbPath, xmlCacheDir, outputBase, dryRun }) => {
-      writeLine(io, `=== DataCore scraper ===`);
-      writeLine(io, `  Game version:  ${gameVersion} (${channel.toUpperCase()})`);
-      writeLine(io, `  DCB source:    ${dcbPath}`);
-      writeLine(io, `  XML cache:     ${xmlCacheDir}`);
-      writeLine(io, `  CSV output:    ${outputBase}`);
-      writeLine(io, `  Types:         ${selectedTypes.length} of ${allTypes.length}`);
-      writeLine(io, `  Dry run:       ${dryRun ? 'yes' : 'no'}`);
-      writeLine(io);
-    },
-    onToolsLog: (message) => writeLine(io, `[tools] ${message}`),
-    onToolsReady: (tools) => {
-      writeLine(io, `  unforge: ${tools.unforge}`);
-      writeLine(io);
-    },
-    onCacheHit: (count, xmlCacheDir) => {
-      writeLine(io, `Using XML cache: ${count.toLocaleString()} files`);
-      writeLine(io, `  (${xmlCacheDir})`);
-      writeLine(io, '  Run with --force-extract to re-run unforge.\n');
-      renderer.emit({ type: 'progress:start', id: 'datacore-cache', label: 'DataCore', total: count, value: count });
-      renderer.emit({ type: 'progress:update', id: 'datacore-cache', value: count, label: 'unforge (cached)' });
-      renderer.emit({ type: 'progress:stop', id: 'datacore-cache' });
-      writeLine(io);
-    },
-    onCacheExtractStart: (dcbPath, xmlCacheDir, clearExisting) => {
-      if (clearExisting) {
-        writeLine(io, '--force-extract: clearing existing cache...');
-      }
-      writeLine(io, `Extracting DataForge records from ${path.basename(dcbPath)}...`);
-      writeLine(io, '  This takes several minutes on first run.\n');
-      writeLine(io, `  Running: unforge.cli.exe "${xmlCacheDir}"`);
-      renderer.emit({
-        type: 'activity:start',
-        id: 'datacore-unforge',
-        label: 'Unforge',
-        detail: 'extracting XML records...',
-      });
-    },
-    onCacheExtractProgress: (count) => {
-      renderer.emit({ type: 'activity:update', id: 'datacore-unforge', count, unit: 'XMLs extracted' });
-    },
-    onCacheExtractComplete: (count) => {
-      renderer.emit({ type: 'activity:stop', id: 'datacore-unforge', count, unit: 'XMLs extracted' });
-      writeLine(io, `  Extraction complete: ${count.toLocaleString()} XML records cached.\n`);
-    },
-    onRecordGraphStart: (total) => {
-      writeLine(io, `Building DataCore record graph (parsing ${total} XML files)...`);
-      renderer.emit({ type: 'progress:start', id: 'datacore-graph', label: 'DataCore', total });
-      renderer.emit({ type: 'progress:update', id: 'datacore-graph', value: 0, label: 'record-graph' });
-    },
-    onRecordGraphProgress: (current, total) => {
-      renderer.emit({ type: 'progress:update', id: 'datacore-graph', value: current, total });
-      if (current >= total) {
-        renderer.emit({ type: 'progress:stop', id: 'datacore-graph' });
-        writeLine(io);
-      }
-    },
-    onRecordGraphCacheHit: (_recordCount, outputPath) => {
-      writeLine(io, `Using cached DataCore record graph from ${path.basename(outputPath)}...`);
-      writeLine(io);
-    },
-    onRawFactStart: (slug, total) => {
-      renderer.emit({ type: 'progress:stop', id: 'datacore-scrape' });
-      renderer.emit({ type: 'progress:start', id: 'datacore-scrape', label: 'DataCore', total });
-      renderer.emit({ type: 'progress:update', id: 'datacore-scrape', value: 0, label: slug });
-    },
-    onRawFactProgress: (current) => {
-      renderer.emit({ type: 'progress:update', id: 'datacore-scrape', value: current });
-    },
-    onTypeStart: (entry, index) => {
-      if (index === 0) {
-        renderer.emit({ type: 'progress:stop', id: 'datacore-scrape' });
-        renderer.emit({
-          type: 'progress:start',
-          id: 'datacore-scrape',
-          label: 'DataCore',
-          total: selectedTypes.length,
-        });
-      }
-      renderer.emit({ type: 'progress:update', id: 'datacore-scrape', value: index, label: entry.name });
-    },
-  });
-
-  if (selectedTypes.length > 0) {
-    renderer.emit({ type: 'progress:update', id: 'datacore-scrape', value: selectedTypes.length });
-    renderer.emit({ type: 'progress:stop', id: 'datacore-scrape' });
+  try {
+    await taskList.run();
+  } catch (error) {
+    writeErrorLine(io, error instanceof Error ? error.message : String(error));
+    return 1;
   }
-  renderer.stopAll();
+
+  const result = context.result;
+  if (!result) throw new Error('DataCore scraper did not produce a result.');
 
   writeLine(io, '\n=== Results ===');
   const dryNote = values['dry-run'] ? ' (dry run, not written)' : '';

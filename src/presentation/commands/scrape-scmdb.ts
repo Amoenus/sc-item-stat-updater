@@ -1,9 +1,11 @@
 import { dirname, join } from 'node:path';
-import { runScmdbScrape } from '../../application/use-cases/run-scmdb-scrape';
+import type { RunScmdbScrapeResult } from '../../application/use-cases/run-scmdb-scrape';
 import { ScmdbVersionsSchema } from '../../schema/scmdb.schemas';
 import { fetchAndValidateScmdbJson, SCMDB_VERSIONS_URL } from '../../sources/scmdb/acquisition';
 import type { ScmdbVersionEntry } from '../../sources/scmdb/version-selection';
 import { type CommandIO, defaultCommandIO, writeErrorLine, writeLine } from '../cli';
+import { createScmdbScrapeTask } from '../scmdb-task';
+import { createCommandTaskList } from '../task-list';
 
 const repoRoot = join(dirname(import.meta.dirname), '..', '..');
 
@@ -51,6 +53,10 @@ function printVersions(io: CommandIO, versions: ScmdbVersionEntry[]): void {
   );
 }
 
+interface ScrapeScmdbTaskContext {
+  result?: RunScmdbScrapeResult;
+}
+
 export async function runScrapeScmdbCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   const listVersions = argv.includes('--list-versions');
   const rawOnly = argv.includes('--raw');
@@ -68,22 +74,29 @@ export async function runScrapeScmdbCommand(argv: string[], io: CommandIO = defa
       return 0;
     }
 
-    const result = await runScmdbScrape({
-      repoRoot,
-      ...getVersionSelection(argv),
-      rawOnly,
-      onVersionSelected: (selected) => {
-        writeLine(io, `Using SCMDB version ${selected.version}`);
-      },
-      onFileWritten: (file) => {
-        writeLine(io, `Saved ${file.section === 'missions' ? 'missions/' : ''}${file.fileName}`);
-      },
-      onWarning: (message, error) => {
-        const detail = error instanceof Error ? error.message : error ? String(error) : '';
-        writeErrorLine(io, `WARNING: ${message}${detail ? `: ${detail}` : ''}`);
-      },
-    });
+    const context: ScrapeScmdbTaskContext = {};
+    await createCommandTaskList(
+      [
+        createScmdbScrapeTask<ScrapeScmdbTaskContext>({
+          title: 'Scrape SCMDB',
+          repoRoot,
+          ...getVersionSelection(argv),
+          rawOnly,
+          onResult: (result) => {
+            context.result = result;
+          },
+          onWarning: (message, error) => {
+            const detail = error instanceof Error ? error.message : error ? String(error) : '';
+            writeErrorLine(io, `WARNING: ${message}${detail ? `: ${detail}` : ''}`);
+          },
+        }),
+      ],
+      io,
+      context,
+    ).run();
 
+    const result = context.result;
+    if (!result) throw new Error('SCMDB scraper did not produce a result.');
     writeLine(io, `SCMDB scrape complete. Outputs saved to csv/scmdb/${result.selected.version}/`);
     return 0;
   } catch (err) {

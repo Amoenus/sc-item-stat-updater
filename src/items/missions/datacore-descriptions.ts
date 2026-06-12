@@ -23,8 +23,6 @@ function appendParagraph(value: string): string {
   return value ? String.raw`\n\n${value}` : '';
 }
 
-
-
 function formatNamedSection(title: string, value: string): string {
   return value ? String.raw`\n\n** ${title} **\n${value}` : '';
 }
@@ -48,6 +46,24 @@ function removeInGameRewardIntelLines(value: string): string {
     .join(String.raw`\n`);
 }
 
+function extractReputationIntelLine(value: string): string {
+  const reputationLines = splitIntelLines(value).filter((line) => /^Reputation Awarded/i.test(line));
+  if (reputationLines.length === 0) return '';
+  return [...new Set(reputationLines.map(formatReputationLine))].join(String.raw`\n`);
+}
+
+function removeReputationIntelLines(value: string): string {
+  return splitIntelLines(value)
+    .filter((line) => !/^Reputation Awarded/i.test(line))
+    .join(String.raw`\n`);
+}
+
+function formatReputationLine(line: string): string {
+  const match = /^(Reputation Awarded(?: \(by difficulty\))?):\s*(.+)$/i.exec(line.trim());
+  if (!match) return line.trim();
+  return `<EM4>${match[1]}:</EM4> ${match[2].trim()}`;
+}
+
 function splitIntelLines(value: string): string[] {
   return value
     .split(/\\n|\r?\n/)
@@ -57,9 +73,12 @@ function splitIntelLines(value: string): string[] {
 
 function buildMetadata(row: Record<string, string>): string {
   const noteText = getCell(row, 'Note');
+  const contractIntel = removeReputationIntelLines(removeInGameRewardIntelLines(getCell(row, 'ContractIntel')));
+  const reputationIntel = extractReputationIntelLine(getCell(row, 'ContractIntel'));
 
   return [
-    formatNamedSection('Contract Intel', removeInGameRewardIntelLines(getCell(row, 'ContractIntel'))),
+    appendParagraph(reputationIntel),
+    formatNamedSection('Contract Intel', contractIntel),
     formatNamedSection('Encounter', getCell(row, 'EncounterSummary')),
     formatNamedSection('Hauling', getCell(row, 'HaulingSummary')),
     appendParagraph(noteText),
@@ -186,13 +205,13 @@ export async function loadDatacoreDescriptionsSourceData(
     if (!rawKey) continue;
     const key = rawKey.startsWith('@') ? rawKey.substring(1) : rawKey;
     const dest = getOrCreateRow(key);
-    
+
     const lines = [];
     if (row['mema_uec']) lines.push(`Community MEMA: ${Number(row['mema_uec']).toLocaleString('en-US')} aUEC/h`);
     if (row['dur_avg']) lines.push(`Avg Completion: ${row['dur_avg']} min`);
     if (row['avg_diff']) lines.push(`Difficulty: ${row['avg_diff']}/7.0`);
     if (row['avg_sat']) lines.push(`Satisfaction: ${row['avg_sat']}/7.0`);
-    
+
     if (lines.length > 0) {
       const memaBlock = lines.join(String.raw`\n`);
       if (dest['ContractIntel']) {
@@ -268,7 +287,8 @@ export async function loadDatacoreDescriptionsSourceData(
         ? String.raw`\n<EM4>Applies only to ${describeBlueprintVariantScope(facts)}</EM4>`
         : '';
     const dest = getOrCreateRow(key);
-    dest['RewardList'] = String.raw`<EM4>Potential Blueprints</EM4>${caveat}\n${[...facts.rewardLines].join(String.raw`\n`)}`;
+    dest['RewardList'] =
+      String.raw`<EM4>Potential Blueprints</EM4>${caveat}\n${[...facts.rewardLines].join(String.raw`\n`)}`;
   }
 
   return [...merged.values()];
@@ -308,17 +328,20 @@ function resolveBlueprintRewardLines(
   poolByGuid: Map<string, { weight: number; nameKey: string }[]>,
 ): string[] {
   const rewardLines = new Set<string>();
-  for (const poolGuid of poolGuidsStr.split(',').map((guid) => guid.trim()).filter(Boolean)) {
-      const poolEntries = poolByGuid.get(poolGuid);
-      if (!poolEntries || poolEntries.length === 0) continue;
+  for (const poolGuid of poolGuidsStr
+    .split(',')
+    .map((guid) => guid.trim())
+    .filter(Boolean)) {
+    const poolEntries = poolByGuid.get(poolGuid);
+    if (!poolEntries || poolEntries.length === 0) continue;
 
-      const totalWeight = poolEntries.reduce((sum, e) => sum + e.weight, 0);
-      for (const entry of poolEntries) {
-        const percentage = totalWeight > 0 ? Math.round((entry.weight / totalWeight) * 100) : 0;
-        const suffix = percentage > 0 ? ` (${percentage}%)` : '';
+    const totalWeight = poolEntries.reduce((sum, e) => sum + e.weight, 0);
+    for (const entry of poolEntries) {
+      const percentage = totalWeight > 0 ? Math.round((entry.weight / totalWeight) * 100) : 0;
+      const suffix = percentage > 0 ? ` (${percentage}%)` : '';
       rewardLines.add(`- ${entry.nameKey}${suffix}`);
-      }
     }
+  }
   return [...rewardLines];
 }
 

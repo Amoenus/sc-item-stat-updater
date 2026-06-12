@@ -41,17 +41,17 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Foxwell_SecurityPatrol_VE_Desc_001,337500,10,5.7,1.7,4,3
 @searchbodyspace_desc_VE,183750,7.5,7.7,1,4,3
 @bitzeros_shipheist_E_desc_001,,6.33333333333333,9.5,2.5,6,2
-@headhunters_EliminateSpecific_Asteroid_Generic_VE_desc_001,163500,6,8.7,1.4,3.2,7
 @RAIN_collectresources_multiple_GEN_desc_01,138333,1.33333333333333,45,1,5,1
 @cfp_sabotage_servers_VH_XT_desc_001,976500,6,10,1,5,1
 @Hockcrow_SearchBody_VeryEasy_Description_001,196500,6,10,3,5,1
 @Shubin_Industrial_GroundVehicle_Stanton_E_DiscoverPlanetary_Desc_001,199950,2.86666666666667,21.5,1,6,2
 @blackbox_recover_desc_VE_001,133759,3.63970588235294,15.7,1.8,3.5,6
+@headhunters_EliminateSpecific_Generic_M_desc_001,372500,10,5.1,2.3,3.7,11
 @InterSec_ResourceGathering_Cryopods_Desc,852000,6,11.8,2.3,3,8
 @cfp_bombingrun_E_desc_001,786000,12,6.8,1,5.3,4
 @Shubin_Industrial_ShipMining_Stanton_VE_Local_Desc_001,1455000,30,2.6,1,3.5,19
-@headhunters_EliminateSpecific_Generic_M_desc_001,372500,10,5.2,1.3,3.5,10
-@destroyprobelegal_desc,79000,4,25.7,1.3,4.3,15
+@headhunters_EliminateSpecific_Asteroid_Generic_VE_desc_001,198536,7.28571428571429,7.9,1.4,3.2,8
+@destroyprobelegal_desc,79000,4,23.3,1.3,4.3,17
 @Shubin_Industrial_HandMining_Intro_Local_Desc_001,114921,2.53968253968254,28.8,1.5,5,8
 @northrock_bounty_fps_UGF_boss_desc_001,491488,5.47619047619048,13.5,5,6,6
 @blackbox_recover_desc_intro_001,252656,6.875,10.8,1,4,6
@@ -64,6 +64,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @cfp_sabotage_servers_M_HH_desc_001,,6.47727272727273,8.8,1,5,4
 @Intersec_DefendShip_Vanduul_Desc_VeryHard_001,720498,3.67132867132867,42,3.7,4.7,4
 @Foxwell_EliminateAll_desc_001,180000,5,10.7,2.7,3.7,3
+@Foxwell_Mercenary_Intro_desc_001,226364,5.45454545454545,15.5,1.6,4,19
 @EckhartSecurity_EliminateAll_storm_shut_H_desc_001,77102,1.34090909090909,27,,,2
 @Hockrow_FacilityDelve_P2M1_Repeat_desc,110893,1.07142857142857,61.8,3.7,5,13
 @foxwell_DefendShip_H_desc_001,4672200,31.2,13,2.5,3,2
@@ -77,7 +78,6 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @shubin_rockcracker_pvp_desc_01,,0.5,120.3,7,7,4
 @Headhunters_defend_XT_VH_desc_001,1664351,6.05769230769231,10.5,3,3,2
 @cfp_sabotage_generators_VE_desc_001,367500,6,33,2.3,5,3
-@Foxwell_Mercenary_Intro_desc_001,216932,5.22727272727273,15.9,1.7,4.5,18
 @HaulCargo_AtoB_desc,17641,0.422535211267606,142,,,1
 @Eckhart_EscortShips_E_desc,310651,3.90756302521008,21.8,2,3,8
 @Hockrow_FacilityDelve_P2M1_Repeat_desc,166000,4,20.2,1.1,3,12
@@ -85,8 +85,8 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Foxwell_ShipWaveAttack_ClearHostiles_Desc_E_001,412500,6,9.8,3.8,5.3,19
 @headhunters_EliminateSpecific_Asteroid_Generic_M_desc_001,706500,6,11.9,2.4,4.7,7
 @northrock_bounty_fps_UGF_boss_nocivs_desc_001,446625,4.5,13.5,3,6.5,2
+@HeadHunters_ShipAmbush_Intro_desc_001,270000,12,6.6,2.7,2.5,12
 @cfp_bounty_desc_HeadHunters_001,795000,12,5.7,1,4,3
-@HeadHunters_ShipAmbush_Intro_desc_001,270000,12,6.5,1.5,1,11
 @Foxwell_DestroyNarcotics_H_desc_001,567000,4,15,3.5,3,2
 @Foxwell_SecurityPatrol_M_Desc_001,456818,5.45454545454545,10.2,2,4,5
 @Foxwell_bombingrun_VE_desc_001,87353,3.52941176470588,17.4,2.2,4.2,11
@@ -149,6 +149,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @RedWind_HaulCargo_SingleToMulti_desc_ToCFP_Danger_Timed,403784,0.540540540540541,93.3,3,6,3
 @headhunters_killship_gen_vlrt_rank0_desc_001,155357,4.28571428571429,14.9,1,1,9
 @FTL_Courier_Stanton_Easy_Desc_001,109611,2.94258373205742,21.9,1.2,4.8,10
+@headhunters_killship_gen_lrt_desc_001,1160000,20,3.8,1.5,1,4
 @headhunters_killship_gen_vlrt_desc_001,617857,14.2857142857143,5,2,,2
 @HaulCargo_AtoB_desc,129422,2.31111111111111,35.3,2,4.3,8
 @Eckhart_ShipAmbush_Intro_desc,236250,9,7.5,1.5,3,2
@@ -156,7 +157,6 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Hockrow_FacilityDelve_P2M2_desc,137778,2.22222222222222,28,,,8
 @Covalex_HaulCargo_AtoB_desc_DeliverAll,337021,1.27659574468085,47,2,6,1
 @headhunters_killship_gen_vlrt_rank0_desc_001,483333,13.3333333333333,6,1.5,1,2
-@headhunters_killship_gen_lrt_desc_001,1160000,20,4,1.5,1,3
 @headhunters_killship_gen_vlrt_rank0_desc_001,489375,13.5,5,2,,8
 @Intersec_TSG_Group_Desc_001,2558585,0.888937664618086,73.2,6.3,6.2,36
 @cfp_defendship_Intro_Desc_001,415000,10,6.5,2.5,3.5,4
@@ -169,6 +169,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Covalex_HaulCargo_SingleToMulti_desc_ProcessedFood_Stanton2,88271,1.58333333333333,38,1,,2
 @HeadHunters_ShipAmbush_Intro_desc_001,262500,10,6,1,1,1
 @Foxwell_Mercenary_Rehire_desc_001,173143,3.42857142857143,20.8,2.5,4.5,6
+@bhg_bounty_desc_gen_001,525000,20,4.4,1.8,3.6,8
 @Hockrow_FacilityDelve_P1M2_desc,90144,2.40384615384615,29.5,2,2,4
 @UWC_Refueling_intro_desc_001,153462,4.61538461538461,13,2,6,1
 @Shubin_Industrial_ShipMining_Nyx_VE_Local_Desc_001,443571,19.2857142857143,4.5,,,2
@@ -180,13 +181,12 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @LingFamily_HaulCargo_AToB_Intro_desc,260385,1.53846153846154,36.3,1.7,5,3
 @SalvageContractor_Description,,2.14285714285714,28,,,13
 @Covalex_HaulCargo_AtoB_desc_ToRuinStation,368372,1.3953488372093,41.6,2,6,5
-@bhg_bounty_desc_gen_001,525000,20,4.2,1,3.5,5
 @UWC_Refueling_easy_desc_001,450750,3,23,2.3,5.7,7
 @bhg_bounty_desc_gen_001,665000,20,3.2,1,4,6
 @HaulCargo_AtoB_desc,134894,2.39811912225705,33.3,1,5,12
 @HaulCargo_AtoB_desc,177658,2.03619909502262,28.3,2,4,4
 @Hockrow_FacilityDelve_P1M3_desc,153409,2.72727272727273,19.7,,,3
-@headhunters_killship_asteroid_rank0_desc_001,725000,20,4,1,1,7
+@headhunters_killship_asteroid_rank0_desc_001,725000,20,5.3,1,1,9
 @UWC_Refueling_multiple_med_desc_001,302308,4.61538461538461,12.7,1.5,5.3,3
 @bhg_bounty_desc_gen_001,358125,7.5,8,,,1
 @GFS_ShipWaveAttack_Mission05_Desc,1389000,12,5.6,2.6,4.7,27
@@ -210,7 +210,6 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @HaulCargo_SingleToMulti_desc,127366,1.60714285714286,35,3,4,4
 @Adagio_Industrial_Salvage_Universal_M_Desc_001,247304,2.50434782608696,20.5,1,3.3,6
 @UWC_Refueling_high_desc_001,1503333,3.33333333333333,19.8,2.8,6.8,9
-@GFS_ShipWaveAttack_Mission03_Desc,832500,15,4.1,1,5,17
 @SalvageContractor_Difficulty_Hard,,7.36363636363636,13.5,1,1,2
 @bhg_bounty_desc_gen_001,64432,5.72727272727273,12.3,1.5,3.8,4
 @HaulCargo_SingleToMulti_desc,36143,0.571428571428571,105,,,1
@@ -225,6 +224,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @HaulCargo_AtoB_desc,50250,1,37.3,1,7,3
 @Shubin_Industrial_ShipMining_Nyx_VH_Secondary_Desc_001,1136180,5.59006211180124,15,,,2
 @HeadHunters_ShipAmbush_VE_desc_001,112500,4.28571428571429,18.3,1.5,2,3
+@GFS_ShipWaveAttack_Mission03_Desc,832500,15,4,1,3.2,20
 @LingFamily_HaulCargo_AToB_desc_Fruit_Timed,319584,1.61406025824964,35,1.3,4,4
 @LingFamily_HaulCargo_AToB_Intro_desc,307419,0.645161290322581,76,1.6,4.6,7
 @Headhunters_SecurityPatrol_VE_Desc_001,93913,2.60869565217391,23,1.3,1.7,3
@@ -353,13 +353,13 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @headhunters_eliminateall_outpost_desc_01,236000,5.33333333333333,12,3,5,2
 @blackbox_recover_desc_VE_001,184091,5.45454545454545,11.7,1.3,6,3
 @Foxwell_EliminateAll_PAF_M_desc_001,231429,6.42857142857143,10.5,2.5,4,2
-@Foxwell_ShipAmbush_VE_desc_001,135000,6,10.5,1.6,4.7,27
 @FTL_Courier_Stanton_Medium_Desc_001,118696,2.60869565217391,23,1,5,2
 @Headhunters_eliminateall_caves_desc_01,266000,6.33333333333333,10.5,3,5.5,4
 @Shubin_Industrial_ShipMining_Pyro_M_Solar_Desc_001,115909,2.72727272727273,22,,,2
 @SalvageContractor_Description,,2.06896551724138,28,1,7,3
 @cfp_hauling_intro_desc_001,172125,3.375,18,2,3,2
 @Hockrow_FacilityDelve_P2M3_Repeat_desc,315238,3.80952380952381,22.6,2.1,3.9,14
+@Foxwell_ShipAmbush_VE_desc_001,192857,8.57142857142857,10,1.5,4.5,30
 @HaulCargo_SingleToMulti_desc,234536,2.35714285714286,27.5,3,7,2
 @HeadHunters_ShipAmbush_M_desc_001,246818,5.45454545454545,11,2,4,2
 @HeadHunters_RecoverCargo_VeryEasy_Description,115000,5,12,1,4,1
@@ -410,6 +410,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @HaulCargo_AtoB_desc,585000,3.52941176470588,17,,,1
 @vaughn_assassination_VE_desc_intro,390000,15,4,1,1,1
 @BHG_ShipWaveAttack_DrawOutBoss_S_Desc_001,203222,0.444444444444444,45,6,5,1
+@Shubin_Industrial_ShipMining_Nyx_M_Solar_Desc_001,194664,4.03448275862069,19.5,1,1,2
 @Covalex_HaulCargo_SingleToMulti_desc_RefinedOre_Mixed,132857,1.71428571428571,35,3,,1
 @Adagio_Industrial_Salvage_Universal_E_Desc_002,43897,0.882352941176471,68,,,2
 @cfp_maintenance_E_desc_001,165429,1.71428571428571,35,1,3,1
@@ -421,7 +422,6 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @RedWind_HaulCargo_SingleToMulti_desc_01,587045,2.72727272727273,22,,,1
 @Covalex_RecoverCargo_Hard_Description,271000,4,15,,,2
 @Foxwell_ShipAmbush_H_desc_001,1023000,12,5,,,2
-@Shubin_Industrial_ShipMining_Nyx_M_Solar_Desc_001,99828,2.06896551724138,29,,,1
 @cfp_bombingrun_E_desc_001,477214,7.28571428571429,9.2,1.8,4.7,6
 @Intersec_KillShip_Desc_Hard_001,651969,3.875,15.3,3,4.7,40
 @RedWind_HaulCargo_AToB_desc_01,583065,1.93548387096774,31,,,1
@@ -436,11 +436,11 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @CFP_ShipWaveAttack_ClearHostiles_Desc_VE_001,193636,5.45454545454545,11,1,4,1
 @DeadSaints_HaulCargo_AToB_desc_Cryopods_Danger,77200,0.2,300,,,1
 @BHG_ShipWaveAttack_DrawOutBoss_VH_Desc_001,1267534,4.07239819004525,15,,,2
+@GFS_ShipWaveAttack_Mission06_Desc,2568750,15,4.5,1.6,6.2,44
 @BHG_Certification_Medium_Desc,1020000,20,3,,,1
 @Headhunters_DefendDestructibleEntites_E_Desc_001,122500,3.33333333333333,9,1,7,1
 @GFS_ShipWaveAttack_Mission08_Desc,599571,1.71428571428571,37.4,,,5
 @spacecollect_cargo_desc_VE_01,101250,3,20,,,1
-@GFS_ShipWaveAttack_Mission06_Desc,2568750,15,4.6,1.5,6.4,43
 @Foxwell_DefendDestructibleEntites_VE_Desc_001,305000,10,6,1,5,3
 @UWC_Refueling_moderate_desc_001,184286,1.71428571428571,34.3,,,52
 @Foxwell_DefendEntitesAndEscort_E_Desc,581083,6.33333333333333,9.5,3.7,5.3,4
@@ -472,6 +472,7 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Eckhart_ShipAmbush_VE_desc,196875,7.5,9.9,1.4,3.4,27
 @headhunters_HaulCargo_RegionLink_desc_001,363261,2.60869565217391,23,,,1
 @HeadHunters_DefendEntitesAndEscort_E_Desc,504625,5.5,11,1,2,2
+@Eckhart_EscortShips_M_desc,795000,4,14.4,1.8,1.5,5
 @searchbodyspace_desc_M,223750,5,13.3,,,3
 @vaughn_assassination_description_E,441000,12,5.7,2,3,3
 @vaughn_assassination_description_VE,195000,6.66666666666667,9,2,3,2
@@ -482,7 +483,6 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Hockrow_FacilityDelve_P3M1_desc,633699,0.821917808219178,53.4,4.3,5.9,29
 @TheCollector_Recipes_Desc_HeavyUtil,,1.25,48,,,1
 @Headhunters_DefendDestructibleEntites_E_Desc_001,275625,7.5,8,,,1
-@Eckhart_EscortShips_M_desc,795000,4,14.3,1.3,1.7,4
 @Intersec_TSG_BombRun_Solo_Desc_001,336429,8.57142857142857,11.7,3.1,5,65
 @searchbodyspace_desc_E,235714,8.57142857142857,7,1,2,1
 @vaughn_assassination_description_M,234126,5.03496503496504,12,2,3,2
@@ -493,13 +493,14 @@ description_key,mema_uec,rate_p50,dur_avg,avg_diff,avg_sat,runs
 @Hockrow_FacilityDelve_P2M3_desc,110643,1.33707865168539,44.5,1,5,4
 @headhunters_defendship_LRT_PA_desc_001,310000,5,12,,,1
 @headhunters_defend_xt_desc_001,27578,0.372670807453416,161,,,2
+@bhg_bounty_desc_FPS_intro,81429,8.57142857142857,8.1,1.2,2.8,9
 @Shubin_Industrial_ShipMining_Stanton_M_Solar_Desc_001,2227500,30,2,,,23
 @HaulCargo_AtoB_desc,275455,5.45454545454545,11,,,1
 @DeadSaints_HaulCargo_SingleToMulti_desc_Stormwal_Danger_Timed,540849,1.13207547169811,53,,,1
 @bhg_bounty_desc_gen_001,322500,15,4.8,1.5,4.3,8
-@bhg_bounty_desc_FPS_intro,88214,9.28571428571428,7.8,1.3,3.3,8
 @Intersec_KillShip_Vanduul_Desc_VeryHard_001,1177500,6,10.1,2,3.3,11
 @Foxwell_ShipWaveAttack_ClearHostiles_Desc_VE_001,355000,10,7.3,1.2,4.8,36
 @Shubin_Industrial_ShipMining_Nyx_H_Secondary_Desc_001,2805000,30,9,,,4
 @RedWind_HaulCargo_AToB_desc_FromPyro_Danger,665870,1.30434782608696,46,,,50
 @InterSec_SecurityPatrol_H_Desc_001,381000,2.4,26.5,4.3,4.4,42
+@Headhunters_SecurityPatrol_E_Desc_001,84375,1.5,40,,,1

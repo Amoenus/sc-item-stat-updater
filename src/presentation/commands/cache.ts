@@ -5,14 +5,21 @@ import {
   type SourceCacheSource,
   type SourceCacheTarget,
 } from '../../application/use-cases/refresh-source-cache';
-import type { DataCoreTypeEntry } from '../../application/use-cases/run-datacore-scrape';
+import { createDataCoreScrapePlan } from '../../application/use-cases/run-datacore-scrape';
+import { createScmdbScrapePlan } from '../../application/use-cases/run-scmdb-scrape';
 import { type CommandIO, defaultCommandIO, isNpmConfigFlagEnabled, writeErrorLine, writeLine } from '../cli';
+import { createDataCoreProgressCallbacks } from '../datacore-progress';
+import { createDataCoreScrapeTask } from '../datacore-task';
+import { createScmdbScrapeTask } from '../scmdb-task';
+import { createPlannedChildTaskList } from '../task-builders';
 import { type CommandTask, createCommandTaskList } from '../task-list';
 
 const ROOT_DIR = path.resolve(import.meta.dirname, '..', '..', '..');
 
 interface CacheCommandDependencies {
   refreshSourceCache?: typeof refreshSourceCache;
+  createDataCoreScrapePlan?: typeof createDataCoreScrapePlan;
+  createScmdbScrapePlan?: typeof createScmdbScrapePlan;
 }
 
 function printHelp(io: CommandIO): void {
@@ -59,6 +66,10 @@ export async function runCacheCommand(
 
   const target = parseTarget(values.source);
   const refresh = dependencies.refreshSourceCache ?? refreshSourceCache;
+  const dataCoreScrapePlanFactory = dependencies.createDataCoreScrapePlan ?? createDataCoreScrapePlan;
+  const useDataCoreScrapePlan = !dependencies.refreshSourceCache || Boolean(dependencies.createDataCoreScrapePlan);
+  const scmdbScrapePlanFactory = dependencies.createScmdbScrapePlan ?? createScmdbScrapePlan;
+  const useScmdbScrapePlan = !dependencies.refreshSourceCache || Boolean(dependencies.createScmdbScrapePlan);
   const force = values['rebuild-cache'] || isNpmConfigFlagEnabled('rebuild-cache');
 
   try {
@@ -66,7 +77,25 @@ export async function runCacheCommand(
       [
         {
           title: target === 'all' ? 'Refresh source caches' : `Refresh ${target.toUpperCase()} cache`,
-          task: (_ctx, task) => task.newListr(createSourceTasks(target, refresh, values.ptu, force), { concurrent: 2 }),
+          task: (_ctx, task) => {
+            const sourceTasks = createSourceTasks(
+              target,
+              refresh,
+              dataCoreScrapePlanFactory,
+              useDataCoreScrapePlan,
+              scmdbScrapePlanFactory,
+              useScmdbScrapePlan,
+              values.ptu,
+              force,
+            );
+            return createPlannedChildTaskList(task, {
+              title: target === 'all' ? 'Refresh source caches' : `Refresh ${target.toUpperCase()} cache`,
+              tasks: sourceTasks,
+              unit: 'source',
+              plannedUnit: 'source cache',
+              concurrent: 2,
+            });
+          },
         },
       ],
       io,
@@ -90,17 +119,32 @@ function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
 function createSourceTasks(
   target: SourceCacheTarget,
   refresh: typeof refreshSourceCache,
+  dataCoreScrapePlanFactory: typeof createDataCoreScrapePlan,
+  useDataCoreScrapePlan: boolean,
+  scmdbScrapePlanFactory: typeof createScmdbScrapePlan,
+  useScmdbScrapePlan: boolean,
   ptu: boolean,
   force: boolean,
 ): CommandTask<Record<string, never>>[] {
   return selectSources(target).map((source) => {
     const baseTitle = `${source.toUpperCase()} cache`;
 
+    if (source === 'datacore' && useDataCoreScrapePlan) {
+      return createDataCoreRefreshTask(baseTitle, { ptu, force, dataCoreScrapePlanFactory });
+    }
+    if (source === 'scmdb' && useScmdbScrapePlan) {
+      return createScmdbScrapeTask({
+        title: baseTitle,
+        repoRoot: ROOT_DIR,
+        ptu,
+        planFactory: scmdbScrapePlanFactory,
+      });
+    }
+
     return {
       title: baseTitle,
-      task: async (_ctx, task) => {
-        let scrapeTypesCount = 0;
-        const result = await refresh({
+      task: (_ctx, task) => {
+        return refresh({
           repoRoot: ROOT_DIR,
           target: source,
           ptu,
@@ -108,49 +152,31 @@ function createSourceTasks(
           log: (message) => {
             task.output = message;
           },
-          onCacheExtractStart: () => {
-            task.title = `${baseTitle} - unforge extraction can take several minutes`;
-            task.output = 'Unforge: extracting XML records. This can take several minutes.';
-          },
-          onCacheExtractProgress: (count) => {
-            task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
-          },
-          onCacheExtractComplete: (count) => {
-            task.title = baseTitle;
-            task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
-          },
-          onCacheHit: (count) => {
-            task.output = `DataCore XML cache reused: ${count.toLocaleString()} files`;
-          },
-          onDatacorePrepared: (context) => {
-            scrapeTypesCount = context.selectedTypes.length;
-            task.output = `Prepared ${scrapeTypesCount.toLocaleString()} DataCore type extractors`;
-          },
-          onRecordGraphStart: (total) => {
-            task.output = `Building record graph from ${total.toLocaleString()} XML files`;
-          },
-          onRecordGraphProgress: (current, total) => {
-            task.output = `Record graph: ${current.toLocaleString()}/${total.toLocaleString()}`;
-          },
-          onRecordGraphCacheHit: (recordCount) => {
-            task.output = `DataCore record graph reused: ${recordCount.toLocaleString()} records`;
-          },
-          onRawFactStart: (slug, total) => {
-            task.output = `Extracting ${slug}: 0/${total.toLocaleString()}`;
-          },
-          onRawFactProgress: (current) => {
-            task.output = `Extracting raw facts: ${current.toLocaleString()}`;
-          },
-          onTypeStart: (entry: DataCoreTypeEntry, index) => {
-            task.output = `Scraping ${index + 1}/${scrapeTypesCount}: ${entry.name}`;
-          },
+          ...(source === 'datacore' ? createDataCoreProgressCallbacks({ task, baseTitle }) : {}),
+        }).then((result) => {
+          if (result.exitCode !== 0) {
+            throw new Error(`${source.toUpperCase()} cache refresh failed.`);
+          }
+          task.title = baseTitle;
         });
-
-        if (result.exitCode !== 0) {
-          throw new Error(`${source.toUpperCase()} cache refresh failed.`);
-        }
-        task.output = `${source.toUpperCase()} source outputs refreshed`;
       },
     };
+  });
+}
+
+function createDataCoreRefreshTask(
+  baseTitle: string,
+  options: {
+    ptu: boolean;
+    force: boolean;
+    dataCoreScrapePlanFactory: typeof createDataCoreScrapePlan;
+  },
+): CommandTask<Record<string, never>> {
+  return createDataCoreScrapeTask({
+    title: baseTitle,
+    repoRoot: ROOT_DIR,
+    ptu: options.ptu,
+    forceExtract: options.force,
+    planFactory: options.dataCoreScrapePlanFactory,
   });
 }

@@ -177,9 +177,10 @@ type PatchArtifact = {
 - Planning may read normalized records and existing localization context, but it must output patch plans instead of writing files.
 - Application may mutate INI text, but it must not scrape or parse provider-specific source formats.
 - CLI scripts should be thin adapters that parse arguments and call application use cases.
+- Listr2 is the first-class CLI task renderer for long-running orchestration. Application and source code should expose staged plans, callbacks, and result contracts; presentation code turns those plans into Listr task trees.
 - Generic filesystem helpers belong under infrastructure; localization-aware INI behavior belongs under localization.
 
-Run `npm run check:architecture` to enforce the current automated boundary rules. The guardrail is intentionally small: source modules must not import localization application or updater mutation code.
+Run `npm run check:architecture` to enforce the current automated boundary rules. The guardrail is intentionally small: source modules must not import localization application or updater mutation code; non-presentation code must not import Listr2; top-level Listr renderer construction must stay centralized in `src/presentation/task-list.ts`; legacy progress renderer packages must not be reintroduced.
 
 ## Adding A Source Provider
 

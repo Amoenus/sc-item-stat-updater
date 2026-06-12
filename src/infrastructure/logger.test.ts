@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { getLogger, setJsonOutput, setLogLevel, shutdownLogger } from './logger';
+import { getLogger, setJsonOutput, setLogLevel, shutdownLogger, withLoggerOutputSink } from './logger';
 
 function captureStderr(run: () => void): string {
   const originalWrite = process.stderr.write;
@@ -13,6 +13,24 @@ function captureStderr(run: () => void): string {
 
   try {
     run();
+  } finally {
+    process.stderr.write = originalWrite;
+  }
+
+  return output;
+}
+
+async function captureStderrAsync(run: () => Promise<void>): Promise<string> {
+  const originalWrite = process.stderr.write;
+  let output = '';
+
+  process.stderr.write = ((chunk: string | Uint8Array) => {
+    output += Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk);
+    return true;
+  }) as typeof process.stderr.write;
+
+  try {
+    await run();
   } finally {
     process.stderr.write = originalWrite;
   }
@@ -64,6 +82,18 @@ test('logger filters debug records unless verbose logging is enabled', () => {
 
   assert.match(visible, /\[DEBUG]/);
   assert.match(visible, /visible/);
+});
+
+test('logger output can be routed to a renderer-owned sink', async () => {
+  const lines: string[] = [];
+  const output = await captureStderrAsync(async () => {
+    await withLoggerOutputSink((line) => lines.push(line), async () => {
+      getLogger('fixture').error('hidden while rendering');
+    });
+  });
+
+  assert.equal(output, '');
+  assert.deepEqual(lines, ['ERROR hidden while rendering']);
 });
 
 test('shutdownLogger remains awaitable for CLI compatibility', async () => {

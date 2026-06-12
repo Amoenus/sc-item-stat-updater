@@ -47,6 +47,7 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
+  const progressEvents: string[] = [];
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
   await fs.writeFile(
     xmlPath,
@@ -73,6 +74,12 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 1,
+    extractContractGenerators: async (options) => {
+      options.onProgress?.(1, 3);
+      return [];
+    },
+    onRawFactStart: (slug, total) => progressEvents.push(`start:${slug}:${total}`),
+    onRawFactProgress: (slug, current, total) => progressEvents.push(`progress:${slug}:${current}:${total}`),
   });
 
   assert.equal(result.exitCode, 0);
@@ -83,6 +90,7 @@ test('runDatacoreScrape parses cached XML records without writing during dry run
     result.rawFactResults.map((entry) => [entry.slug, entry.csvFile, entry.rows]),
     DATACORE_RAW_FACTS.map((entry) => [entry.slug, entry.sourceFiles[0], 0]),
   );
+  assert.deepEqual(progressEvents.slice(0, 2), ['start:contract-generators:3', 'progress:contract-generators:1:3']);
   await assert.rejects(() => fs.stat(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live')));
 });
 
@@ -1933,6 +1941,44 @@ test('runDatacoreScrape refreshes repo DCB cache from Data.p4k and invalidates X
   assert.equal(result.exitCode, 0);
   assert.equal(result.dcbPath, cachedDcbPath);
   assert.deepEqual(events, [`packed:${p4kPath}`, `xml:${cachedDcbPath}:true`]);
+});
+
+test('runDatacoreScrape reports raw fact progress the same way after force-refreshing cache', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-force-progress-'));
+  const liveDir = path.join(repoRoot, 'game', 'LIVE');
+  const p4kPath = path.join(liveDir, 'Data.p4k');
+  await fs.mkdir(path.dirname(p4kPath), { recursive: true });
+  await fs.writeFile(p4kPath, 'packed data');
+
+  const progressEvents: string[] = [];
+  const result = await runDatacoreScrape({
+    repoRoot,
+    dryRun: true,
+    forceExtract: true,
+    loadTypes: async () => [],
+    resolveLiveDir: () => liveDir,
+    readGameVersion: async () => '4.8.1',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    extractPackedDcb: async (_sourceP4k, dcbCacheDir) => {
+      const target = path.join(dcbCacheDir, 'Data', 'Game2.dcb');
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.writeFile(target, 'fresh packed dcb');
+    },
+    countXmlFiles: async () => 7,
+    extractXmlCache: async ({ clearExisting }) => {
+      assert.equal(clearExisting, true);
+      return { workDcbPath: 'cache/Game2.dcb', monolithicXmlPath: 'cache/Game2.xml', xmlFileCount: 321 };
+    },
+    extractContractGenerators: async (options) => {
+      options.onProgress?.(1, 3);
+      return [];
+    },
+    onRawFactStart: (slug, total) => progressEvents.push(`start:${slug}:${total}`),
+    onRawFactProgress: (slug, current, total) => progressEvents.push(`progress:${slug}:${current}:${total}`),
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(progressEvents.slice(0, 2), ['start:contract-generators:3', 'progress:contract-generators:1:3']);
 });
 
 test('runDatacoreScrape writes DataCore commodity CSV after building the record graph', async () => {

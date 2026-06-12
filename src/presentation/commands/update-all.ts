@@ -1,29 +1,16 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { DATACORE_RAW_FACTS } from '../../application/catalog/category-listing';
 import {
   buildMiningJournalRarityComparison,
   formatMiningJournalRarityComparison,
 } from '../../application/diagnostics/mining-journal-rarity-comparison';
-import {
-  buildScmdbDependencyAudit,
-  formatScmdbDependencyAudit,
-} from '../../application/diagnostics/scmdb-dependency-audit';
-import {
-  buildSourceFreshnessDiagnostics,
-  formatSourceFreshnessDiagnostics,
-} from '../../application/diagnostics/source-freshness-diagnostics';
-import { preflightCheckConfigs } from '../../application/update/update-planning';
-import { prepareUpdateCategories, type UpdateProvider } from '../../application/use-cases/prepare-update-categories';
-import {
-  type BatchUpdateError,
-  type BatchUpdateResult,
-  runPreparedUpdateCategories,
-} from '../../application/use-cases/run-prepared-update-categories';
-import { getUpdateExtraStepLabels, runUpdateExtraSteps } from '../../application/use-cases/run-update-extra-steps';
+import { formatScmdbDependencyAudit } from '../../application/diagnostics/scmdb-dependency-audit';
+import { formatSourceFreshnessDiagnostics } from '../../application/diagnostics/source-freshness-diagnostics';
+import type { PreparedUpdateCategories, UpdateProvider } from '../../application/use-cases/prepare-update-categories';
+import { createBatchUpdatePlan, type RunBatchUpdateResult } from '../../application/use-cases/run-batch-update';
+import type { BatchUpdateError, BatchUpdateResult } from '../../application/use-cases/run-prepared-update-categories';
 import { type Artifact, generateArtifact, writeArtifactFile } from '../../artifact/artifact';
 import { getLogger } from '../../infrastructure/logger';
-import { backupIniFile } from '../../localization/ini-file';
 import {
   applyLogFlags,
   type CommandIO,
@@ -32,12 +19,19 @@ import {
   writeErrorLine,
   writeLine,
 } from '../cli';
-import { createCliEventRenderer } from '../events';
+import { createIndexedTasks, createPlannedChildTaskList } from '../task-builders';
+import { createCommandTaskList } from '../task-list';
 
 const logger = getLogger('update-all');
 
 type StepError = { label: string; message: string };
 type AnyUpdateResult = BatchUpdateResult;
+
+interface UpdateAllTaskContext {
+  prepared?: PreparedUpdateCategories;
+  plannedArtifact?: Artifact;
+  result?: RunBatchUpdateResult;
+}
 
 function printSummary(io: CommandIO, results: AnyUpdateResult[], errors: StepError[], totalDuration: number): void {
   writeLine(io);
@@ -116,96 +110,14 @@ export async function runUpdateAllCommand(argv: string[], io: CommandIO = defaul
   }
   const provider: UpdateProvider = providerValue;
 
-  const prepared = await prepareUpdateCategories({
+  const plan = createBatchUpdatePlan({
     repoRoot,
+    iniPath: values['ini-path'],
+    csvDir: values['csv-dir'],
+    dryRun: values['dry-run'],
+    includeMiningJournal: values['include-mining-journal'],
     provider,
     ptu: values.ptu,
-    csvDir: values['csv-dir'],
-  });
-  const { categories, scmdbVersion, itemVersion, itemVersionDir, missionCsvDir } = prepared;
-
-  if (values['mining-journal-rarity-report']) {
-    writeLine(
-      io,
-      `${formatMiningJournalRarityComparison(
-        await buildMiningJournalRarityComparison({
-          scmdbDir: missionCsvDir,
-          datacoreDir: itemVersionDir,
-        }),
-      )}\n`,
-    );
-    return 0;
-  }
-
-  const options = {
-    iniPath: values['ini-path'],
-    csvDir: missionCsvDir,
-    dryRun: values['dry-run'],
-  };
-
-  const channel = values.ptu ? 'PTU' : 'LIVE';
-  logger.info('Starting batch update', { scmdbVersion, itemVersion, provider, channel, dryRun: options.dryRun });
-  writeLine(io, `=== Starting update (${channel}, provider: ${provider}) ===`);
-
-  const sourceDiagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider, ptu: values.ptu });
-  writeLine(io, `${formatSourceFreshnessDiagnostics(sourceDiagnostics)}\n`);
-  writeLine(io, `${formatScmdbDependencyAudit(await buildScmdbDependencyAudit({ provider }))}\n`);
-
-  try {
-    await preflightCheckConfigs(categories, {
-      rawFacts: DATACORE_RAW_FACTS.map((rawFact) => ({
-        rawFact,
-        baseDir: prepared.itemVersionDir,
-        channel,
-      })),
-    });
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    logger.error('Preflight check failed', { error: error.message });
-    writeErrorLine(io, `\nERROR: ${error.message}\n`);
-    return 1;
-  }
-
-  const totalStart = performance.now();
-  logger.debug('Starting batch update', { categoryCount: categories.length, dryRun: options.dryRun });
-  writeLine(io, '=== Updating all item descriptions ===\n');
-
-  const iniPath = options.iniPath || path.join(repoRoot, 'global.ini');
-  let plannedArtifact: Artifact | null = null;
-
-  if (values['emit-artifact']) {
-    try {
-      plannedArtifact = await generateArtifact(categories, {
-        iniPath,
-        scmdbVersion,
-      });
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Failed to generate patch artifact', { error: error.message });
-      writeErrorLine(io, `ERROR generating artifact: ${error.message}`);
-      return 1;
-    }
-  }
-
-  if (!options.dryRun) {
-    await backupIniFile(iniPath);
-    logger.debug('Created global.ini backup before batch update');
-  }
-  const sharedOptions = { ...options, skipBackup: true };
-
-  const renderer = createCliEventRenderer(io);
-  const extraStepLabels = getUpdateExtraStepLabels({ includeMiningJournal: values['include-mining-journal'] });
-  const extraSteps = extraStepLabels.length;
-  const results: AnyUpdateResult[] = [];
-  const errors: StepError[] = [];
-
-  renderer.emit({ type: 'progress:start', id: 'update-all', label: 'Update', total: categories.length + extraSteps });
-
-  const categoryResult = await runPreparedUpdateCategories(categories, {
-    ...sharedOptions,
-    onCategoryStart: ({ config }, index) => {
-      renderer.emit({ type: 'progress:update', id: 'update-all', value: index, label: config.label });
-    },
     onCategoryError: (error: BatchUpdateError) => {
       logger.error('Failed to update category', {
         label: error.label,
@@ -213,65 +125,171 @@ export async function runUpdateAllCommand(argv: string[], io: CommandIO = defaul
         cause: error.cause,
       });
     },
-  });
-
-  results.push(...categoryResult.results);
-  errors.push(...categoryResult.errors);
-
-  const extraStepResult = await runUpdateExtraSteps({
-    iniPath,
-    repoRoot,
-    missionCsvDir,
-    datacoreVersionDir: itemVersionDir,
-    dryRun: options.dryRun,
-    includeMiningJournal: values['include-mining-journal'],
-    onStepStart: (label, index) => {
-      renderer.emit({ type: 'progress:update', id: 'update-all', value: categories.length + index, label });
+    onExtraStepStart: (label) => {
       logger.info('Starting extra update step', { label });
     },
-    onStepError: (error: BatchUpdateError) => {
+    onExtraStepError: (error: BatchUpdateError) => {
       logger.error(`Failed: ${error.label}`, { error: error.message, cause: error.cause });
     },
   });
-
-  results.push(...extraStepResult.results);
-  errors.push(...extraStepResult.errors);
-
-  renderer.emit({ type: 'progress:update', id: 'update-all', value: categories.length + extraSteps, label: 'Done' });
-  renderer.emit({ type: 'progress:stop', id: 'update-all' });
-
-  const totalDuration = Math.round(performance.now() - totalStart);
-
-  if (values['emit-artifact']) {
-    const artifactPath = path.resolve(values['emit-artifact']);
-    if (!plannedArtifact) {
-      throw new Error('Patch artifact was not prepared before emission');
-    }
-    const artifact: Artifact = {
-      ...plannedArtifact,
-      stats: {
-        ...plannedArtifact.stats,
-        totalErrors: plannedArtifact.stats.totalErrors + errors.length,
-      },
-    };
-    try {
-      await writeArtifactFile(artifactPath, artifact);
-      logger.info('Patch artifact written', { path: artifactPath, entries: artifact.stats.totalEntries });
-      writeLine(io, `\nOK Artifact written -> ${artifactPath} (${artifact.stats.totalEntries} entries)`);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Failed to write patch artifact', { error: error.message });
-      writeErrorLine(io, `ERROR writing artifact: ${error.message}`);
-    }
+  if (values['mining-journal-rarity-report']) {
+    const prepared = await plan.prepare();
+    writeLine(
+      io,
+      `${formatMiningJournalRarityComparison(
+        await buildMiningJournalRarityComparison({
+          scmdbDir: prepared.missionCsvDir,
+          datacoreDir: prepared.itemVersionDir,
+        }),
+      )}\n`,
+    );
+    return 0;
   }
 
-  printSummary(io, results, errors, totalDuration);
+  const channel = values.ptu ? 'PTU' : 'LIVE';
+  const iniPath = values['ini-path'] || path.join(repoRoot, 'global.ini');
+  const context: UpdateAllTaskContext = {};
+  const requirePrepared = (): PreparedUpdateCategories => {
+    if (!context.prepared) throw new Error('Update sources were not prepared.');
+    return context.prepared;
+  };
+  const taskList = createCommandTaskList(
+    [
+      {
+        title: `Prepare update (${channel}, provider: ${provider})`,
+        task: async (_ctx, task) => {
+          context.prepared = await plan.prepare();
+          logger.info('Starting batch update', {
+            scmdbVersion: context.prepared.scmdbVersion,
+            itemVersion: context.prepared.itemVersion,
+            provider,
+            channel,
+            dryRun: values['dry-run'],
+          });
+          logger.debug('Starting batch update', {
+            categoryCount: context.prepared.categories.length,
+            dryRun: values['dry-run'],
+          });
+          task.output = `${context.prepared.categories.length.toLocaleString()} categories ready`;
+        },
+      },
+      {
+        title: 'Validate source coverage',
+        task: () => plan.preflight(),
+      },
+      {
+        title: 'Prepare patch artifact',
+        skip: values['emit-artifact'] ? false : 'not requested',
+        task: async (_ctx, task) => {
+          const prepared = requirePrepared();
+          context.plannedArtifact = await generateArtifact(prepared.categories, {
+            iniPath,
+            scmdbVersion: prepared.scmdbVersion,
+          });
+          task.output = `${context.plannedArtifact.stats.totalEntries.toLocaleString()} artifact entries planned`;
+        },
+      },
+      {
+        title: 'Backup global.ini',
+        skip: values['dry-run'] ? 'dry run' : false,
+        task: async () => {
+          await plan.backup();
+          logger.debug('Created global.ini backup before batch update');
+        },
+      },
+      {
+        title: 'Update categories',
+        task: (_ctx, task) => {
+          const prepared = requirePrepared();
+          return createPlannedChildTaskList(task, {
+            title: 'Update categories',
+            tasks: createIndexedTasks(prepared.categories, {
+              title: (category) => category.config.label,
+              task: (category, index) => async (_categoryCtx, categoryTask) => {
+                const result = await plan.runCategory(category, index);
+                categoryTask.output = result?.summary ?? 'No changes';
+              },
+            }),
+            unit: 'category',
+          });
+        },
+      },
+      {
+        title: 'Run extra update steps',
+        task: (_ctx, task) => {
+          const labels = plan.getExtraStepLabels();
+          return createPlannedChildTaskList(task, {
+            title: 'Run extra update steps',
+            tasks: createIndexedTasks(labels, {
+              title: (label) => label,
+              task: (label, index) => async (_stepCtx, stepTask) => {
+                const result = await plan.runExtraStep(label, index);
+                stepTask.output = result?.summary ?? 'Skipped';
+              },
+            }),
+            unit: 'step',
+            plannedUnit: 'extra step',
+          });
+        },
+      },
+      {
+        title: 'Write patch artifact',
+        skip: values['emit-artifact'] ? false : 'not requested',
+        task: async (_ctx, task) => {
+          if (!context.plannedArtifact || !values['emit-artifact']) {
+            throw new Error('Patch artifact was not prepared before emission.');
+          }
+          const result = plan.result();
+          const artifact: Artifact = {
+            ...context.plannedArtifact,
+            stats: {
+              ...context.plannedArtifact.stats,
+              totalErrors: context.plannedArtifact.stats.totalErrors + result.errors.length,
+            },
+          };
+          const artifactPath = path.resolve(values['emit-artifact']);
+          await writeArtifactFile(artifactPath, artifact);
+          logger.info('Patch artifact written', { path: artifactPath, entries: artifact.stats.totalEntries });
+          task.output = `Written to ${artifactPath} (${artifact.stats.totalEntries.toLocaleString()} entries)`;
+        },
+      },
+      {
+        title: 'Complete update',
+        task: (_ctx, task) => {
+          context.result = plan.result();
+          task.output = `${context.result.results.length.toLocaleString()} result(s), ${context.result.errors.length.toLocaleString()} error(s)`;
+        },
+      },
+    ],
+    io,
+    context,
+    { verbose: values.verbose },
+  );
+
+  try {
+    await taskList.run();
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error('Batch update failed', { error: error.message });
+    writeErrorLine(io, `\nERROR: ${error.message}\n`);
+    return 1;
+  }
+
+  const result = context.result ?? plan.result();
+  writeLine(io, `\n${formatSourceFreshnessDiagnostics(result.sourceDiagnostics)}`);
+  if (result.scmdbDependencyAudit) {
+    writeLine(io, `\n${formatScmdbDependencyAudit(result.scmdbDependencyAudit)}`);
+  }
+  if (values['emit-artifact']) {
+    writeLine(io, `\nOK Artifact written -> ${path.resolve(values['emit-artifact'])}`);
+  }
+  printSummary(io, result.results, result.errors, result.totalDurationMs);
 
   logger.debug('Batch update complete', {
-    totalDuration,
-    successCount: results.length,
-    errorCount: errors.length,
+    totalDuration: result.totalDurationMs,
+    successCount: result.results.length,
+    errorCount: result.errors.length,
   });
 
-  return errors.length > 0 ? 1 : 0;
+  return result.exitCode;
 }

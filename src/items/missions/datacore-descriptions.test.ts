@@ -3,8 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import missionDescriptionsConfig from './datacore-descriptions';
-import { loadDatacoreDescriptionsSourceData } from './datacore-descriptions';
+import missionDescriptionsConfig, { loadDatacoreDescriptionsSourceData } from './datacore-descriptions';
 
 async function makeWorkspace() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mission-descriptions-'));
@@ -24,10 +23,7 @@ async function makeWorkspace() {
   );
   await fs.writeFile(
     path.join(datacoreDir, 'contract-generator-intel.datacore.csv'),
-    [
-      'Description Key,Contract Intel',
-      '"test_desc","Time Limit: 12 min\\nReputation Awarded: 100"',
-    ].join('\n'),
+    ['Description Key,Contract Intel', '"test_desc","Time Limit: 12 min\\nReputation Awarded: 100"'].join('\n'),
     'utf8',
   );
   await fs.writeFile(
@@ -96,7 +92,7 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       assert.equal(row?.ContractIntel, String.raw`Time Limit: 12 min\nReputation Awarded: 100`);
       assert.equal(
         missionDescriptionValue(row ?? {}, 'Base description.'),
-        String.raw`Base description.\n\n** Contract Intel **\nTime Limit: 12 min\nReputation Awarded: 100\n\n<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`Base description.\n\n<EM4>Reputation Awarded:</EM4> 100\n\n** Contract Intel **\nTime Limit: 12 min\n\n<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`,
       );
 
       const brokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_desc');
@@ -108,6 +104,17 @@ describe('loadDatacoreDescriptionsSourceData', () => {
 
       const rewardOnlyBrokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_reward_only_desc');
       assert.equal(missionDescriptionValue(rewardOnlyBrokerRow ?? {}, 'Reward-only broker.'), 'Reward-only broker.');
+
+      assert.equal(
+        missionDescriptionValue(
+          {
+            'Localization Key': 'shared_rep_desc',
+            ContractIntel: String.raw`Time Limit: 10 min\nReputation Awarded (by difficulty): 75 / 100`,
+          },
+          'Shared reputation.',
+        ),
+        String.raw`Shared reputation.\n\n<EM4>Reputation Awarded (by difficulty):</EM4> 75 / 100\n\n** Contract Intel **\nTime Limit: 10 min`,
+      );
 
       const variantRow = rows.find((candidate) => candidate['Localization Key'] === 'test_desc_variant');
       assert.equal(variantRow?.RewardList, String.raw`<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`);

@@ -72,7 +72,6 @@
   },
   "dependencies": {
     "cheerio": "^1.2.0",
-    "cli-progress": "^3.12.0",
     "csv-parse": "^6.2.1",
     "csv-stringify": "^6.7.0",
     "domhandler": "^6.0.0",
@@ -83,7 +82,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",
-    "@types/cli-progress": "^3.11.6",
     "@types/node": "^25.8.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"

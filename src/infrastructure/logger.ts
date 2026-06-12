@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 export type LogAttributes = Record<string, string | number | boolean | undefined | null>;
 
 type LogLevelName = 'debug' | 'info' | 'warn' | 'error';
@@ -26,6 +28,7 @@ const RESET = '\x1b[0m';
 
 let minSeverity = LOG_LEVELS.info.severity;
 let useJson = false;
+const loggerOutputSink = new AsyncLocalStorage<(line: string) => void>();
 
 function formatAttributes(attributes?: LogAttributes): string {
   if (!attributes) return '';
@@ -65,9 +68,14 @@ export function getLogger(name: string) {
   function emit(level: LogLevel, message: string, attributes?: LogAttributes): void {
     if (level.severity < minSeverity) return;
 
-    process.stderr.write(
-      useJson ? formatJsonRecord(name, level, message, attributes) : formatTextRecord(level, message, attributes),
-    );
+    const formatted = useJson ? formatJsonRecord(name, level, message, attributes) : formatTextRecord(level, message, attributes);
+    const sink = loggerOutputSink.getStore();
+    if (sink) {
+      sink(formatTaskOutput(level, message, attributes));
+      return;
+    }
+
+    process.stderr.write(formatted);
   }
 
   return {
@@ -78,6 +86,14 @@ export function getLogger(name: string) {
   };
 }
 
+export function withLoggerOutputSink<T>(sink: (line: string) => void, run: () => T): T {
+  return loggerOutputSink.run(sink, run);
+}
+
 export function shutdownLogger(): Promise<void> {
   return Promise.resolve();
+}
+
+function formatTaskOutput(level: LogLevel, message: string, attributes?: LogAttributes): string {
+  return `${level.text} ${message}${formatAttributes(attributes)}`;
 }

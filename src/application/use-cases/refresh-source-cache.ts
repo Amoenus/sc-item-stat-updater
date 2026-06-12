@@ -26,7 +26,7 @@ export interface RefreshSourceCacheOptions {
   onRecordGraphProgress?: (current: number, total: number) => void;
   onRecordGraphCacheHit?: (recordCount: number, outputPath: string) => void;
   onRawFactStart?: (slug: string, total: number) => void;
-  onRawFactProgress?: (current: number) => void;
+  onRawFactProgress?: (slug: string, current: number, total: number) => void;
   onTypeStart?: (entry: DataCoreTypeEntry, index: number) => void;
 }
 

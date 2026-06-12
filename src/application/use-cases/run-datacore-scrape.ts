@@ -337,7 +337,7 @@ export interface RunDatacoreScrapeOptions {
   onToolsLog?: (message: string) => void;
   onToolsReady?: (tools: Unp4kTools) => void;
   onRawFactStart?: (slug: string, total: number) => void;
-  onRawFactProgress?: (current: number) => void;
+  onRawFactProgress?: (slug: string, current: number, total: number) => void;
   onTypeStart?: (entry: DataCoreTypeEntry, index: number) => void;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
@@ -420,6 +420,28 @@ export interface RunDatacoreScrapeResult {
   rawFactResults: DataCoreRawFactScrapeResult[];
   results: DataCoreScrapeTypeResult[];
   errors: DataCoreScrapeTypeError[];
+}
+
+interface DataCoreXmlCacheState {
+  xmlFileCount: number;
+  reused: boolean;
+}
+
+interface EnsureDataCoreXmlCacheOptions {
+  cachedCount: number;
+  dcbPath: string;
+  dcbRefreshed: boolean;
+  liveDir: string;
+  xmlCacheDir: string;
+  tools: Unp4kTools;
+  forceExtract?: boolean;
+  skipUnforge?: boolean;
+  extractXmlCache: typeof extractDataCoreXmlCache;
+  onToolsLog?: (message: string) => void;
+  onCacheHit?: (count: number, xmlCacheDir: string) => void;
+  onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
+  onCacheExtractProgress?: (count: number) => void;
+  onCacheExtractComplete?: (count: number) => void;
 }
 
 const COMMON_HEADERS = [
@@ -1125,7 +1147,160 @@ export async function loadDataCoreTypeEntries(repoRoot: string): Promise<DataCor
   return result.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Promise<RunDatacoreScrapeResult> {
+export interface DataCoreScrapePreparedContext {
+  gameVersion: string;
+  channel: 'live' | 'ptu';
+  dcbPath: string;
+  outputBase: string;
+  xmlCacheDir: string;
+  selectedTypes: DataCoreTypeEntry[];
+  allTypes: DataCoreTypeEntry[];
+  dryRun: boolean;
+}
+
+export interface DataCoreScrapePlan {
+  prepare(): Promise<DataCoreScrapePreparedContext>;
+  ensureXmlCache(): Promise<DataCoreXmlCacheState>;
+  prepareRecordGraph(): Promise<{ recordCount: number; outputPath: string; cached: boolean }>;
+  getRawFactStages(): DataCoreRawFactStageDescriptor[];
+  extractRawFactStage(stageId: DataCoreRawFactStageId): Promise<{ rows: number; csvFile: string } | null>;
+  finalizeRawFacts(): Promise<DataCoreRawFactScrapeResult[]>;
+  extractRawFacts(): Promise<DataCoreRawFactScrapeResult[]>;
+  getItemTypeStages(): DataCoreItemTypeStageDescriptor[];
+  scrapeItemTypeStage(
+    typeName: string,
+  ): Promise<{ result?: DataCoreScrapeTypeResult; error?: DataCoreScrapeTypeError }>;
+  finalizeItemTypes(): Promise<{ results: DataCoreScrapeTypeResult[]; errors: DataCoreScrapeTypeError[] }>;
+  scrapeItemTypes(): Promise<{ results: DataCoreScrapeTypeResult[]; errors: DataCoreScrapeTypeError[] }>;
+  result(): RunDatacoreScrapeResult;
+}
+
+export type DataCoreRawFactStageId =
+  | 'contract-generators'
+  | 'contract-generator-intel'
+  | 'contract-templates'
+  | 'contract-template-hauling'
+  | 'contract-hauling-summary'
+  | 'mission-brokers'
+  | 'mission-contract-intel'
+  | 'mission-localization'
+  | 'blueprint-pools'
+  | 'crafting-blueprints'
+  | 'material-localizations'
+  | 'commodities'
+  | 'vehicles'
+  | 'factions'
+  | 'manufacturers'
+  | 'location-labels'
+  | 'mining-elements'
+  | 'mining-compositions'
+  | 'mineable-entities'
+  | 'mining-density-overrides'
+  | 'mining-clustering'
+  | 'mining-harvestable-presets'
+  | 'mining-harvestable-setups'
+  | 'mining-sub-harvestable-configs'
+  | 'mining-quality-distributions'
+  | 'mining-quality-quantizations'
+  | 'mining-rock-signatures'
+  | 'mining-location-labels'
+  | 'mining-params'
+  | 'mining-provider-presets';
+
+export interface DataCoreRawFactStageDescriptor {
+  id: DataCoreRawFactStageId;
+  title: string;
+}
+
+export interface DataCoreItemTypeStageDescriptor {
+  id: string;
+  title: string;
+}
+
+const DATACORE_RAW_FACT_STAGE_DESCRIPTORS: DataCoreRawFactStageDescriptor[] = [
+  { id: 'contract-generators', title: 'Contract generators' },
+  { id: 'contract-generator-intel', title: 'Contract generator intel' },
+  { id: 'contract-templates', title: 'Contract templates' },
+  { id: 'contract-template-hauling', title: 'Contract template hauling' },
+  { id: 'contract-hauling-summary', title: 'Contract hauling summary' },
+  { id: 'mission-brokers', title: 'Mission brokers' },
+  { id: 'mission-contract-intel', title: 'Mission contract intel' },
+  { id: 'mission-localization', title: 'Mission localization' },
+  { id: 'blueprint-pools', title: 'Blueprint pools' },
+  { id: 'crafting-blueprints', title: 'Crafting blueprints' },
+  { id: 'material-localizations', title: 'Material localizations' },
+  { id: 'commodities', title: 'Commodities' },
+  { id: 'vehicles', title: 'Vehicles' },
+  { id: 'factions', title: 'Factions' },
+  { id: 'manufacturers', title: 'Manufacturers' },
+  { id: 'location-labels', title: 'Location labels' },
+  { id: 'mining-elements', title: 'Mining elements' },
+  { id: 'mining-compositions', title: 'Mining compositions' },
+  { id: 'mineable-entities', title: 'Mineable entities' },
+  { id: 'mining-density-overrides', title: 'Mining density overrides' },
+  { id: 'mining-clustering', title: 'Mining clustering' },
+  { id: 'mining-harvestable-presets', title: 'Mining harvestable presets' },
+  { id: 'mining-harvestable-setups', title: 'Mining harvestable setups' },
+  { id: 'mining-sub-harvestable-configs', title: 'Mining sub-harvestable configs' },
+  { id: 'mining-quality-distributions', title: 'Mining quality distributions' },
+  { id: 'mining-quality-quantizations', title: 'Mining quality quantizations' },
+  { id: 'mining-rock-signatures', title: 'Mining rock signatures' },
+  { id: 'mining-location-labels', title: 'Mining location labels' },
+  { id: 'mining-params', title: 'Mining params' },
+  { id: 'mining-provider-presets', title: 'Mining provider presets' },
+];
+
+interface DataCoreScrapePreparedState extends DataCoreScrapePreparedContext {
+  versionTag: string;
+  liveDir: string;
+  recordGraphPath: string;
+  tools: Unp4kTools;
+  dcbRefreshed: boolean;
+}
+
+interface DataCoreScrapeGraphState {
+  xmlCache: DataCoreXmlCacheState;
+  recordGraph: DataCoreRecordGraph;
+  graphLookup: DataCoreRecordGraphLookup;
+  recordGraphCached: boolean;
+}
+
+interface DataCoreRawFactStageState {
+  rawFactResults: DataCoreRawFactScrapeResult[];
+  manufacturerResolver: DataCoreManufacturerResolver;
+  contractGeneratorResult: DataCoreScrapeContractGeneratorResult;
+  contractGeneratorIntelResult: DataCoreScrapeContractGeneratorIntelResult;
+  contractHaulingSummaryResult: DataCoreScrapeContractHaulingSummaryResult;
+  contractTemplateResult: DataCoreScrapeContractTemplateResult;
+  contractTemplateHaulingResult: DataCoreScrapeContractTemplateHaulingResult;
+  commodityResult: DataCoreScrapeCommodityResult;
+  vehicleResult: DataCoreScrapeVehicleResult;
+  factionResult: DataCoreScrapeFactionResult;
+  manufacturerResult: DataCoreScrapeManufacturerResult;
+  locationLabelResult: DataCoreScrapeLocationLabelResult;
+  missionBrokerResult: DataCoreScrapeMissionBrokerResult;
+  missionContractIntelResult: DataCoreScrapeMissionContractIntelResult;
+  missionLocalizationResult: DataCoreScrapeMissionLocalizationResult;
+  blueprintPoolResult: DataCoreScrapeBlueprintPoolsResult;
+  craftingBlueprintResult: DataCoreScrapeCraftingBlueprintsResult;
+  materialLocalizationResult: DataCoreScrapeMaterialLocalizationsResult;
+  miningElementResult: DataCoreScrapeMiningElementResult;
+  miningCompositionResult: DataCoreScrapeMiningCompositionResult;
+  mineableEntityResult: DataCoreScrapeMineableEntityResult;
+  miningDensityOverrideResult: DataCoreScrapeMiningDensityOverrideResult;
+  miningClusteringResult: DataCoreScrapeMiningClusteringResult;
+  miningHarvestablePresetResult: DataCoreScrapeMiningHarvestablePresetResult;
+  miningHarvestableSetupResult: DataCoreScrapeMiningHarvestableSetupResult;
+  miningSubHarvestableConfigResult: DataCoreScrapeMiningSubHarvestableConfigResult;
+  miningQualityDistributionResult: DataCoreScrapeMiningQualityDistributionResult;
+  miningQualityQuantizationResult: DataCoreScrapeMiningQualityQuantizationResult;
+  miningRockSignatureResult: DataCoreScrapeMiningRockSignatureResult;
+  miningLocationLabelResult: DataCoreScrapeMiningLocationLabelResult;
+  miningParamResult: DataCoreScrapeMiningParamResult;
+  miningProviderPresetResult: DataCoreScrapeMiningProviderPresetResult;
+}
+
+export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): DataCoreScrapePlan {
   const loadTypes = options.loadTypes ?? loadDataCoreTypeEntries;
   const resolveLive = options.resolveLiveDir ?? resolveLiveDir;
   const readVersion = options.readGameVersion ?? readGameVersion;
@@ -1171,593 +1346,622 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
   const extractBlueprintPools = options.extractBlueprintPools ?? extractDataCoreBlueprintPools;
   const extractCraftingBlueprints = options.extractCraftingBlueprints ?? extractDataCoreCraftingBlueprints;
   const extractMaterialLocalizations = options.extractMaterialLocalizations ?? extractDataCoreMaterialLocalizations;
-  const allTypes = await loadTypes(options.repoRoot);
-  const selectedTypes = selectTypes(allTypes, options.types ?? []);
-  const binDirname = options.binDirname ?? path.join(options.repoRoot, 'bin');
-  const liveDir = resolveLive(binDirname);
-  const version = await readVersion(liveDir);
-  const ptu = options.ptu ? '-ptu' : '-live';
-  const parts = version.split('.');
-  const versionTag = parts.length === 4 ? `${parts.slice(0, 3).join('.')}${ptu}.${parts[3]}` : `${version}${ptu}`;
-  const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
-  const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
-  const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
-  const recordGraphPath = path.join(outputBase, 'record-graph.json');
-  const fallbackDcbPath = options.findDcbFile ? await options.findDcbFile(liveDir) : undefined;
-  const toolDir = path.join(liveDir, 'unp4k');
 
-  if (!options.dryRun) {
-    await fs.mkdir(outputBase, { recursive: true });
+  let prepared: DataCoreScrapePreparedState | undefined;
+  let graphState: DataCoreScrapeGraphState | undefined;
+  let rawFacts: DataCoreRawFactStageState | undefined;
+  const rawFactParts: Partial<DataCoreRawFactStageState> = {};
+  let contractGeneratorRowsForBuilders: DataCoreContractGeneratorRecord[] | undefined;
+  let contractTemplateHaulingRowsForBuilders: DataCoreContractTemplateHaulingOrderRecord[] | undefined;
+  let missionBrokerRowsForBuilders: DataCoreMissionBrokerRecord[] | undefined;
+  let typeResults: { results: DataCoreScrapeTypeResult[]; errors: DataCoreScrapeTypeError[] } | undefined;
+  const typeParts = new Map<string, { result?: DataCoreScrapeTypeResult; error?: DataCoreScrapeTypeError }>();
+
+  function requirePrepared(): DataCoreScrapePreparedState {
+    if (!prepared) throw new Error('DataCore scrape plan has not been prepared.');
+    return prepared;
   }
 
-  const tools = await ensureTools(toolDir, (message) => options.onToolsLog?.(message));
-  options.onToolsReady?.(tools);
-  const { dcbPath, refreshed: dcbRefreshed } = await resolveCurrentDcbFile({
-    liveDir,
-    dcbCacheDir,
-    tools,
-    extractPackedDcb,
-    forceExtract: options.forceExtract,
-    fallbackDcbPath,
-  });
+  function requireGraph(): DataCoreScrapePreparedState & DataCoreScrapeGraphState {
+    if (!prepared || !graphState) throw new Error('DataCore record graph has not been prepared.');
+    return { ...prepared, ...graphState };
+  }
 
-  options.onPrepared?.({
-    gameVersion: version,
-    channel: options.ptu ? 'ptu' : 'live',
-    dcbPath,
-    outputBase,
-    xmlCacheDir,
-    selectedTypes,
-    allTypes,
-    dryRun: Boolean(options.dryRun),
-  });
+  function requireRawFacts(): DataCoreRawFactStageState {
+    if (!rawFacts) throw new Error('DataCore raw facts have not been extracted.');
+    return rawFacts;
+  }
 
-  const cachedCount = await countXmlFiles(xmlCacheDir);
-  const cacheHit =
-    (cachedCount > 0 && !options.forceExtract && !dcbRefreshed) || (options.skipUnforge && cachedCount > 0);
-
-  if (cacheHit) {
-    if (options.skipUnforge && dcbRefreshed) {
-      options.onToolsLog?.(
-        'WARNING: Data.p4k is newer than the cache, but skipping unforge due to --skip-unforge flag. Using potentially stale XML cache.',
-      );
+  function requireRawFactPart<K extends keyof DataCoreRawFactStageState>(key: K): DataCoreRawFactStageState[K] {
+    const value = rawFactParts[key];
+    if (value === undefined) {
+      throw new Error(`DataCore raw fact stage "${String(key)}" has not completed.`);
     }
-    options.onCacheHit?.(cachedCount, xmlCacheDir);
-  } else {
-    const clearExisting = cachedCount > 0 && Boolean(options.forceExtract || dcbRefreshed);
-    options.onCacheExtractStart?.(dcbPath, xmlCacheDir, clearExisting);
-    const { xmlFileCount } = await extractXmlCache({
-      dcbPath,
-      xmlCacheDir,
-      clearExisting,
-      runUnforge: async (cacheDir) => {
-        try {
-          const actualP4kPath = path.join(liveDir, 'Data.p4k');
-          await runToolAsync(tools.unp4k, [actualP4kPath, '*Subsumption/Missions/PU/Missions/*.xml'], {
-            cwd: cacheDir,
-            stdio: 'ignore',
-          });
-        } catch (err) {
-          options.onToolsLog?.(`Failed to extract Subsumption XMLs: ${err}`);
+    return value as DataCoreRawFactStageState[K];
+  }
+
+  return {
+    async prepare() {
+      if (prepared) return prepared;
+
+      const allTypes = await loadTypes(options.repoRoot);
+      const selectedTypes = selectTypes(allTypes, options.types ?? []);
+      const binDirname = options.binDirname ?? path.join(options.repoRoot, 'bin');
+      const liveDir = resolveLive(binDirname);
+      const version = await readVersion(liveDir);
+      const ptu = options.ptu ? '-ptu' : '-live';
+      const parts = version.split('.');
+      const versionTag = parts.length === 4 ? `${parts.slice(0, 3).join('.')}${ptu}.${parts[3]}` : `${version}${ptu}`;
+      const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
+      const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
+      const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
+      const recordGraphPath = path.join(outputBase, 'record-graph.json');
+      const fallbackDcbPath = options.findDcbFile ? await options.findDcbFile(liveDir) : undefined;
+      const toolDir = path.join(liveDir, 'unp4k');
+
+      if (!options.dryRun) {
+        await fs.mkdir(outputBase, { recursive: true });
+      }
+
+      const tools = await ensureTools(toolDir, (message) => options.onToolsLog?.(message));
+      options.onToolsReady?.(tools);
+      const { dcbPath, refreshed: dcbRefreshed } = await resolveCurrentDcbFile({
+        liveDir,
+        dcbCacheDir,
+        tools,
+        extractPackedDcb,
+        forceExtract: options.forceExtract,
+        fallbackDcbPath,
+      });
+
+      prepared = {
+        gameVersion: version,
+        channel: options.ptu ? 'ptu' : 'live',
+        versionTag,
+        liveDir,
+        dcbPath,
+        outputBase,
+        xmlCacheDir,
+        recordGraphPath,
+        selectedTypes,
+        allTypes,
+        dryRun: Boolean(options.dryRun),
+        tools,
+        dcbRefreshed,
+      };
+
+      options.onPrepared?.(prepared);
+      return prepared;
+    },
+
+    async ensureXmlCache() {
+      const state = requirePrepared();
+      const xmlCache = await ensureDataCoreXmlCache({
+        cachedCount: await countXmlFiles(state.xmlCacheDir),
+        dcbPath: state.dcbPath,
+        dcbRefreshed: state.dcbRefreshed,
+        liveDir: state.liveDir,
+        xmlCacheDir: state.xmlCacheDir,
+        tools: state.tools,
+        forceExtract: options.forceExtract,
+        skipUnforge: options.skipUnforge,
+        extractXmlCache,
+        onToolsLog: options.onToolsLog,
+        onCacheHit: options.onCacheHit,
+        onCacheExtractStart: options.onCacheExtractStart,
+        onCacheExtractProgress: options.onCacheExtractProgress,
+        onCacheExtractComplete: options.onCacheExtractComplete,
+      });
+
+      graphState = graphState
+        ? { ...graphState, xmlCache }
+        : {
+            xmlCache,
+            recordGraph: undefined as unknown as DataCoreRecordGraph,
+            graphLookup: undefined as unknown as DataCoreRecordGraphLookup,
+            recordGraphCached: false,
+          };
+      return xmlCache;
+    },
+
+    async prepareRecordGraph() {
+      const state = requirePrepared();
+      if (!graphState?.xmlCache) await this.ensureXmlCache();
+      const xmlCache = graphState?.xmlCache;
+      if (!xmlCache) throw new Error('DataCore XML cache is not ready.');
+
+      let recordGraph: DataCoreRecordGraph;
+      const graphExists =
+        xmlCache.reused &&
+        (await fs
+          .stat(state.recordGraphPath)
+          .then(() => true)
+          .catch(() => false));
+
+      if (graphExists) {
+        recordGraph = JSON.parse(await fs.readFile(state.recordGraphPath, 'utf8')) as DataCoreRecordGraph;
+        options.onRecordGraphCacheHit?.(recordGraph.recordCount, state.recordGraphPath);
+      } else {
+        recordGraph = await buildRecordGraph({
+          xmlCacheDir: state.xmlCacheDir,
+          onStart: options.onRecordGraphStart,
+          onProgress: options.onRecordGraphProgress,
+        });
+        if (!options.dryRun) {
+          await writeRecordGraph(recordGraph, state.recordGraphPath);
         }
-        await runToolAsync(tools.unforge, [cacheDir], { stdio: 'ignore' });
-      },
-      onProgress: (count) => options.onCacheExtractProgress?.(count),
-    });
-    options.onCacheExtractComplete?.(xmlFileCount);
-  }
+      }
 
-  let recordGraph: DataCoreRecordGraph;
-  const graphExists =
-    cacheHit &&
-    (await fs
-      .stat(recordGraphPath)
-      .then(() => true)
-      .catch(() => false));
+      options.onRecordGraphBuilt?.(recordGraph.recordCount, state.recordGraphPath, Boolean(options.dryRun));
+      graphState = {
+        xmlCache,
+        recordGraph,
+        graphLookup: createDataCoreRecordGraphLookup(recordGraph),
+        recordGraphCached: graphExists,
+      };
 
-  if (graphExists) {
-    recordGraph = JSON.parse(await fs.readFile(recordGraphPath, 'utf8')) as DataCoreRecordGraph;
-    options.onRecordGraphCacheHit?.(recordGraph.recordCount, recordGraphPath);
-  } else {
-    recordGraph = await buildRecordGraph({
-      xmlCacheDir,
-      onStart: options.onRecordGraphStart,
-      onProgress: options.onRecordGraphProgress,
-    });
-    if (!options.dryRun) {
-      await writeRecordGraph(recordGraph, recordGraphPath);
-    }
-  }
-
-  options.onRecordGraphBuilt?.(recordGraph.recordCount, recordGraphPath, Boolean(options.dryRun));
-  const graphLookup = createDataCoreRecordGraphLookup(recordGraph);
-
-  const contractGeneratorRows = await extractContractGenerators({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('contract-generators', total);
-      options.onRawFactProgress?.(current);
+      return { recordCount: recordGraph.recordCount, outputPath: state.recordGraphPath, cached: graphExists };
     },
-  });
-  const contractGeneratorResult = await writeContractGeneratorCsv(contractGeneratorRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onContractGeneratorsExtracted?.(
-    contractGeneratorResult.rows,
-    contractGeneratorResult.csvFile,
-    Boolean(options.dryRun),
-  );
-  const contractGeneratorIntelRows = buildContractGeneratorIntel(contractGeneratorRows, { graph: graphLookup });
-  const contractGeneratorIntelResult = await writeContractGeneratorIntelCsv(contractGeneratorIntelRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onContractGeneratorIntelExtracted?.(
-    contractGeneratorIntelResult.rows,
-    contractGeneratorIntelResult.csvFile,
-    Boolean(options.dryRun),
-  );
 
-  const contractTemplateRows = await extractContractTemplates({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('contract-templates', total);
-      options.onRawFactProgress?.(current);
+    getRawFactStages() {
+      return DATACORE_RAW_FACT_STAGE_DESCRIPTORS;
     },
-  });
-  const contractTemplateResult = await writeContractTemplateCsv(contractTemplateRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onContractTemplatesExtracted?.(
-    contractTemplateResult.rows,
-    contractTemplateResult.csvFile,
-    Boolean(options.dryRun),
-  );
-  const contractTemplateHaulingRows = await extractContractTemplateHaulingOrders({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('contract-template-hauling', total);
-      options.onRawFactProgress?.(current);
+
+    async extractRawFactStage(stageId) {
+      const { outputBase, xmlCacheDir, graphLookup, recordGraph } = requireGraph();
+      if (!rawFactParts.manufacturerResolver) {
+        rawFactParts.manufacturerResolver = createDataCoreManufacturerResolver(graphLookup);
+      }
+
+      switch (stageId) {
+        case 'contract-generators': {
+          const progress = createRawFactProgressReporter(options, 'contract-generators');
+          contractGeneratorRowsForBuilders = await extractContractGenerators({
+            xmlCacheDir,
+            graph: graphLookup,
+            onProgress: progress,
+          });
+          const result = await writeContractGeneratorCsv(contractGeneratorRowsForBuilders, {
+            outputBase,
+            dryRun: options.dryRun,
+          });
+          rawFactParts.contractGeneratorResult = result;
+          options.onContractGeneratorsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'contract-generator-intel': {
+          if (!contractGeneratorRowsForBuilders) {
+            throw new Error('Contract generator rows must be extracted before generator intel.');
+          }
+          const rows = buildContractGeneratorIntel(contractGeneratorRowsForBuilders, { graph: graphLookup });
+          const result = await writeContractGeneratorIntelCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.contractGeneratorIntelResult = result;
+          options.onContractGeneratorIntelExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'contract-templates': {
+          const progress = createRawFactProgressReporter(options, 'contract-templates');
+          const rows = await extractContractTemplates({ xmlCacheDir, graph: graphLookup, onProgress: progress });
+          const result = await writeContractTemplateCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.contractTemplateResult = result;
+          options.onContractTemplatesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'contract-template-hauling': {
+          const progress = createRawFactProgressReporter(options, 'contract-template-hauling');
+          contractTemplateHaulingRowsForBuilders = await extractContractTemplateHaulingOrders({
+            xmlCacheDir,
+            graph: graphLookup,
+            onProgress: progress,
+          });
+          const result = await writeContractTemplateHaulingCsv(contractTemplateHaulingRowsForBuilders, {
+            outputBase,
+            dryRun: options.dryRun,
+          });
+          rawFactParts.contractTemplateHaulingResult = result;
+          options.onContractTemplateHaulingExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'contract-hauling-summary': {
+          if (!contractGeneratorRowsForBuilders || !contractTemplateHaulingRowsForBuilders) {
+            throw new Error('Contract generator and hauling order rows must be extracted before hauling summary.');
+          }
+          const rows = buildContractHaulingSummary(
+            contractGeneratorRowsForBuilders,
+            contractTemplateHaulingRowsForBuilders,
+          );
+          const result = await writeContractHaulingSummaryCsv(rows, { outputBase, dryRun: Boolean(options.dryRun) });
+          rawFactParts.contractHaulingSummaryResult = result;
+          options.onContractHaulingSummaryExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mission-brokers': {
+          const progress = createRawFactProgressReporter(options, 'mission-brokers');
+          missionBrokerRowsForBuilders = await extractMissionBrokers({
+            xmlCacheDir,
+            graph: graphLookup,
+            onProgress: progress,
+          });
+          const result = await writeMissionBrokerCsv(missionBrokerRowsForBuilders, {
+            outputBase,
+            dryRun: options.dryRun,
+          });
+          rawFactParts.missionBrokerResult = result;
+          options.onMissionBrokersExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mission-contract-intel': {
+          if (!missionBrokerRowsForBuilders) {
+            throw new Error('Mission broker rows must be extracted before mission contract intel.');
+          }
+          const rows = buildMissionContractIntel(missionBrokerRowsForBuilders);
+          const result = await writeMissionContractIntelCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.missionContractIntelResult = result;
+          options.onMissionContractIntelExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mission-localization': {
+          const rows = extractMissionLocalization(recordGraph);
+          const result = await writeMissionLocalizationCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.missionLocalizationResult = result;
+          options.onMissionLocalizationExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'blueprint-pools': {
+          const progress = createRawFactProgressReporter(options, 'blueprint-pools');
+          const rows = await extractBlueprintPools({ xmlCacheDir, graph: graphLookup, onProgress: progress });
+          const result = await writeBlueprintPoolsCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.blueprintPoolResult = result;
+          options.onBlueprintPoolsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'crafting-blueprints': {
+          const progress = createRawFactProgressReporter(options, 'crafting-blueprints');
+          const rows = await extractCraftingBlueprints({ xmlCacheDir, graph: graphLookup, onProgress: progress });
+          const result = await writeCraftingBlueprintsCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.craftingBlueprintResult = result;
+          options.onCraftingBlueprintsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'material-localizations': {
+          const progress = createRawFactProgressReporter(options, 'material-localizations');
+          const rows = await extractMaterialLocalizations({ xmlCacheDir, graph: graphLookup, onProgress: progress });
+          const result = await writeMaterialLocalizationCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.materialLocalizationResult = result;
+          options.onMaterialLocalizationsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'commodities': {
+          const rows = await extractCommodities({ xmlCacheDir, graph: graphLookup });
+          const result = await writeCommodityCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.commodityResult = result;
+          options.onCommoditiesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'vehicles': {
+          const rows = await extractVehicles({ xmlCacheDir, graph: graphLookup });
+          const result = await writeVehicleCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.vehicleResult = result;
+          options.onVehiclesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'factions': {
+          const rows = await extractFactions({ xmlCacheDir, graph: graphLookup });
+          const result = await writeFactionCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.factionResult = result;
+          options.onFactionsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'manufacturers': {
+          const rows = await extractManufacturers({ xmlCacheDir, graph: graphLookup });
+          const result = await writeManufacturerCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.manufacturerResult = result;
+          options.onManufacturersExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'location-labels': {
+          const rows = await extractLocationLabels({ xmlCacheDir, graph: graphLookup });
+          const result = await writeLocationLabelCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.locationLabelResult = result;
+          options.onLocationLabelsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-elements': {
+          const rows = await extractMiningElements({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningElementCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningElementResult = result;
+          options.onMiningElementsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-compositions': {
+          const rows = await extractMiningCompositions({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningCompositionCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningCompositionResult = result;
+          options.onMiningCompositionsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mineable-entities': {
+          const rows = await extractMineableEntities({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMineableEntityCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.mineableEntityResult = result;
+          options.onMineableEntitiesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-density-overrides': {
+          const rows = await extractMiningDensityOverrides({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningDensityOverrideCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningDensityOverrideResult = result;
+          options.onMiningDensityOverridesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-clustering': {
+          const rows = await extractMiningClustering({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningClusteringCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningClusteringResult = result;
+          options.onMiningClusteringExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-harvestable-presets': {
+          const rows = await extractMiningHarvestablePresets({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningHarvestablePresetCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningHarvestablePresetResult = result;
+          options.onMiningHarvestablePresetsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-harvestable-setups': {
+          const rows = await extractMiningHarvestableSetups({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningHarvestableSetupCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningHarvestableSetupResult = result;
+          options.onMiningHarvestableSetupsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-sub-harvestable-configs': {
+          const rows = await extractMiningSubHarvestableConfigs({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningSubHarvestableConfigCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningSubHarvestableConfigResult = result;
+          options.onMiningSubHarvestableConfigsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-quality-distributions': {
+          const rows = await extractMiningQualityDistributions({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningQualityDistributionCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningQualityDistributionResult = result;
+          options.onMiningQualityDistributionsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-quality-quantizations': {
+          const rows = await extractMiningQualityQuantizations({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningQualityQuantizationCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningQualityQuantizationResult = result;
+          options.onMiningQualityQuantizationsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-rock-signatures': {
+          const rows = await extractMiningRockSignatures({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningRockSignatureCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningRockSignatureResult = result;
+          options.onMiningRockSignaturesExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-location-labels': {
+          const rows = await extractMiningLocationLabels({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningLocationLabelCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningLocationLabelResult = result;
+          options.onMiningLocationLabelsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-params': {
+          const rows = await extractMiningParams({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningParamCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningParamResult = result;
+          options.onMiningParamsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+        case 'mining-provider-presets': {
+          const rows = await extractMiningProviderPresets({ xmlCacheDir, graph: graphLookup });
+          const result = await writeMiningProviderPresetCsv(rows, { outputBase, dryRun: options.dryRun });
+          rawFactParts.miningProviderPresetResult = result;
+          options.onMiningProviderPresetsExtracted?.(result.rows, result.csvFile, Boolean(options.dryRun));
+          return result;
+        }
+      }
     },
-  });
-  const contractTemplateHaulingResult = await writeContractTemplateHaulingCsv(contractTemplateHaulingRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onContractTemplateHaulingExtracted?.(
-    contractTemplateHaulingResult.rows,
-    contractTemplateHaulingResult.csvFile,
-    Boolean(options.dryRun),
-  );
 
-  const contractHaulingSummaryRows = buildContractHaulingSummary(contractGeneratorRows, contractTemplateHaulingRows);
-  const contractHaulingSummaryResult = await writeContractHaulingSummaryCsv(contractHaulingSummaryRows, {
-    outputBase,
-    dryRun: Boolean(options.dryRun),
-  });
-  options.onContractHaulingSummaryExtracted?.(
-    contractHaulingSummaryResult.rows,
-    contractHaulingSummaryResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const missionBrokerRows = await extractMissionBrokers({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('mission-brokers', total);
-      options.onRawFactProgress?.(current);
+    async finalizeRawFacts() {
+      const rawFactResults = buildRawFactResults(
+        new Map([
+          [requireRawFactPart('contractGeneratorResult').csvFile, requireRawFactPart('contractGeneratorResult')],
+          [
+            requireRawFactPart('contractGeneratorIntelResult').csvFile,
+            requireRawFactPart('contractGeneratorIntelResult'),
+          ],
+          [
+            requireRawFactPart('contractHaulingSummaryResult').csvFile,
+            requireRawFactPart('contractHaulingSummaryResult'),
+          ],
+          [requireRawFactPart('contractTemplateResult').csvFile, requireRawFactPart('contractTemplateResult')],
+          [
+            requireRawFactPart('contractTemplateHaulingResult').csvFile,
+            requireRawFactPart('contractTemplateHaulingResult'),
+          ],
+          [requireRawFactPart('commodityResult').csvFile, requireRawFactPart('commodityResult')],
+          [requireRawFactPart('vehicleResult').csvFile, requireRawFactPart('vehicleResult')],
+          [requireRawFactPart('factionResult').csvFile, requireRawFactPart('factionResult')],
+          [requireRawFactPart('manufacturerResult').csvFile, requireRawFactPart('manufacturerResult')],
+          [requireRawFactPart('locationLabelResult').csvFile, requireRawFactPart('locationLabelResult')],
+          [requireRawFactPart('missionBrokerResult').csvFile, requireRawFactPart('missionBrokerResult')],
+          [requireRawFactPart('missionContractIntelResult').csvFile, requireRawFactPart('missionContractIntelResult')],
+          [requireRawFactPart('missionLocalizationResult').csvFile, requireRawFactPart('missionLocalizationResult')],
+          [requireRawFactPart('miningLocationLabelResult').csvFile, requireRawFactPart('miningLocationLabelResult')],
+        ]),
+      );
+      rawFactParts.rawFactResults = rawFactResults;
+      rawFacts = {
+        rawFactResults,
+        manufacturerResolver: requireRawFactPart('manufacturerResolver'),
+        contractGeneratorResult: requireRawFactPart('contractGeneratorResult'),
+        contractGeneratorIntelResult: requireRawFactPart('contractGeneratorIntelResult'),
+        contractHaulingSummaryResult: requireRawFactPart('contractHaulingSummaryResult'),
+        contractTemplateResult: requireRawFactPart('contractTemplateResult'),
+        contractTemplateHaulingResult: requireRawFactPart('contractTemplateHaulingResult'),
+        commodityResult: requireRawFactPart('commodityResult'),
+        vehicleResult: requireRawFactPart('vehicleResult'),
+        factionResult: requireRawFactPart('factionResult'),
+        manufacturerResult: requireRawFactPart('manufacturerResult'),
+        locationLabelResult: requireRawFactPart('locationLabelResult'),
+        missionBrokerResult: requireRawFactPart('missionBrokerResult'),
+        missionContractIntelResult: requireRawFactPart('missionContractIntelResult'),
+        missionLocalizationResult: requireRawFactPart('missionLocalizationResult'),
+        blueprintPoolResult: requireRawFactPart('blueprintPoolResult'),
+        craftingBlueprintResult: requireRawFactPart('craftingBlueprintResult'),
+        materialLocalizationResult: requireRawFactPart('materialLocalizationResult'),
+        miningElementResult: requireRawFactPart('miningElementResult'),
+        miningCompositionResult: requireRawFactPart('miningCompositionResult'),
+        mineableEntityResult: requireRawFactPart('mineableEntityResult'),
+        miningDensityOverrideResult: requireRawFactPart('miningDensityOverrideResult'),
+        miningClusteringResult: requireRawFactPart('miningClusteringResult'),
+        miningHarvestablePresetResult: requireRawFactPart('miningHarvestablePresetResult'),
+        miningHarvestableSetupResult: requireRawFactPart('miningHarvestableSetupResult'),
+        miningSubHarvestableConfigResult: requireRawFactPart('miningSubHarvestableConfigResult'),
+        miningQualityDistributionResult: requireRawFactPart('miningQualityDistributionResult'),
+        miningQualityQuantizationResult: requireRawFactPart('miningQualityQuantizationResult'),
+        miningRockSignatureResult: requireRawFactPart('miningRockSignatureResult'),
+        miningLocationLabelResult: requireRawFactPart('miningLocationLabelResult'),
+        miningParamResult: requireRawFactPart('miningParamResult'),
+        miningProviderPresetResult: requireRawFactPart('miningProviderPresetResult'),
+      };
+      return rawFactResults;
     },
-  });
-  const missionBrokerResult = await writeMissionBrokerCsv(missionBrokerRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMissionBrokersExtracted?.(missionBrokerResult.rows, missionBrokerResult.csvFile, Boolean(options.dryRun));
 
-  const missionContractIntelRows = buildMissionContractIntel(missionBrokerRows);
-  const missionContractIntelResult = await writeMissionContractIntelCsv(missionContractIntelRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMissionContractIntelExtracted?.(
-    missionContractIntelResult.rows,
-    missionContractIntelResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const missionLocalizationRows = extractMissionLocalization(recordGraph);
-  const missionLocalizationResult = await writeMissionLocalizationCsv(missionLocalizationRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMissionLocalizationExtracted?.(
-    missionLocalizationResult.rows,
-    missionLocalizationResult.csvFile,
-    Boolean(options.dryRun),
-  );
-  const blueprintPoolRows = await extractBlueprintPools({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('blueprint-pools', total);
-      options.onRawFactProgress?.(current);
+    async extractRawFacts() {
+      for (const stage of DATACORE_RAW_FACT_STAGE_DESCRIPTORS) {
+        await this.extractRawFactStage(stage.id);
+      }
+      return this.finalizeRawFacts();
     },
-  });
-  const blueprintPoolResult = await writeBlueprintPoolsCsv(blueprintPoolRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onBlueprintPoolsExtracted?.(blueprintPoolResult.rows, blueprintPoolResult.csvFile, Boolean(options.dryRun));
 
-  const craftingBlueprintRows = await extractCraftingBlueprints({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current, total) => {
-      if (current === 0) options.onRawFactStart?.('crafting-blueprints', total);
-      options.onRawFactProgress?.(current);
+    getItemTypeStages() {
+      const { selectedTypes } = requirePrepared();
+      return selectedTypes.map((entry) => ({ id: entry.name, title: entry.name }));
     },
-  });
-  const craftingBlueprintResult = await writeCraftingBlueprintsCsv(craftingBlueprintRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onCraftingBlueprintsExtracted?.(
-    craftingBlueprintResult.rows,
-    craftingBlueprintResult.csvFile,
-    Boolean(options.dryRun),
-  );
 
-  const materialLocalizationRows = await extractMaterialLocalizations({
-    xmlCacheDir,
-    graph: graphLookup,
-    onProgress: (current: number, total: number) => {
-      if (current === 0) options.onRawFactStart?.('material-localizations', total);
-      options.onRawFactProgress?.(current);
-    },
-  });
-  const materialLocalizationResult = await writeMaterialLocalizationCsv(materialLocalizationRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMaterialLocalizationsExtracted?.(
-    materialLocalizationResult.rows,
-    materialLocalizationResult.csvFile,
-    Boolean(options.dryRun),
-  );
+    async scrapeItemTypeStage(typeName) {
+      const { outputBase, xmlCacheDir, graphLookup, selectedTypes } = requireGraph();
+      const { manufacturerResolver } = requireRawFacts();
+      const entry = selectedTypes.find((candidate) => candidate.name === typeName);
+      if (!entry) {
+        throw new Error(`Unknown DataCore item type stage "${typeName}".`);
+      }
 
-  const manufacturerResolver = createDataCoreManufacturerResolver(graphLookup);
-
-  const commodityRows = await extractCommodities({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const commodityResult = await writeCommodityCsv(commodityRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onCommoditiesExtracted?.(commodityResult.rows, commodityResult.csvFile, Boolean(options.dryRun));
-
-  const vehicleRows = await extractVehicles({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const vehicleResult = await writeVehicleCsv(vehicleRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onVehiclesExtracted?.(vehicleResult.rows, vehicleResult.csvFile, Boolean(options.dryRun));
-
-  const factionRows = await extractFactions({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const factionResult = await writeFactionCsv(factionRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onFactionsExtracted?.(factionResult.rows, factionResult.csvFile, Boolean(options.dryRun));
-
-  const manufacturerRows = await extractManufacturers({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const manufacturerResult = await writeManufacturerCsv(manufacturerRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onManufacturersExtracted?.(manufacturerResult.rows, manufacturerResult.csvFile, Boolean(options.dryRun));
-
-  const locationLabelRows = await extractLocationLabels({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const locationLabelResult = await writeLocationLabelCsv(locationLabelRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onLocationLabelsExtracted?.(locationLabelResult.rows, locationLabelResult.csvFile, Boolean(options.dryRun));
-
-  const miningElementRows = await extractMiningElements({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningElementResult = await writeMiningElementCsv(miningElementRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningElementsExtracted?.(miningElementResult.rows, miningElementResult.csvFile, Boolean(options.dryRun));
-
-  const miningCompositionRows = await extractMiningCompositions({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningCompositionResult = await writeMiningCompositionCsv(miningCompositionRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningCompositionsExtracted?.(
-    miningCompositionResult.rows,
-    miningCompositionResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const mineableEntityRows = await extractMineableEntities({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const mineableEntityResult = await writeMineableEntityCsv(mineableEntityRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMineableEntitiesExtracted?.(
-    mineableEntityResult.rows,
-    mineableEntityResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningDensityOverrideRows = await extractMiningDensityOverrides({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningDensityOverrideResult = await writeMiningDensityOverrideCsv(miningDensityOverrideRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningDensityOverridesExtracted?.(
-    miningDensityOverrideResult.rows,
-    miningDensityOverrideResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningClusteringRows = await extractMiningClustering({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningClusteringResult = await writeMiningClusteringCsv(miningClusteringRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningClusteringExtracted?.(
-    miningClusteringResult.rows,
-    miningClusteringResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningHarvestablePresetRows = await extractMiningHarvestablePresets({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningHarvestablePresetResult = await writeMiningHarvestablePresetCsv(miningHarvestablePresetRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningHarvestablePresetsExtracted?.(
-    miningHarvestablePresetResult.rows,
-    miningHarvestablePresetResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningHarvestableSetupRows = await extractMiningHarvestableSetups({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningHarvestableSetupResult = await writeMiningHarvestableSetupCsv(miningHarvestableSetupRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningHarvestableSetupsExtracted?.(
-    miningHarvestableSetupResult.rows,
-    miningHarvestableSetupResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningSubHarvestableConfigRows = await extractMiningSubHarvestableConfigs({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningSubHarvestableConfigResult = await writeMiningSubHarvestableConfigCsv(miningSubHarvestableConfigRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningSubHarvestableConfigsExtracted?.(
-    miningSubHarvestableConfigResult.rows,
-    miningSubHarvestableConfigResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningQualityDistributionRows = await extractMiningQualityDistributions({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningQualityDistributionResult = await writeMiningQualityDistributionCsv(miningQualityDistributionRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningQualityDistributionsExtracted?.(
-    miningQualityDistributionResult.rows,
-    miningQualityDistributionResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningQualityQuantizationRows = await extractMiningQualityQuantizations({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningQualityQuantizationResult = await writeMiningQualityQuantizationCsv(miningQualityQuantizationRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningQualityQuantizationsExtracted?.(
-    miningQualityQuantizationResult.rows,
-    miningQualityQuantizationResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningRockSignatureRows = await extractMiningRockSignatures({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningRockSignatureResult = await writeMiningRockSignatureCsv(miningRockSignatureRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningRockSignaturesExtracted?.(
-    miningRockSignatureResult.rows,
-    miningRockSignatureResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningLocationLabelRows = await extractMiningLocationLabels({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningLocationLabelResult = await writeMiningLocationLabelCsv(miningLocationLabelRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningLocationLabelsExtracted?.(
-    miningLocationLabelResult.rows,
-    miningLocationLabelResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const miningParamRows = await extractMiningParams({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningParamResult = await writeMiningParamCsv(miningParamRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningParamsExtracted?.(miningParamResult.rows, miningParamResult.csvFile, Boolean(options.dryRun));
-
-  const miningProviderPresetRows = await extractMiningProviderPresets({
-    xmlCacheDir,
-    graph: graphLookup,
-  });
-  const miningProviderPresetResult = await writeMiningProviderPresetCsv(miningProviderPresetRows, {
-    outputBase,
-    dryRun: options.dryRun,
-  });
-  options.onMiningProviderPresetsExtracted?.(
-    miningProviderPresetResult.rows,
-    miningProviderPresetResult.csvFile,
-    Boolean(options.dryRun),
-  );
-
-  const results: DataCoreScrapeTypeResult[] = [];
-  const errors: DataCoreScrapeTypeError[] = [];
-
-  for (let index = 0; index < selectedTypes.length; index++) {
-    const entry = selectedTypes[index];
-    options.onTypeStart?.(entry, index);
-
-    try {
-      results.push(
-        await scrapeDataCoreType(entry, {
+      try {
+        const result = await scrapeDataCoreType(entry, {
           xmlCacheDir,
           outputBase,
           dryRun: options.dryRun,
           manufacturerResolver,
           graph: graphLookup,
-        }),
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      errors.push({ type: entry.name, message });
-    }
-  }
-
-  const rawFactResults = buildRawFactResults(
-    new Map([
-      [contractGeneratorResult.csvFile, contractGeneratorResult],
-      [contractGeneratorIntelResult.csvFile, contractGeneratorIntelResult],
-      [contractHaulingSummaryResult.csvFile, contractHaulingSummaryResult],
-      [contractTemplateResult.csvFile, contractTemplateResult],
-      [contractTemplateHaulingResult.csvFile, contractTemplateHaulingResult],
-      [commodityResult.csvFile, commodityResult],
-      [vehicleResult.csvFile, vehicleResult],
-      [factionResult.csvFile, factionResult],
-      [manufacturerResult.csvFile, manufacturerResult],
-      [locationLabelResult.csvFile, locationLabelResult],
-      [missionBrokerResult.csvFile, missionBrokerResult],
-      [missionContractIntelResult.csvFile, missionContractIntelResult],
-      [missionLocalizationResult.csvFile, missionLocalizationResult],
-      [miningLocationLabelResult.csvFile, miningLocationLabelResult],
-    ]),
-  );
-
-  return {
-    exitCode: errors.length > 0 ? 1 : 0,
-    gameVersion: version,
-    channel: options.ptu ? 'ptu' : 'live',
-    versionTag,
-    dcbPath,
-    outputBase,
-    xmlCacheDir,
-    allTypes,
-    selectedTypes,
-    recordGraph: {
-      recordCount: recordGraph.recordCount,
-      outputPath: recordGraphPath,
+        });
+        const value = { result };
+        typeParts.set(entry.name, value);
+        return value;
+      } catch (err) {
+        const error = { type: entry.name, message: err instanceof Error ? err.message : String(err) };
+        const value = { error };
+        typeParts.set(entry.name, value);
+        return value;
+      }
     },
-    contractGeneratorResult,
-    contractGeneratorIntelResult,
-    contractHaulingSummaryResult,
-    contractTemplateResult,
-    contractTemplateHaulingResult,
-    commodityResult,
-    vehicleResult,
-    factionResult,
-    manufacturerResult,
-    locationLabelResult,
-    missionBrokerResult,
-    missionContractIntelResult,
-    missionLocalizationResult,
-    miningElementResult,
-    miningCompositionResult,
-    mineableEntityResult,
-    miningDensityOverrideResult,
-    miningClusteringResult,
-    miningHarvestablePresetResult,
-    miningHarvestableSetupResult,
-    miningSubHarvestableConfigResult,
-    miningQualityDistributionResult,
-    miningQualityQuantizationResult,
-    miningRockSignatureResult,
-    miningLocationLabelResult,
-    miningParamResult,
-    miningProviderPresetResult,
-    rawFactResults,
-    results,
-    errors,
+
+    async finalizeItemTypes() {
+      const { selectedTypes } = requirePrepared();
+      const results: DataCoreScrapeTypeResult[] = [];
+      const errors: DataCoreScrapeTypeError[] = [];
+
+      for (const entry of selectedTypes) {
+        const value = typeParts.get(entry.name);
+        if (!value) throw new Error(`DataCore item type stage "${entry.name}" has not completed.`);
+        if (value.result) results.push(value.result);
+        if (value.error) errors.push(value.error);
+      }
+
+      typeResults = { results, errors };
+      return typeResults;
+    },
+
+    async scrapeItemTypes() {
+      const { selectedTypes } = requirePrepared();
+      for (let index = 0; index < selectedTypes.length; index++) {
+        const entry = selectedTypes[index];
+        options.onTypeStart?.(entry, index);
+        await this.scrapeItemTypeStage(entry.name);
+      }
+      return this.finalizeItemTypes();
+    },
+
+    result() {
+      const state = requirePrepared();
+      const graph = graphState;
+      if (!graph) throw new Error('DataCore record graph has not been prepared.');
+      const facts = requireRawFacts();
+      if (!typeResults) throw new Error('DataCore item types have not been scraped.');
+
+      return {
+        exitCode: typeResults.errors.length > 0 ? 1 : 0,
+        gameVersion: state.gameVersion,
+        channel: state.channel,
+        versionTag: state.versionTag,
+        dcbPath: state.dcbPath,
+        outputBase: state.outputBase,
+        xmlCacheDir: state.xmlCacheDir,
+        allTypes: state.allTypes,
+        selectedTypes: state.selectedTypes,
+        recordGraph: {
+          recordCount: graph.recordGraph.recordCount,
+          outputPath: state.recordGraphPath,
+        },
+        contractGeneratorResult: facts.contractGeneratorResult,
+        contractGeneratorIntelResult: facts.contractGeneratorIntelResult,
+        contractHaulingSummaryResult: facts.contractHaulingSummaryResult,
+        contractTemplateResult: facts.contractTemplateResult,
+        contractTemplateHaulingResult: facts.contractTemplateHaulingResult,
+        commodityResult: facts.commodityResult,
+        vehicleResult: facts.vehicleResult,
+        factionResult: facts.factionResult,
+        manufacturerResult: facts.manufacturerResult,
+        locationLabelResult: facts.locationLabelResult,
+        missionBrokerResult: facts.missionBrokerResult,
+        missionContractIntelResult: facts.missionContractIntelResult,
+        missionLocalizationResult: facts.missionLocalizationResult,
+        miningElementResult: facts.miningElementResult,
+        miningCompositionResult: facts.miningCompositionResult,
+        mineableEntityResult: facts.mineableEntityResult,
+        miningDensityOverrideResult: facts.miningDensityOverrideResult,
+        miningClusteringResult: facts.miningClusteringResult,
+        miningHarvestablePresetResult: facts.miningHarvestablePresetResult,
+        miningHarvestableSetupResult: facts.miningHarvestableSetupResult,
+        miningSubHarvestableConfigResult: facts.miningSubHarvestableConfigResult,
+        miningQualityDistributionResult: facts.miningQualityDistributionResult,
+        miningQualityQuantizationResult: facts.miningQualityQuantizationResult,
+        miningRockSignatureResult: facts.miningRockSignatureResult,
+        miningLocationLabelResult: facts.miningLocationLabelResult,
+        miningParamResult: facts.miningParamResult,
+        miningProviderPresetResult: facts.miningProviderPresetResult,
+        rawFactResults: facts.rawFactResults,
+        results: typeResults.results,
+        errors: typeResults.errors,
+      };
+    },
   };
+}
+
+export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Promise<RunDatacoreScrapeResult> {
+  const plan = createDataCoreScrapePlan(options);
+  await plan.prepare();
+  await plan.ensureXmlCache();
+  await plan.prepareRecordGraph();
+  await plan.extractRawFacts();
+  await plan.scrapeItemTypes();
+  return plan.result();
 }
 
 function selectTypes(allTypes: DataCoreTypeEntry[], requestedNames: string[]): DataCoreTypeEntry[] {
@@ -2989,6 +3193,61 @@ function buildRawFactResults(
       csvFile: result.csvFile,
     };
   });
+}
+
+async function ensureDataCoreXmlCache(options: EnsureDataCoreXmlCacheOptions): Promise<DataCoreXmlCacheState> {
+  const cacheReusable =
+    (options.cachedCount > 0 && !options.forceExtract && !options.dcbRefreshed) ||
+    (options.skipUnforge && options.cachedCount > 0);
+
+  if (cacheReusable) {
+    if (options.skipUnforge && options.dcbRefreshed) {
+      options.onToolsLog?.(
+        'WARNING: Data.p4k is newer than the cache, but skipping unforge due to --skip-unforge flag. Using potentially stale XML cache.',
+      );
+    }
+    options.onCacheHit?.(options.cachedCount, options.xmlCacheDir);
+    return { xmlFileCount: options.cachedCount, reused: true };
+  }
+
+  const clearExisting = options.cachedCount > 0 && Boolean(options.forceExtract || options.dcbRefreshed);
+  options.onCacheExtractStart?.(options.dcbPath, options.xmlCacheDir, clearExisting);
+  const { xmlFileCount } = await options.extractXmlCache({
+    dcbPath: options.dcbPath,
+    xmlCacheDir: options.xmlCacheDir,
+    clearExisting,
+    runUnforge: async (cacheDir) => {
+      try {
+        const actualP4kPath = path.join(options.liveDir, 'Data.p4k');
+        await runToolAsync(options.tools.unp4k, [actualP4kPath, '*Subsumption/Missions/PU/Missions/*.xml'], {
+          cwd: cacheDir,
+          stdio: 'ignore',
+        });
+      } catch (err) {
+        options.onToolsLog?.(`Failed to extract Subsumption XMLs: ${err}`);
+      }
+      await runToolAsync(options.tools.unforge, [cacheDir], { stdio: 'ignore' });
+    },
+    onProgress: (count) => options.onCacheExtractProgress?.(count),
+  });
+  options.onCacheExtractComplete?.(xmlFileCount);
+
+  return { xmlFileCount, reused: false };
+}
+
+function createRawFactProgressReporter(
+  options: Pick<RunDatacoreScrapeOptions, 'onRawFactStart' | 'onRawFactProgress'>,
+  slug: string,
+): (current: number, total: number) => void {
+  let started = false;
+
+  return (current, total) => {
+    if (!started) {
+      options.onRawFactStart?.(slug, total);
+      started = true;
+    }
+    options.onRawFactProgress?.(slug, current, total);
+  };
 }
 
 async function resolveField(

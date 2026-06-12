@@ -23,6 +23,7 @@ export interface RunUpdateExtraStepsOptions {
   dryRun?: boolean;
   includeMiningJournal?: boolean;
   datacoreVersionDir?: string;
+  scmdbDir?: string;
   runners?: Partial<Record<UpdateExtraStepLabel, UpdateExtraStepRunner>>;
   onStepStart?: (label: UpdateExtraStepLabel, index: number) => void;
   onStepError?: (error: BatchUpdateError) => void;
@@ -51,7 +52,7 @@ export function getUpdateExtraStepLabels(options: { includeMiningJournal?: boole
 
 export async function runUpdateExtraSteps(options: RunUpdateExtraStepsOptions): Promise<RunUpdateExtraStepsResult> {
   const labels = getUpdateExtraStepLabels({ includeMiningJournal: options.includeMiningJournal });
-  const runners = { ...defaultRunners(options), ...options.runners };
+  const runners = createUpdateExtraStepRunners(options);
   const results: BatchUpdateResult[] = [];
   const errors: BatchUpdateError[] = [];
 
@@ -74,6 +75,12 @@ export async function runUpdateExtraSteps(options: RunUpdateExtraStepsOptions): 
   return { results, errors };
 }
 
+export function createUpdateExtraStepRunners(
+  options: RunUpdateExtraStepsOptions,
+): Record<UpdateExtraStepLabel, UpdateExtraStepRunner> {
+  return { ...defaultRunners(options), ...options.runners };
+}
+
 function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtraStepLabel, UpdateExtraStepRunner> {
   const dryRun = options.dryRun ?? false;
   return {
@@ -82,6 +89,7 @@ function defaultRunners(options: RunUpdateExtraStepsOptions): Record<UpdateExtra
       return runComponentTitleUpdate({
         iniPath: options.iniPath,
         datacoreDir: options.datacoreVersionDir,
+        scmdbDir: options.scmdbDir,
         dryRun,
       });
     },

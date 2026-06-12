@@ -63,7 +63,7 @@ test('runBatchUpdate prepares diagnostics and preflight before running update st
     },
     runExtraSteps: async (options) => {
       options.onStepStart?.('Component Titles', 0);
-      observed.push(`extra:${options.missionCsvDir}:${options.datacoreVersionDir}`);
+      observed.push(`extra:${options.missionCsvDir}:${options.datacoreVersionDir}:${options.scmdbDir}`);
       return { results: [{ label: 'Component Titles', summary: 'extra ok' }], errors: [] };
     },
     onCategoryStart: (category: UpdateCategory, index) => {
@@ -90,7 +90,7 @@ test('runBatchUpdate prepares diagnostics and preflight before running update st
     'preflight:1',
     'backup:repo\\global.ini',
     'categories:repo\\global.ini:true',
-    'extra:missions-dir:items-dir',
+    'extra:missions-dir:items-dir:scmdb-dir',
   ]);
 });
 
