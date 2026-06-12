@@ -132,7 +132,7 @@ describe('loadDatacoreTitlesSourceData', () => {
       assert.equal(notes.get('reward_title_alt'), ' <EM4>[BP]</EM4>');
       assert.equal(notes.get('mixed_title'), ' <EM4>[BP]*</EM4>');
       assert.equal(notes.get('root_title'), ' <EM4>[BP Chain]</EM4>');
-      assert.equal(notes.get('intro_title'), ' <EM4>[Intro]</EM4>');
+      assert.equal(notes.get('intro_title'), ' <EM4>[BP]</EM4>');
       assert.equal(
         config.buildValue({ TitleNote: notes.get('reward_title') ?? '' }, '', 'Recover Prototype', ''),
         'Recover Prototype <EM4>[BP]</EM4>',
@@ -158,6 +158,15 @@ describe('loadDatacoreTitlesSourceData', () => {
           'EckhartSecurity_EliminateBoss_DC_Title_001',
         ),
         'High-Risk Bounty: ~mission(TargetName) <EM4>[BP]*</EM4>',
+      );
+      assert.equal(
+        config.buildValue(
+          { TitleNote: ' <EM4>[BP]</EM4>' },
+          '',
+          'Intro Contract <EM4>[Intro] [BP]</EM4>',
+          '',
+        ),
+        'Intro Contract <EM4>[BP]</EM4>',
       );
     } finally {
       await fs.rm(dir, { recursive: true, force: true });

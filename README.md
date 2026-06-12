@@ -2,6 +2,8 @@
 
 Enriches Star Citizen's `global.ini` with additional quality-of-life information for in-game text.
 
+If you want to install the enriched file or understand the tags and data added in game, start with the [User Manual](docs/user-manual.md).
+
 The long-term architecture is a local enrichment pipeline:
 
 1. Extract a fresh `global.ini` from the game files.

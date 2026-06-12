@@ -162,9 +162,9 @@ function collectBlueprintDepths(contracts: DataCoreMissionTitleContract[]): Map<
 }
 
 function titleNoteForState(state: MissionTitleState): string {
-  if (state.intro) return ` ${IniTag.EM4.wrap('[Intro]')}`;
   if (state.blueprint > 0) return ` ${IniTag.EM4.wrap(state.blueprint < state.total ? '[BP]*' : '[BP]')}`;
   if (state.chain > 0) return ` ${IniTag.EM4.wrap(state.chain < state.total ? '[BP Chain]*' : '[BP Chain]')}`;
+  if (state.intro) return ` ${IniTag.EM4.wrap('[Intro]')}`;
   return '';
 }
 
@@ -268,7 +268,8 @@ function normalizeToken(value: unknown): string {
   return String(value ?? '').trim();
 }
 
-const GENERATED_TITLE_TAG = String.raw`(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\](?:\*)?${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\](?:\*)?)`;
+const GENERATED_TITLE_TAG_LABEL = String.raw`\[(?:Intro|BP(?: Chain)?)\](?:\*)?`;
+const GENERATED_TITLE_TAG = String.raw`(?:${IniTag.EM4.open}${GENERATED_TITLE_TAG_LABEL}(?:\s+${GENERATED_TITLE_TAG_LABEL})*${IniTag.EM4.close}|${GENERATED_TITLE_TAG_LABEL})`;
 const TRAILING_GENERATED_TITLE_TAGS = new RegExp(String.raw`(?:\s*${GENERATED_TITLE_TAG})+\s*$`);
 const DUPLICATE_GENERATED_TITLE_TAG = new RegExp(String.raw`(${GENERATED_TITLE_TAG})(?:\s+\1)+`, 'g');
 
