@@ -12,13 +12,10 @@ function buildMissionContractIntelRow(row: DataCoreMissionBrokerRecord): DataCor
   const descriptionKey = row.descriptionKey.trim();
   if (!descriptionKey) return null;
 
-  const reward = parsePositiveNumber(row.reward);
   const timeLimit = parsePositiveNumber(row.missionCompletionTime);
   const cooldown = hasPersonalCooldown(row) ? formatCooldownMinutes(Number(row.personalCooldownTime)) : '';
-  const rewardText = reward ? formatCurrency(reward, row.currencyType) : '';
   const timeLimitText = timeLimit ? formatTimeLimit(timeLimit) : '';
   const lines = [
-    rewardText ? `Reward: ${rewardText}` : '',
     timeLimitText ? `Time Limit: ${timeLimitText}` : '',
     cooldown ? `Cooldown: ${cooldown}` : '',
   ].filter(Boolean);
@@ -30,7 +27,7 @@ function buildMissionContractIntelRow(row: DataCoreMissionBrokerRecord): DataCor
     descriptionKey,
     contractIntel: lines.join(String.raw`\n`),
     cooldown,
-    reward: reward ? String(reward) : '',
+    reward: row.reward,
     rewardCurrency: row.currencyType,
     timeLimit: timeLimit ? String(timeLimit) : '',
     efficiency: '',
@@ -47,11 +44,6 @@ function hasPersonalCooldown(row: DataCoreMissionBrokerRecord): boolean {
 function parsePositiveNumber(value: string): number | undefined {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
-}
-
-function formatCurrency(value: number, currencyType: string): string {
-  const currency = currencyType === 'UEC' || !currencyType ? 'aUEC' : currencyType;
-  return `${Math.round(value).toLocaleString('en-US')} ${currency}`;
 }
 
 function formatTimeLimit(minutes: number): string {

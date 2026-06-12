@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
+import missionDescriptionsConfig from './datacore-descriptions';
 import { loadDatacoreDescriptionsSourceData } from './datacore-descriptions';
 
 async function makeWorkspace() {
@@ -26,6 +27,15 @@ async function makeWorkspace() {
     [
       'Description Key,Contract Intel',
       '"test_desc","Time Limit: 12 min\\nReputation Awarded: 100"',
+    ].join('\n'),
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(datacoreDir, 'mission-contract-intel.datacore.csv'),
+    [
+      'Description Key,Contract Intel',
+      '"broker_desc","Reward: 12,000 aUEC\\nTime Limit: 18 min"',
+      '"broker_reward_only_desc","Reward: 9,000 aUEC"',
     ].join('\n'),
     'utf8',
   );
@@ -84,6 +94,20 @@ describe('loadDatacoreDescriptionsSourceData', () => {
 
       assert.equal(row?.RewardList, String.raw`<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`);
       assert.equal(row?.ContractIntel, String.raw`Time Limit: 12 min\nReputation Awarded: 100`);
+      assert.equal(
+        missionDescriptionValue(row ?? {}, 'Base description.'),
+        String.raw`Base description.\n\n** Contract Intel **\nTime Limit: 12 min\nReputation Awarded: 100\n\n<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`,
+      );
+
+      const brokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_desc');
+      assert.equal(brokerRow?.ContractIntel, String.raw`Reward: 12,000 aUEC\nTime Limit: 18 min`);
+      assert.equal(
+        missionDescriptionValue(brokerRow ?? {}, 'Broker description.'),
+        String.raw`Broker description.\n\n** Contract Intel **\nTime Limit: 18 min`,
+      );
+
+      const rewardOnlyBrokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_reward_only_desc');
+      assert.equal(missionDescriptionValue(rewardOnlyBrokerRow ?? {}, 'Reward-only broker.'), 'Reward-only broker.');
 
       const variantRow = rows.find((candidate) => candidate['Localization Key'] === 'test_desc_variant');
       assert.equal(variantRow?.RewardList, String.raw`<EM4>Potential Blueprints</EM4>\n- Test Blueprint Item (100%)`);
@@ -98,3 +122,8 @@ describe('loadDatacoreDescriptionsSourceData', () => {
     }
   });
 });
+
+function missionDescriptionValue(row: Record<string, string>, oldValue: string): string {
+  assert.ok(missionDescriptionsConfig.buildValue);
+  return missionDescriptionsConfig.buildValue(row, '', oldValue, row['Localization Key'] ?? '');
+}

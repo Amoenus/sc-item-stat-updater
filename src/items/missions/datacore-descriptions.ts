@@ -42,11 +42,24 @@ function getCell(row: Record<string, string>, column: string): string {
   return row[column] ?? '';
 }
 
+function removeInGameRewardIntelLines(value: string): string {
+  return splitIntelLines(value)
+    .filter((line) => !/^Reward:\s+/i.test(line.trim()))
+    .join(String.raw`\n`);
+}
+
+function splitIntelLines(value: string): string[] {
+  return value
+    .split(/\\n|\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 function buildMetadata(row: Record<string, string>): string {
   const noteText = getCell(row, 'Note');
 
   return [
-    formatNamedSection('Contract Intel', getCell(row, 'ContractIntel')),
+    formatNamedSection('Contract Intel', removeInGameRewardIntelLines(getCell(row, 'ContractIntel'))),
     formatNamedSection('Encounter', getCell(row, 'EncounterSummary')),
     formatNamedSection('Hauling', getCell(row, 'HaulingSummary')),
     appendParagraph(noteText),

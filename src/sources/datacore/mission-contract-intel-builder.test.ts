@@ -3,7 +3,7 @@ import test from 'node:test';
 import { buildDataCoreMissionContractIntel } from './mission-contract-intel-builder';
 import type { DataCoreMissionBrokerRecord } from './types';
 
-test('buildDataCoreMissionContractIntel derives rendered intel from broker facts', () => {
+test('buildDataCoreMissionContractIntel derives non-runtime intel from broker facts', () => {
   assert.deepEqual(
     buildDataCoreMissionContractIntel([
       broker({
@@ -19,7 +19,7 @@ test('buildDataCoreMissionContractIntel derives rendered intel from broker facts
       {
         missionClass: 'BountyIntro',
         descriptionKey: 'bounty_intro_desc',
-        contractIntel: String.raw`Reward: 12,500 aUEC\nTime Limit: 25 min\nCooldown: 1 h 15 min`,
+        contractIntel: String.raw`Time Limit: 25 min\nCooldown: 1 h 15 min`,
         cooldown: '1 h 15 min',
         reward: '12500',
         rewardCurrency: 'UEC',
@@ -37,6 +37,7 @@ test('buildDataCoreMissionContractIntel skips rows without description keys or i
   assert.deepEqual(
     buildDataCoreMissionContractIntel([
       broker({ descriptionKey: '', reward: '1000' }),
+      broker({ descriptionKey: 'reward_only_desc', reward: '1000' }),
       broker({ descriptionKey: 'empty_desc', reward: '0', missionCompletionTime: '0', hasPersonalCooldown: '0' }),
     ]),
     [],

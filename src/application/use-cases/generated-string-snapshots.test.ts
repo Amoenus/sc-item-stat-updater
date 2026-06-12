@@ -35,7 +35,7 @@ test('snapshot: SCMDB mission description preserves metadata ordering and whites
 
   assert.equal(
     result,
-    'Deliver the package to ~mission(Location|Address).\\n\\n** Contract Intel **\\nReward: 12,000 aUEC\\nTime Limit: 18 min\\n\\nAvoid collateral damage.\\n\\n[BP Reward]\\n\\nSchematic: Frostbite Cooler\\n\\n[Item Reward]\\n\\nUtility Pack',
+    'Deliver the package to ~mission(Location|Address).\\n\\n** Contract Intel **\\nTime Limit: 18 min\\n\\nAvoid collateral damage.\\n\\n[BP Reward]\\n\\nSchematic: Frostbite Cooler\\n\\n[Item Reward]\\n\\nUtility Pack',
   );
 });
 
