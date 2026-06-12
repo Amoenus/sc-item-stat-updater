@@ -72,16 +72,16 @@ npm run deploy
 
 ## After A Game Patch
 
-Run a fresh pipeline after every Star Citizen patch or hotfix:
-
-```sh
-npm run pipeline
-```
-
-If the DataCore cache looks stale or the patch changed many records, rebuild the expensive cache:
+After every Star Citizen patch or hotfix, treat the DataCore cache as stale because it was created from the previous game files. Run the force pipeline so the cache is rebuilt from the current install:
 
 ```sh
 npm run pipeline:force
+```
+
+Use the normal pipeline only when the game files have not changed and you are refreshing outputs from already-current caches:
+
+```sh
+npm run pipeline
 ```
 
 Avoid using an old enriched `global.ini` on a new build unless you are intentionally testing. New patches can add, remove, or rename localization keys, and stale strings can hide new text or miss new game data.
@@ -291,7 +291,7 @@ Run:
 npm run pipeline:force
 ```
 
-This rebuilds DataCore caches and regenerates from the current game files.
+This rebuilds DataCore caches from the current game files and regenerates the enriched `global.ini`.
 
 ### I want to inspect what changed before deploying
 
