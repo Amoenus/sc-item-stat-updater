@@ -144,6 +144,15 @@ To print the provider coverage matrix:
 node --import tsx/esm bin/update-item.ts --provider-matrix
 ```
 
+To print the dynamic coverage audit:
+
+```sh
+node --import tsx/esm bin/update-item.ts --dynamic-audit
+```
+
+The dynamic audit flags static mappings, ambiguous joins, and known source gaps. It should stay at zero
+review/source-gap rows unless a documented migration slice is actively in progress.
+
 To print the remaining SCMDB dependency audit:
 
 ```sh

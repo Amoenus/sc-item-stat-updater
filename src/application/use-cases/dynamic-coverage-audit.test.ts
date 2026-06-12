@@ -41,6 +41,27 @@ test('dynamic coverage audit keeps any remaining SCMDB categories visible as sou
   );
 });
 
+test('dynamic coverage audit keeps active enrichment categories fully dynamic', async () => {
+  const audit = await buildDynamicCoverageAudit();
+
+  const nonDynamicEntries = audit.entries.filter((entry) => entry.status !== 'dynamic');
+  const reviewEntries = audit.entries.filter((entry) => entry.reviewSignals.length > 0);
+  const sourceGapEntries = audit.entries.filter((entry) => entry.sourceGapSignals.length > 0);
+
+  assert.deepEqual(
+    nonDynamicEntries.map((entry) => entry.slug),
+    [],
+  );
+  assert.deepEqual(
+    reviewEntries.map((entry) => entry.slug),
+    [],
+  );
+  assert.deepEqual(
+    sourceGapEntries.map((entry) => entry.slug),
+    [],
+  );
+});
+
 test('formatted dynamic coverage audit includes status summary', async () => {
   const output = formatDynamicCoverageAudit(await buildDynamicCoverageAudit());
 

@@ -91,6 +91,16 @@ test('update-item provider-matrix reports coverage status by provider', async ()
   assert.match(result.stdout, /Mixed-source batch modes:/);
 });
 
+test('update-item dynamic-audit reports dynamic coverage status', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--dynamic-audit']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /Dynamic coverage audit/);
+  assert.match(result.stdout, /mission-datacore-descriptions \(DataCore mission descriptions\)/);
+  assert.match(result.stdout, /Summary: \d+ dynamic, 0 need review, 0 known source gaps\./);
+  assert.equal(result.stderr, '');
+});
+
 test('update-item scmdb-audit reports remaining SCMDB dependencies', async () => {
   const result = await runCommand(['bin/update-item.ts', '--scmdb-audit']);
 

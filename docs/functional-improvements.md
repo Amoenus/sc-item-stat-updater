@@ -26,10 +26,14 @@ No open functional backlog issues remain in this inventory. GitHub may still con
 
 ## Recommended Next Slice
 
-No next functional slice is currently listed. Re-audit GitHub issues before creating or selecting more backlog work.
+Split the dynamic coverage audit into a richer source-readiness report that distinguishes data absent from
+DataCore/source files from parser capability gaps, with examples and owning source paths for each missing field.
 
 ## Completed Functional Issues
 
+- Added `update-item --dynamic-audit` as the DataCore-first durability guard for enrichment coverage. The audit
+  now reports static assumptions, grouped localization handling, graph-derived lookup signals, and source gaps;
+  regression tests require all active enrichment categories to remain dynamic with zero review/source-gap rows.
 - #51: Moved Puppeteer to `optionalDependencies` and isolated scraper loading behind a dynamic SPViewer browser launcher. Updater-only installs can now use `npm install --omit=optional`, SPViewer scraping reports a clear missing-optional-dependency error, and README documents both install paths.
 - #52: Audited OpenTelemetry usage and removed it. The packages were only used by the local stderr logger with no trace, metrics, OTLP, Jaeger, or collector destination, so `src/infrastructure/logger.ts` now implements the existing text/JSON CLI logging behavior directly and `package.json`/lockfile no longer include `@opentelemetry/*`.
 - #48: Added focused regression coverage for parallel SPViewer lookup loading in `buildLookupFromCsvFiles`. The tests prove independent CSV loaders are all started before earlier reads resolve and that duplicate-key merge precedence still follows filename order.
