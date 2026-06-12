@@ -427,9 +427,25 @@ interface DataCoreXmlCacheState {
   reused: boolean;
 }
 
+interface FileFingerprint {
+  size: number;
+  mtimeMs: number;
+}
+
+interface DataCoreDcbCacheMetadata {
+  sourceP4k: FileFingerprint;
+}
+
+interface DataCoreXmlCacheMetadata {
+  gameVersion: string;
+  dcb: FileFingerprint | null;
+}
+
 interface EnsureDataCoreXmlCacheOptions {
   cachedCount: number;
   dcbPath: string;
+  gameVersion: string;
+  dcbFingerprint: FileFingerprint | null;
   dcbRefreshed: boolean;
   liveDir: string;
   xmlCacheDir: string;
@@ -1255,6 +1271,7 @@ interface DataCoreScrapePreparedState extends DataCoreScrapePreparedContext {
   liveDir: string;
   recordGraphPath: string;
   tools: Unp4kTools;
+  dcbFingerprint: FileFingerprint | null;
   dcbRefreshed: boolean;
 }
 
@@ -1390,8 +1407,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
       const liveDir = resolveLive(binDirname);
       const version = await readVersion(liveDir);
       const ptu = options.ptu ? '-ptu' : '-live';
-      const parts = version.split('.');
-      const versionTag = parts.length === 4 ? `${parts.slice(0, 3).join('.')}${ptu}.${parts[3]}` : `${version}${ptu}`;
+      const versionTag = formatDataCoreVersionTag(version, ptu);
       const outputBase = path.join(options.repoRoot, 'csv', 'datacore', versionTag);
       const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
       const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
@@ -1405,7 +1421,11 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
 
       const tools = await ensureTools(toolDir, (message) => options.onToolsLog?.(message));
       options.onToolsReady?.(tools);
-      const { dcbPath, refreshed: dcbRefreshed } = await resolveCurrentDcbFile({
+      const {
+        dcbPath,
+        refreshed: dcbRefreshed,
+        dcbFingerprint,
+      } = await resolveCurrentDcbFile({
         liveDir,
         dcbCacheDir,
         tools,
@@ -1427,6 +1447,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
         allTypes,
         dryRun: Boolean(options.dryRun),
         tools,
+        dcbFingerprint,
         dcbRefreshed,
       };
 
@@ -1439,6 +1460,8 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
       const xmlCache = await ensureDataCoreXmlCache({
         cachedCount: await countXmlFiles(state.xmlCacheDir),
         dcbPath: state.dcbPath,
+        gameVersion: state.gameVersion,
+        dcbFingerprint: state.dcbFingerprint,
         dcbRefreshed: state.dcbRefreshed,
         liveDir: state.liveDir,
         xmlCacheDir: state.xmlCacheDir,
@@ -1974,12 +1997,45 @@ function selectTypes(allTypes: DataCoreTypeEntry[], requestedNames: string[]): D
   });
 }
 
-async function fileMtimeMs(filePath: string): Promise<number | null> {
+function formatDataCoreVersionTag(version: string, channelSuffix: '-live' | '-ptu'): string {
+  const trimmed = version.trim();
+  if (/-?(?:live|ptu)(?:\.\d+)?$/i.test(trimmed)) {
+    return trimmed.replace(/-(live|ptu)/i, (_match, channel: string) => `-${channel.toLowerCase()}`);
+  }
+
+  const parts = trimmed.split('.');
+  if (parts.length === 4 && /^\d+$/.test(parts[3])) {
+    return `${parts.slice(0, 3).join('.')}${channelSuffix}.${parts[3]}`;
+  }
+
+  return `${trimmed}${channelSuffix}`;
+}
+
+async function fileFingerprint(filePath: string): Promise<FileFingerprint | null> {
   try {
-    return (await fs.stat(filePath)).mtimeMs;
+    const stats = await fs.stat(filePath);
+    return { size: stats.size, mtimeMs: Math.round(stats.mtimeMs) };
   } catch {
     return null;
   }
+}
+
+function sameFingerprint(left: FileFingerprint | null, right: FileFingerprint | null): boolean {
+  if (!left || !right) return left === right;
+  return left.size === right.size && left.mtimeMs === right.mtimeMs;
+}
+
+async function readJsonFile<T>(filePath: string): Promise<T | null> {
+  try {
+    return JSON.parse(await fs.readFile(filePath, 'utf8')) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function writeJsonFile(filePath: string, value: unknown): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 }
 
 async function resolveCurrentDcbFile(options: {
@@ -1989,26 +2045,36 @@ async function resolveCurrentDcbFile(options: {
   extractPackedDcb: (p4kPath: string, dcbCacheDir: string, tools: Unp4kTools) => void | Promise<void>;
   forceExtract?: boolean;
   fallbackDcbPath?: string;
-}): Promise<{ dcbPath: string; refreshed: boolean }> {
+}): Promise<{ dcbPath: string; refreshed: boolean; dcbFingerprint: FileFingerprint | null }> {
   const p4kPath = path.join(options.liveDir, 'Data.p4k');
-  const p4kMtime = await fileMtimeMs(p4kPath);
+  const p4kFingerprint = await fileFingerprint(p4kPath);
 
-  if (!p4kMtime) {
-    if (options.fallbackDcbPath) return { dcbPath: options.fallbackDcbPath, refreshed: false };
+  if (!p4kFingerprint) {
+    if (options.fallbackDcbPath) {
+      return {
+        dcbPath: options.fallbackDcbPath,
+        refreshed: false,
+        dcbFingerprint: await fileFingerprint(options.fallbackDcbPath),
+      };
+    }
     throw new Error(`Data.p4k not found at ${p4kPath}. Set SC_LIVE_DIR to a valid game install.`);
   }
 
   const packedDcbPath = path.join(options.dcbCacheDir, 'Data', 'Game2.dcb');
-  const packedDcbMtime = await fileMtimeMs(packedDcbPath);
+  const packedDcbFingerprint = await fileFingerprint(packedDcbPath);
+  const metadataPath = path.join(options.dcbCacheDir, '.metadata.json');
+  const metadata = await readJsonFile<DataCoreDcbCacheMetadata>(metadataPath);
+  const sourceMatches = sameFingerprint(metadata?.sourceP4k ?? null, p4kFingerprint);
   let refreshed = false;
-  if (options.forceExtract || !packedDcbMtime || packedDcbMtime < p4kMtime) {
+  if (options.forceExtract || !packedDcbFingerprint || !sourceMatches) {
     await fs.rm(options.dcbCacheDir, { recursive: true, force: true });
     await fs.mkdir(options.dcbCacheDir, { recursive: true });
     await options.extractPackedDcb(p4kPath, options.dcbCacheDir, options.tools);
+    await writeJsonFile(metadataPath, { sourceP4k: p4kFingerprint } satisfies DataCoreDcbCacheMetadata);
     refreshed = true;
   }
 
-  return { dcbPath: packedDcbPath, refreshed };
+  return { dcbPath: packedDcbPath, refreshed, dcbFingerprint: await fileFingerprint(packedDcbPath) };
 }
 
 async function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, tools: Unp4kTools): Promise<void> {
@@ -3196,21 +3262,27 @@ function buildRawFactResults(
 }
 
 async function ensureDataCoreXmlCache(options: EnsureDataCoreXmlCacheOptions): Promise<DataCoreXmlCacheState> {
+  const metadataPath = path.join(options.xmlCacheDir, '.metadata.json');
+  const metadata = await readJsonFile<DataCoreXmlCacheMetadata>(metadataPath);
+  const metadataMatches =
+    !metadata && !options.dcbFingerprint
+      ? true
+      : metadata?.gameVersion === options.gameVersion && sameFingerprint(metadata?.dcb ?? null, options.dcbFingerprint);
   const cacheReusable =
-    (options.cachedCount > 0 && !options.forceExtract && !options.dcbRefreshed) ||
+    (options.cachedCount > 0 && metadataMatches && !options.forceExtract && !options.dcbRefreshed) ||
     (options.skipUnforge && options.cachedCount > 0);
 
   if (cacheReusable) {
-    if (options.skipUnforge && options.dcbRefreshed) {
+    if (options.skipUnforge && (options.dcbRefreshed || !metadataMatches)) {
       options.onToolsLog?.(
-        'WARNING: Data.p4k is newer than the cache, but skipping unforge due to --skip-unforge flag. Using potentially stale XML cache.',
+        'WARNING: DataCore XML cache does not match the detected game files, but skipping unforge due to --skip-unforge flag. Using potentially stale XML cache.',
       );
     }
     options.onCacheHit?.(options.cachedCount, options.xmlCacheDir);
     return { xmlFileCount: options.cachedCount, reused: true };
   }
 
-  const clearExisting = options.cachedCount > 0 && Boolean(options.forceExtract || options.dcbRefreshed);
+  const clearExisting = options.cachedCount > 0 && Boolean(options.forceExtract || options.dcbRefreshed || !metadataMatches);
   options.onCacheExtractStart?.(options.dcbPath, options.xmlCacheDir, clearExisting);
   const { xmlFileCount } = await options.extractXmlCache({
     dcbPath: options.dcbPath,
@@ -3230,6 +3302,10 @@ async function ensureDataCoreXmlCache(options: EnsureDataCoreXmlCacheOptions): P
     },
     onProgress: (count) => options.onCacheExtractProgress?.(count),
   });
+  await writeJsonFile(metadataPath, {
+    gameVersion: options.gameVersion,
+    dcb: options.dcbFingerprint,
+  } satisfies DataCoreXmlCacheMetadata);
   options.onCacheExtractComplete?.(xmlFileCount);
 
   return { xmlFileCount, reused: false };

@@ -162,49 +162,10 @@ export function resolveLiveDir(binDirname: string): string {
 }
 
 /**
- * Attempts to read the SC build ID from a build manifest file in the LIVE directory.
- * Falls back to a timestamp string if the file is not found.
+ * Attempts to read the SC build ID from explicit local version files.
+ * Falls back to a Data.p4k timestamp marker if no reliable version file exists.
  */
 export async function readGameVersion(liveDir: string): Promise<string> {
-  // build_manifest.id contains JSON — extract a clean version tag from it.
-  const manifestPath = path.join(liveDir, 'build_manifest.id');
-  try {
-    const manifestContent = await fsp.readFile(manifestPath, 'utf8');
-    const json = JSON.parse(manifestContent);
-    const data = json?.Data ?? json;
-    const changeNum: string = data?.RequestedP4ChangeNum ?? '';
-
-    // Attempt to dynamically resolve the true semantic version from SCMDB 
-    // because build_manifest.id branch names are notoriously outdated.
-    if (changeNum) {
-      try {
-        const response = await fetch('https://scmdb.net/data/versions.json', { signal: AbortSignal.timeout(5000) });
-        if (response.ok) {
-          const versions = (await response.json()) as { version: string }[];
-          const match = versions.find((v) => v.version.endsWith(`.${changeNum}`));
-          if (match) {
-            // match.version is something like "4.8.1-live.11952564"
-            // We strip "-live" or "-ptu" so it returns "4.8.1.11952564", matching the expected format
-            // for downstream parts parsing in runDatacoreScrape.
-            return match.version.replace(/-(?:live|ptu)/i, '');
-          }
-        }
-      } catch {
-        // Network failure or no match, gracefully fall back to regex parsing
-      }
-    }
-
-    // Branch looks like "sc-alpha-4.8.0-hotfix" → extract "4.8.0"
-    const branch: string = data?.Branch ?? '';
-    const versionMatch = /(\d+\.\d+\.\d+)/.exec(branch);
-    const semver = versionMatch?.[1];
-    if (semver && changeNum) return `${semver}.${changeNum}`;
-    if (semver) return semver;
-  } catch {
-    // fall through to plain-text candidates
-  }
-
-  // sc_version.id / version.id are plain-text version strings.
   for (const name of ['sc_version.id', 'version.id']) {
     const filePath = path.join(liveDir, name);
     try {
@@ -215,5 +176,10 @@ export async function readGameVersion(liveDir: string): Promise<string> {
     }
   }
 
-  return new Date().toISOString().slice(0, 10).replaceAll('-', '');
+  try {
+    const p4kStats = await fsp.stat(path.join(liveDir, 'Data.p4k'));
+    return `local.${Math.round(p4kStats.mtimeMs)}`;
+  } catch {
+    return `local.${Date.now()}`;
+  }
 }

@@ -1902,6 +1902,56 @@ test('runDatacoreScrape extracts XML cache when cached records are missing', asy
   assert.deepEqual(events, ['tools ready', 'start', 'extract', 'complete:123']);
 });
 
+test('runDatacoreScrape preserves SCMDB-shaped game version tags', async () => {
+  const result = await runDatacoreScrape({
+    repoRoot: 'repo',
+    dryRun: true,
+    loadTypes: async () => [],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1-live.11952564',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 0,
+    extractXmlCache: async () => ({ workDcbPath: 'cache/Game.dcb', monolithicXmlPath: 'cache/Game.xml', xmlFileCount: 123 }),
+  });
+
+  assert.equal(result.versionTag, '4.8.1-live.11952564');
+});
+
+test('runDatacoreScrape refreshes XML cache when cache metadata is for a different game version', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-xml-version-mismatch-'));
+  const liveDir = path.join(repoRoot, 'game', 'LIVE');
+  const dcbPath = path.join(liveDir, 'Data', 'Game2.dcb');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live', 'libs');
+  await fs.mkdir(path.dirname(dcbPath), { recursive: true });
+  await fs.mkdir(xmlCacheDir, { recursive: true });
+  await fs.writeFile(dcbPath, 'current dcb');
+  await fs.writeFile(path.join(xmlCacheDir, 'old.xml'), '<Old />');
+  await fs.writeFile(
+    path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live', '.metadata.json'),
+    JSON.stringify({ gameVersion: '4.8.0', dcb: null }),
+  );
+
+  const events: string[] = [];
+  const result = await runDatacoreScrape({
+    repoRoot,
+    dryRun: true,
+    loadTypes: async () => [],
+    resolveLiveDir: () => liveDir,
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => dcbPath,
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 7,
+    extractXmlCache: async ({ clearExisting }) => {
+      events.push(`extract:${clearExisting}`);
+      return { workDcbPath: 'cache/Game2.dcb', monolithicXmlPath: 'cache/Game2.xml', xmlFileCount: 123 };
+    },
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(events, ['extract:true']);
+});
+
 test('runDatacoreScrape refreshes repo DCB cache from Data.p4k and invalidates XML cache', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-packed-dcb-'));
   const liveDir = path.join(repoRoot, 'game', 'LIVE');

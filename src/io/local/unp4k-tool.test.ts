@@ -112,55 +112,32 @@ describe('resolveLiveDir', () => {
 });
 
 describe('readGameVersion', () => {
-  it('extracts semver + change number from a valid build_manifest.id', async () => {
-    const manifest = {
-      Data: { Branch: 'sc-alpha-4.8.0-hotfix', RequestedP4ChangeNum: '987654' },
-    };
-    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), JSON.stringify(manifest));
-    const version = await readGameVersion(tmpDir);
-    assert.strictEqual(version, '4.8.0.987654');
-  });
-
-  it('returns just the semver when RequestedP4ChangeNum is absent', async () => {
-    const manifest = { Data: { Branch: 'sc-alpha-4.10.2' } };
-    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), JSON.stringify(manifest));
-    assert.strictEqual(await readGameVersion(tmpDir), '4.10.2');
-  });
-
-  it('reads top-level Branch when the JSON has no Data wrapper', async () => {
-    const manifest = { Branch: 'sc-3.24.1', RequestedP4ChangeNum: '111' };
-    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), JSON.stringify(manifest));
-    assert.strictEqual(await readGameVersion(tmpDir), '3.24.1.111');
-  });
-
-  it('falls back to sc_version.id (plain text) when build_manifest.id is missing', async () => {
+  it('reads sc_version.id plain text', async () => {
     await fs.writeFile(path.join(tmpDir, 'sc_version.id'), '4.5.0-PTU.99999\n');
     assert.strictEqual(await readGameVersion(tmpDir), '4.5.0-PTU.99999');
   });
 
-  it('falls back to version.id when build_manifest.id and sc_version.id are missing', async () => {
+  it('falls back to version.id when sc_version.id is missing', async () => {
     await fs.writeFile(path.join(tmpDir, 'version.id'), '3.23.1-LIVE');
     assert.strictEqual(await readGameVersion(tmpDir), '3.23.1-LIVE');
   });
 
-  it('falls back to sc_version.id when build_manifest.id is malformed JSON', async () => {
-    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), '{not json');
+  it('does not treat build_manifest.id as authoritative', async () => {
+    const manifest = {
+      Data: { Branch: 'sc-alpha-4.8.0-hotfix', RequestedP4ChangeNum: '987654' },
+    };
+    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), JSON.stringify(manifest));
     await fs.writeFile(path.join(tmpDir, 'sc_version.id'), '4.0.0');
     assert.strictEqual(await readGameVersion(tmpDir), '4.0.0');
   });
 
-  it('falls back to sc_version.id when the manifest Branch has no semver pattern', async () => {
-    const manifest = { Data: { Branch: 'no-version-here', RequestedP4ChangeNum: '123' } };
-    await fs.writeFile(path.join(tmpDir, 'build_manifest.id'), JSON.stringify(manifest));
-    await fs.writeFile(path.join(tmpDir, 'sc_version.id'), 'fallback-version');
-    assert.strictEqual(await readGameVersion(tmpDir), 'fallback-version');
-  });
-
-  it('returns YYYYMMDD when no version files exist anywhere', async () => {
+  it('returns a local Data.p4k marker when no reliable version files exist', async () => {
+    const p4kPath = path.join(tmpDir, 'Data.p4k');
+    await fs.writeFile(p4kPath, 'packed data');
+    const timestamp = new Date('2026-06-01T00:00:00.000Z');
+    await fs.utimes(p4kPath, timestamp, timestamp);
     const version = await readGameVersion(tmpDir);
-    assert.match(version, /^\d{8}$/, 'should be an 8-digit date stamp');
-    const today = new Date().toISOString().slice(0, 10).replaceAll('-', '');
-    assert.strictEqual(version, today);
+    assert.match(version, /^local\.\d+$/);
   });
 
   it('skips an empty sc_version.id and continues to version.id', async () => {

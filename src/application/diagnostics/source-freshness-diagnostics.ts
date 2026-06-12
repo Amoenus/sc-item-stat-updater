@@ -341,6 +341,24 @@ export async function buildSourceFreshnessDiagnostics(
       path: source.path,
       message: `${source.label} source version does not look like ${source.channel} data.`,
     }));
+  const scmdbVersion = versions.find((source) => source.provider === 'scmdb');
+  const itemVersion = versions.find((source) => source.provider === options.provider);
+  const versionMismatchWarnings: SourceFreshnessWarning[] =
+    scmdbVersion &&
+    itemVersion &&
+    scmdbVersion.version !== '(custom)' &&
+    itemVersion.version !== '(custom)' &&
+    scmdbVersion.version !== itemVersion.version
+      ? [
+          {
+            provider: itemVersion.provider,
+            label: itemVersion.label,
+            channel: itemVersion.channel,
+            path: itemVersion.path,
+            message: `${itemVersion.label} source version (${itemVersion.version}) differs from SCMDB (${scmdbVersion.version}).`,
+          },
+        ]
+      : [];
 
   const categoryWarnings = (await Promise.all(prepared.categories.map(collectIncompleteSourceWarnings))).flat();
   const rawFactWarnings =
@@ -371,7 +389,7 @@ export async function buildSourceFreshnessDiagnostics(
       : undefined;
   const itemIdentityWarnings = itemIdentity ? collectDataCoreItemIdentityWarnings(itemIdentity) : [];
   const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings, ...itemIdentityWarnings]);
-  return { versions, warnings: [...staleWarnings, ...incompleteWarnings], rawFacts, itemIdentity };
+  return { versions, warnings: [...staleWarnings, ...versionMismatchWarnings, ...incompleteWarnings], rawFacts, itemIdentity };
 }
 
 export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDiagnostics): string {

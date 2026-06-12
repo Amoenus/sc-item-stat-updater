@@ -30,11 +30,11 @@ async function writeDataCoreRawFactFiles(dir: string, except: string[] = []): Pr
 }
 
 function makePrepared(root: string, categories: UpdateCategory[]): PreparedUpdateCategories {
-  const scmdbDir = path.join(root, 'csv', 'scmdb', '4.8.1-live.11875683');
+  const scmdbDir = path.join(root, 'csv', 'scmdb', '4.8.1-live');
   const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.1-live');
   return {
     categories,
-    scmdbVersion: '4.8.1-live.11875683',
+    scmdbVersion: '4.8.1-live',
     scmdbDir,
     itemVersion: '4.8.1-live',
     itemVersionDir,
@@ -72,7 +72,7 @@ test('source freshness diagnostics summarize selected provider versions', async 
 
     assert.deepEqual(
       diagnostics.versions.map((entry) => `${entry.label}:${entry.channel}:${entry.version}`),
-      ['SCMDB:LIVE:4.8.1-live.11875683', 'DataCore:LIVE:4.8.1-live'],
+      ['SCMDB:LIVE:4.8.1-live', 'DataCore:LIVE:4.8.1-live'],
     );
     assert.deepEqual(
       diagnostics.rawFacts?.map((entry) => [entry.slug, entry.rows, entry.csvFile]),
@@ -128,6 +128,26 @@ test('source freshness diagnostics warn for incomplete selected source files wit
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
     assert.match(formatted, /WARNING DataCore LIVE dc-coolers/);
     assert.match(formatted, new RegExp(expectedPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('source freshness diagnostics warn when SCMDB and DataCore patch families differ', async () => {
+  const root = await makeTempDir();
+  try {
+    const itemVersionDir = path.join(root, 'csv', 'datacore', '4.8.0-live.11875683');
+    await fs.mkdir(itemVersionDir, { recursive: true });
+    await writeDataCoreRawFactFiles(itemVersionDir);
+    const prepared = makePrepared(root, []);
+    prepared.scmdbVersion = '4.8.1-live.11952564';
+    prepared.itemVersion = '4.8.0-live.11875683';
+    prepared.itemVersionDir = itemVersionDir;
+
+    const diagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider: 'datacore' });
+
+    assert.match(diagnostics.warnings[0]?.message ?? '', /differs from SCMDB/);
+    assert.match(formatSourceFreshnessDiagnostics(diagnostics), /WARNING DataCore LIVE/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

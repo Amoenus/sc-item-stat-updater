@@ -130,6 +130,8 @@ export async function runScrapeDatacoreCommand(argv: string[], io: CommandIO = d
   if (!result) throw new Error('DataCore scraper did not produce a result.');
 
   writeLine(io, '\n=== Results ===');
+  writeLine(io, `Detected game version: ${result.gameVersion}`);
+  writeLine(io, `DataCore output version: ${result.versionTag}`);
   const dryNote = values['dry-run'] ? ' (dry run, not written)' : '';
   writeLine(io, 'DataCore raw fact datasets:');
   for (const rawFact of result.rawFactResults) {
