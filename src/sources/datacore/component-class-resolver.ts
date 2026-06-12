@@ -1,4 +1,4 @@
-import type { DataCoreRecordGraphLookup } from './types';
+import { type DataCoreRelationshipIndex, normalizeDataCoreRelationshipEntityClass } from './relationship-index';
 
 export const NON_DISPLAY_COMPONENT_CLASSES = new Set([
   '',
@@ -15,20 +15,15 @@ const HAULING_COMPONENT_CLASS_PATTERN =
   /^HaulingEntityClass_(?<type>Cooler|JumpDrive|PowerPlant|QuantumDrive|Radar|ShieldGenerator)_S\d+_(?<class>Civilian|Commercial|Competition|Industrial|Military|Stealth)$/i;
 
 export function buildDataCoreHaulingComponentClassLookup(
-  graph: DataCoreRecordGraphLookup | null | undefined,
+  relationships: DataCoreRelationshipIndex,
 ): Map<string, string> {
   const entityClassToHaulingClass = new Map<string, string>();
 
-  if (!graph) {
-    return entityClassToHaulingClass;
-  }
-
-  for (const record of graph.getByRootType('Hauling_EntityClasses')) {
+  for (const record of relationships.getRecordsByRootType('Hauling_EntityClasses')) {
     const haulingClass = getHaulingComponentClass(record.entityClass);
     if (!haulingClass) continue;
 
-    for (const ref of record.referencedGuids) {
-      const componentRecord = graph.getByRef(ref);
+    for (const componentRecord of relationships.getReferencedRecords(record)) {
       if (!componentRecord?.entityClass) continue;
       const entityClass = normalizeDataCoreEntityClass(componentRecord.entityClass);
       if (entityClass) {
@@ -58,7 +53,7 @@ export function isDisplayDataCoreComponentClass(value: string): boolean {
 }
 
 export function normalizeDataCoreEntityClass(value: unknown): string {
-  return normalizeSpaces(value).replace(/_SCItem$/i, '').toLowerCase();
+  return normalizeDataCoreRelationshipEntityClass(value);
 }
 
 export function normalizeSpaces(value: unknown): string {
@@ -70,7 +65,10 @@ export function normalizeSpaces(value: unknown): string {
   } else {
     str = JSON.stringify(value);
   }
-  return str.replaceAll(/[\u00a0\u202f]/g, ' ').replaceAll(/\s+/g, ' ').trim();
+  return str
+    .replaceAll(/[\u00a0\u202f]/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
 }
 
 function getHaulingComponentClass(entityClass: string): string {

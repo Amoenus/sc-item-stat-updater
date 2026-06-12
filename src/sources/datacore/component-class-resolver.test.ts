@@ -1,9 +1,7 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import {
-  buildDataCoreHaulingComponentClassLookup,
-  resolveDataCoreComponentClass,
-} from './component-class-resolver';
+import { buildDataCoreHaulingComponentClassLookup, resolveDataCoreComponentClass } from './component-class-resolver';
+import { createDataCoreRelationshipIndex } from './relationship-index';
 import type { DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 
 test('DataCore component class resolver uses hauling entity-class relationships when AttachDef class is undefined', () => {
@@ -20,9 +18,9 @@ test('DataCore component class resolver uses hauling entity-class relationships 
     entityClass: 'HaulingEntityClass_Cooler_S1_Competition',
     referencedGuids: ['component-guid'],
   });
-  const lookup = graphLookup([cooler, haulingClass]);
+  const relationships = createDataCoreRelationshipIndex(graphLookup([cooler, haulingClass]));
 
-  const haulingClasses = buildDataCoreHaulingComponentClassLookup(lookup);
+  const haulingClasses = buildDataCoreHaulingComponentClassLookup(relationships);
 
   assert.equal(resolveDataCoreComponentClass('UNDEFINED', 'COOL_ACOM_S01_IcePlunge', haulingClasses), 'Competition');
 });

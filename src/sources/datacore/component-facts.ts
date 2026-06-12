@@ -8,12 +8,12 @@ import {
   normalizeDataCoreEntityClass,
   normalizeSpaces,
 } from './component-class-resolver';
+import { loadDataCoreRecordGraph } from './record-graph-loader';
 import {
-  type DataCoreRelationshipIndex,
   createDataCoreRelationshipIndex,
+  type DataCoreRelationshipIndex,
   normalizeDataCoreRelationshipLocalizationKey,
 } from './relationship-index';
-import { loadDataCoreRecordGraph } from './record-graph-loader';
 
 const logger = getLogger('datacore-component-facts');
 
@@ -95,7 +95,7 @@ export async function loadDataCoreComponentFacts({
 }: LoadDataCoreComponentFactsOptions): Promise<ComponentFact[]> {
   const graph = await loadOptionalDataCoreRecordGraph(datacoreDir);
   const relationships = createDataCoreRelationshipIndex(graph);
-  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(graph);
+  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(relationships);
   const scmdbClassByRef = scmdbDir ? await buildScmdbComponentClassLookup(scmdbDir) : new Map<string, string>();
   const rows: ComponentFactRow[] = [];
 
