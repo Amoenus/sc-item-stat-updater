@@ -87,7 +87,10 @@ async function makeTempDataCoreWorkspace() {
             rootTag: 'EntityClassDefinition.QDRV_WETK_S02_XL1_SCItem',
             rootType: 'EntityClassDefinition',
             entityClass: 'QDRV_WETK_S02_XL1_SCItem',
-            localizationKeys: [],
+            localizationKeys: [
+              { attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' },
+              { attribute: 'displayName', key: 'item_name_QDRV_WETK_S02_XL1_Display' },
+            ],
             referencedGuids: [],
           },
         ],
@@ -127,6 +130,7 @@ describe('DataCore component facts', () => {
       assert.deepEqual(await discoverComponentFactCsvFiles(datacoreDir), [
         'powerplant.datacore.csv',
         'quantumdrive.datacore.csv',
+        'weapongun.datacore.csv',
       ]);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
@@ -149,6 +153,7 @@ describe('DataCore component facts', () => {
       const lumacore = facts.find((fact) => fact.entityClass === 'powr_acom_s01_lumacore');
       const solarflare = facts.find((fact) => fact.entityClass === 'powr_acom_s02_solarflare');
       const bolide = facts.find((fact) => fact.entityClass === 'powr_aegs_s02_bolide');
+      const gun = facts.find((fact) => fact.entityClass === 'mgun_test');
       const xl1 = facts.find((fact) => fact.entityClass === 'qdrv_wetk_s02_xl1');
 
       assert.equal(lumacore?.componentClass, 'Competition');
@@ -158,10 +163,13 @@ describe('DataCore component facts', () => {
       assert.equal(solarflare?.componentClassSource, 'datacore-hauling');
       assert.equal(bolide?.componentClass, 'Military');
       assert.equal(bolide?.componentClassSource, 'datacore-hauling');
+      assert.equal(gun?.componentClass, 'Military');
+      assert.equal(gun?.componentClassSource, 'datacore-attachdef');
       assert.equal(xl1?.componentClass, 'Military');
       assert.equal(xl1?.componentClassSource, 'scmdb-bridge');
       assert.deepEqual(xl1?.titleKeys, [
         'item_nameqdrv_wetk_s02_xl1_scitem',
+        'item_name_qdrv_wetk_s02_xl1_display',
         'item_nameqdrv_wetk_s02_xl1',
         'item_name_qdrv_wetk_s02_xl1',
         'item_name_qdrv_wetk_s02_xl1_scitem',

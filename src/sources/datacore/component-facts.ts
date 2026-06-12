@@ -8,6 +8,11 @@ import {
   normalizeDataCoreEntityClass,
   normalizeSpaces,
 } from './component-class-resolver';
+import {
+  type DataCoreRelationshipIndex,
+  createDataCoreRelationshipIndex,
+  normalizeDataCoreRelationshipLocalizationKey,
+} from './relationship-index';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
 
 const logger = getLogger('datacore-component-facts');
@@ -28,7 +33,6 @@ const NON_COMPONENT_FACT_CSV_FILES = new Set([
   'throwable.datacore.csv',
   'weaponattachment.datacore.csv',
   'weapondefensive.datacore.csv',
-  'weapongun.datacore.csv',
   'weaponmining.datacore.csv',
   'weaponpersonal.datacore.csv',
 ]);
@@ -65,6 +69,7 @@ interface ComponentFactRow {
   row: Record<string, string>;
   recordRef: string;
   recordPath: string;
+  recordLocalizationKeys: string[];
   scmdbClass?: string;
 }
 
@@ -89,6 +94,7 @@ export async function loadDataCoreComponentFacts({
   scmdbDir,
 }: LoadDataCoreComponentFactsOptions): Promise<ComponentFact[]> {
   const graph = await loadOptionalDataCoreRecordGraph(datacoreDir);
+  const relationships = createDataCoreRelationshipIndex(graph);
   const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(graph);
   const scmdbClassByRef = scmdbDir ? await buildScmdbComponentClassLookup(scmdbDir) : new Map<string, string>();
   const rows: ComponentFactRow[] = [];
@@ -99,12 +105,13 @@ export async function loadDataCoreComponentFacts({
     const componentType = componentTypeFromCsvFile(csvFile);
 
     for (const row of csvRows) {
-      const record = getDataCoreRecordForRow(row, graph);
+      const record = getDataCoreRecordForRow(row, relationships);
       rows.push({
         componentType,
         row,
         recordRef: record?.ref ?? '',
         recordPath: record?.path ?? '',
+        recordLocalizationKeys: relationships.getLocalizationKeysForRecord(record),
         scmdbClass: record?.ref ? scmdbClassByRef.get(record.ref.toLowerCase()) : undefined,
       });
     }
@@ -188,13 +195,11 @@ async function buildScmdbComponentClassLookup(scmdbDir: string): Promise<Map<str
   return classByRef;
 }
 
-function getDataCoreRecordForRow(row: Record<string, string>, graph: DataCoreRecordGraphLookup | null) {
-  if (!graph) return undefined;
-
+function getDataCoreRecordForRow(row: Record<string, string>, relationships: DataCoreRelationshipIndex) {
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (!entityClass) return undefined;
 
-  return graph.graph.records.find((candidate) => normalizeDataCoreEntityClass(candidate.entityClass) === entityClass);
+  return relationships.getRecordForEntityClass(entityClass);
 }
 
 function buildManufacturerTypeClassLookup(
@@ -246,7 +251,7 @@ function toComponentFact(
     grade: normalizeSpaces(row.row.Grade),
     componentClass: resolvedClass?.value,
     componentClassSource: resolvedClass?.source,
-    titleKeys: getComponentTitleKeys(row.row),
+    titleKeys: getComponentTitleKeys(row.row, row.recordLocalizationKeys),
     stats: getComponentStats(row.row),
   };
 }
@@ -306,10 +311,17 @@ function getComponentManufacturer(row: Record<string, string>): string {
   return parts.length >= 2 ? parts[1].toUpperCase() : '';
 }
 
-function getComponentTitleKeys(row: Record<string, string>): string[] {
+function getComponentTitleKeys(row: Record<string, string>, recordLocalizationKeys: string[]): string[] {
   const keys = new Set<string>();
   const nameKey = normalizeLocalizationKey(row['Name Key']);
   if (nameKey) keys.add(nameKey);
+
+  for (const key of recordLocalizationKeys) {
+    const normalized = normalizeDataCoreRelationshipLocalizationKey(key);
+    if (normalized.startsWith('item_name')) {
+      keys.add(normalized);
+    }
+  }
 
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (entityClass) {

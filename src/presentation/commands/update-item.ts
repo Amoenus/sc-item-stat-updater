@@ -6,6 +6,10 @@ import {
   formatProviderCoverageMatrix,
 } from '../../application/catalog/category-listing';
 import {
+  buildDataCorePatchDriftDiagnostics,
+  formatDataCorePatchDriftDiagnostics,
+} from '../../application/diagnostics/datacore-patch-drift-diagnostics';
+import {
   buildDynamicCoverageAudit,
   formatDynamicCoverageAudit,
 } from '../../application/diagnostics/dynamic-coverage-audit';
@@ -41,6 +45,7 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
       'provider-matrix': { type: 'boolean', default: false },
       'scmdb-audit': { type: 'boolean', default: false },
       'dynamic-audit': { type: 'boolean', default: false },
+      'patch-drift-audit': { type: 'boolean', default: false },
       ptu: { type: 'boolean', default: false },
       force: { type: 'boolean', default: false },
       verbose: { type: 'boolean', short: 'v', default: false },
@@ -73,6 +78,11 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
     return 0;
   }
 
+  if (values['patch-drift-audit']) {
+    writeLine(io, formatDataCorePatchDriftDiagnostics(await buildDataCorePatchDriftDiagnostics({ ptu: values.ptu })));
+    return 0;
+  }
+
   if (values.help || !category) {
     const available = await listCategories();
     const activeSlugs = [...available.datacore, ...available.missions];
@@ -85,6 +95,7 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
     writeLine(io, '      --provider-matrix  List provider coverage by category');
     writeLine(io, '      --scmdb-audit      List remaining SCMDB dependencies and migration classifications');
     writeLine(io, '      --dynamic-audit    List dynamic coverage signals, source gaps, and static mapping risks');
+    writeLine(io, '      --patch-drift-audit  Check DataCore CSV and record-graph drift after a patch');
     writeLine(io, '      --ptu              Use latest PTU source directories for report commands');
     writeLine(io, '      --force            Force update even when values are unchanged');
     writeLine(io, '  -v, --verbose          Enable verbose logging');

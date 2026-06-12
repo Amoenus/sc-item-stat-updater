@@ -101,6 +101,17 @@ test('update-item dynamic-audit reports dynamic coverage status', async () => {
   assert.equal(result.stderr, '');
 });
 
+test('update-item patch-drift-audit reports DataCore drift diagnostics', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--patch-drift-audit']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /DataCore patch drift audit/);
+  assert.match(result.stdout, /Record graph: present/);
+  assert.match(result.stdout, /powerplant\.datacore\.csv/);
+  assert.match(result.stdout, /Summary: \d+ patch drift warnings\./);
+  assert.equal(result.stderr, '');
+});
+
 test('update-item scmdb-audit reports remaining SCMDB dependencies', async () => {
   const result = await runCommand(['bin/update-item.ts', '--scmdb-audit']);
 

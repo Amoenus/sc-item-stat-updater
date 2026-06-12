@@ -41,6 +41,14 @@ async function makeTempWorkspace() {
     'utf8',
   );
   await fs.writeFile(
+    path.join(datacoreDir, 'weapongun.datacore.csv'),
+    [
+      'Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Alpha',
+      'jokr_distortioncannon_s1,item_NameJOKR_DistortionCannon_S1,item_NameJOKR_DistortionCannon_S1_short,item_DescJOKR_DistortionCannon_S1,JOKR,1,1,Gun,550,81',
+    ].join('\n'),
+    'utf8',
+  );
+  await fs.writeFile(
     path.join(datacoreDir, 'record-graph.json'),
     JSON.stringify(
       {
@@ -107,7 +115,10 @@ async function makeTempWorkspace() {
             rootTag: 'EntityClassDefinition.QDRV_WETK_S02_XL1_SCItem',
             rootType: 'EntityClassDefinition',
             entityClass: 'QDRV_WETK_S02_XL1_SCItem',
-            localizationKeys: [{ attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' }],
+            localizationKeys: [
+              { attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' },
+              { attribute: 'displayName', key: 'item_name_QDRV_WETK_S02_XL1_Display' },
+            ],
             referencedGuids: [],
           },
         ],
@@ -169,6 +180,8 @@ describe('runComponentTitleUpdate', () => {
           'item_Name_POWR_MISC_S01_Unknown=Unknown',
           'item_NameCOOL_JUST_S02_Snowfall=Snowfall',
           'item_Name_COOL_JUST_S02_Snowfall=Snowfall',
+          'item_NameJOKR_DistortionCannon_S1=Suckerpunch Cannon',
+          'item_NameJOKR_DistortionCannon_S1_short=SCKRPNCH',
           'item_name_unrelated=Brandt',
         ].join('\n'),
         'utf8',
@@ -177,9 +190,9 @@ describe('runComponentTitleUpdate', () => {
       const result = await runComponentTitleUpdate({ iniPath, datacoreDir, dryRun: false });
       const updated = await fs.readFile(iniPath, 'utf8');
 
-      assert.equal(result.updatedCount, 7);
-      assert.equal(result.matchedCount, 6);
-      assert.equal(result.scannedCount, 9);
+      assert.equal(result.updatedCount, 8);
+      assert.equal(result.matchedCount, 7);
+      assert.equal(result.scannedCount, 11);
       assert.match(updated, /item_Mining_Consumable_Brandt=Ind\/1\/A Brandt/);
       assert.match(updated, /item_Mining_Consumable_Brandt_red=Ind\/1\/A Brandt Red/);
       assert.match(updated, /item_Name_POWR_ACOM_S01_LumaCore=Cmp\/1\/A LumaCore/);
@@ -188,6 +201,8 @@ describe('runComponentTitleUpdate', () => {
       assert.match(updated, /item_Name_POWR_MISC_S01_Unknown=Unknown/);
       assert.match(updated, /item_NameCOOL_JUST_S02_Snowfall=Ind\/2\/B Snowfall/);
       assert.match(updated, /item_Name_COOL_JUST_S02_Snowfall=Ind\/2\/B Snowfall/);
+      assert.match(updated, /item_NameJOKR_DistortionCannon_S1=Gun\/1\/A Suckerpunch Cannon/);
+      assert.match(updated, /item_NameJOKR_DistortionCannon_S1_short=SCKRPNCH/);
       assert.match(updated, /item_name_unrelated=Brandt/);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
