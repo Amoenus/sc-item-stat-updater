@@ -1,18 +1,22 @@
 import cliProgress from 'cli-progress';
 import type { CommandIO } from './cli';
 
+interface EventScope {
+  parentId?: string;
+}
+
 export type CliEvent =
   | { type: 'phase'; message: string }
-  | { type: 'phase:start'; id: string; label: string; detail?: string; index?: number; total?: number }
-  | { type: 'task:start'; id: string; label: string; detail?: string }
-  | { type: 'task:success'; id: string; label: string; detail?: string }
-  | { type: 'task:skip'; id: string; label: string; detail?: string }
-  | { type: 'progress:start'; id: string; label: string; total: number; value?: number }
-  | { type: 'progress:update'; id: string; value: number; label?: string; total?: number }
-  | { type: 'progress:stop'; id: string }
-  | { type: 'activity:start'; id: string; label: string; detail?: string; unit?: string }
-  | { type: 'activity:update'; id: string; detail?: string; count?: number; unit?: string }
-  | { type: 'activity:stop'; id: string; detail?: string; count?: number; unit?: string }
+  | ({ type: 'phase:start'; id: string; label: string; detail?: string; index?: number; total?: number } & EventScope)
+  | ({ type: 'task:start'; id: string; label: string; detail?: string } & EventScope)
+  | ({ type: 'task:success'; id: string; label: string; detail?: string } & EventScope)
+  | ({ type: 'task:skip'; id: string; label: string; detail?: string } & EventScope)
+  | ({ type: 'progress:start'; id: string; label: string; total: number; value?: number } & EventScope)
+  | ({ type: 'progress:update'; id: string; value: number; label?: string; total?: number } & EventScope)
+  | ({ type: 'progress:stop'; id: string } & EventScope)
+  | ({ type: 'activity:start'; id: string; label: string; detail?: string; unit?: string } & EventScope)
+  | ({ type: 'activity:update'; id: string; detail?: string; count?: number; unit?: string } & EventScope)
+  | ({ type: 'activity:stop'; id: string; detail?: string; count?: number; unit?: string } & EventScope)
   | { type: 'line'; message?: string }
   | { type: 'warning'; message: string }
   | { type: 'error'; message: string }

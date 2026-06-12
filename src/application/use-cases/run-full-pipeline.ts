@@ -3,7 +3,7 @@ import { formatScmdbDependencyAudit } from '../diagnostics/scmdb-dependency-audi
 import { formatSourceFreshnessDiagnostics } from '../diagnostics/source-freshness-diagnostics';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
-import { refreshSourceCache } from './refresh-source-cache';
+import { refreshSourceCache, type SourceCacheSource } from './refresh-source-cache';
 import { runBatchUpdate } from './run-batch-update';
 import type { DataCoreTypeEntry } from './run-datacore-scrape';
 
@@ -26,7 +26,8 @@ export interface RunFullPipelineOptions {
   refreshSourcesUseCase?: typeof refreshSourceCache;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
-  onSourceStart?: (source: 'scmdb' | 'datacore') => void;
+  onSourceStart?: (source: SourceCacheSource) => void;
+  onSourceComplete?: (source: SourceCacheSource) => void;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
   onCacheExtractStart?: (dcbPath: string, xmlCacheDir: string, clearExisting: boolean) => void;
   onCacheExtractProgress?: (count: number) => void;
@@ -80,6 +81,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       force: options.force ?? options.forceExtract,
       log,
       onSourceStart: options.onSourceStart,
+      onSourceComplete: options.onSourceComplete,
       onCacheHit: options.onCacheHit,
       onCacheExtractStart: options.onCacheExtractStart,
       onCacheExtractProgress: options.onCacheExtractProgress,
@@ -93,8 +95,10 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       onTypeStart: options.onTypeStart,
     });
     if (cacheResult.exitCode !== 0) return { exitCode: cacheResult.exitCode, extractedGamePath, repoIniPath };
-    for (const source of cacheResult.refreshed) {
-      options.onStepComplete?.(`${source.toUpperCase()} cache refreshed`);
+    if (!options.onSourceComplete) {
+      for (const source of cacheResult.refreshed) {
+        options.onStepComplete?.(`${source.toUpperCase()} cache refreshed`);
+      }
     }
   } else {
     startPhase(

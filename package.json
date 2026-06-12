@@ -72,6 +72,7 @@
     "csv-parse": "^6.2.1",
     "csv-stringify": "^6.7.0",
     "domhandler": "^6.0.0",
+    "p-limit": "^7.3.0",
     "piscina": "^5.1.4",
     "zod": "^4.4.3"
   },
