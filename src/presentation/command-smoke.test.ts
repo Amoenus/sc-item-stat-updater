@@ -51,6 +51,7 @@ test('update-item help exits successfully and lists categories', async () => {
 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node update-item\.js \[options] <category>/);
+  assert.match(result.stdout, /--relationship-coverage-audit\s+Check graph vs fallback localization key coverage/);
   assert.match(result.stdout, /Available active update categories:/);
   assert.match(result.stdout, /dc-powerplants/);
   assert.match(result.stdout, /mission-datacore-descriptions/);
@@ -109,6 +110,17 @@ test('update-item patch-drift-audit reports DataCore drift diagnostics', async (
   assert.match(result.stdout, /Record graph: present/);
   assert.match(result.stdout, /powerplant\.datacore\.csv/);
   assert.match(result.stdout, /Summary: \d+ patch drift warnings\./);
+  assert.equal(result.stderr, '');
+});
+
+test('update-item relationship-coverage-audit reports DataCore graph coverage diagnostics', async () => {
+  const result = await runCommand(['bin/update-item.ts', '--relationship-coverage-audit']);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /DataCore relationship coverage audit/);
+  assert.match(result.stdout, /Components: \d+ total; \d+ with graph title keys; \d+ without graph title keys\./);
+  assert.match(result.stdout, /Matched INI name keys:/);
+  assert.match(result.stdout, /Summary: \d+ relationship coverage warnings\./);
   assert.equal(result.stderr, '');
 });
 

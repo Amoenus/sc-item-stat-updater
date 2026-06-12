@@ -40,6 +40,12 @@ const COMPONENT_FACT_REQUIRED_COLUMNS = ['Entity Class', 'Name Key', 'Manufactur
 type DataCoreRecordGraphLookup = Awaited<ReturnType<typeof loadDataCoreRecordGraph>>;
 
 export type ComponentClassSource = 'datacore-attachdef' | 'datacore-hauling' | 'datacore-derived' | 'scmdb-bridge';
+export type ComponentTitleKeySource = 'csv-name-key' | 'graph-localization' | 'guessed-alias';
+
+export interface ComponentTitleKey {
+  key: string;
+  source: ComponentTitleKeySource;
+}
 
 export interface ComponentFact {
   source: 'datacore';
@@ -56,6 +62,7 @@ export interface ComponentFact {
   componentClass?: string;
   componentClassSource?: ComponentClassSource;
   titleKeys: string[];
+  titleKeySources: ComponentTitleKey[];
   stats: Record<string, string>;
 }
 
@@ -237,6 +244,7 @@ function toComponentFact(
   const resolvedClass = getComponentClass(row, entityClassToHaulingClass, manufacturerTypeToClass);
   const entityClass = normalizeDataCoreEntityClass(row.row['Entity Class']);
   const manufacturerCode = getComponentManufacturer(row.row);
+  const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys);
 
   return {
     source: 'datacore',
@@ -251,7 +259,8 @@ function toComponentFact(
     grade: normalizeSpaces(row.row.Grade),
     componentClass: resolvedClass?.value,
     componentClassSource: resolvedClass?.source,
-    titleKeys: getComponentTitleKeys(row.row, row.recordLocalizationKeys),
+    titleKeys: uniqueKeys(titleKeySources.map(({ key }) => key)),
+    titleKeySources,
     stats: getComponentStats(row.row),
   };
 }
@@ -311,27 +320,36 @@ function getComponentManufacturer(row: Record<string, string>): string {
   return parts.length >= 2 ? parts[1].toUpperCase() : '';
 }
 
-function getComponentTitleKeys(row: Record<string, string>, recordLocalizationKeys: string[]): string[] {
-  const keys = new Set<string>();
+function getComponentTitleKeySources(
+  row: Record<string, string>,
+  recordLocalizationKeys: string[],
+): ComponentTitleKey[] {
+  const keys: ComponentTitleKey[] = [];
   const nameKey = normalizeLocalizationKey(row['Name Key']);
-  if (nameKey) keys.add(nameKey);
+  if (nameKey) keys.push({ key: nameKey, source: 'csv-name-key' });
 
   for (const key of recordLocalizationKeys) {
     const normalized = normalizeDataCoreRelationshipLocalizationKey(key);
     if (normalized.startsWith('item_name')) {
-      keys.add(normalized);
+      keys.push({ key: normalized, source: 'graph-localization' });
     }
   }
 
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (entityClass) {
-    keys.add(`item_name${entityClass}`);
-    keys.add(`item_name_${entityClass}`);
-    keys.add(`item_name${entityClass}_scitem`);
-    keys.add(`item_name_${entityClass}_scitem`);
+    keys.push(
+      { key: `item_name${entityClass}`, source: 'guessed-alias' },
+      { key: `item_name_${entityClass}`, source: 'guessed-alias' },
+      { key: `item_name${entityClass}_scitem`, source: 'guessed-alias' },
+      { key: `item_name_${entityClass}_scitem`, source: 'guessed-alias' }
+    );
   }
 
-  return [...keys];
+  return keys;
+}
+
+function uniqueKeys(keys: string[]): string[] {
+  return [...new Set(keys)];
 }
 
 function normalizeLocalizationKey(value: unknown): string {

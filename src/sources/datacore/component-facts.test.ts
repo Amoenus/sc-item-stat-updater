@@ -174,6 +174,15 @@ describe('DataCore component facts', () => {
         'item_name_qdrv_wetk_s02_xl1',
         'item_name_qdrv_wetk_s02_xl1_scitem',
       ]);
+      assert.deepEqual(xl1?.titleKeySources, [
+        { key: 'item_nameqdrv_wetk_s02_xl1_scitem', source: 'csv-name-key' },
+        { key: 'item_name_qdrv_wetk_s02_xl1_display', source: 'graph-localization' },
+        { key: 'item_nameqdrv_wetk_s02_xl1_scitem', source: 'graph-localization' },
+        { key: 'item_nameqdrv_wetk_s02_xl1', source: 'guessed-alias' },
+        { key: 'item_name_qdrv_wetk_s02_xl1', source: 'guessed-alias' },
+        { key: 'item_nameqdrv_wetk_s02_xl1_scitem', source: 'guessed-alias' },
+        { key: 'item_name_qdrv_wetk_s02_xl1_scitem', source: 'guessed-alias' },
+      ]);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }

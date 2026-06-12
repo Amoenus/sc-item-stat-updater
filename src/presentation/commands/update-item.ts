@@ -10,6 +10,10 @@ import {
   formatDataCorePatchDriftDiagnostics,
 } from '../../application/diagnostics/datacore-patch-drift-diagnostics';
 import {
+  buildDataCoreRelationshipCoverageDiagnostics,
+  formatDataCoreRelationshipCoverageDiagnostics,
+} from '../../application/diagnostics/datacore-relationship-coverage-diagnostics';
+import {
   buildDynamicCoverageAudit,
   formatDynamicCoverageAudit,
 } from '../../application/diagnostics/dynamic-coverage-audit';
@@ -46,6 +50,7 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
       'scmdb-audit': { type: 'boolean', default: false },
       'dynamic-audit': { type: 'boolean', default: false },
       'patch-drift-audit': { type: 'boolean', default: false },
+      'relationship-coverage-audit': { type: 'boolean', default: false },
       ptu: { type: 'boolean', default: false },
       force: { type: 'boolean', default: false },
       verbose: { type: 'boolean', short: 'v', default: false },
@@ -83,6 +88,19 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
     return 0;
   }
 
+  if (values['relationship-coverage-audit']) {
+    writeLine(
+      io,
+      formatDataCoreRelationshipCoverageDiagnostics(
+        await buildDataCoreRelationshipCoverageDiagnostics({
+          ptu: values.ptu,
+          iniPath: values['ini-path'],
+        }),
+      ),
+    );
+    return 0;
+  }
+
   if (values.help || !category) {
     const available = await listCategories();
     const activeSlugs = [...available.datacore, ...available.missions];
@@ -96,6 +114,7 @@ export async function runUpdateItemCommand(argv: string[], io: CommandIO = defau
     writeLine(io, '      --scmdb-audit      List remaining SCMDB dependencies and migration classifications');
     writeLine(io, '      --dynamic-audit    List dynamic coverage signals, source gaps, and static mapping risks');
     writeLine(io, '      --patch-drift-audit  Check DataCore CSV and record-graph drift after a patch');
+    writeLine(io, '      --relationship-coverage-audit  Check graph vs fallback localization key coverage');
     writeLine(io, '      --ptu              Use latest PTU source directories for report commands');
     writeLine(io, '      --force            Force update even when values are unchanged');
     writeLine(io, '  -v, --verbose          Enable verbose logging');
