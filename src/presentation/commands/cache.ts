@@ -1,9 +1,13 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { refreshSourceCache, type SourceCacheTarget } from '../../application/use-cases/refresh-source-cache';
+import {
+  refreshSourceCache,
+  type SourceCacheSource,
+  type SourceCacheTarget,
+} from '../../application/use-cases/refresh-source-cache';
 import type { DataCoreTypeEntry } from '../../application/use-cases/run-datacore-scrape';
-import { type CommandIO, defaultCommandIO, isNpmConfigFlagEnabled, writeLine } from '../cli';
-import { createCliEventRenderer } from '../events';
+import { type CommandIO, defaultCommandIO, isNpmConfigFlagEnabled, writeErrorLine, writeLine } from '../cli';
+import { type CommandTask, createCommandTaskList } from '../task-list';
 
 const ROOT_DIR = path.resolve(import.meta.dirname, '..', '..', '..');
 
@@ -54,127 +58,93 @@ export async function runCacheCommand(
   }
 
   const target = parseTarget(values.source);
-  const renderer = createCliEventRenderer(io);
   const refresh = dependencies.refreshSourceCache ?? refreshSourceCache;
   const force = values['rebuild-cache'] || isNpmConfigFlagEnabled('rebuild-cache');
-  let scrapeTypesCount = 0;
-  const sourceRefreshPhaseId = 'refresh-sources';
 
-  renderer.emit({
-    type: 'phase:start',
-    id: sourceRefreshPhaseId,
-    label: target === 'all' ? 'Refresh source caches' : `Refresh ${target.toUpperCase()} cache`,
-  });
+  try {
+    await createCommandTaskList(
+      [
+        {
+          title: target === 'all' ? 'Refresh source caches' : `Refresh ${target.toUpperCase()} cache`,
+          task: (_ctx, task) => task.newListr(createSourceTasks(target, refresh, values.ptu, force), { concurrent: 2 }),
+        },
+      ],
+      io,
+      {},
+    ).run();
+  } catch (error) {
+    writeErrorLine(io, error instanceof Error ? error.message : String(error));
+    return 1;
+  }
 
-  const result = await refresh({
-    repoRoot: ROOT_DIR,
-    target,
-    ptu: values.ptu,
-    force,
-    log: (message) => writeLine(io, `[cache] ${message}`),
-    onSourceStart: (source) => {
-      renderer.emit({
-        type: 'task:start',
-        id: `${source}-cache`,
-        parentId: sourceRefreshPhaseId,
-        label: `${source.toUpperCase()} cache`,
-        detail: 'refreshing source outputs',
-      });
-    },
-    onSourceComplete: (source) => {
-      renderer.emit({
-        type: 'task:success',
-        id: `${source}-cache`,
-        parentId: sourceRefreshPhaseId,
-        label: `${source.toUpperCase()} cache`,
-        detail: 'source outputs refreshed',
-      });
-    },
-    onCacheExtractStart: () => {
-      writeLine(io, '[cache] WARNING: DataCore unforge can take several minutes.');
-      renderer.emit({
-        type: 'activity:start',
-        id: 'unforge',
-        parentId: 'datacore-cache',
-        label: 'Unforge',
-        detail: 'extracting XML records...',
-      });
-    },
-    onCacheExtractProgress: (count) => {
-      renderer.emit({
-        type: 'activity:update',
-        id: 'unforge',
-        parentId: 'datacore-cache',
-        count,
-        unit: 'XMLs extracted',
-      });
-    },
-    onCacheExtractComplete: (count) => {
-      renderer.emit({
-        type: 'activity:stop',
-        id: 'unforge',
-        parentId: 'datacore-cache',
-        count,
-        unit: 'XMLs extracted',
-      });
-    },
-    onCacheHit: (count) => {
-      renderer.emit({
-        type: 'task:success',
-        id: 'unforge-cache',
-        parentId: 'datacore-cache',
-        label: 'DataCore XML cache',
-        detail: `${count.toLocaleString()} files reused`,
-      });
-    },
-    onDatacorePrepared: (context) => {
-      scrapeTypesCount = context.selectedTypes.length;
-    },
-    onRecordGraphStart: (total) => {
-      renderer.emit({ type: 'progress:start', id: 'graph', parentId: 'datacore-cache', label: 'Graph', total });
-    },
-    onRecordGraphProgress: (current, total) => {
-      renderer.emit({ type: 'progress:update', id: 'graph', parentId: 'datacore-cache', value: current, total });
-      if (current >= total) renderer.emit({ type: 'progress:stop', id: 'graph', parentId: 'datacore-cache' });
-    },
-    onRecordGraphCacheHit: (_recordCount, outputPath) => {
-      renderer.emit({
-        type: 'task:success',
-        id: 'record-graph-cache',
-        parentId: 'datacore-cache',
-        label: 'DataCore record graph',
-        detail: `cached at ${outputPath}`,
-      });
-    },
-    onRawFactStart: (slug, total) => {
-      renderer.emit({ type: 'progress:start', id: 'scrape', parentId: 'datacore-cache', label: 'DataCore', total });
-      renderer.emit({ type: 'progress:update', id: 'scrape', parentId: 'datacore-cache', value: 0, label: slug });
-    },
-    onRawFactProgress: (current) => {
-      renderer.emit({ type: 'progress:update', id: 'scrape', parentId: 'datacore-cache', value: current });
-    },
-    onTypeStart: (entry: DataCoreTypeEntry, index) => {
-      if (index === 0)
-        renderer.emit({
-          type: 'progress:start',
-          id: 'scrape',
-          parentId: 'datacore-cache',
-          label: 'DataCore',
-          total: scrapeTypesCount,
-        });
-      renderer.emit({
-        type: 'progress:update',
-        id: 'scrape',
-        parentId: 'datacore-cache',
-        value: index,
-        label: entry.name,
-      });
-    },
-  });
+  writeLine(io, `\nCache refresh complete: ${selectSources(target).join(', ') || 'none'}`);
+  return 0;
+}
 
-  renderer.emit({ type: 'progress:update', id: 'scrape', parentId: 'datacore-cache', value: scrapeTypesCount });
-  renderer.emit({ type: 'progress:stop', id: 'scrape', parentId: 'datacore-cache' });
-  renderer.stopAll();
-  renderer.emit({ type: 'summary', message: `\nCache refresh complete: ${result.refreshed.join(', ') || 'none'}` });
-  return result.exitCode;
+function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
+  if (target === 'scmdb') return ['scmdb'];
+  if (target === 'datacore') return ['datacore'];
+  return ['scmdb', 'datacore'];
+}
+
+function createSourceTasks(
+  target: SourceCacheTarget,
+  refresh: typeof refreshSourceCache,
+  ptu: boolean,
+  force: boolean,
+): CommandTask<Record<string, never>>[] {
+  return selectSources(target).map((source) => ({
+    title: `${source.toUpperCase()} cache`,
+    task: async (_ctx, task) => {
+      let scrapeTypesCount = 0;
+      const result = await refresh({
+        repoRoot: ROOT_DIR,
+        target: source,
+        ptu,
+        force,
+        log: (message) => {
+          task.output = message;
+        },
+        onCacheExtractStart: () => {
+          task.output = 'Unforge: extracting XML records. This can take several minutes.';
+        },
+        onCacheExtractProgress: (count) => {
+          task.output = `Unforge: ${count.toLocaleString()} XMLs extracted`;
+        },
+        onCacheExtractComplete: (count) => {
+          task.output = `Unforge complete: ${count.toLocaleString()} XML records cached`;
+        },
+        onCacheHit: (count) => {
+          task.output = `DataCore XML cache reused: ${count.toLocaleString()} files`;
+        },
+        onDatacorePrepared: (context) => {
+          scrapeTypesCount = context.selectedTypes.length;
+          task.output = `Prepared ${scrapeTypesCount.toLocaleString()} DataCore type extractors`;
+        },
+        onRecordGraphStart: (total) => {
+          task.output = `Building record graph from ${total.toLocaleString()} XML files`;
+        },
+        onRecordGraphProgress: (current, total) => {
+          task.output = `Record graph: ${current.toLocaleString()}/${total.toLocaleString()}`;
+        },
+        onRecordGraphCacheHit: (recordCount) => {
+          task.output = `DataCore record graph reused: ${recordCount.toLocaleString()} records`;
+        },
+        onRawFactStart: (slug, total) => {
+          task.output = `Extracting ${slug}: 0/${total.toLocaleString()}`;
+        },
+        onRawFactProgress: (current) => {
+          task.output = `Extracting raw facts: ${current.toLocaleString()}`;
+        },
+        onTypeStart: (entry: DataCoreTypeEntry, index) => {
+          task.output = `Scraping ${index + 1}/${scrapeTypesCount}: ${entry.name}`;
+        },
+      });
+
+      if (result.exitCode !== 0) {
+        throw new Error(`${source.toUpperCase()} cache refresh failed.`);
+      }
+      task.output = `${source.toUpperCase()} source outputs refreshed`;
+    },
+  }));
 }
