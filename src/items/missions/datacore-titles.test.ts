@@ -29,15 +29,33 @@ async function makeWorkspace() {
         'Record Path',
       ].join(','),
       ['TestGenerator', 'contracts', 'root-contract', 'RootContract', 'root_title', '', recordPath].join(','),
-      ['TestGenerator', 'contracts', 'reward-contract', 'RewardContract', 'reward_title', 'reward_title_alt', recordPath].join(
-        ',',
-      ),
-      ['TestGenerator', 'contracts', 'mixed-reward-contract', 'StantonRewardContract', 'mixed_title', '', recordPath].join(
-        ',',
-      ),
-      ['TestGenerator', 'contracts', 'mixed-empty-contract', 'PyroNoRewardContract', 'mixed_title', '', recordPath].join(
-        ',',
-      ),
+      [
+        'TestGenerator',
+        'contracts',
+        'reward-contract',
+        'RewardContract',
+        'reward_title',
+        'reward_title_alt',
+        recordPath,
+      ].join(','),
+      [
+        'TestGenerator',
+        'contracts',
+        'mixed-reward-contract',
+        'StantonRewardContract',
+        'mixed_title',
+        '',
+        recordPath,
+      ].join(','),
+      [
+        'TestGenerator',
+        'contracts',
+        'mixed-empty-contract',
+        'PyroNoRewardContract',
+        'mixed_title',
+        '',
+        recordPath,
+      ].join(','),
       ['TestGenerator', 'introContracts', 'intro-contract', 'IntroContract', 'intro_title', '', recordPath].join(','),
     ].join('\n'),
     'utf8',
@@ -115,7 +133,10 @@ describe('loadDatacoreTitlesSourceData', () => {
       assert.equal(notes.get('mixed_title'), ' <EM4>[BP]*</EM4>');
       assert.equal(notes.get('root_title'), ' <EM4>[BP Chain]</EM4>');
       assert.equal(notes.get('intro_title'), ' <EM4>[Intro]</EM4>');
-      assert.equal(config.buildValue({ TitleNote: notes.get('reward_title') ?? '' }, '', 'Recover Prototype', ''), 'Recover Prototype <EM4>[BP]</EM4>');
+      assert.equal(
+        config.buildValue({ TitleNote: notes.get('reward_title') ?? '' }, '', 'Recover Prototype', ''),
+        'Recover Prototype <EM4>[BP]</EM4>',
+      );
       assert.equal(
         config.buildValue({ TitleNote: notes.get('mixed_title') ?? '' }, '', 'Recover Prototype <EM4>[BP]</EM4>', ''),
         'Recover Prototype <EM4>[BP]*</EM4>',
@@ -128,6 +149,15 @@ describe('loadDatacoreTitlesSourceData', () => {
           '',
         ),
         'Recover Prototype <EM4>[BP]*</EM4>',
+      );
+      assert.equal(
+        config.buildValue(
+          { TitleNote: ' <EM4>[BP]*</EM4> <EM4>[BP]*</EM4>' },
+          '',
+          'High-Risk Bounty: ~mission(TargetName)',
+          'EckhartSecurity_EliminateBoss_DC_Title_001',
+        ),
+        'High-Risk Bounty: ~mission(TargetName) <EM4>[BP]*</EM4>',
       );
     } finally {
       await fs.rm(dir, { recursive: true, force: true });

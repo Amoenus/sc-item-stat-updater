@@ -101,7 +101,7 @@ describe('preflightCheckConfigs', () => {
         assert.ok(err.message.includes('LIVE'), 'should name the channel');
         assert.ok(err.message.includes('dc-coolers'), 'should name the category');
         assert.ok(err.message.includes(expectedPath), 'should include the expected path');
-        assert.ok(err.message.includes('npm run scrape:datacore'), 'should suggest the DataCore scraper');
+        assert.ok(err.message.includes('npm run cache:datacore'), 'should suggest the DataCore cache refresh');
         return true;
       });
     } finally {
@@ -126,7 +126,7 @@ describe('preflightCheckConfigs', () => {
         assert.ok(err.message.includes('PTU'), 'should name the channel');
         assert.ok(err.message.includes('mission-descriptions'), 'should name the category');
         assert.ok(err.message.includes(expectedPath), 'should include the expected path');
-        assert.ok(err.message.includes('npm run scrape:scmdb -- --ptu'), 'should suggest the SCMDB PTU scraper');
+        assert.ok(err.message.includes('npm run cache:scmdb -- --ptu'), 'should suggest the SCMDB PTU cache refresh');
         return true;
       });
     } finally {
@@ -205,7 +205,7 @@ describe('preflightCheckConfigs', () => {
         assert.ok(err.message.includes('DataCore'), 'should report the companion file provider');
         assert.ok(err.message.includes('commodities.datacore.csv'));
         assert.ok(err.message.includes(expectedPath));
-        assert.ok(err.message.includes('npm run scrape:datacore'));
+        assert.ok(err.message.includes('npm run cache:datacore'));
         return true;
       });
     } finally {
@@ -240,7 +240,7 @@ describe('preflightCheckConfigs', () => {
           assert.ok(err.message.includes('LIVE'), 'should name the channel');
           assert.ok(err.message.includes('datacore-vehicles'), 'should name the raw fact slug');
           assert.ok(err.message.includes(expectedPath), 'should include the expected path');
-          assert.ok(err.message.includes('npm run scrape:datacore'), 'should suggest the DataCore scraper');
+          assert.ok(err.message.includes('npm run cache:datacore'), 'should suggest the DataCore cache refresh');
           return true;
         },
       );
@@ -278,7 +278,7 @@ describe('preflightCheckConfigs', () => {
           assert.ok(err.message.includes('datacore-factions'), 'should name the raw fact slug');
           assert.ok(err.message.includes(expectedPath), 'should include the expected path');
           assert.ok(err.message.includes('expected at least one data row'), 'should report the empty file issue');
-          assert.ok(err.message.includes('npm run scrape:datacore'), 'should suggest the DataCore scraper');
+          assert.ok(err.message.includes('npm run cache:datacore'), 'should suggest the DataCore cache refresh');
           return true;
         },
       );

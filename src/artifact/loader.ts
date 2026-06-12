@@ -10,7 +10,7 @@
  * API instead of Node fs — the interface is intentionally kept generic.
  */
 
-import { validateIntegrity } from '../application/use-cases/update-planning';
+import { validateIntegrity } from '../application/update/update-planning';
 import { getLogger } from '../infrastructure/logger';
 import { findIniKey, readIniFile, writeIniFile } from '../localization/ini-file';
 

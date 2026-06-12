@@ -2,14 +2,14 @@ import fs from 'node:fs/promises';
 import type { ItemSourceFileDeclaration } from '../../enrichment/item-config';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { DATACORE_RAW_FACTS, type RawFactListingEntry } from './category-listing';
+import { DATACORE_RAW_FACTS, type RawFactListingEntry } from '../catalog/category-listing';
 import type {
   PreparedUpdateCategories,
   UpdateCategory,
   UpdateChannel,
   UpdateProvider,
   UpdateSourceProvider,
-} from './prepare-update-categories';
+} from '../use-cases/prepare-update-categories';
 
 export interface SourceVersionDiagnostic {
   provider: UpdateSourceProvider;

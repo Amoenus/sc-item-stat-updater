@@ -28,9 +28,6 @@ Game install
 SCMDB website
   -> download/scrape enriched web data
 
-Optional legacy sources
-  -> SPViewer comparison data
-
 Normalized source datasets
   -> enrichment planners
   -> patch plan / artifact
@@ -49,7 +46,6 @@ Examples:
 - Extract `global.ini` from `Data.p4k`.
 - Extract `Data/Game2.dcb` from `Data.p4k` into the repo-owned DCB cache, then extract DataCore/game-file records from that cached DCB.
 - Download SCMDB JSON/CSV-derived data.
-- Scrape SPViewer data when it is useful as legacy comparison or audit input.
 
 Acquisition code knows about external tools, network access, cache directories, file discovery, and source-specific retrieval mechanics.
 
@@ -61,7 +57,6 @@ Examples:
 
 - DataCore XML becomes typed component-stat records.
 - SCMDB merged JSON becomes typed mission, mining, commodity, and crafting records.
-- SPViewer tables become typed item-stat records for legacy comparison flows.
 
 Source quirks belong here. Later stages should not need to know whether a value came from XML attributes, CSV columns, nested SCMDB JSON, or scraped HTML.
 
@@ -116,10 +111,10 @@ src/
   pipeline/         # Core pipeline data contracts
   presentation/     # CLI argument and presentation helpers
   schema/           # Runtime schemas
-  sources/          # DataCore, SCMDB, and SPViewer source acquisition/normalization
+  sources/          # DataCore and SCMDB source acquisition/normalization
 ```
 
-DataCore and SCMDB expose source-boundary modules under `src/sources/*`. SPViewer remains a legacy comparison source and exposes its HTML parser facade and dataset types under `src/sources/spviewer`, but it is no longer part of active batch provider selection.
+DataCore and SCMDB expose source-boundary modules under `src/sources/*`. SPViewer is retired from active support; historical retirement notes remain under `docs/spviewer-retirement-*`, but new pipeline work should not add SPViewer paths.
 
 ## Core Concepts
 
@@ -129,7 +124,7 @@ A validated collection of records from one provider/version/channel.
 
 ```ts
 type SourceDataset<T> = {
-  source: 'datacore' | 'scmdb' | 'spviewer';
+  source: 'datacore' | 'scmdb';
   version: string;
   channel: 'live' | 'ptu';
   records: T[];

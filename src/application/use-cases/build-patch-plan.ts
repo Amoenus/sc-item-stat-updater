@@ -9,7 +9,7 @@ import {
   resolveSpviewerKeys,
   type UpdateOptions,
   type UpdatePlanResult,
-} from './update-planning';
+} from '../update/update-planning';
 
 export type BuildPatchPlanOptions = Pick<
   UpdateOptions,

@@ -18,7 +18,7 @@ Current intentional compatibility:
 
 - Patch artifacts keep the ADR 002 JSON shape for backward compatibility.
 - Artifact JSON does not serialize localization application metadata such as `existingLineIndex`.
-- SPViewer remains a legacy comparison/audit source; active batch item-stat selection uses DataCore.
+- Retired SPViewer audit notes remain historical only; active batch item-stat selection uses DataCore.
 
 ## Tracked Functional Backlog
 

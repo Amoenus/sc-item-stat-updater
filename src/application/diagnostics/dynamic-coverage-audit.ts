@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
-import { inferCategorySourceProvider, type UpdateSourceProvider } from './prepare-update-categories';
+import { inferCategorySourceProvider, type UpdateSourceProvider } from '../use-cases/prepare-update-categories';
 
 export type DynamicCoverageStatus = 'dynamic' | 'needs-review' | 'known-source-gap';
 
@@ -36,14 +36,20 @@ const STATIC_SOURCE_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
 ];
 
 const GROUPING_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
-  { pattern: /\bgetOrCreateRow\b|\bgetOrCreate[A-Z]\w*\b/, signal: 'aggregates multiple source rows per localization key' },
+  {
+    pattern: /\bgetOrCreateRow\b|\bgetOrCreate[A-Z]\w*\b/,
+    signal: 'aggregates multiple source rows per localization key',
+  },
   { pattern: /\bByDescriptionKey\b|\bbyDescriptionKey\b/, signal: 'groups facts by description/localization key' },
   { pattern: /Description Variant Keys/, signal: 'handles shared description variant keys' },
 ];
 
 const DYNAMIC_TARGET_KEY_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
   { pattern: /\bgetRawDataCoreTargetKeys\b/, signal: 'uses raw DataCore localization keys' },
-  { pattern: /\bmakeGetTargetKeys\b|\bmakeGetTargetKeysFromPrefixMap\b/, signal: 'uses shared DataCore target-key derivation' },
+  {
+    pattern: /\bmakeGetTargetKeys\b|\bmakeGetTargetKeysFromPrefixMap\b/,
+    signal: 'uses shared DataCore target-key derivation',
+  },
   { pattern: /\bmakeAlternateDataCoreDescKeys\b/, signal: 'uses shared DataCore localization variant handling' },
 ];
 
@@ -75,10 +81,10 @@ function unique(values: string[]): string[] {
   return [...new Set(values)];
 }
 
-function sourceSignals(config: ItemConfig, sourceText: string): Pick<
-  DynamicCoverageAuditEntry,
-  'dynamicSignals' | 'reviewSignals' | 'sourceGapSignals' | 'status'
-> {
+function sourceSignals(
+  config: ItemConfig,
+  sourceText: string,
+): Pick<DynamicCoverageAuditEntry, 'dynamicSignals' | 'reviewSignals' | 'sourceGapSignals' | 'status'> {
   const dynamicSignals: string[] = [];
   const reviewSignals: string[] = [];
   const sourceGapSignals: string[] = [];
@@ -110,7 +116,7 @@ function sourceSignals(config: ItemConfig, sourceText: string): Pick<
     sourceGapSignals.push('still uses SCMDB bridge because equivalent DataCore join is not active');
   }
   if (provider === 'spviewer') {
-    sourceGapSignals.push('legacy SPViewer source remains outside the DataCore graph');
+    sourceGapSignals.push('retired SPViewer source is outside the active DataCore graph');
   }
 
   const status: DynamicCoverageStatus =
@@ -160,8 +166,7 @@ export async function buildDynamicCoverageAudit(): Promise<DynamicCoverageAudit>
 
   const entries = await Promise.all(categories.map(buildEntry));
   return {
-    goal:
-      'Prefer DataCore graph-derived facts, treat global.ini as a localization target, and keep SCMDB limited to documented enhancement or source-gap data.',
+    goal: 'Prefer DataCore graph-derived facts, treat global.ini as a localization target, and keep SCMDB limited to documented enhancement or source-gap data.',
     entries: entries.sort((a, b) => a.slug.localeCompare(b.slug)),
   };
 }

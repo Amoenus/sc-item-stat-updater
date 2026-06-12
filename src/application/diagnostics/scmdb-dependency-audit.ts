@@ -1,6 +1,6 @@
 import { loadMissionConfigs } from '../../items/registry';
-import type { UpdateProvider } from './prepare-update-categories';
-import { getUpdateExtraStepLabels, type UpdateExtraStepLabel } from './run-update-extra-steps';
+import type { UpdateProvider } from '../use-cases/prepare-update-categories';
+import { getUpdateExtraStepLabels, type UpdateExtraStepLabel } from '../use-cases/run-update-extra-steps';
 
 export type ScmdbDependencyClassification =
   | 'Already extractable from DataCore'
@@ -159,7 +159,7 @@ export async function buildScmdbDependencyAudit(
     sourceHierarchy: [
       'DataCore/Data.p4k: authoritative source for game-derived raw facts.',
       'SCMDB: temporary bridge for derived/generated mission, blueprint, crafting, and mining aggregations not yet reconstructed from DataCore.',
-      'SPViewer: legacy comparison/audit source only.',
+      'SPViewer: retired from active pipeline/cache/update support.',
     ],
     entries,
   };

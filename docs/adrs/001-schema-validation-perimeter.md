@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-The application relies heavily on data fetched from upstream APIs (like SPViewer and SCMDB). These APIs belong to third parties and their data structures can change without any prior notice. If the data structure changes unexpectedly, the transformation logic might produce corrupted or incorrect `.ini` update strings. This would result in writing a malformed `global.ini` file for the user, potentially breaking their game configuration.
+The application relies on data fetched from upstream sources such as SCMDB, plus structured data extracted from local game files. Third-party web data can change without any prior notice. If the data structure changes unexpectedly, the transformation logic might produce corrupted or incorrect `.ini` update strings. This would result in writing a malformed `global.ini` file for the user, potentially breaking their game configuration.
 
 ## Decision
 We will use **Zod** to strictly validate all incoming data from external sources at runtime before any processing occurs.

@@ -4,13 +4,15 @@
 Accepted, future-facing
 
 ## Context
-The local CLI can scrape or extract data directly. If many users run web scraping at the same time, especially against third-party sources such as SCMDB or SPViewer, the project could create redundant upstream load. Game-file extraction can happen locally, but web data is a better candidate for shared artifacts when possible.
+The local CLI can scrape or extract data directly. If many users run web scraping at the same time, especially against third-party sources such as SCMDB, the project could create redundant upstream load. Game-file extraction can happen locally, but web data is a better candidate for shared artifacts when possible.
 
 ## Decision
 For shared web-source data, we may use scheduled GitHub Actions to run acquisition and patch planning centrally.
-* The CI job can acquire SCMDB/SPViewer data politely.
+* The CI job can acquire SCMDB data politely.
 * It can generate optimized intermediary JSON artifacts.
 * It can publish artifacts for local or future static-client consumption.
+
+Retired providers are not in scope for new shared acquisition jobs.
 
 The local pipeline remains the primary workflow for extracting `global.ini` and game-file data from the user's installed game.
 

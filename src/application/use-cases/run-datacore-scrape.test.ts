@@ -26,7 +26,7 @@ import { DATACORE_TYPE_CONFIG as WEAPON_DEFENSIVE_TYPE_CONFIG } from '../../item
 import { DATACORE_TYPE_CONFIG as WEAPON_GUN_TYPE_CONFIG } from '../../items/datacore/weapon-guns';
 import { DATACORE_TYPE_CONFIG as WEAPON_PERSONAL_TYPE_CONFIG } from '../../items/datacore/weapon-personal';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
-import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_RAW_FACTS } from '../catalog/category-listing';
 import { type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
 
 const typeEntry: DataCoreTypeEntry = {

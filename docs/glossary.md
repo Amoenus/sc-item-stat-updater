@@ -14,7 +14,7 @@ The local Star Citizen installation directory. The app reads source files from t
 
 ### Source
 
-Any place we acquire data from. Current and expected sources include game files/DataCore, SCMDB, and SPViewer.
+Any place we acquire data from. Current active sources are game files/DataCore and SCMDB.
 
 ### Source Dataset
 
@@ -64,7 +64,7 @@ The Star Citizen Metadata Database. This source provides organized and enriched 
 
 ### SPViewer
 
-A third-party source previously used for item stats. It remains useful as a legacy comparison/audit source, but DataCore is the active item-stat provider.
+A retired third-party source previously used for item stats. DataCore is the active item-stat provider; do not add SPViewer to new pipeline, cache, or enrichment work.
 
 ## Localization Terms
 

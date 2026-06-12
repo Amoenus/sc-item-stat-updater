@@ -24,7 +24,6 @@ import { buildDataCoreContractHaulingSummary } from '../../sources/datacore/cont
 import { extractDataCoreContractTemplates } from '../../sources/datacore/contract-template-extractor';
 import { extractDataCoreContractTemplateHaulingOrders } from '../../sources/datacore/contract-template-hauling-extractor';
 import { extractDataCoreCraftingBlueprints } from '../../sources/datacore/crafting-blueprint-extractor';
-import { extractDataCoreMaterialLocalizations } from '../../sources/datacore/material-localization-extractor';
 import { extractDataCoreFactions } from '../../sources/datacore/faction-extractor';
 import { extractDataCoreLocationLabels } from '../../sources/datacore/location-label-extractor';
 import { extractDataCoreManufacturers } from '../../sources/datacore/manufacturer-extractor';
@@ -32,6 +31,7 @@ import {
   createDataCoreManufacturerResolver,
   type DataCoreManufacturerResolver,
 } from '../../sources/datacore/manufacturer-resolver';
+import { extractDataCoreMaterialLocalizations } from '../../sources/datacore/material-localization-extractor';
 import { extractDataCoreMineableEntities } from '../../sources/datacore/mineable-entity-extractor';
 import { extractDataCoreMiningClustering } from '../../sources/datacore/mining-clustering-extractor';
 import { extractDataCoreMiningCompositions } from '../../sources/datacore/mining-composition-extractor';
@@ -95,7 +95,7 @@ import {
   loadXml,
   xmlVal,
 } from '../../sources/datacore/xml-parser';
-import { DATACORE_RAW_FACTS } from './category-listing';
+import { DATACORE_RAW_FACTS } from '../catalog/category-listing';
 
 export interface DataCoreTypeEntry {
   name: string;
@@ -1381,8 +1381,6 @@ export async function runDatacoreScrape(options: RunDatacoreScrapeOptions): Prom
     missionLocalizationResult.csvFile,
     Boolean(options.dryRun),
   );
-  console.log("HELLO FROM BLUEPRINT POOL EXTRACTOR TRIGGER");
-
   const blueprintPoolRows = await extractBlueprintPools({
     xmlCacheDir,
     graph: graphLookup,
@@ -3133,18 +3131,10 @@ async function writeBlueprintPoolsCsv(
   options: { outputBase: string; dryRun?: boolean },
 ): Promise<DataCoreScrapeBlueprintPoolsResult> {
   if (!options.dryRun) {
-    const csvRows = rows.map((row) => [
-      row.poolClass,
-      row.blueprintGuids,
-      row.ref,
-      row.path,
-    ]);
+    const csvRows = rows.map((row) => [row.poolClass, row.blueprintGuids, row.ref, row.path]);
     await fs.writeFile(
       path.join(options.outputBase, 'blueprint-pools.datacore.csv'),
-      stringify([
-        ['PoolClass', 'BlueprintGuids', 'Ref', 'Path'],
-        ...csvRows,
-      ]),
+      stringify([['PoolClass', 'BlueprintGuids', 'Ref', 'Path'], ...csvRows]),
       'utf8',
     );
   }
@@ -3168,7 +3158,15 @@ async function writeCraftingBlueprintsCsv(
     await fs.writeFile(
       path.join(options.outputBase, 'crafting-blueprints.datacore.csv'),
       stringify([
-        ['BlueprintClass', 'TargetEntityClassGuid', 'TargetEntityClass', 'TargetItemNameKey', 'RecipeCosts', 'Ref', 'Path'],
+        [
+          'BlueprintClass',
+          'TargetEntityClassGuid',
+          'TargetEntityClass',
+          'TargetItemNameKey',
+          'RecipeCosts',
+          'Ref',
+          'Path',
+        ],
         ...csvRows,
       ]),
       'utf8',
@@ -3182,16 +3180,10 @@ async function writeMaterialLocalizationCsv(
   options: { outputBase: string; dryRun?: boolean },
 ): Promise<DataCoreScrapeMaterialLocalizationsResult> {
   if (!options.dryRun) {
-    const csvRows = rows.map((row) => [
-      row.resourceGuid,
-      row.localizationKey,
-    ]);
+    const csvRows = rows.map((row) => [row.resourceGuid, row.localizationKey]);
     await fs.writeFile(
       path.join(options.outputBase, 'material-localizations.datacore.csv'),
-      stringify([
-        ['ResourceGuid', 'LocalizationKey'],
-        ...csvRows,
-      ]),
+      stringify([['ResourceGuid', 'LocalizationKey'], ...csvRows]),
       'utf8',
     );
   }

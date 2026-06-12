@@ -4,8 +4,8 @@ import { getLogger } from '../../infrastructure/logger';
 import { writeIniFile } from '../../localization/ini-file';
 import { applyPatchPlanToIniLines } from '../../localization/patch-application';
 import type { PatchPlan } from '../../pipeline/types';
+import { resolveOptions, type UpdatePlanResult, validateIntegrity } from '../update/update-planning';
 import { buildPatchPlanResult } from './build-patch-plan';
-import { resolveOptions, type UpdatePlanResult, validateIntegrity } from './update-planning';
 
 export interface EnrichGlobalIniOptions {
   iniPath?: string;

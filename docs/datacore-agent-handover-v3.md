@@ -1,4 +1,4 @@
-# DataCore Provider — Agent Handover v3
+# DataCore Provider - Agent Handover v3
 
 **Status: FULLY WORKING. All 22 types produce rows. 57,719 XML records extracted from Game2.dcb.**
 
@@ -9,8 +9,8 @@ This supersedes all earlier handover docs. Do NOT read v1 or v2.
 ## 1. Goal
 
 Read item stats directly from Star Citizen's `Game2.dcb` (DataCore binary) instead of
-relying on third-party sources (scmdb, spviewer). The scraper extracts XMLs via unforge,
-parses them with cheerio CSS selectors, and writes CSVs that feed the spreadsheet updater.
+relying on third-party sources. The cache refresh extracts XMLs via unforge,
+parses them with cheerio CSS selectors, and writes CSVs that feed the update pipeline.
 
 ---
 
@@ -47,13 +47,13 @@ ALWAYS include `--env-file-if-exists .env.local` when running node directly, or 
 
 ```bash
 # Dry run, shields only — no CSV written, shows row count
-npm run scrape:datacore -- --dry-run shields
+npm run cache:datacore -- --dry-run shields
 
 # All 22 types, full run
-npm run scrape:datacore
+npm run cache:datacore
 
 # Force re-extract XMLs from Game2.dcb
-npm run scrape:datacore -- --force-extract
+npm run cache:datacore -- --rebuild-cache
 ```
 
 Do NOT run `node ... bin/scrape-datacore.ts` directly without `--env-file-if-exists .env.local` —
@@ -67,9 +67,9 @@ SC_LIVE_DIR will be unset and the fallback path resolve will fail with "Could no
 Game2.dcb
   → unforge.cli.exe (Windows binary, managed by scraper)
   → csv/datacore/.xmlcache/<version>-live/libs/foundry/records/entities/**/*.xml
-  → scrape-datacore.ts  (reads XMLs, applies per-type config)
+  → cache:datacore  (reads XMLs, applies per-type config)
   → csv/datacore/<version>-live/<type>.datacore.csv
-  → update-all.ts  (merges CSVs into spreadsheet)
+  → pipeline/update  (uses CSVs to enrich global.ini)
 ```
 
 Per-type config files live in `src/items/datacore/*.ts`. Each exports a `DataCoreItemTypeConfig`:
@@ -191,7 +191,8 @@ Currently extracted as UUID. Decision pending.
 ## 7. Key Files
 
 ```
-bin/scrape-datacore.ts                  ← main entrypoint; handles unforge, caching, CSV write
+bin/cache.ts                            ← public cache refresh entrypoint
+bin/scrape-datacore.ts                  ← compatibility/advanced DataCore acquisition shim
 src/extractor/datacore-xml-parser.ts    ← extractEntityClass, extractHealth, extractAttachDef
 src/io/local/unp4k-tool.ts             ← toWinPath(), runTool(), ensureToolsInstalled(), resolveLiveDir()
 src/items/datacore/types.ts             ← DataCoreItemTypeConfig interface

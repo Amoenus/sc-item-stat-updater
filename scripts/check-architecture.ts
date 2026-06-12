@@ -18,7 +18,7 @@ const rules: Rule[] = [
       'src/localization/patch-application',
       'src/localization/ini-file',
       'src/localization/key-resolver',
-      'src/application/use-cases/update-planning',
+      'src/application/update/update-planning',
     ],
   },
 ];

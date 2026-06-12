@@ -1,9 +1,9 @@
 import { readIniFile } from '../../localization/ini-file';
-import { type DescKeyMatchLogger, logDescKeyMatchOverlaps } from './desc-key-match-diagnostics';
+import { type DescKeyMatchLogger, logDescKeyMatchOverlaps } from '../diagnostics/desc-key-match-diagnostics';
+import { resolveOptions } from '../update/update-planning';
 import type { EnrichGlobalIniOptions } from './enrich-global-ini';
 import { enrichGlobalIni } from './enrich-global-ini';
 import type { UpdateCategory } from './prepare-update-categories';
-import { resolveOptions } from './update-planning';
 
 export interface BatchUpdateResult {
   label: string;

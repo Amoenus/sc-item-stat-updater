@@ -94,4 +94,4 @@ There is no runtime configuration for these formatting conventions. The choice o
 - Separator character (`\n` / `\n\n`)
 - Markup tags
 
-…is determined by the game engine's renderer and the conventions baked into each item config's `buildValue()` function. To change how a specific item type is formatted, edit its config file in `src/items/spviewer/` or `src/items/shared/` and update the `.section()` / `.line()` calls accordingly.
+...is determined by the game engine's renderer and the conventions baked into each item config's `buildValue()` function. To change how a specific item type is formatted, edit its config file in `src/items/datacore/`, `src/items/missions/`, or the relevant shared helper and update the `.section()` / `.line()` calls accordingly.

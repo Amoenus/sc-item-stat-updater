@@ -36,6 +36,7 @@ export interface RunScmdbScrapeOptions {
   writeTextFile?: (filePath: string, content: string) => Promise<void>;
   onVersionSelected?: (version: ScmdbVersionEntry) => void;
   onFileWritten?: (file: ScmdbWrittenFile) => void;
+  onWarning?: (message: string, error?: unknown) => void;
 }
 
 export interface RunScmdbScrapeResult {
@@ -77,8 +78,8 @@ export async function runScmdbScrape(options: RunScmdbScrapeOptions): Promise<Ru
   const miningRaw = await fetchScmdbJson(miningUrl, fetchJson).catch(() => null);
   const craftingItemsRaw = await fetchScmdbJson(craftingItemsUrl, fetchJson).catch(() => null);
   const craftingBlueprintsRaw = await fetchScmdbJson(craftingBlueprintsUrl, fetchJson).catch(() => null);
-  const memaRaw = await fetchScmdbJson(memaUrl, fetchJson).catch((err) => {
-    console.error('Failed to fetch MEMA cache:', err);
+  const memaRaw = await fetchScmdbJson(memaUrl, fetchJson).catch((err: unknown) => {
+    options.onWarning?.('Failed to fetch MEMA cache', err);
     return null;
   });
 

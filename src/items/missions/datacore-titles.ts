@@ -230,7 +230,10 @@ async function loadCachedXml(
   }
 
   try {
-    const xml = await fs.readFile(resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractGenerator XML path'), 'utf8');
+    const xml = await fs.readFile(
+      resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractGenerator XML path'),
+      'utf8',
+    );
     const loaded = loadXml(xml);
     xmlCache.set(recordPath, loaded);
     return loaded;
@@ -242,17 +245,13 @@ async function loadCachedXml(
 
 async function resolveXmlCacheDir(datacoreDir: string): Promise<string | null> {
   const version = path.basename(datacoreDir);
-  const candidates = [
-    path.join(path.dirname(datacoreDir), '.xmlcache', version),
-    path.join(datacoreDir, '.xmlcache'),
-  ];
+  const candidates = [path.join(path.dirname(datacoreDir), '.xmlcache', version), path.join(datacoreDir, '.xmlcache')];
 
   for (const candidate of candidates) {
     try {
       await fs.access(candidate);
       return candidate;
-    } catch {
-    }
+    } catch {}
   }
 
   return null;
@@ -269,17 +268,15 @@ function normalizeToken(value: unknown): string {
   return String(value ?? '').trim();
 }
 
+const GENERATED_TITLE_TAG = String.raw`(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\](?:\*)?${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\](?:\*)?)`;
+const TRAILING_GENERATED_TITLE_TAGS = new RegExp(String.raw`(?:\s*${GENERATED_TITLE_TAG})+\s*$`);
+const DUPLICATE_GENERATED_TITLE_TAG = new RegExp(String.raw`(${GENERATED_TITLE_TAG})(?:\s+\1)+`, 'g');
+
 function rebuildTitleValue(oldValue: string, noteText: string): string {
-  // Strip any existing Intro/BP tags from the value (in case it was previously modified, though it shouldn't be for a fresh ini)
-  const normalizedOldValue = oldValue
-    .replace(
-      new RegExp(
-        String.raw`(?:\s*(?:${IniTag.EM4.open}\[(?:Intro|BP(?: Chain)?)\](?:\*)?${IniTag.EM4.close}|\[(?:Intro|BP(?: Chain)?)\](?:\*)?))+\s*$`,
-      ),
-      '',
-    )
-    .trimEnd();
-  return noteText ? `${normalizedOldValue}${noteText}` : normalizedOldValue;
+  // Keep generated mission title tags deterministic even if source notes or upstream text contain generated markers.
+  const normalizedOldValue = oldValue.replace(TRAILING_GENERATED_TITLE_TAGS, '').trimEnd();
+  const rebuiltValue = noteText ? `${normalizedOldValue}${noteText}` : normalizedOldValue;
+  return rebuiltValue.replace(DUPLICATE_GENERATED_TITLE_TAG, '$1');
 }
 
 export default {

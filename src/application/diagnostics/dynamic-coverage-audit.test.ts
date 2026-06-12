@@ -66,7 +66,10 @@ test('formatted dynamic coverage audit includes status summary', async () => {
   const output = formatDynamicCoverageAudit(await buildDynamicCoverageAudit());
 
   assert.match(output, /Dynamic coverage audit/);
-  assert.match(output, /\| Category \| Provider \| Status \| Sources \| Dynamic signals \| Review\/source-gap signals \|/);
+  assert.match(
+    output,
+    /\| Category \| Provider \| Status \| Sources \| Dynamic signals \| Review\/source-gap signals \|/,
+  );
   assert.match(output, /mission-datacore-descriptions \(DataCore mission descriptions\)/);
   assert.match(output, /Summary: \d+ dynamic, \d+ need review, \d+ known source gaps\./);
 });

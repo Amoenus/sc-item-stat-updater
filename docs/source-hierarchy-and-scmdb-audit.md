@@ -17,11 +17,11 @@ DataCore/Data.p4k is the authoritative source for game-derived facts:
 
 SCMDB is a temporary derived-data bridge. Keep it only where the pipeline still needs mission, blueprint, crafting, mining aggregation, or generated joins that have not yet been reconstructed from DataCore records.
 
-SPViewer is a legacy comparison source. It is no longer part of active batch provider selection and should not be treated as an authoritative source for facts that can be extracted from DataCore.
+SPViewer is retired from active support. Historical audit notes remain in this repository to explain the retirement decision, but the application should not require SPViewer data for cache refresh, pipeline runs, or enrichment planning.
 
-## SPViewer retirement audit
+## SPViewer retirement status
 
-Run the active-provider retirement audit from the repository root:
+The historical active-provider retirement audit can still be run from the repository root when investigating old data:
 
 ```sh
 npm run audit:spviewer-retirement
@@ -43,9 +43,9 @@ Run the live audit from the repository root:
 node --import tsx/esm bin/update-item.ts --scmdb-audit
 ```
 
-For `update-all`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
+For `update`, the same audit is printed at startup before preflight. The `DataCore provider?` column shows which SCMDB dependencies are still active while DataCore is selected.
 
-`update-all` no longer refreshes SCMDB-generated `mining-locations.csv`, and the SCMDB scraper no longer writes that retired CSV. DataCore-first mining-location updates do not read it.
+`update` no longer refreshes SCMDB-generated `mining-locations.csv`, and the SCMDB cache refresh no longer writes that retired CSV. DataCore-first mining-location updates do not read it.
 
 Mining location rendering no longer imports arbitrary SCMDB-only location rows or SCMDB quality-note fallback text. DataCore rows are authoritative for normal locations and now reconstruct the special-site pools for `Breaker Stations Interior`, `Breaker Stations Large Geode`, and `Hathor Caves`. The mining-location SCMDB bridge is retired; the optional mining journal extra step still uses `mining-journal.csv` for journal rarity labels.
 

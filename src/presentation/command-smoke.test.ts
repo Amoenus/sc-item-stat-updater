@@ -119,8 +119,29 @@ test('pipeline help exits successfully with orchestration options', async () => 
 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/pipeline\.ts \[options]/);
-  assert.match(result.stdout, /--scrape\s+Run scrape:scmdb and scrape:datacore before updating/);
-  assert.match(result.stdout, /--dry-run\s+Preview changes without writing/);
+  assert.match(result.stdout, /--cached\s+Use existing source outputs/);
+  assert.match(result.stdout, /--repo-only\s+Update repo global\.ini without deploying/);
+  assert.match(result.stdout, /--rebuild-cache\s+Rebuild expensive DataCore/);
+  assert.doesNotMatch(result.stdout, /--force\s+Rebuild expensive DataCore/);
+  assert.match(result.stdout, /--dry-run\s+Preview updates without writing global\.ini/);
+});
+
+test('cache help exits successfully with source refresh options', async () => {
+  const result = await runCommand(['bin/cache.ts', '--help']);
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/cache\.ts \[options]/);
+  assert.match(result.stdout, /--source <all\|datacore\|scmdb>/);
+  assert.match(result.stdout, /--rebuild-cache\s+Rebuild expensive DataCore/);
+  assert.doesNotMatch(result.stdout, /--force\s+Rebuild expensive DataCore/);
+});
+
+test('deploy help exits successfully with target options', async () => {
+  const result = await runCommand(['bin/deploy.ts', '--help']);
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/deploy\.ts \[options]/);
+  assert.match(result.stdout, /--target <path>/);
 });
 
 test('apply-artifact dry run reports changes without writing the INI fixture', async () => {

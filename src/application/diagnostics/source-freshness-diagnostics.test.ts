@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import type { ItemConfig } from '../../enrichment/item-config';
-import { DATACORE_RAW_FACTS } from './category-listing';
-import type { PreparedUpdateCategories, UpdateCategory } from './prepare-update-categories';
+import { DATACORE_RAW_FACTS } from '../catalog/category-listing';
+import type { PreparedUpdateCategories, UpdateCategory } from '../use-cases/prepare-update-categories';
 import { buildSourceFreshnessDiagnostics, formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
 
 const config: ItemConfig = {

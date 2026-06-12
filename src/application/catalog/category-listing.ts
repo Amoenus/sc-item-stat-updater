@@ -1,6 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
-import { inferCategorySourceProvider } from './prepare-update-categories';
+import { inferCategorySourceProvider } from '../use-cases/prepare-update-categories';
 
 export type CategoryListingFamily = 'DataCore' | 'SCMDB';
 

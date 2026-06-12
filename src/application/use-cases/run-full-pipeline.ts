@@ -1,26 +1,28 @@
 import path from 'node:path';
+import { formatScmdbDependencyAudit } from '../diagnostics/scmdb-dependency-audit';
+import { formatSourceFreshnessDiagnostics } from '../diagnostics/source-freshness-diagnostics';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
+import { refreshSourceCache } from './refresh-source-cache';
 import { runBatchUpdate } from './run-batch-update';
-import { type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
-import { runScmdbScrape } from './run-scmdb-scrape';
-import { formatScmdbDependencyAudit } from './scmdb-dependency-audit';
-import { formatSourceFreshnessDiagnostics } from './source-freshness-diagnostics';
+import type { DataCoreTypeEntry } from './run-datacore-scrape';
 
 export interface RunFullPipelineOptions {
   rootDir: string;
   scrape?: boolean;
   datacore?: boolean;
+  refreshSources?: boolean;
+  deployUpdatedIni?: boolean;
   dryRun?: boolean;
   ptu?: boolean;
   skipUnforge?: boolean;
+  force?: boolean;
   forceExtract?: boolean;
   verbose?: boolean;
   log?: (message: string) => void;
   onStepComplete?: (summary: string) => void;
   runUpdate?: typeof runBatchUpdate;
-  runDatacore?: typeof runDatacoreScrape;
-  runScmdb?: typeof runScmdbScrape;
+  refreshSourcesUseCase?: typeof refreshSourceCache;
   refresh?: typeof refreshGlobalIni;
   deploy?: typeof deployGlobalIni;
   onCacheHit?: (count: number, xmlCacheDir: string) => void;
@@ -47,31 +49,28 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   const repoIniPath = path.join(options.rootDir, 'global.ini');
 
   const runUpdate = options.runUpdate ?? runBatchUpdate;
-  const runDatacore = options.runDatacore ?? runDatacoreScrape;
-  const runScmdb = options.runScmdb ?? runScmdbScrape;
+  const refreshSourcesUseCase = options.refreshSourcesUseCase ?? refreshSourceCache;
   const refresh = options.refresh ?? refreshGlobalIni;
   const deploy = options.deploy ?? deployGlobalIni;
+  const shouldRefreshSources = options.refreshSources ?? options.scrape ?? options.datacore ?? true;
+  const shouldDeploy = options.deployUpdatedIni ?? true;
 
   log('=== Step 1: Extracting global.ini from Data.p4k ===');
   const { extractedGamePath } = await refresh({ repoIniPath, log });
   options.onStepComplete?.('global.ini extracted & synced to repo');
 
-  if (options.scrape || options.datacore) {
-    log('=== Step 2: Scraping SCMDB ===');
-    await runScmdb({ repoRoot: options.rootDir, ptu: options.ptu });
-    options.onStepComplete?.('SCMDB scraped');
-
-    log('=== Step 2b: Scraping DataCore ===');
-    const datacoreResult = await runDatacore({
+  if (shouldRefreshSources) {
+    const cacheResult = await refreshSourcesUseCase({
       repoRoot: options.rootDir,
+      target: options.datacore && !options.scrape ? 'datacore' : 'all',
       ptu: options.ptu,
-      skipUnforge: options.skipUnforge,
-      forceExtract: options.forceExtract,
+      force: options.force ?? options.forceExtract,
+      log,
       onCacheHit: options.onCacheHit,
       onCacheExtractStart: options.onCacheExtractStart,
       onCacheExtractProgress: options.onCacheExtractProgress,
       onCacheExtractComplete: options.onCacheExtractComplete,
-      onPrepared: options.onDatacorePrepared,
+      onDatacorePrepared: options.onDatacorePrepared,
       onRecordGraphStart: options.onRecordGraphStart,
       onRecordGraphProgress: options.onRecordGraphProgress,
       onRecordGraphCacheHit: options.onRecordGraphCacheHit,
@@ -79,10 +78,12 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
       onRawFactProgress: options.onRawFactProgress,
       onTypeStart: options.onTypeStart,
     });
-    if (datacoreResult.exitCode !== 0) return { exitCode: datacoreResult.exitCode, extractedGamePath, repoIniPath };
-    options.onStepComplete?.('DataCore scraped');
+    if (cacheResult.exitCode !== 0) return { exitCode: cacheResult.exitCode, extractedGamePath, repoIniPath };
+    for (const source of cacheResult.refreshed) {
+      options.onStepComplete?.(`${source.toUpperCase()} cache refreshed`);
+    }
   } else {
-    log('=== Step 2: Skipping scrape (pass --scrape to enable) ===');
+    log('=== Step 2: Using cached source outputs ===');
   }
 
   log('=== Step 3: Applying stat updates ===');
@@ -101,10 +102,14 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
   if (updateResult.exitCode !== 0) return { exitCode: updateResult.exitCode, extractedGamePath, repoIniPath };
   options.onStepComplete?.('Stat updates applied');
 
-  log('=== Step 4: Deploying updated global.ini -> game directory ===');
-  await deploy({ repoIniPath, targetIniPath: extractedGamePath });
-  log(`Deployed: ${extractedGamePath}`);
-  options.onStepComplete?.('global.ini deployed to game directory');
+  if (shouldDeploy) {
+    log('=== Step 4: Deploying updated global.ini -> game directory ===');
+    await deploy({ repoIniPath, targetIniPath: extractedGamePath });
+    log(`Deployed: ${extractedGamePath}`);
+    options.onStepComplete?.('global.ini deployed to game directory');
+  } else {
+    log('=== Step 4: Skipping deploy (--repo-only) ===');
+  }
 
   return { exitCode: 0, extractedGamePath, repoIniPath };
 }

@@ -12,8 +12,8 @@ The ideal long-term direction is:
 2. Use external sources such as SCMDB for relationship resolution, derived
    summaries, historical comparison, and user-facing insight that is difficult
    to reconstruct directly from game files.
-3. Keep SPViewer as a legacy comparison/audit source while DataCore coverage
-   matures.
+3. Keep retired provider notes historical; do not add SPViewer to new active
+   pipeline work.
 
 ## Current Extraction Surface
 

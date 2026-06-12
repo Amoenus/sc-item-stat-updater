@@ -4,7 +4,7 @@ Date: 2026-06-05
 
 ## Overall Goal
 
-Move first-party facts from SCMDB/SPViewer into DataCore-backed extraction
+Move first-party facts from SCMDB into DataCore-backed extraction
 wherever the game files expose the same data directly. Keep SCMDB for
 relationship resolution, readable rollups, and derived insight until equivalent
 first-party parsing exists.

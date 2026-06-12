@@ -1256,56 +1256,6 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "6c88a1b4-493c-47f7-bfde-bbd7fcde8d2a",
-    "n": 2,
-    "dur_p50": 16,
-    "dur_avg": 16,
-    "dur_min": 14,
-    "dur_max": 18,
-    "rate_p50": 3.80952380952381,
-    "rate_avg": 3.8095238095238093,
-    "rate_event_p50": 3.80952380952381,
-    "rate_event_avg": 3.8095238095238093,
-    "avg_diff": 3,
-    "avg_sat": null,
-    "n_diff": 1,
-    "n_sat": 0,
-    "n_solo": 2,
-    "solo_p50": 16,
-    "solo_rate_p50": 3.80952380952381,
-    "n_duo": 0,
-    "duo_p50": null,
-    "duo_rate_p50": null,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 0,
-    "large_p50": null,
-    "large_rate_p50": null,
-    "n_multi": 0,
-    "multi_p50": null,
-    "multi_rate_p50": null,
-    "multi_rate_event_p50": null,
-    "top_ships": [
-      {
-        "count": 1,
-        "ship_name": "Apollo Medivac",
-        "avg_duration": 18
-      },
-      {
-        "count": 1,
-        "ship_name": "Perseus",
-        "avg_duration": 14
-      }
-    ],
-    "updated_at": "2026-06-04T20:06:00.79425+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
     "contract_id": "cf2bff54-209a-427d-a137-bce73d6a7cae",
     "n": 1,
     "dur_p50": 30,
@@ -1530,23 +1480,23 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "2a53134f-239b-4c57-bb75-04598306a282",
+    "contract_id": "6c88a1b4-493c-47f7-bfde-bbd7fcde8d2a",
     "n": 3,
-    "dur_p50": 4,
-    "dur_avg": 13,
-    "dur_min": 3,
-    "dur_max": 32,
-    "rate_p50": 15,
-    "rate_avg": 12.291666666666666,
-    "rate_event_p50": 15,
-    "rate_event_avg": 12.291666666666666,
-    "avg_diff": 1.5,
-    "avg_sat": 4,
+    "dur_p50": 18,
+    "dur_avg": 19.3,
+    "dur_min": 14,
+    "dur_max": 26,
+    "rate_p50": 3.33333333333333,
+    "rate_avg": 3.3089133089133087,
+    "rate_event_p50": 3.33333333333333,
+    "rate_event_avg": 3.3089133089133087,
+    "avg_diff": 2.5,
+    "avg_sat": 3,
     "n_diff": 2,
-    "n_sat": 2,
+    "n_sat": 1,
     "n_solo": 3,
-    "solo_p50": 4,
-    "solo_rate_p50": 15,
+    "solo_p50": 18,
+    "solo_rate_p50": 3.33333333333333,
     "n_duo": 0,
     "duo_p50": null,
     "duo_rate_p50": null,
@@ -1562,17 +1512,22 @@
     "multi_rate_event_p50": null,
     "top_ships": [
       {
-        "count": 2,
-        "ship_name": "F7C-S Hornet Ghost Mk II",
-        "avg_duration": 4
+        "count": 1,
+        "ship_name": "Apollo Medivac",
+        "avg_duration": 18
       },
       {
         "count": 1,
-        "ship_name": "M80",
-        "avg_duration": 32
+        "ship_name": "Perseus",
+        "avg_duration": 14
+      },
+      {
+        "count": 1,
+        "ship_name": "Starlancer MAX",
+        "avg_duration": 26
       }
     ],
-    "updated_at": "2026-05-28T22:17:34.81122+00:00",
+    "updated_at": "2026-06-11T16:53:19.694117+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -1668,6 +1623,56 @@
       }
     ],
     "updated_at": "2026-05-17T07:07:09.690289+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
+    "contract_id": "2a53134f-239b-4c57-bb75-04598306a282",
+    "n": 4,
+    "dur_p50": 18,
+    "dur_avg": 26.5,
+    "dur_min": 3,
+    "dur_max": 67,
+    "rate_p50": 8.4375,
+    "rate_avg": 9.442630597014926,
+    "rate_event_p50": 8.4375,
+    "rate_event_avg": 9.442630597014926,
+    "avg_diff": 1.5,
+    "avg_sat": 4,
+    "n_diff": 2,
+    "n_sat": 2,
+    "n_solo": 4,
+    "solo_p50": 18,
+    "solo_rate_p50": 8.4375,
+    "n_duo": 0,
+    "duo_p50": null,
+    "duo_rate_p50": null,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 0,
+    "large_p50": null,
+    "large_rate_p50": null,
+    "n_multi": 0,
+    "multi_p50": null,
+    "multi_rate_p50": null,
+    "multi_rate_event_p50": null,
+    "top_ships": [
+      {
+        "count": 2,
+        "ship_name": "F7C-S Hornet Ghost Mk II",
+        "avg_duration": 4
+      },
+      {
+        "count": 1,
+        "ship_name": "M80",
+        "avg_duration": 32
+      }
+    ],
+    "updated_at": "2026-06-11T10:42:08.895406+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -7733,61 +7738,6 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "24ac3c24-ed16-43f5-bb1c-626f0261fcb5",
-    "n": 35,
-    "dur_p50": 54,
-    "dur_avg": 72.9,
-    "dur_min": 13,
-    "dur_max": 300,
-    "rate_p50": 0.895522388059701,
-    "rate_avg": 1.11468506516622,
-    "rate_event_p50": 1.11111111111111,
-    "rate_event_avg": 1.3667087818561963,
-    "avg_diff": 6.3,
-    "avg_sat": 6,
-    "n_diff": 6,
-    "n_sat": 4,
-    "n_solo": 21,
-    "solo_p50": 44,
-    "solo_rate_p50": 1.36363636363636,
-    "n_duo": 6,
-    "duo_p50": 110.5,
-    "duo_rate_p50": 0.273514851485149,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 8,
-    "large_p50": 70,
-    "large_rate_p50": 0.0611140835859937,
-    "n_multi": 14,
-    "multi_p50": 89.5,
-    "multi_rate_p50": 0.074537037037037,
-    "multi_rate_event_p50": 0.670411985018727,
-    "top_ships": [
-      {
-        "count": 2,
-        "ship_name": "Idris P",
-        "avg_duration": 90
-      },
-      {
-        "count": 1,
-        "ship_name": "M80",
-        "avg_duration": 123
-      },
-      {
-        "count": 1,
-        "ship_name": "Perseus",
-        "avg_duration": 85
-      }
-    ],
-    "updated_at": "2026-06-09T01:32:19.471569+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
     "contract_id": "7462c715-9517-451b-a32d-8e6b3ec0122d",
     "n": 2,
     "dur_p50": 5,
@@ -8195,6 +8145,61 @@
       }
     ],
     "updated_at": "2026-06-04T15:04:56.36072+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
+    "contract_id": "24ac3c24-ed16-43f5-bb1c-626f0261fcb5",
+    "n": 36,
+    "dur_p50": 54.5,
+    "dur_avg": 73.2,
+    "dur_min": 13,
+    "dur_max": 300,
+    "rate_p50": 0.888937664618086,
+    "rate_avg": 1.0862622415403291,
+    "rate_event_p50": 1.1010101010101,
+    "rate_event_avg": 1.34906985227889,
+    "avg_diff": 6.3,
+    "avg_sat": 6.2,
+    "n_diff": 7,
+    "n_sat": 5,
+    "n_solo": 21,
+    "solo_p50": 44,
+    "solo_rate_p50": 1.36363636363636,
+    "n_duo": 6,
+    "duo_p50": 110.5,
+    "duo_rate_p50": 0.273514851485149,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 9,
+    "large_p50": 80,
+    "large_rate_p50": 0.0740740740740741,
+    "n_multi": 15,
+    "multi_p50": 89,
+    "multi_rate_p50": 0.075,
+    "multi_rate_event_p50": 0.674157303370786,
+    "top_ships": [
+      {
+        "count": 2,
+        "ship_name": "Idris P",
+        "avg_duration": 90
+      },
+      {
+        "count": 2,
+        "ship_name": "Perseus",
+        "avg_duration": 84
+      },
+      {
+        "count": 1,
+        "ship_name": "M80",
+        "avg_duration": 123
+      }
+    ],
+    "updated_at": "2026-06-11T20:06:43.372589+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -9811,51 +9816,6 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "9663d2cd-6e5a-4764-be19-08ad88df7507",
-    "n": 2,
-    "dur_p50": 15,
-    "dur_avg": 15,
-    "dur_min": 13,
-    "dur_max": 17,
-    "rate_p50": 2.91855203619909,
-    "rate_avg": 2.918552036199095,
-    "rate_event_p50": 4.07239819004525,
-    "rate_event_avg": 4.072398190045249,
-    "avg_diff": null,
-    "avg_sat": null,
-    "n_diff": 0,
-    "n_sat": 0,
-    "n_solo": 1,
-    "solo_p50": 17,
-    "solo_rate_p50": 3.52941176470588,
-    "n_duo": 1,
-    "duo_p50": 13,
-    "duo_rate_p50": 2.30769230769231,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 0,
-    "large_p50": null,
-    "large_rate_p50": null,
-    "n_multi": 1,
-    "multi_p50": 13,
-    "multi_rate_p50": 2.30769230769231,
-    "multi_rate_event_p50": 4.61538461538461,
-    "top_ships": [
-      {
-        "count": 1,
-        "ship_name": "Clipper",
-        "avg_duration": 17
-      }
-    ],
-    "updated_at": "2026-06-06T13:40:46.555754+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
     "contract_id": "8d319950-67e4-4cc5-845f-da5f854b5348",
     "n": 1,
     "dur_p50": 10,
@@ -10382,6 +10342,56 @@
     "votes_updated_at": null
   },
   {
+    "contract_id": "9663d2cd-6e5a-4764-be19-08ad88df7507",
+    "n": 3,
+    "dur_p50": 14,
+    "dur_avg": 14.7,
+    "dur_min": 13,
+    "dur_max": 17,
+    "rate_p50": 3.52941176470588,
+    "rate_avg": 3.374272786037492,
+    "rate_event_p50": 4.28571428571429,
+    "rate_event_avg": 4.1435035552682615,
+    "avg_diff": 1,
+    "avg_sat": 2,
+    "n_diff": 1,
+    "n_sat": 1,
+    "n_solo": 2,
+    "solo_p50": 15.5,
+    "solo_rate_p50": 3.90756302521008,
+    "n_duo": 1,
+    "duo_p50": 13,
+    "duo_rate_p50": 2.30769230769231,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 0,
+    "large_p50": null,
+    "large_rate_p50": null,
+    "n_multi": 1,
+    "multi_p50": 13,
+    "multi_rate_p50": 2.30769230769231,
+    "multi_rate_event_p50": 4.61538461538461,
+    "top_ships": [
+      {
+        "count": 1,
+        "ship_name": "Clipper",
+        "avg_duration": 17
+      },
+      {
+        "count": 1,
+        "ship_name": "Starlancer MAX",
+        "avg_duration": 14
+      }
+    ],
+    "updated_at": "2026-06-11T17:30:41.603696+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
     "contract_id": "f83522ea-bbb5-4d71-ae52-23cde60b2bcf",
     "n": 1,
     "dur_p50": 31,
@@ -10577,49 +10587,49 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "321e27a8-40ea-4b30-8811-153833aead14",
-    "n": 18,
-    "dur_p50": 15.5,
-    "dur_avg": 32.7,
-    "dur_min": 9,
-    "dur_max": 300,
-    "rate_p50": 3.875,
-    "rate_avg": 3.6426537887064203,
-    "rate_event_p50": 3.875,
-    "rate_event_avg": 3.735246381299013,
-    "avg_diff": 2.1,
-    "avg_sat": 5.8,
-    "n_diff": 11,
-    "n_sat": 11,
-    "n_solo": 17,
+    "contract_id": "5a3fb744-787c-460c-aecb-3ae0422d744d",
+    "n": 9,
+    "dur_p50": 15,
+    "dur_avg": 19.8,
+    "dur_min": 6,
+    "dur_max": 44,
+    "rate_p50": 3.33333333333333,
+    "rate_avg": 4.143799102132435,
+    "rate_event_p50": 4,
+    "rate_event_avg": 4.9956509539842875,
+    "avg_diff": 2.8,
+    "avg_sat": 6.8,
+    "n_diff": 4,
+    "n_sat": 4,
+    "n_solo": 7,
     "solo_p50": 15,
     "solo_rate_p50": 4,
-    "n_duo": 1,
+    "n_duo": 2,
     "duo_p50": 18,
-    "duo_rate_p50": 1.66666666666667,
+    "duo_rate_p50": 2.16666666666667,
     "n_squad": 0,
     "squad_p50": null,
     "squad_rate_p50": null,
     "n_large": 0,
     "large_p50": null,
     "large_rate_p50": null,
-    "n_multi": 1,
+    "n_multi": 2,
     "multi_p50": 18,
-    "multi_rate_p50": 1.66666666666667,
-    "multi_rate_event_p50": 3.33333333333333,
+    "multi_rate_p50": 2.16666666666667,
+    "multi_rate_event_p50": 6,
     "top_ships": [
       {
-        "count": 6,
+        "count": 2,
         "ship_name": "Starfarer",
-        "avg_duration": 12
+        "avg_duration": 8
       },
       {
-        "count": 4,
+        "count": 2,
         "ship_name": "Starfarer Gemini",
-        "avg_duration": 25
+        "avg_duration": 23
       }
     ],
-    "updated_at": "2026-06-10T21:34:23.699809+00:00",
+    "updated_at": "2026-06-11T15:21:54.949283+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -11311,56 +11321,6 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "5a3fb744-787c-460c-aecb-3ae0422d744d",
-    "n": 8,
-    "dur_p50": 21,
-    "dur_avg": 21.5,
-    "dur_min": 6,
-    "dur_max": 44,
-    "rate_p50": 3.11111111111111,
-    "rate_avg": 4.2451073232323235,
-    "rate_event_p50": 3.11111111111111,
-    "rate_event_avg": 4.3701073232323235,
-    "avg_diff": 2.7,
-    "avg_sat": 7,
-    "n_diff": 3,
-    "n_sat": 3,
-    "n_solo": 7,
-    "solo_p50": 15,
-    "solo_rate_p50": 4,
-    "n_duo": 1,
-    "duo_p50": 30,
-    "duo_rate_p50": 1,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 0,
-    "large_p50": null,
-    "large_rate_p50": null,
-    "n_multi": 1,
-    "multi_p50": 30,
-    "multi_rate_p50": 1,
-    "multi_rate_event_p50": 2,
-    "top_ships": [
-      {
-        "count": 2,
-        "ship_name": "Starfarer Gemini",
-        "avg_duration": 23
-      },
-      {
-        "count": 1,
-        "ship_name": "Starfarer",
-        "avg_duration": 10
-      }
-    ],
-    "updated_at": "2026-06-10T21:22:45.785552+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
     "contract_id": "34ba1fc9-c6fd-4505-8dfe-bc7d67509776",
     "n": 4,
     "dur_p50": 37.5,
@@ -11529,6 +11489,56 @@
       }
     ],
     "updated_at": "2026-05-30T17:34:08.406689+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
+    "contract_id": "321e27a8-40ea-4b30-8811-153833aead14",
+    "n": 19,
+    "dur_p50": 15,
+    "dur_avg": 31.6,
+    "dur_min": 9,
+    "dur_max": 300,
+    "rate_p50": 3.75,
+    "rate_avg": 3.531906828167216,
+    "rate_event_p50": 4,
+    "rate_event_avg": 3.7815694462508866,
+    "avg_diff": 2.1,
+    "avg_sat": 5.8,
+    "n_diff": 12,
+    "n_sat": 12,
+    "n_solo": 17,
+    "solo_p50": 15,
+    "solo_rate_p50": 4,
+    "n_duo": 2,
+    "duo_p50": 15.5,
+    "duo_rate_p50": 1.6025641025641,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 0,
+    "large_p50": null,
+    "large_rate_p50": null,
+    "n_multi": 2,
+    "multi_p50": 15.5,
+    "multi_rate_p50": 1.6025641025641,
+    "multi_rate_event_p50": 3.97435897435897,
+    "top_ships": [
+      {
+        "count": 7,
+        "ship_name": "Starfarer",
+        "avg_duration": 12
+      },
+      {
+        "count": 4,
+        "ship_name": "Starfarer Gemini",
+        "avg_duration": 25
+      }
+    ],
+    "updated_at": "2026-06-11T15:08:08.392442+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -14800,22 +14810,22 @@
   },
   {
     "contract_id": "0b4c6e81-838a-4e0a-8ecd-7f2893095a8d",
-    "n": 7,
+    "n": 8,
     "dur_p50": 11,
-    "dur_avg": 10.9,
+    "dur_avg": 11.5,
     "dur_min": 10,
-    "dur_max": 12,
-    "rate_p50": 5,
-    "rate_avg": 4.376623376623376,
+    "dur_max": 16,
+    "rate_p50": 4.375,
+    "rate_avg": 4.298295454545454,
     "rate_event_p50": 5.45454545454545,
-    "rate_event_avg": 5.545454545454545,
-    "avg_diff": 3.5,
-    "avg_sat": 5.5,
-    "n_diff": 2,
-    "n_sat": 2,
-    "n_solo": 4,
-    "solo_p50": 10.5,
-    "solo_rate_p50": 5.72727272727273,
+    "rate_event_avg": 5.3210227272727275,
+    "avg_diff": 3.7,
+    "avg_sat": 6,
+    "n_diff": 3,
+    "n_sat": 3,
+    "n_solo": 5,
+    "solo_p50": 11,
+    "solo_rate_p50": 5.45454545454545,
     "n_duo": 3,
     "duo_p50": 11,
     "duo_rate_p50": 2.72727272727273,
@@ -14836,7 +14846,7 @@
         "avg_duration": 12
       }
     ],
-    "updated_at": "2026-06-07T17:07:55.060352+00:00",
+    "updated_at": "2026-06-11T12:10:44.168804+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -23202,6 +23212,96 @@
     "votes_updated_at": null
   },
   {
+    "contract_id": "5cc2e2ad-cd00-47b4-bfeb-7d9588ffc501",
+    "n": 65,
+    "dur_p50": 7,
+    "dur_avg": 11.7,
+    "dur_min": 5,
+    "dur_max": 63,
+    "rate_p50": 8.57142857142857,
+    "rate_avg": 7.4924637559788785,
+    "rate_event_p50": 8.57142857142857,
+    "rate_event_avg": 7.4924637559788785,
+    "avg_diff": 3.1,
+    "avg_sat": 5,
+    "n_diff": 25,
+    "n_sat": 23,
+    "n_solo": 65,
+    "solo_p50": 7,
+    "solo_rate_p50": 8.57142857142857,
+    "n_duo": 0,
+    "duo_p50": null,
+    "duo_rate_p50": null,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 0,
+    "large_p50": null,
+    "large_rate_p50": null,
+    "n_multi": 0,
+    "multi_p50": null,
+    "multi_rate_p50": null,
+    "multi_rate_event_p50": null,
+    "top_ships": [
+      {
+        "count": 5,
+        "ship_name": "F8C Lightning",
+        "avg_duration": 18
+      },
+      {
+        "count": 4,
+        "ship_name": "M80",
+        "avg_duration": 7
+      },
+      {
+        "count": 2,
+        "ship_name": "Sabre Firebird",
+        "avg_duration": 13
+      },
+      {
+        "count": 1,
+        "ship_name": "Guardian MX",
+        "avg_duration": 10
+      },
+      {
+        "count": 1,
+        "ship_name": "Tiburon",
+        "avg_duration": 6
+      },
+      {
+        "count": 1,
+        "ship_name": "L-21 Wolf",
+        "avg_duration": 5
+      },
+      {
+        "count": 1,
+        "ship_name": "Redeemer",
+        "avg_duration": 7
+      },
+      {
+        "count": 1,
+        "ship_name": "Gladius",
+        "avg_duration": 5
+      },
+      {
+        "count": 1,
+        "ship_name": "F7C-M Super Hornet Mk II",
+        "avg_duration": 12
+      },
+      {
+        "count": 1,
+        "ship_name": "Vanguard Harbinger",
+        "avg_duration": 12
+      }
+    ],
+    "updated_at": "2026-06-11T17:16:30.547948+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
     "contract_id": "11a02a92-4e8b-47c6-be5b-40cd1b295867",
     "n": 1,
     "dur_p50": 7,
@@ -23472,91 +23572,6 @@
     "votes_updated_at": null
   },
   {
-    "contract_id": "5cc2e2ad-cd00-47b4-bfeb-7d9588ffc501",
-    "n": 63,
-    "dur_p50": 7,
-    "dur_avg": 11.8,
-    "dur_min": 5,
-    "dur_max": 63,
-    "rate_p50": 8.57142857142857,
-    "rate_avg": 7.539843557755986,
-    "rate_event_p50": 8.57142857142857,
-    "rate_event_avg": 7.539843557755986,
-    "avg_diff": 3.1,
-    "avg_sat": 5,
-    "n_diff": 23,
-    "n_sat": 21,
-    "n_solo": 63,
-    "solo_p50": 7,
-    "solo_rate_p50": 8.57142857142857,
-    "n_duo": 0,
-    "duo_p50": null,
-    "duo_rate_p50": null,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 0,
-    "large_p50": null,
-    "large_rate_p50": null,
-    "n_multi": 0,
-    "multi_p50": null,
-    "multi_rate_p50": null,
-    "multi_rate_event_p50": null,
-    "top_ships": [
-      {
-        "count": 4,
-        "ship_name": "M80",
-        "avg_duration": 7
-      },
-      {
-        "count": 4,
-        "ship_name": "F8C Lightning",
-        "avg_duration": 20
-      },
-      {
-        "count": 2,
-        "ship_name": "Sabre Firebird",
-        "avg_duration": 13
-      },
-      {
-        "count": 1,
-        "ship_name": "Tiburon",
-        "avg_duration": 6
-      },
-      {
-        "count": 1,
-        "ship_name": "L-21 Wolf",
-        "avg_duration": 5
-      },
-      {
-        "count": 1,
-        "ship_name": "Redeemer",
-        "avg_duration": 7
-      },
-      {
-        "count": 1,
-        "ship_name": "Gladius",
-        "avg_duration": 5
-      },
-      {
-        "count": 1,
-        "ship_name": "F7C-M Super Hornet Mk II",
-        "avg_duration": 12
-      },
-      {
-        "count": 1,
-        "ship_name": "Vanguard Harbinger",
-        "avg_duration": 12
-      }
-    ],
-    "updated_at": "2026-06-09T17:42:58.006023+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
     "contract_id": "417aa5a1-e87e-4495-b694-5c9f83dd264b",
     "n": 4,
     "dur_p50": 30.5,
@@ -23600,45 +23615,6 @@
       }
     ],
     "updated_at": "2026-06-08T17:11:45.720827+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
-    "contract_id": "41ecd560-82df-4659-b584-2d5636d51a81",
-    "n": 1,
-    "dur_p50": 30,
-    "dur_avg": 30,
-    "dur_min": 30,
-    "dur_max": 30,
-    "rate_p50": 2,
-    "rate_avg": 2,
-    "rate_event_p50": 2,
-    "rate_event_avg": 2,
-    "avg_diff": null,
-    "avg_sat": null,
-    "n_diff": 0,
-    "n_sat": 0,
-    "n_solo": 1,
-    "solo_p50": 30,
-    "solo_rate_p50": 2,
-    "n_duo": 0,
-    "duo_p50": null,
-    "duo_rate_p50": null,
-    "n_squad": 0,
-    "squad_p50": null,
-    "squad_rate_p50": null,
-    "n_large": 0,
-    "large_p50": null,
-    "large_rate_p50": null,
-    "n_multi": 0,
-    "multi_p50": null,
-    "multi_rate_p50": null,
-    "multi_rate_event_p50": null,
-    "top_ships": [],
-    "updated_at": "2026-06-10T23:24:22.075809+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -23717,96 +23693,6 @@
     "multi_rate_event_p50": null,
     "top_ships": [],
     "updated_at": "2026-06-08T22:21:41.311461+00:00",
-    "votes_up_patch": 0,
-    "votes_down_patch": 0,
-    "votes_down_7d": 0,
-    "bug_reasons": {},
-    "votes_updated_at": null
-  },
-  {
-    "contract_id": "5673cea0-752a-4c64-bbab-f313a5274cd9",
-    "n": 40,
-    "dur_p50": 23,
-    "dur_avg": 27.2,
-    "dur_min": 3,
-    "dur_max": 90,
-    "rate_p50": 2.4,
-    "rate_avg": 2.8286214183646265,
-    "rate_event_p50": 2.60869565217391,
-    "rate_event_avg": 3.1007507383200337,
-    "avg_diff": 4.3,
-    "avg_sat": 4.5,
-    "n_diff": 21,
-    "n_sat": 18,
-    "n_solo": 34,
-    "solo_p50": 22,
-    "solo_rate_p50": 2.72727272727273,
-    "n_duo": 2,
-    "duo_p50": 30,
-    "duo_rate_p50": 0.860805860805861,
-    "n_squad": 3,
-    "squad_p50": 23,
-    "squad_rate_p50": 0.434782608695652,
-    "n_large": 1,
-    "large_p50": 23,
-    "large_rate_p50": 0.372670807453416,
-    "n_multi": 6,
-    "multi_p50": 23,
-    "multi_rate_p50": 0.478260869565217,
-    "multi_rate_event_p50": 2.60869565217391,
-    "top_ships": [
-      {
-        "count": 5,
-        "ship_name": "Guardian MX",
-        "avg_duration": 52
-      },
-      {
-        "count": 5,
-        "ship_name": "Corsair",
-        "avg_duration": 20
-      },
-      {
-        "count": 3,
-        "ship_name": "Idris P",
-        "avg_duration": 23
-      },
-      {
-        "count": 2,
-        "ship_name": "Perseus",
-        "avg_duration": 31
-      },
-      {
-        "count": 2,
-        "ship_name": "F7C-M Super Hornet Mk II",
-        "avg_duration": 25
-      },
-      {
-        "count": 1,
-        "ship_name": "Stinger",
-        "avg_duration": 30
-      },
-      {
-        "count": 1,
-        "ship_name": "Tiburon",
-        "avg_duration": 21
-      },
-      {
-        "count": 1,
-        "ship_name": "600i",
-        "avg_duration": 22
-      },
-      {
-        "count": 1,
-        "ship_name": "Starlancer MAX",
-        "avg_duration": 29
-      },
-      {
-        "count": 1,
-        "ship_name": "F8C Lightning",
-        "avg_duration": 20
-      }
-    ],
-    "updated_at": "2026-06-08T15:53:33.006237+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,
@@ -24203,6 +24089,45 @@
     "votes_updated_at": null
   },
   {
+    "contract_id": "41ecd560-82df-4659-b584-2d5636d51a81",
+    "n": 4,
+    "dur_p50": 2,
+    "dur_avg": 9,
+    "dur_min": 2,
+    "dur_max": 30,
+    "rate_p50": 30,
+    "rate_avg": 23,
+    "rate_event_p50": 30,
+    "rate_event_avg": 23,
+    "avg_diff": null,
+    "avg_sat": null,
+    "n_diff": 0,
+    "n_sat": 0,
+    "n_solo": 4,
+    "solo_p50": 2,
+    "solo_rate_p50": 30,
+    "n_duo": 0,
+    "duo_p50": null,
+    "duo_rate_p50": null,
+    "n_squad": 0,
+    "squad_p50": null,
+    "squad_rate_p50": null,
+    "n_large": 0,
+    "large_p50": null,
+    "large_rate_p50": null,
+    "n_multi": 0,
+    "multi_p50": null,
+    "multi_rate_p50": null,
+    "multi_rate_event_p50": null,
+    "top_ships": [],
+    "updated_at": "2026-06-11T08:52:40.641821+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
     "contract_id": "6528ac09-f0b3-4f83-a198-72f098754d95",
     "n": 50,
     "dur_p50": 46,
@@ -24235,6 +24160,96 @@
     "multi_rate_event_p50": null,
     "top_ships": [],
     "updated_at": "2026-06-07T23:42:56.552957+00:00",
+    "votes_up_patch": 0,
+    "votes_down_patch": 0,
+    "votes_down_7d": 0,
+    "bug_reasons": {},
+    "votes_updated_at": null
+  },
+  {
+    "contract_id": "5673cea0-752a-4c64-bbab-f313a5274cd9",
+    "n": 42,
+    "dur_p50": 23,
+    "dur_avg": 26.5,
+    "dur_min": 3,
+    "dur_max": 90,
+    "rate_p50": 2.4,
+    "rate_avg": 3.041751247303785,
+    "rate_event_p50": 2.60869565217391,
+    "rate_event_avg": 3.3009220282136966,
+    "avg_diff": 4.3,
+    "avg_sat": 4.4,
+    "n_diff": 22,
+    "n_sat": 19,
+    "n_solo": 36,
+    "solo_p50": 22,
+    "solo_rate_p50": 2.72727272727273,
+    "n_duo": 2,
+    "duo_p50": 30,
+    "duo_rate_p50": 0.860805860805861,
+    "n_squad": 3,
+    "squad_p50": 23,
+    "squad_rate_p50": 0.434782608695652,
+    "n_large": 1,
+    "large_p50": 23,
+    "large_rate_p50": 0.372670807453416,
+    "n_multi": 6,
+    "multi_p50": 23,
+    "multi_rate_p50": 0.478260869565217,
+    "multi_rate_event_p50": 2.60869565217391,
+    "top_ships": [
+      {
+        "count": 5,
+        "ship_name": "Guardian MX",
+        "avg_duration": 52
+      },
+      {
+        "count": 5,
+        "ship_name": "Corsair",
+        "avg_duration": 20
+      },
+      {
+        "count": 3,
+        "ship_name": "Idris P",
+        "avg_duration": 23
+      },
+      {
+        "count": 2,
+        "ship_name": "F7C-M Super Hornet Mk II",
+        "avg_duration": 25
+      },
+      {
+        "count": 2,
+        "ship_name": "Perseus",
+        "avg_duration": 31
+      },
+      {
+        "count": 2,
+        "ship_name": "F8C Lightning",
+        "avg_duration": 22
+      },
+      {
+        "count": 1,
+        "ship_name": "Starlancer MAX",
+        "avg_duration": 29
+      },
+      {
+        "count": 1,
+        "ship_name": "Polaris",
+        "avg_duration": 28
+      },
+      {
+        "count": 1,
+        "ship_name": "M80",
+        "avg_duration": 15
+      },
+      {
+        "count": 1,
+        "ship_name": "Stinger",
+        "avg_duration": 30
+      }
+    ],
+    "updated_at": "2026-06-11T17:09:12.32943+00:00",
     "votes_up_patch": 0,
     "votes_down_patch": 0,
     "votes_down_7d": 0,

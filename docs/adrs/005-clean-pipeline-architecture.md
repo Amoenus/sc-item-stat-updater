@@ -12,8 +12,8 @@ The actual product goal is to enrich `global.ini`:
 
 1. Extract a fresh `global.ini` from the game files.
 2. Extract additional data from game files.
-3. Extract enriched data from SCMDB.
-4. Optionally use legacy or fallback sources such as SPViewer.
+3. Extract enriched relationship/rollup data from SCMDB while those joins are still needed.
+4. Treat retired provider data as historical audit evidence only, not as an active pipeline input.
 5. Plan localization updates.
 6. Update the repo copy of `global.ini`.
 7. Deploy the enriched `global.ini` back into the game folder.

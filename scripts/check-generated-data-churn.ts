@@ -1,4 +1,4 @@
-import { assertNoGeneratedDataChurn } from '../src/application/use-cases/generated-data-churn-guard';
+import { assertNoGeneratedDataChurn } from '../src/application/guards/generated-data-churn-guard';
 
 try {
   await assertNoGeneratedDataChurn(process.cwd());

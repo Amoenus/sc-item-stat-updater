@@ -16,8 +16,8 @@ import { findIniKey } from '../../localization/ini-file';
 import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localization/key-resolver';
 import type { LocalizationPatchPlan } from '../../localization/patch-application';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
-import type { RawFactListingEntry } from './category-listing';
-import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from './prepare-update-categories';
+import type { RawFactListingEntry } from '../catalog/category-listing';
+import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from '../use-cases/prepare-update-categories';
 
 const logger = getLogger('updater');
 
@@ -167,7 +167,7 @@ export async function loadSourceData(
   return loadCsvSourceData(config, csvDir);
 }
 
-/** Resolves localization keys for SPViewer configs (no Localization Key column in CSV). */
+/** Resolves localization keys for legacy configs that do not carry a Localization Key column. */
 export async function resolveSpviewerKeys(
   rows: Record<string, string>[],
   config: ItemConfig,
@@ -253,11 +253,8 @@ function scrapeCommand(
   if (!provider) return undefined;
   if (provider === 'unknown') return undefined;
   const command =
-    provider === 'datacore'
-      ? 'npm run scrape:datacore'
-      : provider === 'scmdb'
-        ? 'npm run scrape:scmdb'
-        : 'npm run scrape:spviewer';
+    provider === 'datacore' ? 'npm run cache:datacore' : provider === 'scmdb' ? 'npm run cache:scmdb' : undefined;
+  if (!command) return undefined;
   return channel === 'PTU' ? `${command} -- --ptu` : command;
 }
 
@@ -274,7 +271,7 @@ function formatMissingSource(
   const lines = [
     `  [${context || category.config.label}] ${filename}`,
     `    Expected: ${filePath}`,
-    `    Generate with: ${scrapeCommand(provider, channel) ?? 'the matching source scraper'}`,
+    `    Generate with: ${scrapeCommand(provider, channel) ?? 'the matching cache refresh command'}`,
   ];
   if (sourceCategory !== category.config.label) {
     lines.splice(1, 0, `    Config: ${category.config.label}`);
@@ -508,7 +505,7 @@ export async function preflightCheckConfigs(
   const missing = [...missingByPath.values()].map((entry) => entry.message);
   if (missing.length > 0) {
     throw new Error(
-      `Preflight check failed — ${missing.length} source file issue(s):\n${missing.join('\n')}\n\nRun the scrapers first to populate the missing files.`,
+      `Preflight check failed - ${missing.length} source file issue(s):\n${missing.join('\n')}\n\nRun the cache refresh commands first to populate the missing files.`,
     );
   }
 }

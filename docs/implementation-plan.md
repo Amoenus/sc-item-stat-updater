@@ -1719,7 +1719,7 @@ Primary goal:
 Implemented:
 
 - Removed obsolete `src/lib` compatibility re-exports in a prior cleanup slice.
-- Moved the remaining update-planning helpers into `src/application/use-cases/update-planning.ts`.
+- Moved the remaining update-planning helpers into `src/application/update/update-planning.ts`.
 - Removed the old `runUpdate` and `buildPatchData` compatibility APIs after confirming active imports no longer need them.
 - Removed the empty local `src/lib` directory from the workspace.
 - Added `docs/functional-improvements.md` with a current post-migration cleanup audit and functional improvement inventory.
