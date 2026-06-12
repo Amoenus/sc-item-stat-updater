@@ -30,10 +30,14 @@ test('refreshGlobalIni extracts a fresh game global.ini and copies it into the r
 });
 
 test('refreshGlobalIni distinguishes missing install and repo-copy failures', async () => {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'refresh-global-ini-failure-'));
+  const repoIniPath = path.join(tmpDir, 'global.ini');
+  await fs.writeFile(repoIniPath, 'existing repo file');
+
   await assert.rejects(
     () =>
       refreshGlobalIni({
-        repoIniPath: 'global.ini',
+        repoIniPath,
         extract: async () => {
           throw new Error('Data.p4k not found at: C:/Games/StarCitizen/LIVE/Data.p4k');
         },
@@ -44,7 +48,7 @@ test('refreshGlobalIni distinguishes missing install and repo-copy failures', as
   await assert.rejects(
     () =>
       refreshGlobalIni({
-        repoIniPath: 'global.ini',
+        repoIniPath,
         extract: async () => 'game-global.ini',
         copyFile: async () => {
           throw new Error('permission denied');
@@ -52,6 +56,9 @@ test('refreshGlobalIni distinguishes missing install and repo-copy failures', as
       }),
     /Failed to refresh repo global\.ini: permission denied/,
   );
+  assert.equal(await fs.readFile(repoIniPath, 'utf8'), 'existing repo file');
+
+  await fs.rm(tmpDir, { recursive: true, force: true });
 });
 
 test('deployGlobalIni copies the repo global.ini back to the extracted game path', async () => {

@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { extractGlobalIni } from '../../pipeline/extract';
 
 export interface RefreshGlobalIniOptions {
@@ -31,13 +32,23 @@ export async function refreshGlobalIni(options: RefreshGlobalIniOptions): Promis
   }
 
   try {
+    const tempRepoIniPath = path.join(
+      path.dirname(options.repoIniPath),
+      `.${path.basename(options.repoIniPath)}.${process.pid}.${Date.now()}.tmp`,
+    );
     try {
-      // Workaround for Windows UNKNOWN: unknown error, copyfile when destination is locked
-      await fs.unlink(options.repoIniPath);
-    } catch (e) {
-      // Ignore if file doesn't exist
+      await copyFile(extractedGamePath, tempRepoIniPath);
+      try {
+        // Workaround for Windows UNKNOWN: unknown error, copyfile when destination is locked.
+        await fs.unlink(options.repoIniPath);
+      } catch {
+        // Ignore if file doesn't exist.
+      }
+      await fs.rename(tempRepoIniPath, options.repoIniPath);
+    } catch (error) {
+      await fs.unlink(tempRepoIniPath).catch(() => {});
+      throw error;
     }
-    await copyFile(extractedGamePath, options.repoIniPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to refresh repo global.ini: ${message}`);
