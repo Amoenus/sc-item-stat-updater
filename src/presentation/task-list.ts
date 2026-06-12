@@ -10,11 +10,11 @@ import {
 import { withLoggerOutputSink } from '../infrastructure/logger';
 import type { CommandIO } from './cli';
 
-export type CommandTask<Ctx> = ListrTask<Ctx, typeof DefaultRenderer, typeof SimpleRenderer>;
-
 interface CommandTaskListOptions {
   verbose?: boolean;
 }
+
+export type CommandTask<Ctx> = ListrTask<Ctx, typeof DefaultRenderer, typeof SimpleRenderer>;
 
 export function createCommandTaskList<Ctx>(
   tasks: CommandTask<Ctx>[],
@@ -42,8 +42,8 @@ export function createCommandTaskList<Ctx>(
     registerSignalListeners: false,
     rendererOptions: {
       processOutput,
-      // Keep scrollback readable: the default renderer redraws live frames, so old frames must be cleared.
-      clearOutput: true,
+      // Preserve the compact final task tree after success instead of clearing it away.
+      clearOutput: false,
       // Keep the live view rich, then collapse successful children into their parent summary in final scrollback.
       collapseSubtasks: !options.verbose,
       showSubtasks: true,

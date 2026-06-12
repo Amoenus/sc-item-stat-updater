@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
 import {
   ensureToolsInstalled,
@@ -17,6 +18,13 @@ import type {
 import { extractDataCoreXmlCache } from '../../sources/datacore/acquisition';
 import { extractDataCoreBlueprintPools } from '../../sources/datacore/blueprint-pool-extractor';
 import { extractDataCoreCommodities } from '../../sources/datacore/commodity-extractor';
+import {
+  buildDataCoreHaulingComponentClassLookup,
+  isDisplayDataCoreComponentClass,
+  normalizeDataCoreEntityClass,
+  normalizeSpaces,
+  resolveDataCoreComponentClass,
+} from '../../sources/datacore/component-class-resolver';
 import { mapConcurrent } from '../../sources/datacore/concurrency';
 import { extractDataCoreContractGenerators } from '../../sources/datacore/contract-generator-extractor';
 import { buildDataCoreContractGeneratorIntel } from '../../sources/datacore/contract-generator-intel-builder';
@@ -514,6 +522,9 @@ const COMMODITY_HEADERS = [
   'Unrefined',
   'Raw',
   'Refined',
+  'Controlled Substance Jurisdictions',
+  'Controlled Substance Max SCU',
+  'Legality Warning Source',
   'Record GUID',
   'Record Path',
 ];
@@ -557,6 +568,7 @@ const CONTRACT_GENERATOR_HEADERS = [
   'Risk Of Loss',
   'Game Knowledge',
   'Blueprint Reward Pool Guids',
+  'Blueprint Rewards',
   'Required Completed Contract Tags',
   'Completion Tags',
   'Record GUID',
@@ -1878,6 +1890,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
 
       try {
         const result = await scrapeDataCoreType(entry, {
+          repoRoot: options.repoRoot,
           xmlCacheDir,
           outputBase,
           dryRun: options.dryRun,
@@ -1896,7 +1909,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
     },
 
     async finalizeItemTypes() {
-      const { selectedTypes } = requirePrepared();
+      const { outputBase, selectedTypes } = requirePrepared();
       const results: DataCoreScrapeTypeResult[] = [];
       const errors: DataCoreScrapeTypeError[] = [];
 
@@ -1905,6 +1918,10 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
         if (!value) throw new Error(`DataCore item type stage "${entry.name}" has not completed.`);
         if (value.result) results.push(value.result);
         if (value.error) errors.push(value.error);
+      }
+
+      if (errors.length === 0) {
+        await reconcileDataCoreComponentClasses(outputBase, selectedTypes, options.dryRun);
       }
 
       typeResults = { results, errors };
@@ -2084,6 +2101,7 @@ async function extractPackedDataCoreDcb(p4kPath: string, dcbCacheDir: string, to
 async function scrapeDataCoreType(
   entry: DataCoreTypeEntry,
   options: {
+    repoRoot: string;
     xmlCacheDir: string;
     outputBase: string;
     dryRun?: boolean;
@@ -2092,34 +2110,35 @@ async function scrapeDataCoreType(
   },
 ): Promise<DataCoreScrapeTypeResult> {
   const { name, csvFile, typeConfig } = entry;
-  const recordFilters = Array.isArray(typeConfig.recordFilter) ? typeConfig.recordFilter : [typeConfig.recordFilter];
-  const xmlFileSet = new Set<string>();
-  for (const recordFilter of recordFilters) {
-    for (const xmlFile of await collectDataCoreXmlFilesMatching(options.xmlCacheDir, recordFilter)) {
-      xmlFileSet.add(xmlFile);
-    }
-  }
-  const xmlFiles = [...xmlFileSet].sort();
+  const xmlCandidates = await collectDataCoreTypeXmlCandidates(typeConfig, {
+    xmlCacheDir: options.xmlCacheDir,
+    graph: options.graph,
+  });
   const typeHeaders = Object.keys(typeConfig.fieldSelectors);
   const headers = [...COMMON_HEADERS, ...typeHeaders];
   const rows: string[][] = [];
   const referencedXmlCache = new Map<string, ReturnType<typeof loadXml>>();
+  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(options.graph);
+  const scmdbComponentClassByRef = await loadScmdbComponentClassLookup({
+    repoRoot: options.repoRoot,
+    versionTag: path.basename(options.outputBase),
+  });
   let skipped = 0;
 
   const mappedRows = await mapConcurrent(
-    xmlFiles,
-    async (xmlPath) => {
+    xmlCandidates,
+    async ({ xmlPath, countAsSkipped }) => {
       const xml = await fs.readFile(xmlPath, 'utf8');
       let $: ReturnType<typeof loadXml>;
       try {
         $ = loadXml(xml);
       } catch {
-        skipped++;
+        if (countAsSkipped) skipped++;
         return null;
       }
 
       if (typeConfig.recordSelector && $(typeConfig.recordSelector).length === 0) {
-        skipped++;
+        if (countAsSkipped) skipped++;
         return null;
       }
 
@@ -2129,7 +2148,7 @@ async function scrapeDataCoreType(
       }
 
       if (!entityClass || entityClass.startsWith('__')) {
-        skipped++;
+        if (countAsSkipped) skipped++;
         return null;
       }
 
@@ -2137,6 +2156,11 @@ async function scrapeDataCoreType(
       const health = extractHealth($);
       const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
       const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
+      let componentClass = resolveDataCoreComponentClass(attachDef.subtype, entityClass, entityClassToHaulingClass);
+      if (!isDisplayDataCoreComponentClass(componentClass)) {
+        const record = getDataCoreRecordForEntityClass(entityClass, options.graph);
+        componentClass = scmdbComponentClassByRef.get(record?.ref.toLowerCase() ?? '') ?? componentClass;
+      }
       const rowRecord: Record<string, string> = {
         'Entity Class': entityClass,
         'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
@@ -2145,16 +2169,14 @@ async function scrapeDataCoreType(
         Manufacturer: manufacturer,
         Size: attachDef.size,
         Grade: attachDef.grade,
-        Class: attachDef.subtype,
+        Class: componentClass,
         Health: health,
       };
 
-      const typeFields: string[] = [];
       for (const col of typeHeaders) {
         const spec = typeConfig.fieldSelectors[col];
         if (!spec) {
           rowRecord[col] = '';
-          typeFields.push('');
           continue;
         }
         const value = await resolveField($, spec, rowRecord, {
@@ -2163,26 +2185,26 @@ async function scrapeDataCoreType(
           referencedXmlCache,
         });
         rowRecord[col] = value;
-        typeFields.push(value);
       }
 
-      return [
-        entityClass,
-        rowRecord['Name Key'],
-        rowRecord['Short Name Key'],
-        rowRecord['Description Key'],
-        manufacturer,
-        attachDef.size,
-        attachDef.grade,
-        attachDef.subtype,
-        health,
-        ...typeFields,
-      ];
+      if (typeConfig.excludeRow?.(rowRecord)) {
+        if (countAsSkipped) skipped++;
+        return null;
+      }
+
+      return rowRecord;
     },
     50,
   );
 
-  rows.push(...mappedRows.filter((r) => r !== null));
+  const rowRecords = mappedRows.filter((r) => r !== null);
+  const derivedClassByManufacturer = buildDerivedComponentClassLookup(rowRecords, csvFile);
+  for (const row of rowRecords) {
+    if (!isDisplayDataCoreComponentClass(row.Class)) {
+      row.Class = derivedClassByManufacturer.get(toComponentManufacturerKey(row, csvFile)) ?? row.Class;
+    }
+    rows.push(headers.map((header) => row[header] ?? ''));
+  }
 
   if (!options.dryRun && rows.length > 0) {
     const csvContent = stringify([headers, ...rows]);
@@ -2190,6 +2212,268 @@ async function scrapeDataCoreType(
   }
 
   return { type: name, rows: rows.length, skipped, csvFile };
+}
+
+const scmdbComponentClassLookupCache = new Map<string, Promise<Map<string, string>>>();
+
+async function loadScmdbComponentClassLookup({
+  repoRoot,
+  versionTag,
+}: {
+  repoRoot: string;
+  versionTag: string;
+}): Promise<Map<string, string>> {
+  const cacheKey = `${repoRoot}|${versionTag}`;
+  const existing = scmdbComponentClassLookupCache.get(cacheKey);
+  if (existing) return existing;
+
+  const promise = readScmdbComponentClassLookup(repoRoot, versionTag);
+  scmdbComponentClassLookupCache.set(cacheKey, promise);
+  return promise;
+}
+
+async function readScmdbComponentClassLookup(repoRoot: string, versionTag: string): Promise<Map<string, string>> {
+  const classByRef = new Map<string, string>();
+  const scmdbDir = path.join(repoRoot, 'csv', 'scmdb', versionTag);
+
+  let entries: string[];
+  try {
+    entries = await fs.readdir(scmdbDir);
+  } catch {
+    return classByRef;
+  }
+
+  const craftingFile = entries.filter((entry) => /^crafting_items-.*\.json$/i.test(entry)).sort().at(-1);
+  if (!craftingFile) {
+    return classByRef;
+  }
+
+  const data = JSON.parse(await fs.readFile(path.join(scmdbDir, craftingFile), 'utf8')) as {
+    items?: Array<{ entityClass?: unknown; itemType?: unknown; componentClass?: unknown }>;
+  };
+
+  for (const item of data.items ?? []) {
+    if (item.itemType !== 'shipcomponent') continue;
+    const ref = normalizeSpaces(item.entityClass);
+    const componentClass = normalizeSpaces(item.componentClass);
+    if (ref && isDisplayDataCoreComponentClass(componentClass)) {
+      classByRef.set(ref.toLowerCase(), componentClass);
+    }
+  }
+
+  return classByRef;
+}
+
+function getDataCoreRecordForEntityClass(entityClass: string, graph: DataCoreRecordGraphLookup | undefined) {
+  if (!graph) return undefined;
+  const normalized = normalizeDataCoreEntityClass(entityClass);
+  if (!normalized) return undefined;
+  return graph.graph.records.find((record) => normalizeDataCoreEntityClass(record.entityClass) === normalized);
+}
+
+function buildDerivedComponentClassLookup(rows: Array<Record<string, string>>, csvFile: string): Map<string, string> {
+  const candidates = new Map<string, Set<string>>();
+
+  for (const row of rows) {
+    const cls = normalizeSpaces(row.Class);
+    if (!isDisplayDataCoreComponentClass(cls)) continue;
+
+    const key = toComponentManufacturerKey(row, csvFile);
+    if (!key) continue;
+    const values = candidates.get(key) ?? new Set<string>();
+    values.add(cls);
+    candidates.set(key, values);
+  }
+
+  const resolved = new Map<string, string>();
+  for (const [key, values] of candidates) {
+    if (values.size === 1) {
+      resolved.set(key, [...values][0]);
+    }
+  }
+  return resolved;
+}
+
+function toComponentManufacturerKey(row: Record<string, string>, csvFile: string): string {
+  const componentType = csvFile.replace(/\.datacore\.csv$/i, '').toLowerCase();
+  const manufacturer = getDataCoreComponentManufacturer(row);
+  return componentType && manufacturer ? `${componentType}:${manufacturer}` : '';
+}
+
+function getDataCoreComponentManufacturer(row: Record<string, string>): string {
+  const manufacturer = normalizeSpaces(row.Manufacturer).toUpperCase();
+  if (manufacturer) {
+    return manufacturer;
+  }
+
+  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
+  const parts = entityClass.split('_');
+  return parts.length >= 2 ? parts[1].toUpperCase() : '';
+}
+
+const CORE_COMPONENT_CLASS_CSV_FILES = new Set([
+  'cooler.datacore.csv',
+  'powerplant.datacore.csv',
+  'quantumdrive.datacore.csv',
+  'shield.datacore.csv',
+]);
+
+const COMPONENT_CLASS_RECONCILE_CSV_FILES = new Set([...CORE_COMPONENT_CLASS_CSV_FILES, 'jumpdrive.datacore.csv']);
+
+async function reconcileDataCoreComponentClasses(
+  outputBase: string,
+  selectedTypes: DataCoreTypeEntry[],
+  dryRun?: boolean,
+): Promise<void> {
+  if (dryRun) return;
+
+  const tables: Array<{ entry: DataCoreTypeEntry; rows: Array<Record<string, string>> }> = [];
+  for (const entry of selectedTypes) {
+    if (!COMPONENT_CLASS_RECONCILE_CSV_FILES.has(entry.csvFile)) continue;
+    const filePath = path.join(outputBase, entry.csvFile);
+    let csvContent: string;
+    try {
+      csvContent = await fs.readFile(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+    const rows = parse(csvContent, { columns: true, skip_empty_lines: true }) as Array<Record<string, string>>;
+    if (!rows[0] || !('Class' in rows[0])) continue;
+    tables.push({ entry, rows });
+  }
+
+  const driveManufacturerClass = buildDriveManufacturerClassLookup(tables);
+  const vehicleClass = buildVehicleComponentClassLookup(tables);
+
+  for (const table of tables) {
+    let changed = false;
+    for (const row of table.rows) {
+      if (isDisplayDataCoreComponentClass(row.Class)) continue;
+
+      const resolvedClass =
+        getDriveFamilyComponentClass(table.entry.csvFile, row, driveManufacturerClass) ??
+        vehicleClass.get(getVehicleComponentToken(row['Entity Class'])) ??
+        '';
+      if (resolvedClass) {
+        row.Class = resolvedClass;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await fs.writeFile(path.join(outputBase, table.entry.csvFile), stringify(table.rows, { header: true }), 'utf8');
+    }
+  }
+}
+
+function buildDriveManufacturerClassLookup(
+  tables: Array<{ entry: DataCoreTypeEntry; rows: Array<Record<string, string>> }>,
+): Map<string, string> {
+  const candidates = new Map<string, Set<string>>();
+  for (const table of tables) {
+    if (table.entry.csvFile !== 'quantumdrive.datacore.csv') continue;
+    for (const row of table.rows) {
+      const cls = normalizeSpaces(row.Class);
+      if (!isDisplayDataCoreComponentClass(cls)) continue;
+
+      const manufacturer = getDataCoreComponentManufacturer(row);
+      if (!manufacturer) continue;
+      const values = candidates.get(manufacturer) ?? new Set<string>();
+      values.add(cls);
+      candidates.set(manufacturer, values);
+    }
+  }
+
+  return uniqueValues(candidates);
+}
+
+function getDriveFamilyComponentClass(
+  csvFile: string,
+  row: Record<string, string>,
+  driveManufacturerClass: Map<string, string>,
+): string | undefined {
+  if (csvFile !== 'jumpdrive.datacore.csv') return undefined;
+  return driveManufacturerClass.get(getDataCoreComponentManufacturer(row));
+}
+
+function buildVehicleComponentClassLookup(
+  tables: Array<{ entry: DataCoreTypeEntry; rows: Array<Record<string, string>> }>,
+): Map<string, string> {
+  const candidates = new Map<string, Set<string>>();
+  for (const table of tables) {
+    if (!CORE_COMPONENT_CLASS_CSV_FILES.has(table.entry.csvFile)) continue;
+    for (const row of table.rows) {
+      const cls = normalizeSpaces(row.Class);
+      if (!isDisplayDataCoreComponentClass(cls)) continue;
+
+      const token = getVehicleComponentToken(row['Entity Class']);
+      if (!token) continue;
+      const values = candidates.get(token) ?? new Set<string>();
+      values.add(cls);
+      candidates.set(token, values);
+    }
+  }
+
+  return uniqueValues(candidates);
+}
+
+function getVehicleComponentToken(entityClass: string): string {
+  const normalized = normalizeDataCoreEntityClass(entityClass)
+    .replace(/_temp$/i, '')
+    .replace(/_pirate$/i, '');
+  const parts = normalized.split('_').filter(Boolean);
+  if (parts.length < 3) return '';
+
+  const last = parts.at(-1) ?? '';
+  if (/^\d+$/.test(last) || /^s\d+$/i.test(last)) return '';
+  return last;
+}
+
+function uniqueValues(candidates: Map<string, Set<string>>): Map<string, string> {
+  const resolved = new Map<string, string>();
+  for (const [key, values] of candidates) {
+    if (values.size === 1) {
+      resolved.set(key, [...values][0]);
+    }
+  }
+  return resolved;
+}
+
+async function collectDataCoreTypeXmlCandidates(
+  typeConfig: DataCoreItemTypeConfig,
+  options: {
+    xmlCacheDir: string;
+    graph?: DataCoreRecordGraphLookup;
+  },
+): Promise<Array<{ xmlPath: string; countAsSkipped: boolean }>> {
+  const candidates = new Map<string, { xmlPath: string; countAsSkipped: boolean }>();
+  const addCandidate = (xmlPath: string, countAsSkipped: boolean) => {
+    const existing = candidates.get(xmlPath);
+    candidates.set(xmlPath, {
+      xmlPath,
+      countAsSkipped: Boolean(existing?.countAsSkipped || countAsSkipped),
+    });
+  };
+
+  const recordFilters = Array.isArray(typeConfig.recordFilter) ? typeConfig.recordFilter : [typeConfig.recordFilter];
+  for (const recordFilter of recordFilters) {
+    for (const xmlFile of await collectDataCoreXmlFilesMatching(options.xmlCacheDir, recordFilter)) {
+      addCandidate(xmlFile, true);
+    }
+  }
+
+  if (typeConfig.recordSelector && typeConfig.includeStructuralDiscovery !== false && options.graph) {
+    for (const record of options.graph.getByRootType('EntityClassDefinition')) {
+      if (!isEntityRecordPath(record.path)) continue;
+      addCandidate(path.join(options.xmlCacheDir, record.path), false);
+    }
+  }
+
+  return [...candidates.values()].sort((a, b) => a.xmlPath.localeCompare(b.xmlPath));
+}
+
+function isEntityRecordPath(recordPath: string): boolean {
+  return recordPath.replaceAll('\\', '/').toLowerCase().startsWith('libs/foundry/records/entities/');
 }
 
 async function writeContractGeneratorCsv(
@@ -2237,6 +2521,7 @@ async function writeContractGeneratorCsv(
       row.riskOfLoss,
       row.gameKnowledge,
       row.blueprintRewardPoolGuids,
+      row.blueprintRewards,
       row.requiredCompletedContractTags,
       row.completionTags,
       row.recordGuid,
@@ -2410,6 +2695,9 @@ async function writeCommodityCsv(
       row.isUnrefinedElement,
       row.isRaw,
       row.isRefined,
+      row.controlledSubstanceJurisdictions,
+      row.controlledSubstanceMaxScu,
+      row.legalityWarningSource,
       row.ref,
       row.path,
     ]);

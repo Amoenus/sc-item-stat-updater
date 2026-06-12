@@ -85,7 +85,7 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                 </additionalPrerequisites>
                 <contractResults contractBuyInAmount="10" timeToComplete="20">
                   <contractResults>
-                    <BlueprintRewards blueprintPool="blueprint-pool" />
+                    <BlueprintRewards blueprintPool="blueprint-pool" chance="0.25" trigger="MissionSuccess" />
                     <ContractResult_CompletionTags>
                       <completionTags>
                         <ContractResult_CompletionTag count="1" tag="completion-tag" />
@@ -147,6 +147,8 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
       riskOfLoss: 'Safe',
       gameKnowledge: 'Basic',
       blueprintRewardPoolGuids: 'blueprint-pool',
+      blueprintRewards:
+        '[{"blueprintPool":"blueprint-pool","chance":0.25,"trigger":"MissionSuccess","type":"BlueprintRewards"}]',
       requiredCompletedContractTags: 'required-tag',
       completionTags: 'completion-tag',
       recordGuid: 'generator-guid',
@@ -198,6 +200,7 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
   assert.equal(row.descriptionKey, 'career_desc');
   assert.equal(row.timeToComplete, '45');
   assert.equal(row.blueprintRewardPoolGuids, 'blueprint-pool');
+  assert.equal(row.blueprintRewards, '[{"blueprintPool":"blueprint-pool","chance":1,"trigger":"","type":"BlueprintRewards"}]');
 });
 
 function graphFixture(generatorPath: string): DataCoreRecordGraph {

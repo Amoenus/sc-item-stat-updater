@@ -46,6 +46,29 @@ describe('commodities source loading', () => {
     );
   });
 
+  it('marks commodity name rows as warnings when DataCore law relationships classify the source commodity as controlled', () => {
+    const rows = buildCommodityRowsFromSources([
+      {
+        'Name Key': 'items_commodities_DCSR2',
+        'Description Key': 'items_commodities_DCSR2_desc',
+        'Display Name Key': 'items_commodities_DCSR2',
+        'Display Type Key': 'items_commodities_type_agriculturalSupply',
+        'Controlled Substance Jurisdictions': 'Jurisdictions_Name_004',
+        'Legality Warning Source': 'controlled-substance',
+        'Record Path': 'libs/foundry/records/entities/commodities/agriculturalsupplies/dcsr2.xml',
+      },
+    ]);
+
+    assert.deepStrictEqual(
+      rows.map((row) => [row['Localization Key'], row['Commodity Field'], row['Warning Tag']]),
+      [
+        ['items_commodities_DCSR2', 'Name Key', '1'],
+        ['items_commodities_DCSR2_desc', 'Description Key', ''],
+        ['items_commodities_type_agriculturalSupply', 'Display Type Key', ''],
+      ],
+    );
+  });
+
   it('does not warn non-vice commodity rows from static key names', () => {
     const rows = buildCommodityRowsFromSources([
       {

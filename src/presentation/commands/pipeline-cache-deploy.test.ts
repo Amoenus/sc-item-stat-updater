@@ -443,8 +443,8 @@ test('cache command runs independent DataCore raw fact children concurrently', a
 test('cache command runs independent DataCore item type children concurrently', async () => {
   const io = createFakeIO();
   const typeEntries = [
-    { name: 'weapons', csvFile: 'weapons.datacore.csv', typeConfig: {} as never },
-    { name: 'tractor-beams', csvFile: 'tractor-beams.datacore.csv', typeConfig: {} as never },
+    { name: 'coolers', csvFile: 'coolers.datacore.csv', typeConfig: {} as never },
+    { name: 'powerplants', csvFile: 'powerplants.datacore.csv', typeConfig: {} as never },
   ];
   let inFlight = 0;
   let maxInFlight = 0;
@@ -516,9 +516,10 @@ test('cache command runs independent DataCore item type children concurrently', 
 
   assert.equal(exitCode, 0);
   assert.equal(maxInFlight, 2);
-  assert.match(io.stdoutText(), /Scrape item type CSVs - 2 types/);
-  assert.match(io.stdoutText(), /weapons/);
-  assert.match(io.stdoutText(), /tractor-beams/);
+  assert.match(io.stdoutText(), /Scrape item type CSVs - 2 types across 1 group/);
+  assert.match(io.stdoutText(), /Ship systems - 2 types/);
+  assert.match(io.stdoutText(), /coolers/);
+  assert.match(io.stdoutText(), /powerplants/);
 });
 
 test('cache command renders SCMDB plan stages and parallel fetch children as real nested Listr tasks', async () => {

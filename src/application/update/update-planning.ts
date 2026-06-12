@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sanitizeIniValue } from '../../enrichment/formatter';
 import type {
+  ItemBuildValueContext,
   IssueRecord,
   ItemConfig,
   ItemSourceDataContext,
@@ -349,6 +350,20 @@ export function findLastDescIndex(
   return lastDescIdx;
 }
 
+function lookupLocalizationValue(
+  lines: string[],
+  existingKeys: Record<string, number>,
+  lowerCaseIndex: Map<string, string>,
+  key: string,
+): string {
+  const normalizedKey = key.startsWith('@') ? key.slice(1) : key;
+  const foundKey = findIniKey(existingKeys, lowerCaseIndex, normalizedKey);
+  if (!foundKey) return '';
+  const line = lines[existingKeys[foundKey]];
+  const eqIdx = line.indexOf('=');
+  return eqIdx > -1 ? line.slice(eqIdx + 1) : '';
+}
+
 /** Processes a single row: updates existing key or queues a new entry. */
 function getTargetKeys(
   config: ItemConfig,
@@ -390,7 +405,9 @@ function tryPlanKey(
     const oldValue = eqIdx > -1 ? oldLine.substring(eqIdx + 1) : '';
     const buildValue = context.config.buildValue;
     if (!buildValue) throw new Error(`buildValue is required for config "${context.config.label}"`);
-    const newValue = sanitizeIniValue(buildValue(row, extractFlavorText(oldValue), oldValue, foundKey));
+    const newValue = sanitizeIniValue(
+      buildValue(row, extractFlavorText(oldValue), oldValue, foundKey, context.buildValueContext),
+    );
     if (newValue !== oldValue || force) {
       context.planPatch(foundKey, newValue, lineIndex);
       anyUpdated = true;
@@ -534,6 +551,7 @@ class PlanningContext {
   existingKeys: Record<string, number>;
   lowerCaseIndex: Map<string, string>;
   allOccurrences: Map<string, number[]>;
+  buildValueContext: ItemBuildValueContext;
   updatedKeys: Set<string>;
   plan: LocalizationPatchPlan;
   newLines: string[];
@@ -558,6 +576,9 @@ class PlanningContext {
     this.existingKeys = existingKeys;
     this.lowerCaseIndex = lowerCaseIndex;
     this.allOccurrences = allOccurrences;
+    this.buildValueContext = {
+      localizationValue: (key) => lookupLocalizationValue(lines, existingKeys, lowerCaseIndex, key),
+    };
 
     this.updatedKeys = new Set();
     this.plan = { entries: [], issues: [] };

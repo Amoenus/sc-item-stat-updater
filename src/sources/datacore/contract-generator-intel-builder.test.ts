@@ -131,6 +131,7 @@ function generator(overrides: Partial<DataCoreContractGeneratorRecord> = {}): Da
     titleVariantKeys: '',
     descriptionVariantKeys: '',
     blueprintRewardPoolGuids: '',
+    blueprintRewards: '',
     stringParamOverrides: '',
     locationTagGuids: '',
     locationTagClasses: '',

@@ -77,7 +77,7 @@ async function buildTitleContracts(
       titleKeys,
       isIntro:
         row['Contract Section'] === 'introContracts' || row['Contract Debug Name']?.toLowerCase().includes('intro'),
-      blueprintRewardPoolGuids: splitTokenList(row['Blueprint Reward Pool Guids'] || xmlFacts.blueprintRewardPoolGuids),
+      blueprintRewardPoolGuids: getBlueprintRewardPoolGuids(row, xmlFacts.blueprintRewardPoolGuids),
       requiredCompletedContractTags: splitTokenList(
         row['Required Completed Contract Tags'] || xmlFacts.requiredCompletedContractTags,
       ),
@@ -86,6 +86,26 @@ async function buildTitleContracts(
   }
 
   return contracts;
+}
+
+function getBlueprintRewardPoolGuids(row: Record<string, string>, xmlFallback: string): string[] {
+  const parsedRewards = parseBlueprintRewards(row['Blueprint Rewards']);
+  if (parsedRewards.length > 0) return parsedRewards.map((reward) => reward.blueprintPool);
+  return splitTokenList(row['Blueprint Reward Pool Guids'] || xmlFallback);
+}
+
+function parseBlueprintRewards(value: unknown): Array<{ blueprintPool: string }> {
+  try {
+    const parsed = JSON.parse(normalizeToken(value));
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((entry): Array<{ blueprintPool: string }> => {
+      if (!entry || typeof entry !== 'object') return [];
+      const blueprintPool = normalizeToken((entry as { blueprintPool?: unknown }).blueprintPool);
+      return blueprintPool ? [{ blueprintPool }] : [];
+    });
+  } catch {
+    return [];
+  }
 }
 
 function buildTitleNotesByKey(contracts: DataCoreMissionTitleContract[]): Map<string, string> {

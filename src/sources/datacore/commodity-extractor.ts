@@ -9,6 +9,7 @@ const DEFAULT_COMMODITY_PATH_PREFIX = 'libs/foundry/records/entities/commodities
 const DEFAULT_CARRYABLE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/carryables';
 const DEFAULT_HARVESTABLE_BASE_PATH_PREFIX = 'libs/foundry/records/entities/scitem/harvestables/bases';
 const DEFAULT_HAULING_ENTITY_CLASS_PATH_PREFIX = 'libs/foundry/records/entities/haulingentityclass';
+const DEFAULT_JURISDICTION_PATH_PREFIX = 'libs/foundry/records/lawsystem/jurisdictions';
 
 export interface ExtractDataCoreCommoditiesOptions {
   xmlCacheDir: string;
@@ -19,6 +20,7 @@ export interface ExtractDataCoreCommoditiesOptions {
 export async function extractDataCoreCommodities(
   options: ExtractDataCoreCommoditiesOptions,
 ): Promise<DataCoreCommodityRecord[]> {
+  const controlledSubstances = await extractControlledSubstanceIndex(options);
   const records = options.graph
     .getByPathPrefix(options.pathPrefix ?? DEFAULT_COMMODITY_PATH_PREFIX)
     .filter((record) => record.rootType === 'EntityClassDefinition')
@@ -37,52 +39,61 @@ export async function extractDataCoreCommodities(
     const uiDisplayParams = $('EntityUIDisplayParams').first();
     const occupancy = extractCargoOccupancy($);
 
-    const commodity = {
-      ref: record.ref,
-      path: record.path,
-      entityClass: record.entityClass,
-      nameKey: resolveRecordLocalizationKey(record, ['name', 'displayName'], commodityParams.attr('name')),
-      descriptionKey: resolveRecordLocalizationKey(
-        record,
-        ['description', 'displayDescription'],
-        commodityParams.attr('description') ?? uiDisplayParams.attr('displayDescription'),
-      ),
-      displayNameKey: resolveRecordLocalizationKey(
-        record,
-        ['displayName', 'name'],
-        purchasableParams.attr('displayName') ?? uiDisplayParams.attr('displayName'),
-      ),
-      displayDescriptionKey: resolveRecordLocalizationKey(
-        record,
-        ['displayDescription', 'description'],
-        uiDisplayParams.attr('displayDescription') ?? commodityParams.attr('description'),
-      ),
-      displayTypeKey: resolveRecordLocalizationKey(record, ['displayType'], purchasableParams.attr('displayType')),
-      typeGuid: commodityParams.attr('type') ?? '',
-      subtypeGuid: commodityParams.attr('subtype') ?? '',
-      cargoOccupancyUnit: occupancy.unit,
-      cargoOccupancyValue: occupancy.value,
-      cargoOccupancySCU: occupancy.scu,
-      boxable: readAttribute(commodityParams, ['boxable']),
-      isUnrefinedElement: readAttribute(commodityParams, ['IsUnrefinedElement', 'isUnrefinedElement']),
-      isRaw: readAttribute(commodityParams, ['raw', 'Raw', 'isRaw', 'IsRaw']),
-      isRefined: readAttribute(commodityParams, ['refined', 'Refined', 'isRefined', 'IsRefined']),
-    };
+    const commodity = withLegalityWarningSource(
+      {
+        ref: record.ref,
+        path: record.path,
+        entityClass: record.entityClass,
+        nameKey: resolveRecordLocalizationKey(record, ['name', 'displayName'], commodityParams.attr('name')),
+        descriptionKey: resolveRecordLocalizationKey(
+          record,
+          ['description', 'displayDescription'],
+          commodityParams.attr('description') ?? uiDisplayParams.attr('displayDescription'),
+        ),
+        displayNameKey: resolveRecordLocalizationKey(
+          record,
+          ['displayName', 'name'],
+          purchasableParams.attr('displayName') ?? uiDisplayParams.attr('displayName'),
+        ),
+        displayDescriptionKey: resolveRecordLocalizationKey(
+          record,
+          ['displayDescription', 'description'],
+          uiDisplayParams.attr('displayDescription') ?? commodityParams.attr('description'),
+        ),
+        displayTypeKey: resolveRecordLocalizationKey(record, ['displayType'], purchasableParams.attr('displayType')),
+        typeGuid: commodityParams.attr('type') ?? '',
+        subtypeGuid: commodityParams.attr('subtype') ?? '',
+        cargoOccupancyUnit: occupancy.unit,
+        cargoOccupancyValue: occupancy.value,
+        cargoOccupancySCU: occupancy.scu,
+        boxable: readAttribute(commodityParams, ['boxable']),
+        isUnrefinedElement: readAttribute(commodityParams, ['IsUnrefinedElement', 'isUnrefinedElement']),
+        isRaw: readAttribute(commodityParams, ['raw', 'Raw', 'isRaw', 'IsRaw']),
+        isRefined: readAttribute(commodityParams, ['refined', 'Refined', 'isRefined', 'IsRefined']),
+      },
+      controlledSubstances,
+    );
     markEmittedCommodityKeys(emittedKeys, commodity);
     commodities.push(commodity);
   }
 
   if (options.pathPrefix !== undefined) return commodities;
 
-  const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys);
-  const harvestableRows = extractHarvestableCommodityRows(options.graph, emittedKeys);
-  const haulingEntityClassRows = await extractHaulingEntityClassCommodityRows(options, emittedKeys);
+  const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys, controlledSubstances);
+  const harvestableRows = extractHarvestableCommodityRows(options.graph, emittedKeys, controlledSubstances);
+  const haulingEntityClassRows = await extractHaulingEntityClassCommodityRows(options, emittedKeys, controlledSubstances);
   return [...commodities, ...carryableRows, ...harvestableRows, ...haulingEntityClassRows];
+}
+
+interface ControlledSubstanceInfo {
+  jurisdictions: Set<string>;
+  maxScu: Set<string>;
 }
 
 function extractCarryableCommodityRows(
   graph: DataCoreRecordGraphLookup,
   emittedKeys: Set<string>,
+  controlledSubstances: Map<string, ControlledSubstanceInfo>,
 ): DataCoreCommodityRecord[] {
   const rows: DataCoreCommodityRecord[] = [];
   const records = graph
@@ -94,29 +105,32 @@ function extractCarryableCommodityRows(
     const nameKey = selectLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']);
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
 
-    const row: DataCoreCommodityRecord = {
-      ref: record.ref,
-      path: record.path,
-      entityClass: record.entityClass,
-      nameKey,
-      descriptionKey: selectDescriptionLocalizationKey(record, ['Description', 'description', 'displayDescription']),
-      displayNameKey: selectLocalizationKey(record, ['Name', 'name', 'ShortName', 'displayName']) || nameKey,
-      displayDescriptionKey: selectDescriptionLocalizationKey(record, [
-        'displayDescription',
-        'Description',
-        'description',
-      ]),
-      displayTypeKey: '',
-      typeGuid: '',
-      subtypeGuid: '',
-      cargoOccupancyUnit: '',
-      cargoOccupancyValue: '',
-      cargoOccupancySCU: '',
-      boxable: '',
-      isUnrefinedElement: '',
-      isRaw: '',
-      isRefined: '',
-    };
+    const row: DataCoreCommodityRecord = withLegalityWarningSource(
+      {
+        ref: record.ref,
+        path: record.path,
+        entityClass: record.entityClass,
+        nameKey,
+        descriptionKey: selectDescriptionLocalizationKey(record, ['Description', 'description', 'displayDescription']),
+        displayNameKey: selectLocalizationKey(record, ['Name', 'name', 'ShortName', 'displayName']) || nameKey,
+        displayDescriptionKey: selectDescriptionLocalizationKey(record, [
+          'displayDescription',
+          'Description',
+          'description',
+        ]),
+        displayTypeKey: '',
+        typeGuid: '',
+        subtypeGuid: '',
+        cargoOccupancyUnit: '',
+        cargoOccupancyValue: '',
+        cargoOccupancySCU: '',
+        boxable: '',
+        isUnrefinedElement: '',
+        isRaw: '',
+        isRefined: '',
+      },
+      controlledSubstances,
+    );
     markEmittedCommodityKeys(emittedKeys, row);
     rows.push(row);
   }
@@ -127,6 +141,7 @@ function extractCarryableCommodityRows(
 function extractHarvestableCommodityRows(
   graph: DataCoreRecordGraphLookup,
   emittedKeys: Set<string>,
+  controlledSubstances: Map<string, ControlledSubstanceInfo>,
 ): DataCoreCommodityRecord[] {
   const rows: DataCoreCommodityRecord[] = [];
   const records = graph
@@ -138,33 +153,36 @@ function extractHarvestableCommodityRows(
     const nameKey = selectLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName'], isHarvestableNameKey);
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
 
-    const row: DataCoreCommodityRecord = {
-      ref: record.ref,
-      path: record.path,
-      entityClass: record.entityClass,
-      nameKey,
-      descriptionKey: selectLocalizationKey(
-        record,
-        ['Description', 'description', 'displayDescription'],
-        isHarvestableDescriptionKey,
-      ),
-      displayNameKey: nameKey,
-      displayDescriptionKey: selectLocalizationKey(
-        record,
-        ['displayDescription', 'Description', 'description'],
-        isHarvestableDescriptionKey,
-      ),
-      displayTypeKey: '',
-      typeGuid: '',
-      subtypeGuid: '',
-      cargoOccupancyUnit: '',
-      cargoOccupancyValue: '',
-      cargoOccupancySCU: '',
-      boxable: '',
-      isUnrefinedElement: '',
-      isRaw: '',
-      isRefined: '',
-    };
+    const row: DataCoreCommodityRecord = withLegalityWarningSource(
+      {
+        ref: record.ref,
+        path: record.path,
+        entityClass: record.entityClass,
+        nameKey,
+        descriptionKey: selectLocalizationKey(
+          record,
+          ['Description', 'description', 'displayDescription'],
+          isHarvestableDescriptionKey,
+        ),
+        displayNameKey: nameKey,
+        displayDescriptionKey: selectLocalizationKey(
+          record,
+          ['displayDescription', 'Description', 'description'],
+          isHarvestableDescriptionKey,
+        ),
+        displayTypeKey: '',
+        typeGuid: '',
+        subtypeGuid: '',
+        cargoOccupancyUnit: '',
+        cargoOccupancyValue: '',
+        cargoOccupancySCU: '',
+        boxable: '',
+        isUnrefinedElement: '',
+        isRaw: '',
+        isRefined: '',
+      },
+      controlledSubstances,
+    );
     markEmittedCommodityKeys(emittedKeys, row);
     rows.push(row);
   }
@@ -175,6 +193,7 @@ function extractHarvestableCommodityRows(
 async function extractHaulingEntityClassCommodityRows(
   options: ExtractDataCoreCommoditiesOptions,
   emittedKeys: Set<string>,
+  controlledSubstances: Map<string, ControlledSubstanceInfo>,
 ): Promise<DataCoreCommodityRecord[]> {
   const rows: DataCoreCommodityRecord[] = [];
   const records = options.graph
@@ -191,30 +210,98 @@ async function extractHaulingEntityClassCommodityRows(
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
     if (!isHaulingEntityClassNameKey(nameKey)) continue;
 
-    const row: DataCoreCommodityRecord = {
-      ref: record.ref,
-      path: record.path,
-      entityClass: record.entityClass,
-      nameKey,
-      descriptionKey: '',
-      displayNameKey: nameKey,
-      displayDescriptionKey: '',
-      displayTypeKey: '',
-      typeGuid: '',
-      subtypeGuid: '',
-      cargoOccupancyUnit: '',
-      cargoOccupancyValue: '',
-      cargoOccupancySCU: '',
-      boxable: '',
-      isUnrefinedElement: '',
-      isRaw: '',
-      isRefined: '',
-    };
+    const row: DataCoreCommodityRecord = withLegalityWarningSource(
+      {
+        ref: record.ref,
+        path: record.path,
+        entityClass: record.entityClass,
+        nameKey,
+        descriptionKey: '',
+        displayNameKey: nameKey,
+        displayDescriptionKey: '',
+        displayTypeKey: '',
+        typeGuid: '',
+        subtypeGuid: '',
+        cargoOccupancyUnit: '',
+        cargoOccupancyValue: '',
+        cargoOccupancySCU: '',
+        boxable: '',
+        isUnrefinedElement: '',
+        isRaw: '',
+        isRefined: '',
+      },
+      controlledSubstances,
+    );
     markEmittedCommodityKeys(emittedKeys, row);
     rows.push(row);
   }
 
   return rows;
+}
+
+async function extractControlledSubstanceIndex(
+  options: ExtractDataCoreCommoditiesOptions,
+): Promise<Map<string, ControlledSubstanceInfo>> {
+  const index = new Map<string, ControlledSubstanceInfo>();
+  const records = options.graph
+    .getByPathPrefix(DEFAULT_JURISDICTION_PATH_PREFIX)
+    .filter((record) => record.rootType === 'Jurisdiction')
+    .sort((a, b) => a.path.localeCompare(b.path));
+
+  for (const record of records) {
+    const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore jurisdiction XML path');
+    const xml = await fs.readFile(xmlPath, 'utf8');
+    const $ = loadXml(xml);
+    const jurisdictionName =
+      normalizeLocalizationKey($.root().children().first().attr('name') ?? '') || record.entityClass || record.path;
+
+    $('ControlledSubstanceClass').each((_index, element) => {
+      const substanceClass = $(element);
+      const maxScu = substanceClass.attr('maxPossessionSCU') ?? '';
+      substanceClass
+        .children('commodities')
+        .children('Reference')
+        .each((_referenceIndex, referenceElement) => {
+          const ref = $(referenceElement).attr('value')?.trim();
+          if (!ref) return;
+          const info = index.get(ref) ?? { jurisdictions: new Set<string>(), maxScu: new Set<string>() };
+          info.jurisdictions.add(jurisdictionName);
+          if (maxScu) info.maxScu.add(maxScu);
+          index.set(ref, info);
+        });
+    });
+  }
+
+  return index;
+}
+
+function withLegalityWarningSource(
+  row: Omit<
+    DataCoreCommodityRecord,
+    'controlledSubstanceJurisdictions' | 'controlledSubstanceMaxScu' | 'legalityWarningSource'
+  >,
+  controlledSubstances: Map<string, ControlledSubstanceInfo>,
+): DataCoreCommodityRecord {
+  const controlled = controlledSubstances.get(row.ref);
+  if (controlled) {
+    return {
+      ...row,
+      controlledSubstanceJurisdictions: [...controlled.jurisdictions].sort().join('|'),
+      controlledSubstanceMaxScu: [...controlled.maxScu].sort().join('|'),
+      legalityWarningSource: 'controlled-substance',
+    };
+  }
+
+  return {
+    ...row,
+    controlledSubstanceJurisdictions: '',
+    controlledSubstanceMaxScu: '',
+    legalityWarningSource: isViceCommodity(row) ? 'commodity-type:vice' : '',
+  };
+}
+
+function isViceCommodity(row: Pick<DataCoreCommodityRecord, 'displayTypeKey' | 'path'>): boolean {
+  return row.displayTypeKey === 'items_commodities_type_vice' || /[/\\]commodities[/\\]vice[/\\]/i.test(row.path);
 }
 
 function selectLocalizationKey(

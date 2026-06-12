@@ -2,6 +2,12 @@ import fs from 'node:fs/promises';
 import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import {
+  buildDataCoreHaulingComponentClassLookup,
+  isDisplayDataCoreComponentClass,
+  normalizeDataCoreEntityClass,
+  normalizeSpaces,
+} from './component-class-resolver';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
 
 const logger = getLogger('datacore-component-facts');
@@ -27,10 +33,6 @@ const NON_COMPONENT_FACT_CSV_FILES = new Set([
   'weaponpersonal.datacore.csv',
 ]);
 const COMPONENT_FACT_REQUIRED_COLUMNS = ['Entity Class', 'Name Key', 'Manufacturer', 'Size', 'Grade', 'Class'];
-const NON_DISPLAY_CLASSES = new Set(['', 'BASIC', 'UNDEFINED', 'COOLER', 'POWER', 'QUANTUMDRIVE', 'RADAR', 'SHIELD']);
-const HAULING_COMPONENT_CLASS_PATTERN =
-  /^HaulingEntityClass_(?<type>Cooler|JumpDrive|PowerPlant|QuantumDrive|Radar|ShieldGenerator)_S\d+_(?<class>Civilian|Commercial|Competition|Industrial|Military|Stealth)$/i;
-
 type DataCoreRecordGraphLookup = Awaited<ReturnType<typeof loadDataCoreRecordGraph>>;
 
 export type ComponentClassSource = 'datacore-attachdef' | 'datacore-hauling' | 'datacore-derived' | 'scmdb-bridge';
@@ -87,7 +89,7 @@ export async function loadDataCoreComponentFacts({
   scmdbDir,
 }: LoadDataCoreComponentFactsOptions): Promise<ComponentFact[]> {
   const graph = await loadOptionalDataCoreRecordGraph(datacoreDir);
-  const entityClassToHaulingClass = buildHaulingComponentClassLookup(graph);
+  const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(graph);
   const scmdbClassByRef = scmdbDir ? await buildScmdbComponentClassLookup(scmdbDir) : new Map<string, string>();
   const rows: ComponentFactRow[] = [];
 
@@ -143,30 +145,6 @@ export async function discoverComponentFactCsvFiles(datacoreDir: string): Promis
   return [...discovered].sort();
 }
 
-function buildHaulingComponentClassLookup(graph: DataCoreRecordGraphLookup | null): Map<string, string> {
-  const entityClassToHaulingClass = new Map<string, string>();
-
-  if (!graph) {
-    return entityClassToHaulingClass;
-  }
-
-  for (const record of graph.getByRootType('Hauling_EntityClasses')) {
-    const haulingClass = getHaulingComponentClass(record.entityClass);
-    if (!haulingClass) continue;
-
-    for (const ref of record.referencedGuids) {
-      const componentRecord = graph.getByRef(ref);
-      if (!componentRecord?.entityClass) continue;
-      const entityClass = normalizeEntityClass(componentRecord.entityClass);
-      if (entityClass) {
-        entityClassToHaulingClass.set(entityClass, haulingClass);
-      }
-    }
-  }
-
-  return entityClassToHaulingClass;
-}
-
 async function loadOptionalDataCoreRecordGraph(datacoreDir: string): Promise<DataCoreRecordGraphLookup | null> {
   try {
     return await loadDataCoreRecordGraph({ versionDir: datacoreDir });
@@ -202,7 +180,7 @@ async function buildScmdbComponentClassLookup(scmdbDir: string): Promise<Map<str
     if (item.itemType !== 'shipcomponent') continue;
     const ref = normalizeSpaces(item.entityClass);
     const componentClass = normalizeSpaces(item.componentClass);
-    if (ref && componentClass && !NON_DISPLAY_CLASSES.has(componentClass.toUpperCase())) {
+    if (ref && componentClass && isDisplayDataCoreComponentClass(componentClass)) {
       classByRef.set(ref.toLowerCase(), componentClass);
     }
   }
@@ -213,10 +191,10 @@ async function buildScmdbComponentClassLookup(scmdbDir: string): Promise<Map<str
 function getDataCoreRecordForRow(row: Record<string, string>, graph: DataCoreRecordGraphLookup | null) {
   if (!graph) return undefined;
 
-  const entityClass = normalizeEntityClass(row['Entity Class']);
+  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (!entityClass) return undefined;
 
-  return graph.graph.records.find((candidate) => normalizeEntityClass(candidate.entityClass) === entityClass);
+  return graph.graph.records.find((candidate) => normalizeDataCoreEntityClass(candidate.entityClass) === entityClass);
 }
 
 function buildManufacturerTypeClassLookup(
@@ -226,7 +204,7 @@ function buildManufacturerTypeClassLookup(
   const candidates = new Map<string, Set<string>>();
 
   for (const item of rows) {
-    const entityClass = normalizeEntityClass(item.row['Entity Class']);
+    const entityClass = normalizeDataCoreEntityClass(item.row['Entity Class']);
     const cls = entityClassToHaulingClass.get(entityClass);
     if (!cls) continue;
 
@@ -252,7 +230,7 @@ function toComponentFact(
   manufacturerTypeToClass: Map<string, string>,
 ): ComponentFact {
   const resolvedClass = getComponentClass(row, entityClassToHaulingClass, manufacturerTypeToClass);
-  const entityClass = normalizeEntityClass(row.row['Entity Class']);
+  const entityClass = normalizeDataCoreEntityClass(row.row['Entity Class']);
   const manufacturerCode = getComponentManufacturer(row.row);
 
   return {
@@ -280,11 +258,11 @@ function getComponentClass(
 ): ResolvedClass | undefined {
   const data = row.row;
   const cls = normalizeSpaces(data.Class);
-  if (!NON_DISPLAY_CLASSES.has(cls.toUpperCase())) {
+  if (isDisplayDataCoreComponentClass(cls)) {
     return { value: cls, source: 'datacore-attachdef' };
   }
 
-  const entityClass = normalizeEntityClass(data['Entity Class']);
+  const entityClass = normalizeDataCoreEntityClass(data['Entity Class']);
   const haulingClass = entityClassToHaulingClass.get(entityClass);
   if (haulingClass) {
     return { value: haulingClass, source: 'datacore-hauling' };
@@ -323,14 +301,9 @@ function getComponentManufacturer(row: Record<string, string>): string {
     return manufacturer;
   }
 
-  const entityClass = normalizeEntityClass(row['Entity Class']);
+  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   const parts = entityClass.split('_');
   return parts.length >= 2 ? parts[1].toUpperCase() : '';
-}
-
-function getHaulingComponentClass(entityClass: string): string {
-  const match = HAULING_COMPONENT_CLASS_PATTERN.exec(entityClass);
-  return match?.groups?.class ?? '';
 }
 
 function getComponentTitleKeys(row: Record<string, string>): string[] {
@@ -338,7 +311,7 @@ function getComponentTitleKeys(row: Record<string, string>): string[] {
   const nameKey = normalizeLocalizationKey(row['Name Key']);
   if (nameKey) keys.add(nameKey);
 
-  const entityClass = normalizeEntityClass(row['Entity Class']);
+  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (entityClass) {
     keys.add(`item_name${entityClass}`);
     keys.add(`item_name_${entityClass}`);
@@ -351,25 +324,4 @@ function getComponentTitleKeys(row: Record<string, string>): string[] {
 
 function normalizeLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
-}
-
-function normalizeEntityClass(value: unknown): string {
-  return normalizeSpaces(value)
-    .replace(/_SCItem$/i, '')
-    .toLowerCase();
-}
-
-function normalizeSpaces(value: unknown): string {
-  let str: string;
-  if (value == null) {
-    str = '';
-  } else if (typeof value === 'string') {
-    str = value;
-  } else {
-    str = JSON.stringify(value);
-  }
-  return str
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
 }

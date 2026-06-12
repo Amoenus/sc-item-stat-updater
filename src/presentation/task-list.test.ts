@@ -52,12 +52,13 @@ test('command task list routes shared logger output through the active Listr tas
   assert.doesNotMatch(io.stderrText(), /this would clash/);
 });
 
-test('command task list collapses completed subtasks unless verbose output is requested', () => {
+test('command task list preserves the compact final tree after live rendering', () => {
   const io = createFakeIO();
 
   const compactTaskList = createCommandTaskList([], io, {});
   const verboseTaskList = createCommandTaskList([], io, {}, { verbose: true });
 
+  assert.equal(compactTaskList.options?.rendererOptions?.clearOutput, false);
   assert.equal(compactTaskList.options?.rendererOptions?.collapseSubtasks, true);
   assert.equal(verboseTaskList.options?.rendererOptions?.collapseSubtasks, false);
 });

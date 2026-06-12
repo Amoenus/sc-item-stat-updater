@@ -105,6 +105,7 @@ export async function extractDataCoreContractGenerators(
               contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
             );
             const locationTagGuids = readLocationTagGuids($, contract);
+            const blueprintRewards = readBlueprintRewards($, contractResults);
 
             chunkRows.push({
               generatorClass: record.entityClass,
@@ -145,12 +146,8 @@ export async function extractDataCoreContractGenerators(
               mentalLoad: difficulty.attr('mentalLoad') ?? '',
               riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
               gameKnowledge: difficulty.attr('gameKnowledge') ?? '',
-              blueprintRewardPoolGuids: contractResults
-                .find('BlueprintRewards[blueprintPool]')
-                .map((_, el) => $(el).attr('blueprintPool'))
-                .get()
-                .filter(Boolean)
-                .join(','),
+              blueprintRewardPoolGuids: blueprintRewards.map((reward) => reward.blueprintPool).join(','),
+              blueprintRewards: blueprintRewards.length ? JSON.stringify(blueprintRewards) : '',
               requiredCompletedContractTags: contract
                 .find('ContractPrerequisite_CompletedContractTags requiredCompletedContractTags Reference[value]')
                 .map((_, el) => $(el).attr('value'))
@@ -181,6 +178,25 @@ export async function extractDataCoreContractGenerators(
 
   options.onProgress?.(records.length, records.length);
   return rows;
+}
+
+function readBlueprintRewards(
+  $: ReturnType<typeof loadXml>,
+  root: ReturnType<ReturnType<typeof loadXml>>,
+): Array<{ blueprintPool: string; chance: number; trigger: string; type: string }> {
+  return root
+    .find('BlueprintRewards[blueprintPool]')
+    .map((_, element) => {
+      const reward = $(element);
+      return {
+        blueprintPool: reward.attr('blueprintPool') ?? '',
+        chance: Number(reward.attr('chance') ?? 1) || 1,
+        trigger: reward.attr('trigger') ?? '',
+        type: element.type === 'tag' ? element.name : '',
+      };
+    })
+    .get()
+    .filter((reward) => Boolean(reward.blueprintPool));
 }
 
 function readStringParamOverrides(

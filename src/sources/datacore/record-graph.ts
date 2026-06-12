@@ -5,7 +5,12 @@ import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 import Piscina from 'piscina';
 import { mapConcurrent } from './concurrency';
-import type { DataCoreLocalizationReference, DataCoreRecordGraph, DataCoreRecordNode } from './types';
+import type {
+  DataCoreGuidReference,
+  DataCoreLocalizationReference,
+  DataCoreRecordGraph,
+  DataCoreRecordNode,
+} from './types';
 import { collectDataCoreXmlFiles } from './xml-files';
 
 const LOCALIZATION_ATTRIBUTES = [
@@ -23,6 +28,7 @@ const LOCALIZATION_ATTRIBUTES = [
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workerPath = path.resolve(__dirname, 'record-graph-worker.ts');
+const GUID_PATTERN = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
 
 export interface BuildDataCoreRecordGraphOptions {
   xmlCacheDir: string;
@@ -70,6 +76,7 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
   const root = $(rootElement);
   const rootTag = flattenString(rootElement.name);
   const rootType = flattenString(root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag);
+  const referencedGuidAttributes = extractGuidAttributeReferences($, rootElement);
 
   return {
     path: flattenString(recordPath),
@@ -78,12 +85,8 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
     rootType,
     entityClass: flattenString(extractRecordEntityClass(rootTag)),
     localizationKeys: extractLocalizationReferences($),
-    referencedGuids: uniqueSorted(
-      $('Reference[value]')
-        .toArray()
-        .map((element) => flattenString($(element).attr('value')?.trim()))
-        .filter(Boolean),
-    ),
+    referencedGuids: uniqueSorted(referencedGuidAttributes.map((reference) => reference.value)),
+    referencedGuidAttributes,
   };
 }
 
@@ -115,6 +118,31 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
   });
 
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
+}
+
+function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): DataCoreGuidReference[] {
+  const references: DataCoreGuidReference[] = [];
+  const seen = new Set<string>();
+
+  $('*').each((_, element) => {
+    if (element.type !== 'tag') return;
+
+    for (const [attribute, rawValue] of Object.entries(element.attribs ?? {})) {
+      if (element === rootElement && attribute === '__ref') continue;
+
+      for (const guid of rawValue.match(GUID_PATTERN) ?? []) {
+        const value = flattenString(guid.toLowerCase());
+        const flatAttribute = flattenString(attribute);
+        const fingerprint = `${flatAttribute}\0${value}`;
+        if (seen.has(fingerprint)) continue;
+
+        seen.add(fingerprint);
+        references.push({ attribute: flatAttribute, value });
+      }
+    }
+  });
+
+  return references.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute));
 }
 
 export function normalizedRecordPath(root: ReturnType<CheerioAPI>, xmlPath: string, xmlCacheDir: string): string {

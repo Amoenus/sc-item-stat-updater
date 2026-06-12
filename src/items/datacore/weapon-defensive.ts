@@ -8,6 +8,7 @@ const countermeasureParamsSelector = 'CounterMeasureChaffParams, CounterMeasureF
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/countermeasures',
   recordSelector: 'SAmmoContainerComponentParams',
+  includeStructuralDiscovery: false,
   entityClassPrefix: '',
   nameKeyInfix: '',
   fieldSelectors: {

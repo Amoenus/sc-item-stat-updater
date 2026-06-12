@@ -93,17 +93,17 @@ Vehicles, commodities, starmap records, law records, and SC item entities all
 have high `global.ini` key coverage. Mission broker coverage is also strong, but
 there are more missing keys, especially older or variant mission strings.
 
-The low global GUID resolution rate is expected for the first pass because the
-graph only indexes root `__ref` values and `<Reference value="...">` nodes. Many
-game relationships appear to point at records not represented as root `__ref`
-nodes in the XML cache, or use GUID-bearing attributes outside explicit
-`Reference` nodes. Reputation and faction records resolve well, so they are good
-early candidates for graph-following enrichment.
+The graph indexes root `__ref` values plus GUIDs found in record attributes,
+including explicit `<Reference value="...">` nodes. Some relationships still
+point at records not represented as root `__ref` nodes in the XML cache, so
+domain-specific resolvers remain necessary where a raw GUID edge needs semantic
+meaning. Reputation and faction records resolve well, so they are good early
+candidates for graph-following enrichment.
 
-Manufacturer records are straightforward name/description sources, but vehicle
-to manufacturer joins will need a domain resolver that reads the relevant
-vehicle fields directly. The current generic graph does not yet index arbitrary
-GUID-valued attributes.
+Manufacturer records are straightforward name/description sources, and the
+generic graph now exposes vehicle-to-manufacturer GUID edges when they are
+stored as attributes. A domain resolver should still decide which edge carries
+manufacturer semantics.
 
 Commodity records look like a low-risk next extractor: 237 records, 452
 localization keys, and 98.9% key coverage. This is a strong candidate after the

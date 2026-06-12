@@ -15,6 +15,19 @@ export interface PlannedChildTaskListOptions<Ctx> {
   concurrent?: boolean | number;
 }
 
+export interface CompactTaskListOptions<Item, Result> {
+  title: string;
+  items: Item[];
+  unit: string;
+  pluralUnit?: string;
+  plannedUnit?: string;
+  plannedPluralUnit?: string;
+  concurrency?: boolean | number;
+  label: (item: Item, index: number) => string;
+  task: (item: Item, index: number) => Promise<Result>;
+  summary?: (result: Result, item: Item, index: number) => string | undefined;
+}
+
 export function createPlannedChildTaskList<Ctx>(
   task: CommandTaskWrapper<Ctx>,
   options: PlannedChildTaskListOptions<Ctx>,
@@ -28,6 +41,78 @@ export function createPlannedChildTaskList<Ctx>(
   task.title = `${options.title} - ${summary}`;
   task.output = plannedSummary;
   return task.newListr(options.tasks, { concurrent: options.concurrent ?? false });
+}
+
+export async function runCompactTaskList<Ctx, Item, Result>(
+  task: CommandTaskWrapper<Ctx>,
+  options: CompactTaskListOptions<Item, Result>,
+): Promise<Result[]> {
+  const count = options.items.length;
+  const summary = formatCount(count, options.unit, options.pluralUnit);
+  const plannedSummary = `${formatCount(
+    count,
+    options.plannedUnit ?? options.unit,
+    options.plannedPluralUnit ?? options.pluralUnit,
+  )} planned`;
+  task.title = `${options.title} - ${summary}`;
+
+  if (count === 0) {
+    task.output = `No ${options.pluralUnit ?? pluralize(options.unit)}`;
+    return [];
+  }
+
+  const statuses = options.items.map((item, index) => ({
+    label: options.label(item, index),
+    state: 'pending' as 'pending' | 'running' | 'done' | 'failed',
+    summary: undefined as string | undefined,
+  }));
+  const results = new Array<Result>(count);
+  const concurrency = normalizeConcurrency(options.concurrency, count);
+  let completed = 0;
+  let nextIndex = 0;
+
+  const updateOutput = () => {
+    const running = statuses.filter((status) => status.state === 'running').map((status) => status.label);
+    const next = statuses.find((status) => status.state === 'pending')?.label;
+    const latestDone = statuses.findLast((status) => status.state === 'done' && status.summary);
+    const parts = [`${completed.toLocaleString()}/${count.toLocaleString()} complete`];
+
+    if (running.length > 0) {
+      parts.push(`running: ${running.slice(0, 3).join(', ')}${running.length > 3 ? ', ...' : ''}`);
+    }
+    if (next) parts.push(`next: ${next}`);
+    if (latestDone?.summary) parts.push(`last: ${latestDone.label} (${latestDone.summary})`);
+
+    task.output = parts.join(' | ');
+  };
+
+  task.output = plannedSummary;
+
+  const worker = async () => {
+    while (nextIndex < count) {
+      const index = nextIndex++;
+      const item = options.items[index];
+      statuses[index].state = 'running';
+      updateOutput();
+
+      try {
+        const result = await options.task(item, index);
+        results[index] = result;
+        statuses[index].state = 'done';
+        statuses[index].summary = options.summary?.(result, item, index);
+        completed++;
+        updateOutput();
+      } catch (error) {
+        statuses[index].state = 'failed';
+        task.output = `Failed: ${statuses[index].label}`;
+        throw error;
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
+  task.output = `Completed ${summary}`;
+  return results;
 }
 
 export function createIndexedTasks<Ctx, Item>(
@@ -68,6 +153,12 @@ function pluralize(singular: string): string {
   return [...words.slice(0, -1), matchCase(pluralLastWord, lowerLastWord === lastWord ? 'lower' : 'original')].join(
     ' ',
   );
+}
+
+function normalizeConcurrency(concurrency: boolean | number | undefined, count: number): number {
+  if (count <= 1 || concurrency === false || concurrency === undefined) return 1;
+  if (concurrency === true) return count;
+  return Math.max(1, Math.min(count, concurrency));
 }
 
 function matchCase(value: string, mode: 'lower' | 'original'): string {

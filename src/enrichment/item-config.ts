@@ -27,7 +27,13 @@ export interface BaseItemConfig {
   /** Identifies existing description keys in the INI file */
   descKeyMatch: (keyLower: string) => boolean;
   /** Transforms a row into an INI value */
-  buildValue?: (row: Record<string, string>, flavorText: string, oldValue: string, targetKey: string) => string;
+  buildValue?: (
+    row: Record<string, string>,
+    flavorText: string,
+    oldValue: string,
+    targetKey: string,
+    context: ItemBuildValueContext,
+  ) => string;
   /** Returns the INI keys to update for a row, defaulting to the description key */
   getTargetKeys?: (row: Record<string, string>, deriveDescKey: (nameKey: string) => string) => string[];
   /** Override default name-to-desc key derivation */
@@ -49,6 +55,10 @@ export interface ItemSourceDataContext {
     scmdb?: string;
     spviewer?: string;
   };
+}
+
+export interface ItemBuildValueContext {
+  localizationValue: (key: string) => string;
 }
 
 export interface ItemConfig extends BaseItemConfig {

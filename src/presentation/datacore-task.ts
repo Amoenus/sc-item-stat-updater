@@ -1,12 +1,13 @@
 import type {
   createDataCoreScrapePlan,
+  DataCoreItemTypeStageDescriptor,
   DataCoreRawFactStageDescriptor,
   DataCoreRawFactStageId,
   RunDatacoreScrapeOptions,
   RunDatacoreScrapeResult,
 } from '../application/use-cases/run-datacore-scrape';
 import { createDataCoreStageProgressCallbacks } from './datacore-progress';
-import { boundedConcurrency, createPlannedChildTaskList } from './task-builders';
+import { boundedConcurrency, createPlannedChildTaskList, runCompactTaskList } from './task-builders';
 import type { CommandTask } from './task-list';
 
 interface DataCoreScrapeTaskOptions {
@@ -109,23 +110,29 @@ export function createDataCoreScrapeTask<Ctx>(options: DataCoreScrapeTaskOptions
             title: 'Scrape item type CSVs',
             task: (_childCtx, childTask) => {
               const typeStages = plan.getItemTypeStages();
+              const typeGroups = createItemTypeTaskGroups(typeStages);
               return createPlannedChildTaskList(childTask, {
                 title: 'Scrape item type CSVs',
-                tasks: typeStages.map((stage) => ({
-                  title: stage.title,
-                  task: async (_typeCtx, typeTask) => {
-                    const { result, error } = await plan.scrapeItemTypeStage(stage.id);
-                    if (result) {
-                      typeTask.output = `${result.rows.toLocaleString()} rows -> ${result.csvFile}`;
-                    }
-                    if (error) {
-                      typeTask.output = error.message;
-                    }
+                tasks: typeGroups.map((group) => ({
+                  title: group.title,
+                  task: async (_groupCtx, groupTask) => {
+                    await runCompactTaskList(groupTask, {
+                      title: group.title,
+                      items: group.stages,
+                      unit: 'type',
+                      plannedUnit: 'item type',
+                      concurrency: boundedConcurrency(group.stages.length, 4),
+                      label: (stage) => stage.title,
+                      task: (stage) => plan.scrapeItemTypeStage(stage.id),
+                      summary: ({ result, error }) =>
+                        result ? `${result.rows.toLocaleString()} rows -> ${result.csvFile}` : error?.message,
+                    });
                   },
                 })),
-                unit: 'type',
+                unit: 'group',
                 plannedUnit: 'item type',
-                concurrent: boundedConcurrency(typeStages.length, 4),
+                summary: `${typeStages.length.toLocaleString()} types across ${typeGroups.length.toLocaleString()} groups`,
+                plannedSummary: `${typeStages.length.toLocaleString()} item types planned`,
               });
             },
           },
@@ -158,6 +165,11 @@ interface RawFactTaskGroup {
   title: string;
   ids: DataCoreRawFactStageId[];
   concurrent: boolean;
+}
+
+interface ItemTypeTaskGroup {
+  title: string;
+  ids: string[];
 }
 
 const RAW_FACT_TASK_GROUPS: RawFactTaskGroup[] = [
@@ -213,6 +225,32 @@ const RAW_FACT_TASK_GROUPS: RawFactTaskGroup[] = [
   },
 ];
 
+const ITEM_TYPE_TASK_GROUPS: ItemTypeTaskGroup[] = [
+  {
+    title: 'Ship systems',
+    ids: ['coolers', 'powerplants', 'quantum-drives', 'jump-drives', 'qeds', 'radars', 'shields', 'self-destruct'],
+  },
+  {
+    title: 'Weapons and ordnance',
+    ids: [
+      'bombs',
+      'emps',
+      'missiles',
+      'missile-launchers',
+      'turrets',
+      'throwables',
+      'weapon-attachments',
+      'weapon-defensive',
+      'weapon-guns',
+      'weapon-personal',
+    ],
+  },
+  {
+    title: 'Mining and utility',
+    ids: ['mining-lasers', 'mining-modifiers', 'salvage-modifiers', 'tractor-beams'],
+  },
+];
+
 function createRawFactTaskGroups(stages: DataCoreRawFactStageDescriptor[]): Array<{
   title: string;
   stages: DataCoreRawFactStageDescriptor[];
@@ -234,6 +272,31 @@ function createRawFactTaskGroups(stages: DataCoreRawFactStageDescriptor[]): Arra
 
   if (remainingStages.length > 0) {
     groups.push({ title: 'Extract remaining raw facts', stages: remainingStages, concurrent: true });
+  }
+
+  return groups;
+}
+
+function createItemTypeTaskGroups(stages: DataCoreItemTypeStageDescriptor[]): Array<{
+  title: string;
+  stages: DataCoreItemTypeStageDescriptor[];
+}> {
+  const stagesById = new Map(stages.map((stage) => [stage.id, stage]));
+  const assigned = new Set<string>();
+  const groups = ITEM_TYPE_TASK_GROUPS.flatMap((group) => {
+    const groupStages = group.ids.flatMap((id) => {
+      const stage = stagesById.get(id);
+      if (!stage) return [];
+      assigned.add(id);
+      return [stage];
+    });
+
+    return groupStages.length > 0 ? [{ title: group.title, stages: groupStages }] : [];
+  });
+  const remainingStages = stages.filter((stage) => !assigned.has(stage.id));
+
+  if (remainingStages.length > 0) {
+    groups.push({ title: 'Other item types', stages: remainingStages });
   }
 
   return groups;

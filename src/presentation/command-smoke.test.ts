@@ -109,7 +109,7 @@ test('update-item scmdb-audit reports remaining SCMDB dependencies', async () =>
   assert.match(result.stdout, /DataCore\/Data\.p4k: authoritative source/);
   assert.match(
     result.stdout,
-    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
+    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, optional:datacore:contract-templates\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
   );
   assert.equal(result.stderr, '');
 });

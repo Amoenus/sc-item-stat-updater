@@ -8,6 +8,18 @@ const damageSelector = `${explosionSelector} DamageInfo`;
 const targetingSelector = `${missileSelector} targetingParams`;
 const gcsSelector = `${missileSelector} GCSParams`;
 
+function isUnavailableRange(value: string): boolean {
+  const parts = (value.match(/-?\d+(?:\.\d+)?/g) ?? [])
+    .map((part) => Number(part))
+    .filter((part) => Number.isFinite(part));
+  return parts.length > 0 && parts.every((part) => part < 0);
+}
+
+function displayValue(row: Record<string, string>, column: string): string {
+  const value = row[column] ?? '';
+  return isUnavailableRange(value) ? '' : value;
+}
+
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   recordFilter: 'scitem/ships/weapons/missiles',
   recordSelector: missileSelector,
@@ -68,11 +80,11 @@ export default {
       .rawIf('Arm Delay', 'Arm Delay')
       .rawIf('Lock Delay', 'Lock Delay')
       .section('-- Lock --')
-      .rawIf('Lock Range', 'Lock Range')
+      .lineIf('Lock Range', displayValue(r, 'Lock Range'))
       .rawIf('Lock Angle', 'Lock Angle')
       .section('-- Explosion --')
       .rawIf('Radius', 'Explosion Radius')
-      .raw('Health', 'Health')
+      .rawIf('Health', 'Health')
       .build(flavorText);
   },
 } satisfies ItemConfig;

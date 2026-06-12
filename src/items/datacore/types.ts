@@ -64,6 +64,14 @@ export interface DataCoreItemTypeConfig {
   recordSelector?: string;
 
   /**
+   * By default, scraper discovery also scans DataCore entity records for
+   * `recordSelector` matches outside `recordFilter` paths. Disable this for
+   * broad selectors that would match shared helper records from unrelated item
+   * families.
+   */
+  includeStructuralDiscovery?: boolean;
+
+  /**
    * Prefix to strip from the entity class name before constructing the
    * INI name key suffix. E.g. 'shield_' → suffix is 'behr_s01_5sa'.
    *
@@ -94,6 +102,14 @@ export interface DataCoreItemTypeConfig {
    * documentation. Verify against actual unforged game files.
    */
   fieldSelectors: Record<string, DataCoreFieldSelector>;
+
+  /**
+   * Optional dynamic row exclusion after common and type-specific DataCore
+   * fields have been extracted. Use this when a broad structural selector
+   * intentionally finds mixed records and the extracted DataCore relationship
+   * data identifies rows that belong to a more specific item family.
+   */
+  excludeRow?: (row: Record<string, string>) => boolean;
 }
 
 /**

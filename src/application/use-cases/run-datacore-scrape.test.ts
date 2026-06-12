@@ -149,6 +149,70 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
   assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,AEGS,2,B,Civilian,500,42,87.5%/);
 });
 
+test('runDatacoreScrape discovers selector-matched item records outside legacy path filters', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-structural-discovery-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const xmlPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'new_patch_folder',
+    'dynamic_test.xml',
+  );
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.Dynamic_Test __path="libs/foundry/records/entities/scitem/new_patch_folder/dynamic_test.xml">
+        <SAttachableComponentParams>
+          <AttachDef Type="DynamicTest" Size="1" Grade="a" Manufacturer="ACME">
+            <Localization Name="@item_NameDynamic_Test" Description="@item_DescDynamic_Test" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="42" />
+        <DynamicPower value="9001" />
+      </EntityClassDefinition.Dynamic_Test>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'dynamic-test',
+        csvFile: 'dynamic-test.datacore.csv',
+        typeConfig: {
+          recordFilter: 'libs/foundry/records/entities/scitem/old_patch_folder',
+          recordSelector: 'SAttachableComponentParams AttachDef[Type="DynamicTest"]',
+          entityClassPrefix: '',
+          nameKeyInfix: '',
+          fieldSelectors: {
+            Power: 'DynamicPower',
+          },
+        },
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'dynamic-test.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'dynamic-test', rows: 1, skipped: 0, csvFile: 'dynamic-test.datacore.csv' },
+  ]);
+  assert.match(csv, /dynamic_test,item_NameDynamic_Test,,item_DescDynamic_Test,ACME,1,A,,42,9001/);
+});
+
 test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
@@ -336,7 +400,7 @@ test('runDatacoreScrape extracts cooler resource and signature params from real-
   );
   assert.match(
     csv,
-    /cool_acom_s01_iceplunge,item_NameCOOL_ACOM_S01_IcePlunge,,item_DescCOOL_ACOM_S01_IcePlunge,ACOM,1,3,UNDEFINED,69,34,2,818,0\.15,5890,0\.5,0,250,1050,1\.5,70,16\.5/,
+    /cool_acom_s01_iceplunge,item_NameCOOL_ACOM_S01_IcePlunge,,item_DescCOOL_ACOM_S01_IcePlunge,ACOM,1,3,,69,34,2,818,0\.15,5890,0\.5,0,250,1050,1\.5,70,16\.5/,
   );
 });
 
@@ -1198,7 +1262,7 @@ test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML
   );
   assert.match(
     csv,
-    /jdrv_aegs_s04_javelin,LOC_PLACEHOLDER,,,AEGS,4,3,UNDEFINED,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
+    /jdrv_aegs_s04_javelin,LOC_PLACEHOLDER,,,AEGS,4,3,,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
   );
 });
 
@@ -1270,7 +1334,7 @@ test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', asyn
   );
   assert.match(
     csv,
-    /tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,UNDEFINED,150,1000,400,150,250,150,0,12,0\.75,6/,
+    /tmbl_emp_device_s1,item_NameMXOX_EMP_Device,item_NameMXOX_EMP_Device,item_DescMXOX_EMP_Device,TMBL,1,1,,150,1000,400,150,250,150,0,12,0\.75,6/,
   );
 });
 
@@ -1335,7 +1399,7 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
   );
   assert.match(
     csv,
-    /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,UNDEFINED,,120,120000,100 - 175/,
+    /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,120,120000,100 - 175/,
   );
 });
 
@@ -1434,6 +1498,82 @@ test('runDatacoreScrape extracts throwable explosion params from triggerable dev
     csv,
     /behr_gren_frag_01,item_Namebehr_frag_grenade_01,item_Namebehr_frag_grenade_01_short,item_Descbehr_frag_grenade_01,BEHR,1,1,Grenade,,Grenade,20,0,0,5,4 - 5\.5,280/,
   );
+});
+
+test('runDatacoreScrape can exclude mixed-family rows after extracting DataCore relationship fields', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-exclude-row-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const weaponDir = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'weapons',
+    'fps_weapons',
+  );
+  await fs.mkdir(weaponDir, { recursive: true });
+  await fs.writeFile(
+    path.join(weaponDir, 'behr_gren_frag_01.xml'),
+    `
+      <EntityClassDefinition.behr_gren_frag_01 __path="libs/foundry/records/entities/scitem/weapons/fps_weapons/behr_gren_frag_01.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponPersonal" SubType="Grenade" Size="1" Grade="1" Manufacturer="BEHR">
+              <Localization Name="@item_Namebehr_frag_grenade_01" Description="@item_Descbehr_frag_grenade_01" />
+            </AttachDef>
+          </SAttachableComponentParams>
+        </Components>
+      </EntityClassDefinition.behr_gren_frag_01>
+    `,
+  );
+  await fs.writeFile(
+    path.join(weaponDir, 'behr_pistol_ballistic_01.xml'),
+    `
+      <EntityClassDefinition.behr_pistol_ballistic_01 __path="libs/foundry/records/entities/scitem/weapons/fps_weapons/behr_pistol_ballistic_01.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponPersonal" SubType="Ballistic" Size="1" Grade="1" Manufacturer="BEHR">
+              <Localization Name="@item_Namebehr_pistol_ballistic_01" Description="@item_Descbehr_pistol_ballistic_01" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemWeaponComponentParams>
+            <fireActions>
+              <SWeaponActionFireSingleParams fireRate="300" aiShootingMode="Single" />
+            </fireActions>
+          </SCItemWeaponComponentParams>
+        </Components>
+      </EntityClassDefinition.behr_pistol_ballistic_01>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'weapon-personal',
+        csvFile: 'weaponpersonal.datacore.csv',
+        typeConfig: WEAPON_PERSONAL_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 2,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weaponpersonal.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'weapon-personal', rows: 1, skipped: 1, csvFile: 'weaponpersonal.datacore.csv' },
+  ]);
+  assert.match(csv, /behr_pistol_ballistic_01/);
+  assert.doesNotMatch(csv, /behr_gren_frag_01/);
 });
 
 test('runDatacoreScrape extracts radar stats from signature detection and aim assist params', async () => {
@@ -1761,7 +1901,7 @@ test('runDatacoreScrape extracts shield generator params from real-shaped DataCo
   );
   assert.match(
     csv,
-    /shld_asas_s02_shroud,item_NameSHLD_ASAS_S02_Shroud,,item_DescSHLD_ASAS_S02_Shroud,ASAS,2,4,UNDEFINED,350,9350,842,11\.1,4\.24,8\.47,1,1,2\.5,0,25% \/ 0%,-27% \/ -80%,95% \/ 75%,45% \/ 0%,100% \/ 100%,100% \/ 100%,2600,3,173\.3333,18/,
+    /shld_asas_s02_shroud,item_NameSHLD_ASAS_S02_Shroud,,item_DescSHLD_ASAS_S02_Shroud,ASAS,2,4,,350,9350,842,11\.1,4\.24,8\.47,1,1,2\.5,0,25% \/ 0%,-27% \/ -80%,95% \/ 75%,45% \/ 0%,100% \/ 100%,100% \/ 100%,2600,3,173\.3333,18/,
   );
 });
 
@@ -2074,6 +2214,9 @@ test('runDatacoreScrape writes DataCore commodity CSV after building the record 
         isUnrefinedElement: '0',
         isRaw: '',
         isRefined: '1',
+        controlledSubstanceJurisdictions: '',
+        controlledSubstanceMaxScu: '',
+        legalityWarningSource: '',
       },
     ],
   });
@@ -2085,7 +2228,7 @@ test('runDatacoreScrape writes DataCore commodity CSV after building the record 
   assert.equal(result.commodityResult.csvFile, 'commodities.datacore.csv');
   assert.match(
     csv,
-    /^Entity Class,Name Key,Description Key,Display Name Key,Display Description Key,Display Type Key,Type GUID,Subtype GUID,Cargo Occupancy Unit,Cargo Occupancy Value,Cargo Occupancy SCU,Boxable,Unrefined,Raw,Refined,Record GUID,Record Path\r?\n/,
+    /^Entity Class,Name Key,Description Key,Display Name Key,Display Description Key,Display Type Key,Type GUID,Subtype GUID,Cargo Occupancy Unit,Cargo Occupancy Value,Cargo Occupancy SCU,Boxable,Unrefined,Raw,Refined,Controlled Substance Jurisdictions,Controlled Substance Max SCU,Legality Warning Source,Record GUID,Record Path\r?\n/,
   );
   assert.match(csv, /atlasium,items_commodities_atlasium,items_commodities_atlasium_desc/);
 });

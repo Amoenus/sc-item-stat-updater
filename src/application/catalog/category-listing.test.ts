@@ -34,6 +34,7 @@ test('category listing includes representative provider families and source meta
       'datacore:mission-contract-intel.datacore.csv',
       'optional:datacore:contract-hauling-summary.datacore.csv',
       'datacore:contract-generators.datacore.csv',
+      'optional:datacore:contract-templates.datacore.csv',
       'datacore:blueprint-pools.datacore.csv',
       'datacore:crafting-blueprints.datacore.csv',
     ],

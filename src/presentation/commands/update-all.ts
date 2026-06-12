@@ -19,8 +19,9 @@ import {
   writeErrorLine,
   writeLine,
 } from '../cli';
-import { createIndexedTasks, createPlannedChildTaskList } from '../task-builders';
+import { createIndexedTasks, createPlannedChildTaskList, runCompactTaskList } from '../task-builders';
 import { createCommandTaskList } from '../task-list';
+import { groupUpdateCategories } from '../update-category-groups';
 
 const logger = getLogger('update-all');
 
@@ -201,16 +202,26 @@ export async function runUpdateAllCommand(argv: string[], io: CommandIO = defaul
         title: 'Update categories',
         task: (_ctx, task) => {
           const prepared = requirePrepared();
+          const categoryGroups = groupUpdateCategories(prepared.categories);
           return createPlannedChildTaskList(task, {
             title: 'Update categories',
-            tasks: createIndexedTasks(prepared.categories, {
-              title: (category) => category.config.label,
-              task: (category, index) => async (_categoryCtx, categoryTask) => {
-                const result = await plan.runCategory(category, index);
-                categoryTask.output = result?.summary ?? 'No changes';
+            tasks: categoryGroups.map((group) => ({
+              title: group.title,
+              task: async (_groupCtx, groupTask) => {
+                await runCompactTaskList(groupTask, {
+                  title: group.title,
+                  items: group.categories,
+                  unit: 'category',
+                  label: (category) => category.config.label,
+                  task: (category) => plan.runCategory(category, prepared.categories.indexOf(category)),
+                  summary: (result) => result?.summary ?? 'No changes',
+                });
               },
-            }),
-            unit: 'category',
+            })),
+            unit: 'group',
+            plannedUnit: 'category',
+            summary: `${prepared.categories.length.toLocaleString()} categories across ${categoryGroups.length.toLocaleString()} groups`,
+            plannedSummary: `${prepared.categories.length.toLocaleString()} categories planned`,
           });
         },
       },

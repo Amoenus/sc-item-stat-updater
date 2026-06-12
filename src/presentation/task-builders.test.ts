@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { CommandIO } from './cli';
-import { boundedConcurrency, createIndexedTasks, createPlannedChildTaskList, formatCount } from './task-builders';
+import {
+  boundedConcurrency,
+  createIndexedTasks,
+  createPlannedChildTaskList,
+  formatCount,
+  runCompactTaskList,
+} from './task-builders';
 import { createCommandTaskList } from './task-list';
 
 function createFakeIO(): CommandIO & { stdoutText: () => string; stderrText: () => string } {
@@ -70,6 +76,40 @@ test('indexed tasks use stable one-based progress titles', () => {
     tasks.map((task) => task.title),
     ['1/2 ALPHA', '2/2 BETA'],
   );
+});
+
+test('compact task list renders aggregate progress instead of child rows', async () => {
+  const io = createFakeIO();
+  const seen: string[] = [];
+  const taskList = createCommandTaskList(
+    [
+      {
+        title: 'Compact parent',
+        task: async (_ctx, task) => {
+          await runCompactTaskList(task, {
+            title: 'Compact parent',
+            items: ['alpha', 'beta'],
+            unit: 'item',
+            concurrency: true,
+            label: (item) => item,
+            task: async (item) => {
+              seen.push(item);
+              return `${item} done`;
+            },
+            summary: (result) => result,
+          });
+        },
+      },
+    ],
+    io,
+    {},
+  );
+
+  await taskList.run();
+
+  assert.deepEqual(seen.sort(), ['alpha', 'beta']);
+  assert.match(io.stdoutText(), /Compact parent - 2 items/);
+  assert.match(io.stdoutText(), /Completed 2 items/);
 });
 
 test('count and concurrency helpers keep display grammar consistent', () => {

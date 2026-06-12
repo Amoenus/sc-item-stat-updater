@@ -14,6 +14,7 @@ const carinitePurePath = 'libs/foundry/records/entities/scitem/carryables/1h/har
 const armillariaPath = 'libs/foundry/records/entities/scitem/carryables/1h/harvestable_armillaria.xml';
 const armillariaBasePath = 'libs/foundry/records/entities/scitem/harvestables/bases/harvestable_base_armillaria.xml';
 const salvageShieldPath = 'libs/foundry/records/entities/haulingentityclass/haulingentityclass_shieldgenerator_s01.xml';
+const jurisdictionPath = 'libs/foundry/records/lawsystem/jurisdictions/stanton/arccorp.xml';
 
 test('extractDataCoreCommodities extracts first-party commodity facts discovered through the graph', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-'));
@@ -117,6 +118,21 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
       </Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01>
     `,
   );
+  await writeXml(
+    xmlCacheDir,
+    jurisdictionPath,
+    `
+      <Jurisdiction.ArcCorp name="@Jurisdictions_Name_004" __type="Jurisdiction" __ref="61e48e63-6822-4f67-9648-d7b884281bd4" __path="${jurisdictionPath}">
+        <controlledSubstanceClasses>
+          <ControlledSubstanceClass maxPossessionSCU="0.125">
+            <commodities>
+              <Reference value="86c1fde0-1e2b-40d9-a3c7-1d39ef742c68" />
+            </commodities>
+          </ControlledSubstanceClass>
+        </controlledSubstanceClasses>
+      </Jurisdiction.ArcCorp>
+    `,
+  );
 
   const rows = await extractDataCoreCommodities({
     xmlCacheDir,
@@ -155,6 +171,9 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.equal(rantadung.boxable, '0');
   assert.equal(rantadung.isUnrefinedElement, '1');
   assert.equal(rantadung.isRaw, '1');
+  assert.equal(rantadung.controlledSubstanceJurisdictions, 'Jurisdictions_Name_004');
+  assert.equal(rantadung.controlledSubstanceMaxScu, '0.125');
+  assert.equal(rantadung.legalityWarningSource, 'controlled-substance');
 
   const carinitePure = rows.find((row) => row.entityClass === 'Harvestable_Mineral_1H_CarinitePure');
   assert.ok(carinitePure);
@@ -189,7 +208,7 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 7,
+    recordCount: 8,
     records: [
       {
         path: atlasiumPath,
@@ -277,6 +296,15 @@ function makeGraph(): DataCoreRecordGraph {
         localizationKeys: [{ attribute: 'orderDisplayName', key: 'Salvage_Ship_Component_Shield_Generator_S1_Name' }],
         referencedGuids: [],
       },
+      {
+        path: jurisdictionPath,
+        ref: '61e48e63-6822-4f67-9648-d7b884281bd4',
+        rootTag: 'Jurisdiction.ArcCorp',
+        rootType: 'Jurisdiction',
+        entityClass: 'ArcCorp',
+        localizationKeys: [{ attribute: 'name', key: 'Jurisdictions_Name_004' }],
+        referencedGuids: ['86c1fde0-1e2b-40d9-a3c7-1d39ef742c68'],
+      },
     ],
     indexes: {
       byRef: {
@@ -287,6 +315,7 @@ function makeGraph(): DataCoreRecordGraph {
         '0ece223a-df2b-4c7a-82e1-7f1467f9c5a1': armillariaPath,
         'ac659f18-1681-4406-8eff-4bd9173b94a7': armillariaBasePath,
         '98675536-a564-4257-8962-7acf7970cdd0': salvageShieldPath,
+        '61e48e63-6822-4f67-9648-d7b884281bd4': jurisdictionPath,
       },
       byPath: {
         [atlasiumPath]: 0,
@@ -296,6 +325,7 @@ function makeGraph(): DataCoreRecordGraph {
         [armillariaPath]: 4,
         [armillariaBasePath]: 5,
         [salvageShieldPath]: 6,
+        [jurisdictionPath]: 7,
       },
       byRootType: {
         EntityClassDefinition: [
@@ -307,6 +337,7 @@ function makeGraph(): DataCoreRecordGraph {
           armillariaBasePath,
         ],
         Hauling_EntityClasses: [salvageShieldPath],
+        Jurisdiction: [jurisdictionPath],
       },
       byEntityClass: {
         atlasium: [atlasiumPath],
@@ -316,6 +347,7 @@ function makeGraph(): DataCoreRecordGraph {
         Harvestable_Armillaria: [armillariaPath],
         harvestable_base_Armillaria: [armillariaBasePath],
         HaulingEntityClass_ShieldGenerator_S01: [salvageShieldPath],
+        ArcCorp: [jurisdictionPath],
       },
       byLocalizationKey: {},
       byReferencedGuid: {},

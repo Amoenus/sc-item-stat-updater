@@ -41,6 +41,9 @@ export interface DataCoreCommodityRecord {
   isUnrefinedElement: string;
   isRaw: string;
   isRefined: string;
+  controlledSubstanceJurisdictions: string;
+  controlledSubstanceMaxScu: string;
+  legalityWarningSource: string;
 }
 
 export type DataCoreCommodityDataset = SourceDataset<DataCoreCommodityRecord> & {
@@ -196,6 +199,7 @@ export interface DataCoreContractGeneratorRecord {
   riskOfLoss: string;
   gameKnowledge: string;
   blueprintRewardPoolGuids: string;
+  blueprintRewards: string;
   requiredCompletedContractTags: string;
   completionTags: string;
   recordGuid: string;
@@ -776,6 +780,11 @@ export interface DataCoreLocalizationReference {
   key: string;
 }
 
+export interface DataCoreGuidReference {
+  attribute: string;
+  value: string;
+}
+
 export interface DataCoreBlueprintPoolRecord {
   ref: string;
   path: string;
@@ -818,6 +827,7 @@ export interface DataCoreRecordNode {
   entityClass: string;
   localizationKeys: DataCoreLocalizationReference[];
   referencedGuids: string[];
+  referencedGuidAttributes?: DataCoreGuidReference[];
 }
 
 export interface DataCoreRecordGraph {

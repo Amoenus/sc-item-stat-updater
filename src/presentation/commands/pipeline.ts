@@ -17,8 +17,9 @@ import { type CommandIO, defaultCommandIO, isNpmConfigFlagEnabled, writeErrorLin
 import { createDataCoreProgressCallbacks } from '../datacore-progress';
 import { createDataCoreScrapeTask } from '../datacore-task';
 import { createScmdbScrapeTask } from '../scmdb-task';
-import { createIndexedTasks, createPlannedChildTaskList } from '../task-builders';
+import { createIndexedTasks, createPlannedChildTaskList, runCompactTaskList } from '../task-builders';
 import { type CommandTask, createCommandTaskList } from '../task-list';
+import { groupUpdateCategories } from '../update-category-groups';
 
 const ROOT_DIR = path.resolve(import.meta.dirname, '..', '..', '..');
 
@@ -292,16 +293,27 @@ function createBatchUpdateTask(
         title: 'Update categories',
         task: (_childCtx, childTask) => {
           if (!prepared) throw new Error('Update categories were not prepared.');
+          const categories = prepared.categories;
+          const categoryGroups = groupUpdateCategories(categories);
           return createPlannedChildTaskList(childTask, {
             title: 'Update categories',
-            tasks: createIndexedTasks(prepared.categories, {
-              title: (category) => category.config.label,
-              task: (category, index) => async (_categoryCtx, categoryTask) => {
-                const result = await plan.runCategory(category, index);
-                categoryTask.output = result?.summary ?? 'No changes';
+            tasks: categoryGroups.map((group) => ({
+              title: group.title,
+              task: async (_groupCtx, groupTask) => {
+                await runCompactTaskList(groupTask, {
+                  title: group.title,
+                  items: group.categories,
+                  unit: 'category',
+                  label: (category) => category.config.label,
+                  task: (category) => plan.runCategory(category, categories.indexOf(category)),
+                  summary: (result) => result?.summary ?? 'No changes',
+                });
               },
-            }),
-            unit: 'category',
+            })),
+            unit: 'group',
+            plannedUnit: 'category',
+            summary: `${categories.length.toLocaleString()} categories across ${categoryGroups.length.toLocaleString()} groups`,
+            plannedSummary: `${categories.length.toLocaleString()} categories planned`,
           });
         },
       },

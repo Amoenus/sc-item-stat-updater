@@ -294,6 +294,6 @@ blueprints should be read as "not covered by current normalization" rather than
 "absent from game files."
 
 The generic graph indexes root `__ref`, root path/type/entity class,
-localization references, and explicit `<Reference value="...">` edges. It does
-not yet index arbitrary GUID-valued attributes. Some first-party relationships
-will remain invisible until domain extractors parse those fields.
+localization references, explicit `<Reference value="...">` edges, and
+GUID-valued XML attributes. Domain extractors still need to parse and name those
+fields before raw graph edges become meaningful relationships.

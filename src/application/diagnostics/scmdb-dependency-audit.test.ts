@@ -19,6 +19,7 @@ test('SCMDB dependency audit classifies mission categories and datacore-active b
     'datacore:mission-contract-intel.datacore.csv',
     'optional:datacore:contract-hauling-summary.datacore.csv',
     'datacore:contract-generators.datacore.csv',
+    'optional:datacore:contract-templates.datacore.csv',
     'datacore:blueprint-pools.datacore.csv',
     'datacore:crafting-blueprints.datacore.csv',
   ]);
@@ -92,7 +93,7 @@ test('formatted SCMDB dependency audit shows source hierarchy and migration slic
   assert.match(output, /DataCore\/Data\.p4k: authoritative source/);
   assert.match(
     output,
-    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
+    /\| update category \| mission-datacore-descriptions \(DataCore mission descriptions\) \| datacore:contract-generator-intel\.datacore\.csv, datacore:mission-contract-intel\.datacore\.csv, optional:datacore:contract-hauling-summary\.datacore\.csv, datacore:contract-generators\.datacore\.csv, optional:datacore:contract-templates\.datacore\.csv, datacore:blueprint-pools\.datacore\.csv, datacore:crafting-blueprints\.datacore\.csv \| Already extractable from DataCore \| yes \|/,
   );
   assert.doesNotMatch(output, /regen-mining-locations/);
   assert.match(output, /Why SCMDB is still used:/);

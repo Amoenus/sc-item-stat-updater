@@ -286,11 +286,11 @@ export async function loadDatacoreDescriptionsSourceData(
 
     const contractId = row['Contract ID'] || row['Contract Debug Name'] || row['Record GUID'] || JSON.stringify(row);
     const debugName = row['Contract Debug Name'] || contractId;
-    const poolGuids = parseGuidList(row['Blueprint Reward Pool Guids']);
+    const poolGuids = getBlueprintRewardPoolGuids(row);
     const repeatBlueprintList = shouldUseRepeatOnlyMultiPoolBlock(row, descriptionKeyResolution, poolGuids)
       ? formatRepeatOnlyMultiPoolBlueprintList(poolGuids, poolByGuid)
       : '';
-    const rewardLines = repeatBlueprintList ? [] : resolveBlueprintRewardLines(row['Blueprint Reward Pool Guids'], poolByGuid);
+    const rewardLines = repeatBlueprintList ? [] : resolveBlueprintRewardLines(poolGuids, poolByGuid);
 
     if (repeatBlueprintList) {
       for (const key of descriptionKeys) {
@@ -375,14 +375,11 @@ function getOrCreateBlueprintFacts(
 }
 
 function resolveBlueprintRewardLines(
-  poolGuidsStr: string,
+  poolGuids: string[],
   poolByGuid: Map<string, { weight: number; nameKey: string }[]>,
 ): string[] {
   const rewardLines = new Set<string>();
-  for (const poolGuid of poolGuidsStr
-    .split(',')
-    .map((guid) => guid.trim())
-    .filter(Boolean)) {
+  for (const poolGuid of poolGuids) {
     const poolEntries = poolByGuid.get(poolGuid);
     if (!poolEntries || poolEntries.length === 0) continue;
 
@@ -394,6 +391,26 @@ function resolveBlueprintRewardLines(
     }
   }
   return [...rewardLines];
+}
+
+function getBlueprintRewardPoolGuids(row: Record<string, string>): string[] {
+  const parsedRewards = parseBlueprintRewards(row['Blueprint Rewards']);
+  if (parsedRewards.length > 0) return uniqueOrderedStrings(parsedRewards.map((reward) => reward.blueprintPool));
+  return parseGuidList(row['Blueprint Reward Pool Guids']);
+}
+
+function parseBlueprintRewards(value: string): Array<{ blueprintPool: string }> {
+  try {
+    const parsed = JSON.parse(value.trim());
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((entry): Array<{ blueprintPool: string }> => {
+      if (!entry || typeof entry !== 'object') return [];
+      const blueprintPool = String((entry as { blueprintPool?: unknown }).blueprintPool ?? '').trim();
+      return blueprintPool ? [{ blueprintPool }] : [];
+    });
+  } catch {
+    return [];
+  }
 }
 
 function shouldUseRepeatOnlyMultiPoolBlock(

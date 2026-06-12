@@ -84,6 +84,7 @@ function isFileNotFound(err: unknown): boolean {
 
 function shouldWarnCommodityKey(row: Record<string, string>, column: (typeof DATACORE_KEY_COLUMNS)[number]): boolean {
   if (column !== 'Name Key' && column !== 'Display Name Key') return false;
+  if (row['Legality Warning Source']) return true;
   return row['Display Type Key'] === 'items_commodities_type_vice' || /[/\\]commodities[/\\]vice[/\\]/i.test(row['Record Path'] ?? '');
 }
 
