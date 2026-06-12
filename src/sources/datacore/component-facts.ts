@@ -325,17 +325,21 @@ function getComponentTitleKeySources(
   recordLocalizationKeys: string[],
 ): ComponentTitleKey[] {
   const keys: ComponentTitleKey[] = [];
+  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   const nameKey = normalizeLocalizationKey(row['Name Key']);
-  if (nameKey) keys.push({ key: nameKey, source: 'csv-name-key' });
+  for (const key of getKnownTitleKeyAliases(nameKey, entityClass)) {
+    keys.push({ key, source: 'csv-name-key' });
+  }
 
   for (const key of recordLocalizationKeys) {
     const normalized = normalizeDataCoreRelationshipLocalizationKey(key);
     if (normalized.startsWith('item_name')) {
-      keys.push({ key: normalized, source: 'graph-localization' });
+      for (const alias of getKnownTitleKeyAliases(normalized, entityClass)) {
+        keys.push({ key: alias, source: 'graph-localization' });
+      }
     }
   }
 
-  const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   if (entityClass) {
     keys.push(
       { key: `item_name${entityClass}`, source: 'guessed-alias' },
@@ -346,6 +350,25 @@ function getComponentTitleKeySources(
   }
 
   return keys;
+}
+
+function getKnownTitleKeyAliases(key: string, entityClass: string): string[] {
+  if (!key) return [];
+  if (!entityClass || titleKeyEntityClass(key) !== entityClass) return [key];
+
+  return [
+    `item_name${entityClass}`,
+    `item_name_${entityClass}`,
+    `item_name${entityClass}_scitem`,
+    `item_name_${entityClass}_scitem`,
+  ];
+}
+
+function titleKeyEntityClass(key: string): string {
+  return key
+    .replace(/^item_name_?/i, '')
+    .replace(/_scitem$/i, '')
+    .toLowerCase();
 }
 
 function uniqueKeys(keys: string[]): string[] {

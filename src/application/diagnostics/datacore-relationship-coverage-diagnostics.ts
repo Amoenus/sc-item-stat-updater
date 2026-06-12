@@ -73,7 +73,7 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
   const iniKeys = await readOptionalIniNameKeys(iniPath);
   const keySources = buildKeySources(facts);
   const matchedIniKeys = countMatchedIniKeys(iniKeys, keySources);
-  const guessedOnlyMatches = collectGuessedOnlyMatches(facts, iniKeys, options.guessedOnlyMatchLimit);
+  const guessedOnlyMatches = collectGuessedOnlyMatches(facts, iniKeys, keySources, options.guessedOnlyMatchLimit);
   const componentFamilies = summarizeComponentFamilies(facts);
   const titleKeyCounts = countTitleKeysBySource(keySources);
 
@@ -177,6 +177,7 @@ function countMatchedIniKeys(
 function collectGuessedOnlyMatches(
   facts: ComponentFact[],
   iniKeys: Set<string> | null,
+  keySources: Map<string, Set<ComponentTitleKeySource>>,
   limit = DEFAULT_GUESSED_ONLY_MATCH_LIMIT,
 ): DataCoreRelationshipCoverageGuessedMatch[] {
   if (!iniKeys) return [];
@@ -184,20 +185,14 @@ function collectGuessedOnlyMatches(
   const matches: DataCoreRelationshipCoverageGuessedMatch[] = [];
   const seen = new Set<string>();
   for (const fact of facts) {
-    const sourcesByKey = new Map<string, Set<ComponentTitleKeySource>>();
-    for (const { key, source } of fact.titleKeySources) {
+    for (const { key } of fact.titleKeySources) {
       const normalizedKey = normalizeKey(key);
-      const sources = sourcesByKey.get(normalizedKey) ?? new Set<ComponentTitleKeySource>();
-      sources.add(source);
-      sourcesByKey.set(normalizedKey, sources);
-    }
-
-    for (const [key, sources] of sourcesByKey) {
-      if (!iniKeys.has(key) || sources.size !== 1 || !sources.has('guessed-alias')) continue;
-      const seenKey = `${fact.componentType}|${fact.entityClass}|${key}`;
+      const sources = keySources.get(normalizedKey);
+      if (!iniKeys.has(normalizedKey) || !sources || sources.size !== 1 || !sources.has('guessed-alias')) continue;
+      const seenKey = `${fact.componentType}|${fact.entityClass}|${normalizedKey}`;
       if (seen.has(seenKey)) continue;
       seen.add(seenKey);
-      matches.push({ key, entityClass: fact.entityClass, componentType: fact.componentType });
+      matches.push({ key: normalizedKey, entityClass: fact.entityClass, componentType: fact.componentType });
       if (matches.length >= limit) return matches;
     }
   }
