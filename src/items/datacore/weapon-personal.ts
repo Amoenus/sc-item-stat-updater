@@ -7,6 +7,7 @@ import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
 const defaultMagazineRef = {
   selector: 'SEntityComponentDefaultLoadoutParams SItemPortLoadoutEntryParams[itemPortName="magazine_attach"]',
   attr: 'entityClassReference',
+  graphAttribute: 'entityClassReference',
   fallback: {
     selector: 'SEntityComponentDefaultLoadoutParams SItemPortLoadoutEntryParams[itemPortName="magazine_attach"]',
     attr: 'entityClassName',

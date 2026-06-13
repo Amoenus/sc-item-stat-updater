@@ -817,11 +817,12 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
               </SWeaponActionFireRapidParams>
             </fireActions>
           </SCItemWeaponComponentParams>
+          <GraphRelationships entityClassReference="b5f37920-ba9a-4a07-85e9-732c31d04d8a" />
           <SEntityComponentDefaultLoadoutParams>
             <loadout>
               <SItemPortLoadoutManualParams>
                 <entries>
-                  <SItemPortLoadoutEntryParams itemPortName="magazine_attach" entityClassName="stale_magazine_class" entityClassReference="b5f37920-ba9a-4a07-85e9-732c31d04d8a" />
+                  <SItemPortLoadoutEntryParams itemPortName="magazine_attach" entityClassName="stale_magazine_class" entityClassReference="stale-magazine-ref" />
                 </entries>
               </SItemPortLoadoutManualParams>
             </loadout>
