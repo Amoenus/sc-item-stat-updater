@@ -1,6 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { ItemConfig } from '../../enrichment/item-config';
+import type {
+  DataCoreFieldReferenceSelector,
+  DataCoreFieldSelector,
+  DataCoreItemTypeConfig,
+} from '../../items/datacore/types';
 import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
 import { inferCategorySourceProvider, type UpdateSourceProvider } from '../use-cases/prepare-update-categories';
 
@@ -27,6 +33,7 @@ interface CategoryWithSource {
   config: ItemConfig;
   sourcePath: string;
   fallbackProvider: UpdateSourceProvider;
+  typeConfig?: DataCoreItemTypeConfig;
 }
 
 const STATIC_SOURCE_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
@@ -84,6 +91,7 @@ function unique(values: string[]): string[] {
 function sourceSignals(
   config: ItemConfig,
   sourceText: string,
+  typeConfig?: DataCoreItemTypeConfig,
 ): Pick<DynamicCoverageAuditEntry, 'dynamicSignals' | 'reviewSignals' | 'sourceGapSignals' | 'status'> {
   const dynamicSignals: string[] = [];
   const reviewSignals: string[] = [];
@@ -109,6 +117,9 @@ function sourceSignals(
   }
   for (const marker of STATIC_SOURCE_MARKERS) {
     if (marker.pattern.test(sourceText)) reviewSignals.push(marker.signal);
+  }
+  for (const signal of graphReferenceSelectorSignals(typeConfig)) {
+    reviewSignals.push(signal);
   }
 
   const provider = inferCategorySourceProvider(config, 'scmdb');
@@ -137,7 +148,7 @@ async function buildEntry(category: CategoryWithSource): Promise<DynamicCoverage
   } catch {
     sourceText = '';
   }
-  const signals = sourceSignals(category.config, sourceText);
+  const signals = sourceSignals(category.config, sourceText, category.typeConfig);
   return {
     slug: category.slug,
     label: category.config.label,
@@ -149,13 +160,20 @@ async function buildEntry(category: CategoryWithSource): Promise<DynamicCoverage
 
 export async function buildDynamicCoverageAudit(): Promise<DynamicCoverageAudit> {
   const [datacoreConfigs, missionConfigs] = await Promise.all([loadDatacoreConfigs(), loadMissionConfigs()]);
+  const datacoreCategories = await Promise.all(
+    [...datacoreConfigs.entries()].map(async ([slug, config]) => {
+      const sourcePath = categorySourcePath(slug);
+      return {
+        slug,
+        config,
+        sourcePath,
+        fallbackProvider: 'datacore' as const,
+        typeConfig: await loadDataCoreTypeConfig(sourcePath),
+      };
+    }),
+  );
   const categories: CategoryWithSource[] = [
-    ...[...datacoreConfigs.entries()].map(([slug, config]) => ({
-      slug,
-      config,
-      sourcePath: categorySourcePath(slug),
-      fallbackProvider: 'datacore' as const,
-    })),
+    ...datacoreCategories,
     ...[...missionConfigs.entries()].map(([slug, config]) => ({
       slug,
       config,
@@ -169,6 +187,49 @@ export async function buildDynamicCoverageAudit(): Promise<DynamicCoverageAudit>
     goal: 'Prefer DataCore graph-derived facts, treat global.ini as a localization target, and keep SCMDB limited to documented enhancement or source-gap data.',
     entries: entries.sort((a, b) => a.slug.localeCompare(b.slug)),
   };
+}
+
+async function loadDataCoreTypeConfig(sourcePath: string): Promise<DataCoreItemTypeConfig | undefined> {
+  try {
+    const mod = (await import(pathToFileURL(sourcePath).href)) as { DATACORE_TYPE_CONFIG?: DataCoreItemTypeConfig };
+    return mod.DATACORE_TYPE_CONFIG;
+  } catch {
+    return undefined;
+  }
+}
+
+function graphReferenceSelectorSignals(typeConfig: DataCoreItemTypeConfig | undefined): string[] {
+  if (!typeConfig) return [];
+  const selectors: string[] = [];
+  for (const [field, selector] of Object.entries(typeConfig.fieldSelectors)) {
+    for (const ref of fieldReferenceSelectors(selector)) {
+      if (!ref.graphAttribute && ref.by !== 'entityClass') selectors.push(`${field}:${ref.attr}`);
+    }
+  }
+  return selectors.length > 0
+    ? [`DataCore ref selectors lack graphAttribute: ${selectors.sort().join(', ')}`]
+    : [];
+}
+
+function fieldReferenceSelectors(selector: DataCoreFieldSelector): DataCoreFieldReferenceSelector[] {
+  if (typeof selector === 'string' || 'derive' in selector || !selector.ref) return [];
+  return flattenReferenceSelectors(selector.ref);
+}
+
+function flattenReferenceSelectors(
+  selector: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[],
+): DataCoreFieldReferenceSelector[] {
+  const selectors = Array.isArray(selector) ? selector : [selector];
+  return selectors.flatMap((item) => [
+    item,
+    ...flattenFallbackReferenceSelectors(item.fallback),
+  ]);
+}
+
+function flattenFallbackReferenceSelectors(
+  selector: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[] | undefined,
+): DataCoreFieldReferenceSelector[] {
+  return selector ? flattenReferenceSelectors(selector) : [];
 }
 
 function formatSignals(signals: string[]): string {
