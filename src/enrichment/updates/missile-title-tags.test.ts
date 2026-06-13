@@ -15,11 +15,41 @@ async function makeTempWorkspace() {
     path.join(datacoreDir, 'missile.datacore.csv'),
     [
       'Entity Class,Name Key,Short Name Key,Tracking Signal',
-      'gmisl_s01_cs_fski_spark,item_NameGMISL_S01_CS_FSKI_Spark,item_NameGMISL_S01_CS_FSKI_Spark_short,CrossSection',
+      'gmisl_s01_cs_fski_spark,item_NameStale_Spark,item_NameStale_Spark_short,CrossSection',
       'gmisl_s01_em_behr_pioneer,item_NameGMISL_S01_EM_BEHR_Pioneer,item_NameGMISL_S01_EM_BEHR_Pioneer_short,Electromagnetic',
       'misl_s01_ir_vncl_arrow,item_NameMISL_S01_IR_VNCL_Arrow,item_NameMISL_S01_IR_VNCL_Arrow_short,Infrared',
       'missile_custom,item_NameCustom_Rocket,item_NameCustom_Rocket_short,Infrared',
     ].join('\n'),
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(datacoreDir, 'record-graph.json'),
+    JSON.stringify({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [
+        {
+          path: 'ships/weapons/missiles/gmisl_s01_cs_fski_spark.xml',
+          ref: 'spark-ref',
+          rootTag: 'EntityClassDefinition.gmisl_s01_cs_fski_spark',
+          rootType: 'EntityClassDefinition',
+          entityClass: 'gmisl_s01_cs_fski_spark',
+          localizationKeys: [
+            { attribute: 'Name', key: 'item_NameGMISL_S01_CS_FSKI_Spark' },
+            { attribute: 'ShortName', key: 'item_NameGMISL_S01_CS_FSKI_Spark_short' },
+          ],
+          referencedGuids: [],
+        },
+      ],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
     'utf8',
   );
 

@@ -2,6 +2,7 @@ import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
+import { getGraphTitleLocalizationKeys, loadOptionalDataCoreRelationshipIndex } from './datacore-title-key-utils';
 import { buildLookupMapFromRows } from './lookup-utils';
 import { normalizeSpaces } from './title-tag-utils';
 import { buildScannedUpdateResult } from './update-result';
@@ -20,14 +21,30 @@ const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
 
 async function buildMissileSignalLookupFromDataCore(datacoreDir: string) {
   const missileCsvPath = resolveChildPath(datacoreDir, DATACORE_MISSILE_CSV, 'DataCore missile CSV filename');
-  const rows = await readCsvFile(missileCsvPath);
-  const keyToTag = buildLookupMapFromRows(rows, (row) => {
+  const [rows, relationships] = await Promise.all([
+    readCsvFile(missileCsvPath),
+    loadOptionalDataCoreRelationshipIndex(datacoreDir),
+  ]);
+  const keyToTag = new Map<string, string>();
+
+  for (const row of rows) {
+    const signal = normalizeSpaces(row['Tracking Signal'] || '');
+    const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
+    if (!tag) continue;
+    for (const key of getGraphTitleLocalizationKeys(row, relationships)) {
+      keyToTag.set(key, tag);
+    }
+  }
+
+  for (const [key, tag] of buildLookupMapFromRows(rows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
     const signal = normalizeSpaces(row['Tracking Signal'] || '');
     const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
     if (!key || !tag) return null;
     return [key, tag];
-  });
+  })) {
+    keyToTag.set(key, tag);
+  }
 
   for (const [key, tag] of buildLookupMapFromRows(rows, (row) => {
     const key = normalizeLocalizationKey(row['Short Name Key']);

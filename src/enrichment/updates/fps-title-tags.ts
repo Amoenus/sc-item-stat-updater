@@ -3,6 +3,7 @@ import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
 import { buildLookupMapFromRows } from './lookup-utils';
+import { getGraphTitleLocalizationKeys, loadOptionalDataCoreRelationshipIndex } from './datacore-title-key-utils';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -105,13 +106,33 @@ function buildAttachmentTag(row: Record<string, string>): string {
 async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
   const personalPath = resolveChildPath(datacoreDir, DATACORE_PERSONAL_CSV, 'DataCore FPS personal CSV filename');
   const attachmentPath = resolveChildPath(datacoreDir, DATACORE_ATTACHMENT_CSV, 'DataCore FPS attachment CSV filename');
-  const [personalRows, attachmentRows] = await Promise.all([readCsvFile(personalPath), readCsvFile(attachmentPath)]);
+  const [personalRows, attachmentRows, relationships] = await Promise.all([
+    readCsvFile(personalPath),
+    readCsvFile(attachmentPath),
+    loadOptionalDataCoreRelationshipIndex(datacoreDir),
+  ]);
 
-  const keyToTag = buildLookupMapFromRows(personalRows, (row) => {
+  const keyToTag = new Map<string, { tag: string }>();
+  for (const row of personalRows) {
+    const tag = buildPersonalTag(row);
+    for (const key of getGraphTitleLocalizationKeys(row, relationships)) {
+      keyToTag.set(key, { tag });
+    }
+  }
+  for (const row of attachmentRows) {
+    const tag = buildAttachmentTag(row);
+    for (const key of getGraphTitleLocalizationKeys(row, relationships)) {
+      keyToTag.set(key, { tag });
+    }
+  }
+
+  for (const [key, value] of buildLookupMapFromRows(personalRows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
     if (!key) return null;
     return [key, { tag: buildPersonalTag(row) }];
-  });
+  })) {
+    keyToTag.set(key, value);
+  }
 
   for (const [key, value] of buildLookupMapFromRows(attachmentRows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);

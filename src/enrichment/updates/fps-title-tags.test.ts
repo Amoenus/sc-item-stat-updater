@@ -15,7 +15,7 @@ async function makeTempWorkspace() {
     path.join(datacoreDir, 'weaponpersonal.datacore.csv'),
     [
       'Entity Class,Name Key,Size,Class',
-      'ksar_rifle_energy_01,item_Name_ksar_rifle_energy_01,2,Medium',
+      'ksar_rifle_energy_01,item_Name_stale_ksar_rifle_energy_01,2,Medium',
       'behr_pistol_ballistic_01,item_Name_behr_pistol_ballistic_01,1,Small',
       'behr_special_case,item_Name_Behr_SpecialCase,3,Energy',
     ].join('\n'),
@@ -25,6 +25,33 @@ async function makeTempWorkspace() {
     ['Entity Class,Name Key,Size,Class,Slot', 'behr_optics_test,item_Name_behr_optics_test,1,IronSight,Optics'].join(
       '\n',
     ),
+  );
+  await fs.writeFile(
+    path.join(datacoreDir, 'record-graph.json'),
+    JSON.stringify({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [
+        {
+          path: 'weapons/fps/ksar_rifle_energy_01.xml',
+          ref: 'ksar-rifle-ref',
+          rootTag: 'EntityClassDefinition.ksar_rifle_energy_01',
+          rootType: 'EntityClassDefinition',
+          entityClass: 'ksar_rifle_energy_01',
+          localizationKeys: [{ attribute: 'Name', key: 'item_Name_ksar_rifle_energy_01' }],
+          referencedGuids: [],
+        },
+      ],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+    'utf8',
   );
 
   return { dir, datacoreDir, iniPath };
