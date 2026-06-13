@@ -2161,16 +2161,19 @@ async function scrapeDataCoreType(
       const health = extractHealth($);
       const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
       const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
+      const record = getDataCoreRecordForEntityClass(entityClass, relationships);
       let componentClass = resolveDataCoreComponentClass(attachDef.subtype, entityClass, entityClassToHaulingClass);
       if (!isDisplayDataCoreComponentClass(componentClass)) {
-        const record = getDataCoreRecordForEntityClass(entityClass, relationships);
         componentClass = scmdbComponentClassByRef.get(record?.ref.toLowerCase() ?? '') ?? componentClass;
       }
       const rowRecord: Record<string, string> = {
         'Entity Class': entityClass,
-        'Name Key': localizationKey(attachLocalization.attr('Name') ?? ''),
+        'Name Key':
+          getDataCoreGraphLocalizationKey(record, 'name') || localizationKey(attachLocalization.attr('Name') ?? ''),
         'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
-        'Description Key': localizationKey(attachLocalization.attr('Description') ?? ''),
+        'Description Key':
+          getDataCoreGraphLocalizationKey(record, 'description') ||
+          localizationKey(attachLocalization.attr('Description') ?? ''),
         Manufacturer: manufacturer,
         Size: attachDef.size,
         Grade: attachDef.grade,
@@ -2276,6 +2279,27 @@ function getDataCoreRecordForEntityClass(entityClass: string, relationships: Dat
   const normalized = normalizeDataCoreEntityClass(entityClass);
   if (!normalized) return undefined;
   return relationships.getRecordForEntityClass(normalized);
+}
+
+function getDataCoreGraphLocalizationKey(
+  record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
+  role: 'name' | 'description',
+): string {
+  const references = record?.localizationKeys ?? [];
+  const attributePattern = role === 'name' ? /^(?:display)?name$/i : /^(?:display)?description$/i;
+  const keyPattern = role === 'name' ? /(?:^|_)name/i : /(?:^|_)desc(?:ription)?/i;
+
+  return (
+    references.find((reference) => attributePattern.test(reference.attribute) && isUsableLocalizationKey(reference.key))
+      ?.key ??
+    references.find((reference) => keyPattern.test(reference.key) && isUsableLocalizationKey(reference.key))?.key ??
+    ''
+  ).replace(/^@/, '');
+}
+
+function isUsableLocalizationKey(value: string): boolean {
+  const normalized = localizationKey(value);
+  return normalized !== '' && !/^LOC_/i.test(normalized);
 }
 
 function buildDerivedComponentClassLookup(rows: Array<Record<string, string>>, csvFile: string): Map<string, string> {

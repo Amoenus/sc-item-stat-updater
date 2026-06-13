@@ -14,6 +14,7 @@ import {
   type DataCoreRelationshipIndex,
   normalizeDataCoreRelationshipLocalizationKey,
 } from './relationship-index';
+import type { DataCoreLocalizationReference } from './types';
 
 const logger = getLogger('datacore-component-facts');
 
@@ -76,7 +77,7 @@ interface ComponentFactRow {
   row: Record<string, string>;
   recordRef: string;
   recordPath: string;
-  recordLocalizationKeys: string[];
+  recordLocalizationKeys: DataCoreLocalizationReference[];
   scmdbClass?: string;
 }
 
@@ -95,6 +96,7 @@ const FACT_COLUMNS = new Set([
   'Grade',
   'Class',
 ]);
+const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder']);
 
 export async function loadDataCoreComponentFacts({
   datacoreDir,
@@ -118,7 +120,7 @@ export async function loadDataCoreComponentFacts({
         row,
         recordRef: record?.ref ?? '',
         recordPath: record?.path ?? '',
-        recordLocalizationKeys: relationships.getLocalizationKeysForRecord(record),
+        recordLocalizationKeys: record?.localizationKeys ?? [],
         scmdbClass: record?.ref ? scmdbClassByRef.get(record.ref.toLowerCase()) : undefined,
       });
     }
@@ -322,25 +324,23 @@ function getComponentManufacturer(row: Record<string, string>): string {
 
 function getComponentTitleKeySources(
   row: Record<string, string>,
-  recordLocalizationKeys: string[],
+  recordLocalizationKeys: DataCoreLocalizationReference[],
 ): ComponentTitleKey[] {
   const keys: ComponentTitleKey[] = [];
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   const nameKey = normalizeLocalizationKey(row['Name Key']);
-  for (const key of getKnownTitleKeyAliases(nameKey, entityClass)) {
+  for (const key of getKnownTitleKeyAliases(nameKey, entityClass).filter(isUsableLocalizationKey)) {
     keys.push({ key, source: 'csv-name-key' });
   }
 
-  for (const key of recordLocalizationKeys) {
-    const normalized = normalizeDataCoreRelationshipLocalizationKey(key);
-    if (normalized.startsWith('item_name')) {
-      for (const alias of getKnownTitleKeyAliases(normalized, entityClass)) {
-        keys.push({ key: alias, source: 'graph-localization' });
-      }
+  for (const key of getGraphTitleLocalizationKeys(recordLocalizationKeys)) {
+    for (const alias of getKnownTitleKeyAliases(key, entityClass)) {
+      keys.push({ key: alias, source: 'graph-localization' });
     }
   }
 
-  if (entityClass) {
+  const hasDataCoreTitleKey = keys.some(({ source }) => source === 'graph-localization' || source === 'csv-name-key');
+  if (entityClass && !hasDataCoreTitleKey) {
     keys.push(
       { key: `item_name${entityClass}`, source: 'guessed-alias' },
       { key: `item_name_${entityClass}`, source: 'guessed-alias' },
@@ -350,6 +350,24 @@ function getComponentTitleKeySources(
   }
 
   return keys;
+}
+
+function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizationReference[]): string[] {
+  return uniqueKeys(
+    recordLocalizationKeys
+      .filter(({ attribute }) => isTitleLocalizationAttribute(attribute))
+      .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
+      .filter(isUsableLocalizationKey)
+      .sort((a, b) => a.localeCompare(b)),
+  );
+}
+
+function isTitleLocalizationAttribute(attribute: string): boolean {
+  return ['displayname', 'name'].includes(attribute.trim().toLowerCase());
+}
+
+function isUsableLocalizationKey(key: string): boolean {
+  return key !== '' && !PLACEHOLDER_LOCALIZATION_KEYS.has(key);
 }
 
 function getKnownTitleKeyAliases(key: string, entityClass: string): string[] {

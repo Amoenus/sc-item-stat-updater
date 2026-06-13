@@ -30,10 +30,18 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       'utf8',
     );
     await fs.writeFile(
+      path.join(datacoreDir, 'shield.datacore.csv'),
+      [
+        'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
+        'SHLD_TEST,,item_desc_shield,ACME,1,A,Industrial,100',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
       path.join(datacoreDir, 'record-graph.json'),
       `${JSON.stringify({
         source: 'datacore-record-graph',
-        recordCount: 2,
+        recordCount: 3,
         records: [
           {
             path: 'items/power.xml',
@@ -53,18 +61,29 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
             localizationKeys: [],
             referencedGuids: [],
           },
+          {
+            path: 'items/shield.xml',
+            ref: 'shield-ref',
+            rootTag: 'EntityClassDefinition.SHLD_TEST_SCItem',
+            rootType: 'EntityClassDefinition',
+            entityClass: 'SHLD_TEST_SCItem',
+            localizationKeys: [],
+            referencedGuids: [],
+          },
         ],
         indexes: {
           byRef: {
             'power-ref': 'items/power.xml',
             'cooler-ref': 'items/cooler.xml',
+            'shield-ref': 'items/shield.xml',
           },
           byPath: {
             'items/power.xml': 0,
             'items/cooler.xml': 1,
+            'items/shield.xml': 2,
           },
           byRootType: {
-            EntityClassDefinition: ['items/power.xml', 'items/cooler.xml'],
+            EntityClassDefinition: ['items/power.xml', 'items/cooler.xml', 'items/shield.xml'],
           },
           byEntityClass: {},
           byLocalizationKey: {},
@@ -76,7 +95,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     const iniPath = path.join(tempDir, 'global.ini');
     await fs.writeFile(
       iniPath,
-      ['item_name_graph_power=Graph Power', 'item_name_csv_cool=CSV Cooler', 'item_namecool_test=Guessed Cooler'].join(
+      ['item_name_graph_power=Graph Power', 'item_name_csv_cool=CSV Cooler', 'item_nameshld_test=Guessed Shield'].join(
         '\n',
       ),
       'utf8',
@@ -87,9 +106,9 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       iniPath,
     });
 
-    assert.equal(diagnostics.totalComponents, 2);
+    assert.equal(diagnostics.totalComponents, 3);
     assert.equal(diagnostics.componentsWithGraphTitleKeys, 1);
-    assert.equal(diagnostics.componentsWithoutGraphTitleKeys, 1);
+    assert.equal(diagnostics.componentsWithoutGraphTitleKeys, 2);
     assert.deepEqual(diagnostics.matchedIniKeys, {
       total: 3,
       graphLocalization: 1,
@@ -98,22 +117,23 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     });
     assert.equal(diagnostics.titleKeys.graphLocalization, 1);
     assert.equal(diagnostics.titleKeys.csvNameKey, 2);
-    assert.equal(diagnostics.titleKeys.guessedOnly, 8);
+    assert.equal(diagnostics.titleKeys.guessedOnly, 4);
     assert.deepEqual(
       diagnostics.componentFamilies.map((family) => [family.componentType, family.status]),
       [
         ['cooler', 'no-graph-title-keys'],
         ['powerplant', 'covered'],
+        ['shield', 'no-graph-title-keys'],
       ],
     );
     assert.deepEqual(diagnostics.guessedOnlyMatches, [
-      { key: 'item_namecool_test', entityClass: 'cool_test', componentType: 'cooler' },
+      { key: 'item_nameshld_test', entityClass: 'shld_test', componentType: 'shield' },
     ]);
 
     const formatted = formatDataCoreRelationshipCoverageDiagnostics(diagnostics);
     assert.match(formatted, /DataCore relationship coverage audit/);
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
-    assert.match(formatted, /item_namecool_test \(cooler, cool_test\)/);
+    assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);
     assert.match(formatted, /Summary: \d+ relationship coverage warnings\./);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

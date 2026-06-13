@@ -105,9 +105,10 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     xmlPath,
     `
       <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
+        <GraphLocalization Name="@item_NameSHLD_Graph" Description="@item_DescSHLD_Graph" />
         <SAttachableComponentParams>
           <AttachDef Size="2" Grade="b" SubType="CIVILIAN" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
-            <Localization Name="@item_NameSHLD_Test" ShortName="@LOC_EMPTY" Description="@item_DescSHLD_Test" />
+            <Localization Name="@LOC_EMPTY" ShortName="@LOC_EMPTY" Description="@LOC_EMPTY" />
           </AttachDef>
         </SAttachableComponentParams>
         <SHealthComponentParams Health="500" />
@@ -146,7 +147,7 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Power,Efficiency\r?\n/,
   );
-  assert.match(csv, /shld_test,item_NameSHLD_Test,,item_DescSHLD_Test,AEGS,2,B,Civilian,500,42,87.5%/);
+  assert.match(csv, /shld_test,item_NameSHLD_Graph,,item_DescSHLD_Graph,AEGS,2,B,Civilian,500,42,87.5%/);
 });
 
 test('runDatacoreScrape discovers selector-matched item records outside legacy path filters', async () => {
