@@ -252,6 +252,8 @@ function toComponentFact(
   const entityClass = normalizeDataCoreEntityClass(row.row['Entity Class']);
   const manufacturerCode = getComponentManufacturer(row.row);
   const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys);
+  const graphDescriptionKey = getGraphDescriptionLocalizationKey(row.recordLocalizationKeys);
+  const csvDescriptionKey = normalizeLocalizationKey(row.row['Description Key']);
 
   return {
     source: 'datacore',
@@ -259,7 +261,7 @@ function toComponentFact(
     ref: row.recordRef,
     recordPath: row.recordPath,
     nameKey: normalizeLocalizationKey(row.row['Name Key']),
-    descriptionKey: normalizeLocalizationKey(row.row['Description Key']),
+    descriptionKey: graphDescriptionKey || (isUsableLocalizationKey(csvDescriptionKey) ? csvDescriptionKey : ''),
     manufacturerCode,
     componentType: row.componentType,
     size: normalizeSpaces(row.row.Size),
@@ -367,8 +369,21 @@ function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizat
   );
 }
 
+function getGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): string {
+  return (
+    recordLocalizationKeys
+      .filter(({ attribute }) => isDescriptionLocalizationAttribute(attribute))
+      .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
+      .find(isUsableLocalizationKey) ?? ''
+  );
+}
+
 function isTitleLocalizationAttribute(attribute: string): boolean {
   return ['displayname', 'name'].includes(attribute.trim().toLowerCase());
+}
+
+function isDescriptionLocalizationAttribute(attribute: string): boolean {
+  return ['description', 'displaydescription'].includes(attribute.trim().toLowerCase());
 }
 
 function isUsableLocalizationKey(key: string): boolean {

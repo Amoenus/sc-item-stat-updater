@@ -26,7 +26,7 @@ async function makeTempDataCoreWorkspace() {
     path.join(datacoreDir, 'quantumdrive.datacore.csv'),
     [
       'Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
-      'qdrv_wetk_s02_xl1,item_nameQDRV_WETK_S02_XL1_SCItem,,item_descQDRV_WETK_S02_XL1_SCItem,WETK,2,1,UNDEFINED,840',
+      'qdrv_wetk_s02_xl1,item_nameQDRV_WETK_S02_XL1_SCItem,,item_descQDRV_WETK_S02_XL1_Stale_SCItem,WETK,2,1,UNDEFINED,840',
     ].join('\n'),
     'utf8',
   );
@@ -34,7 +34,7 @@ async function makeTempDataCoreWorkspace() {
     path.join(datacoreDir, 'weapongun.datacore.csv'),
     [
       'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class',
-      'mgun_test,item_Name_MGun,,BEHR,1,A,Military',
+      'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,BEHR,1,A,Military',
     ].join('\n'),
     'utf8',
   );
@@ -89,6 +89,8 @@ async function makeTempDataCoreWorkspace() {
             entityClass: 'QDRV_WETK_S02_XL1_SCItem',
             localizationKeys: [
               { attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' },
+              { attribute: 'Description', key: 'LOC_PLACEHOLDER' },
+              { attribute: 'displayDescription', key: 'item_descQDRV_WETK_S02_XL1_SCItem' },
               { attribute: 'displayName', key: 'item_name_QDRV_WETK_S02_XL1_Display' },
             ],
             referencedGuids: [],
@@ -165,8 +167,10 @@ describe('DataCore component facts', () => {
       assert.equal(bolide?.componentClassSource, 'datacore-hauling');
       assert.equal(gun?.componentClass, 'Military');
       assert.equal(gun?.componentClassSource, 'datacore-attachdef');
+      assert.equal(gun?.descriptionKey, '');
       assert.equal(xl1?.componentClass, 'Military');
       assert.equal(xl1?.componentClassSource, 'scmdb-bridge');
+      assert.equal(xl1?.descriptionKey, 'item_descqdrv_wetk_s02_xl1_scitem');
       assert.deepEqual(xl1?.titleKeys, [
         'item_nameqdrv_wetk_s02_xl1',
         'item_name_qdrv_wetk_s02_xl1',
