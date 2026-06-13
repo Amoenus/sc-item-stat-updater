@@ -50,3 +50,18 @@ test('turrets derive description keys only when DataCore lacks direct descriptio
     ['item_DescTURR_AEGS_S04'],
   );
 });
+
+test('turrets ignore placeholder direct keys before short-name and fallback aliases', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'turr_aegs_s4',
+        'Name Key': 'item_NameTURR_AEGS_S04',
+        'Description Key': 'LOC_PLACEHOLDER',
+        'Short Name Key': 'LOC_PLACEHOLDER',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescTURR_AEGS_S04'],
+  );
+});

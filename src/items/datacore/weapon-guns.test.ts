@@ -61,3 +61,17 @@ test('weapon-guns derives variant description keys only when DataCore lacks a de
     ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
   );
 });
+
+test('weapon-guns ignores placeholder DataCore description keys before fallback', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'apar_ballisticscattergun_s1_shark',
+        'Name Key': 'item_NameAPAR_BallisticScatterGun_S1_Shark',
+        'Description Key': 'LOC_PLACEHOLDER',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
+  );
+});
