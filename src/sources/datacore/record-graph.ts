@@ -30,6 +30,7 @@ const LOCALIZATION_ATTRIBUTES = [
   'vehicleDescription',
   'vehicleCareer',
   'vehicleRole',
+  'depositName',
 ] as const;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

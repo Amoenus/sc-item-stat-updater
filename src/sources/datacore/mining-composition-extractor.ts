@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup } from './types';
+import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_COMPOSITION_PATH_PREFIX = 'libs/foundry/records/mining/rockcompositionpresets';
@@ -39,7 +39,7 @@ export async function extractDataCoreMiningCompositions(
         ref: record.ref,
         path: record.path,
         compositionClass: record.entityClass,
-        depositNameKey: normalizeLocalizationKey(root.attr('depositName') ?? ''),
+        depositNameKey: graphLocalizationKey(record, ['depositName'], root.attr('depositName') ?? ''),
         minimumDistinctElements: root.attr('minimumDistinctElements') ?? '',
         partIndex: String(index),
         mineableElementGuid,
@@ -57,8 +57,23 @@ export async function extractDataCoreMiningCompositions(
   return rows;
 }
 
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  if (isUsableLocalizationKey(key)) return key ?? '';
+  return normalizeLocalizationKey(fallback);
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = normalizeLocalizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
 function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }
 

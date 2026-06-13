@@ -16,7 +16,7 @@ test('extractDataCoreMiningCompositions flattens composition parts and resolves 
     xmlCacheDir,
     compositionPath,
     `
-      <MineableComposition.Asteroid_CType_Aluminium depositName="@hud_mining_asteroid_name_5" minimumDistinctElements="2" __type="MineableComposition" __ref="3a6e7bb4-0f23-4c46-b822-333afe9d63ab" __path="${compositionPath}">
+      <MineableComposition.Asteroid_CType_Aluminium depositName="@hud_mining_asteroid_name_stale" minimumDistinctElements="2" __type="MineableComposition" __ref="3a6e7bb4-0f23-4c46-b822-333afe9d63ab" __path="${compositionPath}">
         <compositionArray>
           <MineableCompositionPart mineableElement="3776294d-5689-41f2-b03d-e8fcd17ede6a" minPercentage="30" maxPercentage="70" probability="1" curveExponent="1" qualityScale="1" />
           <MineableCompositionPart mineableElement="missing-guid" minPercentage="20" maxPercentage="50" probability="0.1" curveExponent="2" qualityScale="0.8" />
@@ -69,7 +69,7 @@ function makeGraph(): DataCoreRecordGraph {
         rootTag: 'MineableComposition.Asteroid_CType_Aluminium',
         rootType: 'MineableComposition',
         entityClass: 'Asteroid_CType_Aluminium',
-        localizationKeys: [],
+        localizationKeys: [{ attribute: 'depositName', key: 'hud_mining_asteroid_name_5' }],
         referencedGuids: [],
       },
       {
