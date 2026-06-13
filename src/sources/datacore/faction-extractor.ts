@@ -48,7 +48,7 @@ export async function extractDataCoreFactions(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const factionReputationGuid = root.attr('factionReputationRef') ?? '';
+    const factionReputationGuid = graphGuidReference(record, ['factionReputationRef'], root.attr('factionReputationRef') ?? '');
     const reputation = factionReputationGuid
       ? await readFactionReputation(options, options.graph.getByRef(factionReputationGuid))
       : emptyFactionReputation();
@@ -144,6 +144,14 @@ function referenceValues($: ReturnType<typeof loadXml>, selector: string): strin
     .map((element) => $(element).attr('value') ?? '')
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

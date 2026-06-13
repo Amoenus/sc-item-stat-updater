@@ -14,7 +14,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
   await fs.writeFile(
     path.join(xmlCacheDir, templatePath),
     `
-      <ContractTemplate.TestTemplate owner="owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+      <ContractTemplate.TestTemplate owner="stale-owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
         <contractClass>
           <ContractClass_Contract>
             <additionalParams hasCompleteButton="1" handlesAbandonRequest="0" canBeShared="1" displayAlliedMarkers="1" onlyOwnerCanComplete="0" />
@@ -24,7 +24,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
           </ContractClass_Contract>
         </contractClass>
         <contractDisplayInfo>
-          <ContractDisplayInfo type="type-guid" illegal="0" showLifeTimeInMobiGlas="1" preShowObjectives="0" />
+          <ContractDisplayInfo type="stale-type-guid" illegal="0" showLifeTimeInMobiGlas="1" preShowObjectives="0" />
         </contractDisplayInfo>
         <contractProperties>
           <MissionProperty missionVariableName="MissionLocation_BP">
@@ -124,7 +124,11 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         rootType: 'ContractTemplate',
         entityClass: 'TestTemplate',
         localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids: ['owner-guid', 'type-guid'],
+        referencedGuidAttributes: [
+          { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'type', value: 'type-guid' },
+        ],
       },
       record('owner-guid', 'OwnerFaction'),
       record('type-guid', 'Bounty'),

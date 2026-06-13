@@ -37,14 +37,14 @@ export async function extractDataCoreContractTemplates(
         return null;
       }
 
-      const ownerGuid = root.attr('owner') ?? '';
+      const ownerGuid = graphGuidReference(record, ['owner'], root.attr('owner') ?? '');
       const contractClass = root.find('> contractClass > *').first();
       const contractClassType = contractClass[0]?.type === 'tag' ? contractClass[0].name : '';
       const additionalParams = contractClass.find('> additionalParams').first();
       const autoFinishSettings = contractClass.find('> autoFinishSettings').first();
       const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
       const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
-      const displayTypeGuid = contractDisplayInfo.attr('type') ?? '';
+      const displayTypeGuid = graphGuidReference(record, ['type'], contractDisplayInfo.attr('type') ?? '');
       const locationTagGuids = uniqueStrings(
         root
           .find('MissionPropertyValue_Location Reference[value]')
@@ -139,6 +139,14 @@ function readLocalizationAttrs($: ReturnType<typeof loadXml>, elements: Element[
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function uniqueStrings(values: string[]): string[] {
