@@ -2170,7 +2170,9 @@ async function scrapeDataCoreType(
         'Entity Class': entityClass,
         'Name Key':
           getDataCoreGraphLocalizationKey(record, 'name') || localizationKey(attachLocalization.attr('Name') ?? ''),
-        'Short Name Key': localizationKey(attachLocalization.attr('ShortName') ?? ''),
+        'Short Name Key':
+          getDataCoreGraphLocalizationKey(record, 'shortName') ||
+          localizationKey(attachLocalization.attr('ShortName') ?? ''),
         'Description Key':
           getDataCoreGraphLocalizationKey(record, 'description') ||
           localizationKey(attachLocalization.attr('Description') ?? ''),
@@ -2283,11 +2285,13 @@ function getDataCoreRecordForEntityClass(entityClass: string, relationships: Dat
 
 function getDataCoreGraphLocalizationKey(
   record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
-  role: 'name' | 'description',
+  role: 'name' | 'shortName' | 'description',
 ): string {
   const references = record?.localizationKeys ?? [];
-  const attributePattern = role === 'name' ? /^(?:display)?name$/i : /^(?:display)?description$/i;
-  const keyPattern = role === 'name' ? /(?:^|_)name/i : /(?:^|_)desc(?:ription)?/i;
+  const attributePattern =
+    role === 'name' ? /^(?:display)?name$/i : role === 'shortName' ? /^shortname$/i : /^(?:display)?description$/i;
+  const keyPattern =
+    role === 'name' ? /(?:^|_)name/i : role === 'shortName' ? /(?:^|_)short/i : /(?:^|_)desc(?:ription)?/i;
 
   return (
     references.find((reference) => attributePattern.test(reference.attribute) && isUsableLocalizationKey(reference.key))

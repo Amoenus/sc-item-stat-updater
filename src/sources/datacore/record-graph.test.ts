@@ -21,7 +21,7 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
           Manufacturer="33333333-3333-4333-8333-333333333333"
         />
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
-        <SCItemPurchasableParams displayType="@items_commodities_type_alloy" />
+        <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" />
         <Fallback Name="Raw entity name is not a localization reference" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
@@ -62,6 +62,9 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_type_alloy, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_atlasium_short, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);

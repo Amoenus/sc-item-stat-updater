@@ -15,6 +15,7 @@ import { collectDataCoreXmlFiles } from './xml-files';
 
 const LOCALIZATION_ATTRIBUTES = [
   'Name',
+  'ShortName',
   'Description',
   'name',
   'description',
