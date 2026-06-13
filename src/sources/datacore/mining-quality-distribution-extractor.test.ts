@@ -36,7 +36,7 @@ test('extractDataCoreMiningQualityDistributions extracts mining default and loca
         <locationOverride>
           <CraftingQualityLocationOverride>
             <locationOverrideList>
-              <CraftingQualityLocationOverrideEntry location="286cb603-b4ae-4279-80a1-d4505fee1916">
+              <CraftingQualityLocationOverrideEntry location="99999999-9999-9999-9999-999999999998">
                 <qualityDistribution>
                   <CraftingQualityDistributionNormal min="501" max="1000" mean="104" stddev="214" />
                 </qualityDistribution>
@@ -114,6 +114,7 @@ function makeGraph(): DataCoreRecordGraph {
       '6b3f9232-d6f7-4ce9-8c30-f21aab55f073',
       'CraftingQualityLocationOverrideRecord',
       'CommonShipMineable_QualityOverride_Pyro',
+      [{ attribute: 'location', value: '286cb603-b4ae-4279-80a1-d4505fee1916' }],
     ),
     node(
       gatherablePath,
@@ -143,7 +144,13 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(pathValue: string, ref: string, rootType: string, entityClass: string): DataCoreRecordNode {
+function node(
+  pathValue: string,
+  ref: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordNode['referencedGuidAttributes']> = [],
+): DataCoreRecordNode {
   return {
     path: pathValue,
     ref,
@@ -151,6 +158,7 @@ function node(pathValue: string, ref: string, rootType: string, entityClass: str
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }

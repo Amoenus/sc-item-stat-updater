@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningQualityDistributionRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -43,7 +44,9 @@ export async function extractDataCoreMiningQualityDistributions(
       const distribution = entry.find('> qualityDistribution > CraftingQualityDistributionNormal').first();
       if (!distribution.length) return;
 
-      const locationGuid = entry.attr('location') ?? '';
+      const locationGuid = entry.attr('location')
+        ? graphGuidReference(record, ['location'], entry.attr('location') ?? '')
+        : '';
       const location = locationGuid ? options.graph.getByRef(locationGuid) : undefined;
       rows.push(
         rowFromDistribution(
@@ -89,4 +92,8 @@ function mineableFamily(recordPath: string): string {
   const parts = recordPath.split('/');
   const index = parts.indexOf('qualitydistribution');
   return index === -1 ? '' : (parts[index + 1] ?? '');
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
