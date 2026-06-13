@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import { createDataCoreRelationshipIndex } from './relationship-index';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreCraftingBlueprintRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -82,16 +82,6 @@ function targetNameLocalizationKey(record: DataCoreRecordNode): string {
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
-}
-
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => usableLocalizationKey(reference.key))
-      .find((key) => key !== '') ?? ''
-  );
 }
 
 function fallbackNameKey(record: DataCoreRecordNode): string {

@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { graphGuidReferences } from './record-graph-relations';
-import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
+import { graphGuidReferences, graphLocalizationKey } from './record-graph-relations';
+import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup } from './types';
 import { loadXml } from './xml-parser';
 
 export interface ExtractDataCoreMaterialLocalizationsOptions {
@@ -64,16 +64,6 @@ export async function extractDataCoreMaterialLocalizations(
 
   options.onProgress?.(records.length, records.length);
   return rows;
-}
-
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => normalizeLocalizationKey(reference.key))
-      .find((key) => key !== '') ?? ''
-  );
 }
 
 function xmlResourceGuids($: ReturnType<typeof loadXml>): string[] {

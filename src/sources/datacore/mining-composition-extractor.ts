@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -42,7 +42,7 @@ export async function extractDataCoreMiningCompositions(
         ref: record.ref,
         path: record.path,
         compositionClass: record.entityClass,
-        depositNameKey: graphLocalizationKey(record, ['depositName'], root.attr('depositName') ?? ''),
+        depositNameKey: graphLocalizationKeyWithFallback(record, ['depositName'], root.attr('depositName') ?? ''),
         minimumDistinctElements: root.attr('minimumDistinctElements') ?? '',
         partIndex: String(index),
         mineableElementGuid,
@@ -60,14 +60,8 @@ export async function extractDataCoreMiningCompositions(
   return rows;
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => normalizeLocalizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? normalizeLocalizationKey(fallback)
-  );
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(fallback);
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
