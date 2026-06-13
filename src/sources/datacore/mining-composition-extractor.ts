@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -32,7 +33,9 @@ export async function extractDataCoreMiningCompositions(
 
     $('MineableCompositionPart').each((index, element) => {
       const part = $(element);
-      const mineableElementGuid = part.attr('mineableElement') ?? '';
+      const mineableElementGuid = part.attr('mineableElement')
+        ? graphGuidReference(record, ['mineableElement'], part.attr('mineableElement') ?? '')
+        : '';
       const mineableElement = mineableElementGuid ? options.graph.getByRef(mineableElementGuid) : undefined;
 
       rows.push({
@@ -65,6 +68,10 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], 
       .map((reference) => normalizeLocalizationKey(reference.key))
       .find((candidate) => candidate !== '') ?? normalizeLocalizationKey(fallback)
   );
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function normalizeLocalizationKey(value: string): string {
