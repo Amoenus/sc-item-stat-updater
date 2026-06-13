@@ -60,7 +60,7 @@ test('extractDataCoreMiningSubHarvestableConfigs extracts mining slots from dire
             </TaggedSubHarvestableConfig>
             <TaggedSubHarvestableConfig name="Mineables">
               <subConfig>
-                <SubHarvestableConfigSingleRef subConfigRef="1a3fdfbe-bd2e-4db1-b175-060c11db30fc" />
+                <SubHarvestableConfigSingleRef subConfigRef="99999999-9999-9999-9999-999999999999" />
               </subConfig>
             </TaggedSubHarvestableConfig>
           </taggedConfigs>
@@ -72,7 +72,7 @@ test('extractDataCoreMiningSubHarvestableConfigs extracts mining slots from dire
     xmlCacheDir,
     harvestablePresetPath,
     `
-      <HarvestablePreset.FPSMining_Aphorite entityClass="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" __type="HarvestablePreset" __ref="b4dbb414-4946-437a-870b-0df49007603b" __path="${harvestablePresetPath}" />
+      <HarvestablePreset.FPSMining_Aphorite entityClass="99999999-9999-9999-9999-999999999999" __type="HarvestablePreset" __ref="b4dbb414-4946-437a-870b-0df49007603b" __path="${harvestablePresetPath}" />
     `,
   );
 
@@ -132,8 +132,15 @@ function makeGraph(): DataCoreRecordGraph {
       '22222222-2222-2222-2222-222222222222',
       'SubHarvestableMultiConfigRecord',
       'Cave_Prison_Harvestables',
+      [{ attribute: 'subConfigRef', value: '1a3fdfbe-bd2e-4db1-b175-060c11db30fc' }],
     ),
-    node(harvestablePresetPath, 'b4dbb414-4946-437a-870b-0df49007603b', 'HarvestablePreset', 'FPSMining_Aphorite'),
+    node(
+      harvestablePresetPath,
+      'b4dbb414-4946-437a-870b-0df49007603b',
+      'HarvestablePreset',
+      'FPSMining_Aphorite',
+      [{ attribute: 'entityClass', value: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }],
+    ),
     node(
       mineableEntityPath,
       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
@@ -162,7 +169,13 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(pathValue: string, ref: string, rootType: string, entityClass: string): DataCoreRecordNode {
+function node(
+  pathValue: string,
+  ref: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordNode['referencedGuidAttributes']> = [],
+): DataCoreRecordNode {
   return {
     path: pathValue,
     ref,
@@ -170,6 +183,7 @@ function node(pathValue: string, ref: string, rootType: string, entityClass: str
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }

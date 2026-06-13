@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningSubHarvestableConfigRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -83,8 +84,10 @@ async function readConfigRecord(
       );
     }
 
-    const refConfigGuid =
-      taggedConfig.find('> subConfig > SubHarvestableConfigSingleRef').first().attr('subConfigRef') ?? '';
+    const refConfig = taggedConfig.find('> subConfig > SubHarvestableConfigSingleRef').first();
+    const refConfigGuid = refConfig.length
+      ? graphGuidReference(record, ['subConfigRef'], refConfig.attr('subConfigRef') ?? '')
+      : '';
     if (refConfigGuid) {
       const referencedConfig = options.graph.getByRef(refConfigGuid);
       if (!referencedConfig) return;
@@ -261,7 +264,7 @@ async function loadHarvestable(
   const xmlPath = resolveChildPath(options.xmlCacheDir, harvestable.path, 'DataCore harvestable preset XML path');
   const xml = await fs.readFile(xmlPath, 'utf8');
   const $ = loadXml(xml);
-  const entityGuid = $(':root').first().attr('entityClass') ?? '';
+  const entityGuid = graphGuidReference(harvestable, ['entityClass'], $(':root').first().attr('entityClass') ?? '');
   const entity = entityGuid ? options.graph.getByRef(entityGuid) : undefined;
 
   return {
@@ -284,6 +287,10 @@ function isMiningSlot(record: DataCoreRecordNode, taggedConfigName: string, harv
   }
 
   return /mineable|mining/i.test(record.entityClass) || /mineable|mining/i.test(taggedConfigName);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function emptyHarvestable(): ResolvedHarvestable {
