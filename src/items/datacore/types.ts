@@ -230,5 +230,5 @@ export function makeAlternateDataCoreDescKeys(
 
 function usableLocalizationKey(value: string | undefined): string {
   const trimmed = value?.trim() ?? '';
-  return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';
+  return trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed) ? trimmed : '';
 }
