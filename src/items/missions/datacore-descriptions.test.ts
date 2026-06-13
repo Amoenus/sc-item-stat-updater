@@ -223,6 +223,28 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       await fs.rm(dir, { recursive: true, force: true });
     }
   });
+
+  it('prefers explicit standing keys before graph key fallback when graph lacks a name attribute', async () => {
+    const { dir, datacoreDir } = await makeWorkspace();
+    try {
+      const graphPath = path.join(datacoreDir, 'record-graph.json');
+      const graph = JSON.parse(await fs.readFile(graphPath, 'utf8')) as {
+        records: Array<{ ref: string; localizationKeys: Array<{ attribute: string; key: string }> }>;
+      };
+      const standingRecord = graph.records.find((record) => record.ref === 'standing-rank-4');
+      assert.ok(standingRecord);
+      standingRecord.localizationKeys = [{ attribute: 'description', key: 'RepScope_Contractor_Rank4' }];
+      await fs.writeFile(graphPath, JSON.stringify(graph), 'utf8');
+
+      const rows = await loadDatacoreDescriptionsSourceData({ sourceDirs: { datacore: datacoreDir } } as never);
+      const row = rows.find((candidate) => candidate['Localization Key'] === 'test_desc');
+
+      assert.match(row?.RewardList ?? '', /Awarded from Sr\. Contractor level variants/);
+      assert.doesNotMatch(row?.RewardList ?? '', /Veteran Contractor level variants/);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 function missionDescriptionValue(row: Record<string, string>, oldValue: string): string {

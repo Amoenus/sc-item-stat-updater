@@ -523,15 +523,25 @@ async function resolveContractStandingLabel(
   const explicitKey = row['Min Standing Name Key'] || row['MinStandingNameKey'];
   const explicitGuid = row['Min Standing GUID'] || row['MinStandingGuid'];
   const standingGuid = explicitGuid || (await readContractMinStandingGuid(row, xmlCacheDir));
+  const standingRecord = standingGuid ? recordGraph?.getByRef(standingGuid) : undefined;
+
+  if (standingRecord) {
+    const standingKey = graphNameLocalizationKey(standingRecord);
+    if (standingKey) {
+      const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
+      cache.set(cacheKey, label);
+      return label;
+    }
+  }
+
+  if (explicitKey) {
+    const label = resolveLocalizedValue(explicitKey, localizationValues) || explicitKey;
+    cache.set(cacheKey, label);
+    return label;
+  }
 
   if (standingGuid) {
-    const standingRecord = recordGraph?.getByRef(standingGuid);
-    const standingKey =
-      standingRecord?.localizationKeys.find(
-        (l) => /displayname|name/i.test(l.attribute) && isUsableGraphLocalizationKey(l.key),
-      )?.key ??
-      standingRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
-      '';
+    const standingKey = standingRecord ? fallbackNameLocalizationKey(standingRecord) : '';
     if (standingKey) {
       const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
       cache.set(cacheKey, label);
@@ -543,12 +553,6 @@ async function resolveContractStandingLabel(
       cache.set(cacheKey, inferredLabel);
       return inferredLabel;
     }
-  }
-
-  if (explicitKey) {
-    const label = resolveLocalizedValue(explicitKey, localizationValues) || explicitKey;
-    cache.set(cacheKey, label);
-    return label;
   }
 
   cache.set(cacheKey, '');
