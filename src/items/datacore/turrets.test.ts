@@ -65,3 +65,18 @@ test('turrets ignore placeholder direct keys before short-name and fallback alia
     ['item_DescTURR_AEGS_S04'],
   );
 });
+
+test('turrets ignore uninitialized direct keys before fallback aliases', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'turr_aegs_s4',
+        'Name Key': 'item_NameTURR_AEGS_S04',
+        'Description Key': 'LOC_UNINITIALIZED',
+        'Short Name Key': 'LOC_UNINITIALIZED',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescTURR_AEGS_S04'],
+  );
+});

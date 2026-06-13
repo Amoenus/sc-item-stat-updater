@@ -179,12 +179,12 @@ export function getRawDataCoreTargetKeys(
   const descriptionKey = getExplicitDataCoreDescriptionKey(row);
   if (descriptionKey) return [descriptionKey];
 
-  const nameKey = usableLocalizationKey(row['Name Key']);
+  const nameKey = usableDataCoreLocalizationKey(row['Name Key']);
   return nameKey ? [deriveDescKey(nameKey)] : [];
 }
 
 export function getExplicitDataCoreDescriptionKey(row: Record<string, string>): string {
-  return usableLocalizationKey(row['Description Key']);
+  return usableDataCoreLocalizationKey(row['Description Key']);
 }
 
 export function addAlternateDescKeysWhenDataCoreLacksDescription(
@@ -228,7 +228,7 @@ export function makeAlternateDataCoreDescKeys(
   };
 }
 
-function usableLocalizationKey(value: string | undefined): string {
+export function usableDataCoreLocalizationKey(value: string | undefined): string {
   const trimmed = value?.trim() ?? '';
   return trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed) ? trimmed : '';
 }

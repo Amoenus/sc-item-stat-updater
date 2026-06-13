@@ -1,7 +1,7 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys, usableDataCoreLocalizationKey } from './types';
 
 const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
 const fireActionSelector =
@@ -28,18 +28,13 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
-function usableKey(value: string | undefined): string {
-  const trimmed = value?.trim() ?? '';
-  return trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed) ? trimmed : '';
-}
-
 export default {
   csvFile: 'weapongun.datacore.csv',
   label: 'DC Weapon Guns',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Alpha', 'Rate of Fire', 'Health'],
   descKeyMatch: isWeaponDescKey,
   getTargetKeys(row, deriveDescKey) {
-    const descriptionKey = usableKey(row['Description Key']);
+    const descriptionKey = usableDataCoreLocalizationKey(row['Description Key']);
 
     if (descriptionKey) {
       return [/^item_Name/i.test(descriptionKey) ? deriveDescKey(descriptionKey) : descriptionKey];

@@ -1,6 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys, usableDataCoreLocalizationKey } from './types';
 
 const yawAxisSelector = 'SCItemTurretParams yawAxis SCItemTurretJointMovementAxisParams';
 const pitchAxisSelector = 'SCItemTurretParams pitchAxis SCItemTurretJointMovementAxisParams';
@@ -21,21 +21,16 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   },
 };
 
-function usableKey(value: string | undefined): string {
-  const trimmed = value?.trim() ?? '';
-  return trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed) ? trimmed : '';
-}
-
 export default {
   csvFile: 'turret.datacore.csv',
   label: 'DC Turrets',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('turret'),
   getTargetKeys(row, deriveDescKey) {
-    const descriptionKey = usableKey(row['Description Key']);
+    const descriptionKey = usableDataCoreLocalizationKey(row['Description Key']);
     if (descriptionKey) return [descriptionKey];
 
-    const shortNameKey = usableKey(row['Short Name Key']);
+    const shortNameKey = usableDataCoreLocalizationKey(row['Short Name Key']);
     if (/^item_Desc/i.test(shortNameKey)) return [shortNameKey];
 
     return fallbackTargetKeys(row, deriveDescKey);
