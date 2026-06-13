@@ -34,7 +34,7 @@ async function makeTempDataCoreWorkspace() {
     path.join(datacoreDir, 'weapongun.datacore.csv'),
     [
       'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class',
-      'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,BEHR,1,A,Military',
+      'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,,1,A,Military',
     ].join('\n'),
     'utf8',
   );
@@ -43,7 +43,7 @@ async function makeTempDataCoreWorkspace() {
     JSON.stringify(
       {
         source: 'datacore-record-graph',
-        recordCount: 6,
+        recordCount: 7,
         records: [
           {
             path: 'hauling/powerplant_s02_competition.xml',
@@ -95,12 +95,36 @@ async function makeTempDataCoreWorkspace() {
             ],
             referencedGuids: [],
           },
+          {
+            path: 'weapongun/mgun_test.xml',
+            ref: 'mgun-ref',
+            rootTag: 'EntityClassDefinition.MGun_Test_SCItem',
+            rootType: 'EntityClassDefinition',
+            entityClass: 'MGun_Test_SCItem',
+            localizationKeys: [],
+            referencedGuids: ['behr-ref'],
+            referencedGuidAttributes: [
+              { attribute: 'Manufacturer', value: '' },
+              { attribute: 'Manufacturer', value: 'behr-ref' },
+            ],
+          },
+          {
+            path: 'manufacturer/behr.xml',
+            ref: 'behr-ref',
+            rootTag: 'SCItemManufacturer.BEHR',
+            rootType: 'SCItemManufacturer',
+            entityClass: 'BEHR',
+            localizationKeys: [{ attribute: 'Name', key: 'manufacturer_NameBEHR' }],
+            referencedGuids: [],
+          },
         ],
         indexes: {
           byRef: {
             'solarflare-ref': 'power/powr_acom_s02_solarflare.xml',
             'bolide-ref': 'power/powr_aegs_s02_bolide.xml',
             'xl1-ref': 'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml',
+            'mgun-ref': 'weapongun/mgun_test.xml',
+            'behr-ref': 'manufacturer/behr.xml',
           },
           byPath: {},
           byRootType: {
@@ -109,7 +133,9 @@ async function makeTempDataCoreWorkspace() {
               'power/powr_acom_s02_solarflare.xml',
               'power/powr_aegs_s02_bolide.xml',
               'quantumdrive/qdrv_wetk_s02_xl1_scitem.xml',
+              'weapongun/mgun_test.xml',
             ],
+            SCItemManufacturer: ['manufacturer/behr.xml'],
           },
           byEntityClass: {},
           byLocalizationKey: {},
@@ -167,6 +193,7 @@ describe('DataCore component facts', () => {
       assert.equal(bolide?.componentClassSource, 'datacore-hauling');
       assert.equal(gun?.componentClass, 'Military');
       assert.equal(gun?.componentClassSource, 'datacore-attachdef');
+      assert.equal(gun?.manufacturerCode, 'BEHR');
       assert.equal(gun?.descriptionKey, '');
       assert.equal(xl1?.componentClass, 'Military');
       assert.equal(xl1?.componentClassSource, 'scmdb-bridge');

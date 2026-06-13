@@ -8,13 +8,14 @@ import {
   normalizeDataCoreEntityClass,
   normalizeSpaces,
 } from './component-class-resolver';
+import { createDataCoreManufacturerResolver, type DataCoreManufacturerResolver } from './manufacturer-resolver';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
   normalizeDataCoreRelationshipLocalizationKey,
 } from './relationship-index';
-import type { DataCoreLocalizationReference } from './types';
+import type { DataCoreLocalizationReference, DataCoreRecordNode } from './types';
 
 const logger = getLogger('datacore-component-facts');
 
@@ -78,6 +79,7 @@ interface ComponentFactRow {
   recordRef: string;
   recordPath: string;
   recordLocalizationKeys: DataCoreLocalizationReference[];
+  recordManufacturerCode: string;
   scmdbClass?: string;
 }
 
@@ -109,6 +111,7 @@ export async function loadDataCoreComponentFacts({
 }: LoadDataCoreComponentFactsOptions): Promise<ComponentFact[]> {
   const graph = await loadOptionalDataCoreRecordGraph(datacoreDir);
   const relationships = createDataCoreRelationshipIndex(graph);
+  const manufacturerResolver = graph ? createDataCoreManufacturerResolver(graph) : undefined;
   const entityClassToHaulingClass = buildDataCoreHaulingComponentClassLookup(relationships);
   const scmdbClassByRef = scmdbDir ? await buildScmdbComponentClassLookup(scmdbDir) : new Map<string, string>();
   const rows: ComponentFactRow[] = [];
@@ -126,6 +129,7 @@ export async function loadDataCoreComponentFacts({
         recordRef: record?.ref ?? '',
         recordPath: record?.path ?? '',
         recordLocalizationKeys: record?.localizationKeys ?? [],
+        recordManufacturerCode: getGraphComponentManufacturerCode(record, manufacturerResolver),
         scmdbClass: record?.ref ? scmdbClassByRef.get(record.ref.toLowerCase()) : undefined,
       });
     }
@@ -227,7 +231,10 @@ function buildManufacturerTypeClassLookup(
     const cls = entityClassToHaulingClass.get(entityClass);
     if (!cls) continue;
 
-    const key = toManufacturerTypeKey(item.componentType, getComponentManufacturer(item.row));
+    const key = toManufacturerTypeKey(
+      item.componentType,
+      getComponentManufacturer(item.row, item.recordManufacturerCode),
+    );
     if (!key) continue;
     const existing = candidates.get(key) ?? new Set<string>();
     existing.add(cls);
@@ -250,7 +257,7 @@ function toComponentFact(
 ): ComponentFact {
   const resolvedClass = getComponentClass(row, entityClassToHaulingClass, manufacturerTypeToClass);
   const entityClass = normalizeDataCoreEntityClass(row.row['Entity Class']);
-  const manufacturerCode = getComponentManufacturer(row.row);
+  const manufacturerCode = getComponentManufacturer(row.row, row.recordManufacturerCode);
   const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys);
   const graphDescriptionKey = getGraphDescriptionLocalizationKey(row.recordLocalizationKeys);
   const csvDescriptionKey = normalizeLocalizationKey(row.row['Description Key']);
@@ -296,7 +303,7 @@ function getComponentClass(
   }
 
   const derivedClass = manufacturerTypeToClass.get(
-    toManufacturerTypeKey(row.componentType, getComponentManufacturer(row.row)),
+    toManufacturerTypeKey(row.componentType, getComponentManufacturer(row.row, row.recordManufacturerCode)),
   );
   if (derivedClass) {
     return { value: derivedClass, source: 'datacore-derived' };
@@ -318,15 +325,39 @@ function toManufacturerTypeKey(componentType: string, manufacturer: unknown): st
   return normalizedManufacturer ? `${componentType}:${normalizedManufacturer}` : '';
 }
 
-function getComponentManufacturer(row: Record<string, string>): string {
+function getComponentManufacturer(row: Record<string, string>, graphManufacturerCode = ''): string {
   const manufacturer = normalizeSpaces(row.Manufacturer);
   if (manufacturer) {
     return manufacturer;
   }
 
+  const graphManufacturer = normalizeSpaces(graphManufacturerCode);
+  if (graphManufacturer) {
+    return graphManufacturer;
+  }
+
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
   const parts = entityClass.split('_');
   return parts.length >= 2 ? parts[1].toUpperCase() : '';
+}
+
+function getGraphComponentManufacturerCode(
+  record: DataCoreRecordNode | undefined,
+  manufacturerResolver: DataCoreManufacturerResolver | undefined,
+): string {
+  if (!record || !manufacturerResolver) return '';
+  const manufacturerGuid = graphGuidReference(record, ['Manufacturer', 'manufacturer']);
+  return manufacturerGuid ? (manufacturerResolver.getByRef(manufacturerGuid)?.code ?? '') : '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes
+      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => reference.value.trim())
+      .find((value) => value !== '') ?? ''
+  );
 }
 
 function getComponentTitleKeySources(
