@@ -96,6 +96,7 @@ import type {
   DataCoreMissionLocalizationRecord,
   DataCoreRecordGraph,
   DataCoreRecordGraphLookup,
+  DataCoreRecordNode,
   DataCoreVehicleRecord,
 } from '../../sources/datacore/types';
 import { extractDataCoreVehicles } from '../../sources/datacore/vehicle-extractor';
@@ -2160,8 +2161,12 @@ async function scrapeDataCoreType(
       const attachDef = extractAttachDef($);
       const health = extractHealth($);
       const attachLocalization = $('SAttachableComponentParams AttachDef > Localization').first();
-      const manufacturer = resolveManufacturerCode(attachDef.manufacturer, options.manufacturerResolver);
       const record = getDataCoreRecordForEntityClass(entityClass, relationships);
+      const manufacturer = resolveComponentManufacturerCode(
+        record,
+        attachDef.manufacturer,
+        options.manufacturerResolver,
+      );
       let componentClass = resolveDataCoreComponentClass(attachDef.subtype, entityClass, entityClassToHaulingClass);
       if (!isDisplayDataCoreComponentClass(componentClass)) {
         componentClass = scmdbComponentClassByRef.get(record?.ref.toLowerCase() ?? '') ?? componentClass;
@@ -2282,6 +2287,27 @@ function getDataCoreRecordForEntityClass(entityClass: string, relationships: Dat
   const normalized = normalizeDataCoreEntityClass(entityClass);
   if (!normalized) return undefined;
   return relationships.getRecordForEntityClass(normalized);
+}
+
+function resolveComponentManufacturerCode(
+  record: DataCoreRecordNode | undefined,
+  fallbackManufacturer: string,
+  resolver: DataCoreManufacturerResolver | undefined,
+): string {
+  const graphManufacturerGuid = record ? graphGuidReference(record, ['Manufacturer', 'manufacturer']) : '';
+  const graphManufacturer =
+    graphManufacturerGuid && resolver ? resolver.getByRef(graphManufacturerGuid)?.code ?? '' : '';
+  return graphManufacturer || resolveManufacturerCode(fallbackManufacturer, resolver);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes
+      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => reference.value.trim())
+      .find((value) => value !== '') ?? ''
+  );
 }
 
 function getDataCoreGraphLocalizationKey(

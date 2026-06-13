@@ -106,8 +106,9 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     `
       <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
         <GraphLocalization Name="@item_NameSHLD_Graph" ShortName="@item_NameSHLD_Graph_short" Description="@item_DescSHLD_Graph" />
+        <GraphRelationships Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />
         <SAttachableComponentParams>
-          <AttachDef Size="2" Grade="b" SubType="CIVILIAN" Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2">
+          <AttachDef Size="2" Grade="b" SubType="CIVILIAN">
             <Localization Name="@LOC_EMPTY" ShortName="@LOC_EMPTY" Description="@LOC_EMPTY" />
           </AttachDef>
         </SAttachableComponentParams>
