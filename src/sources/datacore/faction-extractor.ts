@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreFactionRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -58,8 +58,8 @@ export async function extractDataCoreFactions(
       ref: record.ref,
       path: record.path,
       factionClass: record.entityClass,
-      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
-      descriptionKey: graphLocalizationKey(
+      nameKey: graphLocalizationKeyWithFallback(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['description', 'displayDescription'],
         root.attr('description') ?? '',
@@ -103,7 +103,7 @@ async function readFactionReputation(
 
   return {
     record,
-    displayNameKey: graphLocalizationKey(record, ['displayName', 'name'], root.attr('displayName') ?? ''),
+    displayNameKey: graphLocalizationKeyWithFallback(record, ['displayName', 'name'], root.attr('displayName') ?? ''),
     descriptionKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.description),
     headquartersKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.headquarters),
     foundedKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.founded),
@@ -151,14 +151,8 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
   return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
-  );
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
 }
 
 function localizationKey(value: string): string {

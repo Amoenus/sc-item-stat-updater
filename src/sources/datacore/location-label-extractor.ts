@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -42,15 +42,15 @@ export async function extractDataCoreLocationLabels(
       ref: record.ref,
       path: record.path,
       locationClass: record.entityClass,
-      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
-      descriptionKey: graphLocalizationKey(
+      nameKey: graphLocalizationKeyWithFallback(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['description', 'displayDescription'],
         root.attr('description') ?? '',
       ),
-      callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
-      callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
-      callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
+      callout1Key: graphLocalizationKeyWithFallback(record, ['callout1'], root.attr('callout1') ?? ''),
+      callout2Key: graphLocalizationKeyWithFallback(record, ['callout2'], root.attr('callout2') ?? ''),
+      callout3Key: graphLocalizationKeyWithFallback(record, ['callout3'], root.attr('callout3') ?? ''),
       typeGuid,
       parentGuid,
       parentClass: parent?.entityClass ?? '',
@@ -58,11 +58,11 @@ export async function extractDataCoreLocationLabels(
       affiliationGuid,
       affiliationClass: affiliation?.entityClass ?? '',
       affiliationPath: affiliation?.path ?? '',
-      affiliationNameKey: firstLocalizationKey(affiliation, ['displayName', 'name']),
+      affiliationNameKey: graphLocalizationKeyOrEmpty(affiliation, ['displayName', 'name']),
       jurisdictionGuid,
       jurisdictionClass: jurisdiction?.entityClass ?? '',
       jurisdictionPath: jurisdiction?.path ?? '',
-      jurisdictionNameKey: firstLocalizationKey(jurisdiction, ['name', 'displayName']),
+      jurisdictionNameKey: graphLocalizationKeyOrEmpty(jurisdiction, ['name', 'displayName']),
       respawnLocationType: root.attr('respawnLocationType') ?? '',
       locationHierarchyTag: root.attr('locationHierarchyTag') ?? '',
       navIcon: root.attr('navIcon') ?? '',
@@ -93,19 +93,12 @@ export async function extractDataCoreLocationLabels(
   return rows;
 }
 
-function firstLocalizationKey(record: DataCoreRecordNode | undefined, attributes: string[]): string {
-  if (!record) return '';
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? ''
-  );
+function graphLocalizationKeyOrEmpty(record: DataCoreRecordNode | undefined, attributes: string[]): string {
+  return record ? graphLocalizationKey(record, attributes) : '';
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  return firstLocalizationKey(record, attributes) || localizationKey(fallback);
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

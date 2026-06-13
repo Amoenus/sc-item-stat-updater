@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphGuidReferences, uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences, graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -44,15 +44,15 @@ export async function extractDataCoreMiningLocationLabels(
       path: record.path,
       locationClass: record.entityClass,
       sourceReason: miningSourceReason(record, qualityLocationRefs),
-      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
-      descriptionKey: graphLocalizationKey(
+      nameKey: graphLocalizationKeyWithFallback(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['description', 'displayDescription'],
         root.attr('description') ?? '',
       ),
-      callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
-      callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
-      callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
+      callout1Key: graphLocalizationKeyWithFallback(record, ['callout1'], root.attr('callout1') ?? ''),
+      callout2Key: graphLocalizationKeyWithFallback(record, ['callout2'], root.attr('callout2') ?? ''),
+      callout3Key: graphLocalizationKeyWithFallback(record, ['callout3'], root.attr('callout3') ?? ''),
       typeGuid,
       parentGuid,
       parentClass: parent?.entityClass ?? '',
@@ -116,14 +116,8 @@ function qualityFamily(recordPath: string): string {
   return index === -1 ? '' : (parts[index + 1] ?? '');
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
-  );
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

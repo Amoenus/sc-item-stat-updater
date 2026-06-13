@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMissionBrokerRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -48,15 +48,19 @@ export async function extractDataCoreMissionBrokers(
 
     rows.push({
       missionClass: record.entityClass,
-      titleKey: graphLocalizationKey(record, ['title'], root.attr('title') ?? ''),
-      titleHudKey: graphLocalizationKey(record, ['titleHUD'], root.attr('titleHUD') ?? ''),
-      descriptionKey: graphLocalizationKey(
+      titleKey: graphLocalizationKeyWithFallback(record, ['title'], root.attr('title') ?? ''),
+      titleHudKey: graphLocalizationKeyWithFallback(record, ['titleHUD'], root.attr('titleHUD') ?? ''),
+      descriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['description', 'displayDescription'],
         root.attr('description') ?? '',
       ),
-      missionGiverKey: graphLocalizationKey(record, ['missionGiver'], root.attr('missionGiver') ?? ''),
-      commsChannelNameKey: graphLocalizationKey(record, ['commsChannelName'], root.attr('commsChannelName') ?? ''),
+      missionGiverKey: graphLocalizationKeyWithFallback(record, ['missionGiver'], root.attr('missionGiver') ?? ''),
+      commsChannelNameKey: graphLocalizationKeyWithFallback(
+        record,
+        ['commsChannelName'],
+        root.attr('commsChannelName') ?? '',
+      ),
       missionModule: root.attr('missionModule') ?? '',
       missionTypeGuid,
       missionTypeClass: linkedClass(options.graph.getByRef(missionTypeGuid)),
@@ -120,14 +124,8 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
   return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
-  );
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
 }
 
 function localizationKey(value: string): string {
