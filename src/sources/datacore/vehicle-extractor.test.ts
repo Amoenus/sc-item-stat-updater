@@ -17,7 +17,7 @@ test('extractDataCoreVehicles reads first-party vehicle metadata and resolves ma
       <EntityClassDefinition.AEGS_Avenger_Titan __type="EntityClassDefinition" __ref="11111111-1111-1111-1111-111111111111" __path="${vehiclePath}">
         <Components>
           <VehicleComponentParams
-            manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2"
+            manufacturer="stale-manufacturer-guid"
             movementClass="Spaceship"
             vehicleDefinition="scripts/entities/vehicles/implementations/xml/aegs_avenger.xml"
             modification="Titan"
@@ -29,10 +29,10 @@ test('extractDataCoreVehicles reads first-party vehicle metadata and resolves ma
             vehicleName="@vehicle_NameAEGS_Avenger_Titan_Stale"
             vehicleDescription="@vehicle_DescAEGS_Avenger_Titan_Stale"
             vehicleCareer="@vehicle_focus_transporter_stale"
-            vehicleCareerRef="d86d770d-1fc4-4525-b3b0-4f670a8a5634"
+            vehicleCareerRef="stale-career-guid"
             vehicleRole="@vehicle_class_lightfreight_stale"
-            vehicleRoleRef="ff99d78e-3a6a-4e4d-8b1c-59e87a005c11"
-            inventoryContainerParams="a623a5e1-27db-4e93-af6b-e54912b78e32" />
+            vehicleRoleRef="stale-role-guid"
+            inventoryContainerParams="stale-inventory-container-guid" />
         </Components>
       </EntityClassDefinition.AEGS_Avenger_Titan>
     `,
@@ -89,7 +89,18 @@ function makeGraph(vehiclePath: string): DataCoreRecordGraph {
           { attribute: 'vehicleCareer', key: 'vehicle_focus_transporter' },
           { attribute: 'vehicleRole', key: 'vehicle_class_lightfreight' },
         ],
-        referencedGuids: ['cf4a74bf-eb2c-462a-9b78-f7f2724c31d2'],
+        referencedGuids: [
+          'a623a5e1-27db-4e93-af6b-e54912b78e32',
+          'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2',
+          'd86d770d-1fc4-4525-b3b0-4f670a8a5634',
+          'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11',
+        ],
+        referencedGuidAttributes: [
+          { attribute: 'inventoryContainerParams', value: 'a623a5e1-27db-4e93-af6b-e54912b78e32' },
+          { attribute: 'manufacturer', value: 'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2' },
+          { attribute: 'vehicleCareerRef', value: 'd86d770d-1fc4-4525-b3b0-4f670a8a5634' },
+          { attribute: 'vehicleRoleRef', value: 'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11' },
+        ],
       },
       {
         path: manufacturerPath,
@@ -129,6 +140,9 @@ function makeGraph(vehiclePath: string): DataCoreRecordGraph {
       },
       byReferencedGuid: {
         'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2': [vehiclePath],
+        'd86d770d-1fc4-4525-b3b0-4f670a8a5634': [vehiclePath],
+        'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11': [vehiclePath],
+        'a623a5e1-27db-4e93-af6b-e54912b78e32': [vehiclePath],
       },
     },
   };

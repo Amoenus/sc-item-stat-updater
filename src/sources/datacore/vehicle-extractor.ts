@@ -36,7 +36,7 @@ export async function extractDataCoreVehicles(
     const vehicleParams = $('VehicleComponentParams').first();
     if (!vehicleParams.length) continue;
 
-    const manufacturerGuid = vehicleParams.attr('manufacturer') ?? '';
+    const manufacturerGuid = graphGuidReference(record, ['manufacturer'], vehicleParams.attr('manufacturer') ?? '');
     const manufacturer = manufacturerGuid ? manufacturerResolver.getByRef(manufacturerGuid) : undefined;
 
     rows.push({
@@ -60,19 +60,31 @@ export async function extractDataCoreVehicles(
       vehicleDefinition: vehicleParams.attr('vehicleDefinition') ?? '',
       modification: vehicleParams.attr('modification') ?? '',
       careerKey: graphLocalizationKey(record, ['vehicleCareer'], vehicleParams.attr('vehicleCareer') ?? ''),
-      careerGuid: vehicleParams.attr('vehicleCareerRef') ?? '',
+      careerGuid: graphGuidReference(record, ['vehicleCareerRef'], vehicleParams.attr('vehicleCareerRef') ?? ''),
       roleKey: graphLocalizationKey(record, ['vehicleRole'], vehicleParams.attr('vehicleRole') ?? ''),
-      roleGuid: vehicleParams.attr('vehicleRoleRef') ?? '',
+      roleGuid: graphGuidReference(record, ['vehicleRoleRef'], vehicleParams.attr('vehicleRoleRef') ?? ''),
       crewSize: vehicleParams.attr('crewSize') ?? '',
       hullDamageNormalization: vehicleParams.attr('vehicleHullDamageNormalizationValue') ?? '',
       allowSoftDestruction: vehicleParams.attr('allowSoftDestruction') ?? '',
       dogfightEnabled: vehicleParams.attr('dogfightEnabled') ?? '',
       isGravlevVehicle: vehicleParams.attr('isGravlevVehicle') ?? '',
-      inventoryContainerGuid: vehicleParams.attr('inventoryContainerParams') ?? '',
+      inventoryContainerGuid: graphGuidReference(
+        record,
+        ['inventoryContainerParams'],
+        vehicleParams.attr('inventoryContainerParams') ?? '',
+      ),
     });
   }
 
   return rows;
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
