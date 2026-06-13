@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { createDataCoreManufacturerResolver } from './manufacturer-resolver';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreRecordGraphLookup, DataCoreRecordNode, DataCoreVehicleRecord } from './types';
 import { loadXml } from './xml-parser';
 
@@ -44,12 +44,12 @@ export async function extractDataCoreVehicles(
       ref: record.ref,
       path: record.path,
       entityClass: record.entityClass,
-      vehicleNameKey: graphLocalizationKey(
+      vehicleNameKey: graphLocalizationKeyWithFallback(
         record,
         ['vehicleName', 'name', 'displayName'],
         vehicleParams.attr('vehicleName') ?? '',
       ),
-      vehicleDescriptionKey: graphLocalizationKey(
+      vehicleDescriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['vehicleDescription', 'description', 'displayDescription'],
         vehicleParams.attr('vehicleDescription') ?? '',
@@ -60,9 +60,9 @@ export async function extractDataCoreVehicles(
       movementClass: vehicleParams.attr('movementClass') ?? '',
       vehicleDefinition: vehicleParams.attr('vehicleDefinition') ?? '',
       modification: vehicleParams.attr('modification') ?? '',
-      careerKey: graphLocalizationKey(record, ['vehicleCareer'], vehicleParams.attr('vehicleCareer') ?? ''),
+      careerKey: graphLocalizationKeyWithFallback(record, ['vehicleCareer'], vehicleParams.attr('vehicleCareer') ?? ''),
       careerGuid: graphGuidReference(record, ['vehicleCareerRef'], vehicleParams.attr('vehicleCareerRef') ?? ''),
-      roleKey: graphLocalizationKey(record, ['vehicleRole'], vehicleParams.attr('vehicleRole') ?? ''),
+      roleKey: graphLocalizationKeyWithFallback(record, ['vehicleRole'], vehicleParams.attr('vehicleRole') ?? ''),
       roleGuid: graphGuidReference(record, ['vehicleRoleRef'], vehicleParams.attr('vehicleRoleRef') ?? ''),
       crewSize: vehicleParams.attr('crewSize') ?? '',
       hullDamageNormalization: vehicleParams.attr('vehicleHullDamageNormalizationValue') ?? '',
@@ -84,14 +84,8 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
   return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
-  );
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
 }
 
 function localizationKey(value: string): string {
