@@ -13,7 +13,8 @@ async function makeWorkspace() {
   await fs.writeFile(
     path.join(dir, 'global.ini'),
     [
-      'item_Name_Test_Target=[S1|PST|ENG] Test Blueprint Item',
+      'item_A_Display_Test_Target=Wrong Display Target',
+      'item_Z_Name_Test_Target=[S1|PST|ENG] Test Blueprint Item',
       'item_Name_Test_Repeat_A=Repeat Blueprint A',
       'item_Name_Test_Repeat_B=Repeat Blueprint B',
       'item_Name_Test_Repeat_C=Repeat Powerplant',
@@ -105,7 +106,10 @@ async function makeWorkspace() {
           rootTag: 'EntityClassDefinition.Test_Target',
           rootType: 'EntityClassDefinition',
           entityClass: 'Test_Target',
-          localizationKeys: [{ attribute: 'Name', key: 'item_Name_Test_Target' }],
+          localizationKeys: [
+            { attribute: 'displayName', key: 'item_A_Display_Test_Target' },
+            { attribute: 'Name', key: 'item_Z_Name_Test_Target' },
+          ],
           referencedGuids: [],
         },
         {
@@ -151,7 +155,8 @@ async function makeWorkspace() {
           Contractor_Rank4: ['reputation/contractor-rank-4.xml'],
         },
         byLocalizationKey: {
-          item_Name_Test_Target: ['target.xml'],
+          item_A_Display_Test_Target: ['target.xml'],
+          item_Z_Name_Test_Target: ['target.xml'],
           item_Name_Test_Repeat_C: ['libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
           RepScope_Contractor_Rank4: ['reputation/contractor-rank-4.xml'],
         },

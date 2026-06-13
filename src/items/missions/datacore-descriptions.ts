@@ -6,6 +6,7 @@ import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
+import { graphLocalizationKey } from '../../sources/datacore/record-graph-relations';
 import { createDataCoreRelationshipIndex, type DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
 import type { DataCoreRecordNode } from '../../sources/datacore/types';
 import { loadXml } from '../../sources/datacore/xml-parser';
@@ -773,13 +774,7 @@ function resolveBlueprintTargetNameKey(
 }
 
 function graphNameLocalizationKey(record: DataCoreRecordNode): string {
-  const nameAttributes = new Set(['name', 'displayname', 'shortname']);
-  return (
-    record.localizationKeys.find(
-      (localization) =>
-        nameAttributes.has(localization.attribute.toLowerCase()) && isUsableGraphLocalizationKey(localization.key),
-    )?.key ?? ''
-  );
+  return graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName', 'shortName']);
 }
 
 function fallbackNameLocalizationKey(record: DataCoreRecordNode): string {
