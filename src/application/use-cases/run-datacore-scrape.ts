@@ -63,6 +63,7 @@ import {
   writeDataCoreRecordGraph,
 } from '../../sources/datacore/record-graph';
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
+import { uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference } from '../../sources/datacore/record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
@@ -2295,8 +2296,7 @@ function resolveComponentManufacturerCode(
   fallbackManufacturer: string,
   resolver: DataCoreManufacturerResolver | undefined,
 ): string {
-  const graphManufacturerGuid =
-    uniqueGraphGuidReference(record, 'Manufacturer') || uniqueGraphGuidReference(record, 'manufacturer');
+  const graphManufacturerGuid = uniqueGraphGuidReference(record, ['Manufacturer', 'manufacturer']);
   const graphManufacturer =
     graphManufacturerGuid && resolver ? resolver.getByRef(graphManufacturerGuid)?.code ?? '' : '';
   return graphManufacturer || resolveManufacturerCode(fallbackManufacturer, resolver);
@@ -3789,17 +3789,12 @@ function resolveReferencedRecord(
   return undefined;
 }
 
-function uniqueGraphGuidReference(record: DataCoreRecordNode | undefined, attribute: string | undefined): string {
-  if (!record || !attribute) return '';
-  const values = [
-    ...new Set(
-      record.referencedGuidAttributes
-        ?.filter((reference) => reference.attribute.toLowerCase() === attribute.toLowerCase())
-        .map((reference) => reference.value.trim())
-        .filter(Boolean) ?? [],
-    ),
-  ];
-  return values.length === 1 ? values[0] : '';
+function uniqueGraphGuidReference(
+  record: DataCoreRecordNode | undefined,
+  attributes: string | string[] | undefined,
+): string {
+  if (!record || !attributes) return '';
+  return uniqueDataCoreGraphGuidReference(record, Array.isArray(attributes) ? attributes : [attributes]);
 }
 
 function formatProduct(values: string[]): string {
