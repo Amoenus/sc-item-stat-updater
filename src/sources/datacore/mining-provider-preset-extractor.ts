@@ -166,6 +166,8 @@ async function readEntityGuidFromHarvestable(
   harvestable: DataCoreRecordNode | undefined,
 ): Promise<string> {
   if (!harvestable) return '';
+  const graphEntityGuid = graphGuidReference(harvestable, ['entityClass'], '');
+  if (graphEntityGuid) return graphEntityGuid;
 
   const xmlPath = resolveChildPath(xmlCacheDir, harvestable.path, 'DataCore harvestable preset XML path');
   const xml = await fs.readFile(xmlPath, 'utf8');
@@ -188,11 +190,19 @@ async function readMineableParams(
   const mineableParams = $('MineableParams').first();
 
   return {
-    compositionGuid: mineableParams.attr('composition') ?? '',
-    globalParamsGuid: mineableParams.attr('globalParams') ?? '',
-    audioParamsGuid: mineableParams.attr('audioParams') ?? '',
+    compositionGuid: graphGuidReference(entity, ['composition'], mineableParams.attr('composition') ?? ''),
+    globalParamsGuid: graphGuidReference(entity, ['globalParams'], mineableParams.attr('globalParams') ?? ''),
+    audioParamsGuid: graphGuidReference(entity, ['audioParams'], mineableParams.attr('audioParams') ?? ''),
     filledFactor: mineableParams.attr('filledFactor') ?? '',
   };
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function emptyMineableEntity(): ResolvedMineableEntity {

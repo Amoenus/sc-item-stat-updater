@@ -45,7 +45,7 @@ test('extractDataCoreMiningProviderPresets extracts mining provider rows and res
     xmlCacheDir,
     harvestablePresetPath,
     `
-      <HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="1c949ce0-c99b-485b-b783-2ea3b49162c0" respawnInSlotTime="3600" __type="HarvestablePreset" __ref="e576319a-80bf-46a6-b600-ab4d5e34c00f" __path="${harvestablePresetPath}" />
+      <HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="stale-harvestable-entity-guid" respawnInSlotTime="3600" __type="HarvestablePreset" __ref="e576319a-80bf-46a6-b600-ab4d5e34c00f" __path="${harvestablePresetPath}" />
     `,
   );
   await writeXml(
@@ -53,7 +53,7 @@ test('extractDataCoreMiningProviderPresets extracts mining provider rows and res
     harvestablePath,
     `
       <EntityClassDefinition.AgriciumRock __type="EntityClassDefinition" __ref="1c949ce0-c99b-485b-b783-2ea3b49162c0" __path="${harvestablePath}">
-        <MineableParams globalParams="aa727a56-9937-4eb5-80c6-51b418d43177" audioParams="5f5c1a61-6500-46a1-8a01-7ba4956751d1" composition="3a6e7bb4-0f23-4c46-b822-333afe9d63ab" filledFactor="1" />
+        <MineableParams globalParams="stale-global-params-guid" audioParams="stale-audio-params-guid" composition="stale-composition-guid" filledFactor="1" />
       </EntityClassDefinition.AgriciumRock>
     `,
   );
@@ -123,7 +123,8 @@ function makeGraph(): DataCoreRecordGraph {
         rootType: 'HarvestablePreset',
         entityClass: 'Mining_AsteroidCommon_Aluminum',
         localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids: ['1c949ce0-c99b-485b-b783-2ea3b49162c0'],
+        referencedGuidAttributes: [{ attribute: 'entityClass', value: '1c949ce0-c99b-485b-b783-2ea3b49162c0' }],
       },
       {
         path: harvestablePath,
@@ -132,7 +133,16 @@ function makeGraph(): DataCoreRecordGraph {
         rootType: 'EntityClassDefinition',
         entityClass: 'AgriciumRock',
         localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids: [
+          '3a6e7bb4-0f23-4c46-b822-333afe9d63ab',
+          'aa727a56-9937-4eb5-80c6-51b418d43177',
+          '5f5c1a61-6500-46a1-8a01-7ba4956751d1',
+        ],
+        referencedGuidAttributes: [
+          { attribute: 'composition', value: '3a6e7bb4-0f23-4c46-b822-333afe9d63ab' },
+          { attribute: 'globalParams', value: 'aa727a56-9937-4eb5-80c6-51b418d43177' },
+          { attribute: 'audioParams', value: '5f5c1a61-6500-46a1-8a01-7ba4956751d1' },
+        ],
       },
       {
         path: setupPath,
