@@ -5,7 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { extractDataCoreMiningHarvestableSetups } from './mining-harvestable-setup-extractor';
 import { createDataCoreRecordGraphLookup } from './record-graph-loader';
-import type { DataCoreRecordGraph } from './types';
+import type { DataCoreRecordGraph, DataCoreRecordNode } from './types';
 
 const providerPath = 'libs/foundry/records/harvestable/providerpresets/system/stanton/hpp_stanton1.xml';
 const defaultSetupPath = 'libs/foundry/records/harvestable/harvestablesetups/defaultharvestablesetup.xml';
@@ -23,7 +23,7 @@ test('extractDataCoreMiningHarvestableSetups extracts mining setup conditions an
         <harvestableGroups>
           <HarvestableElementGroup groupName="SpaceShip_Mineables" groupProbability="6">
             <harvestables>
-              <HarvestableElement harvestable="mineable-entity-guid" harvestableSetup="default-setup-guid" />
+              <HarvestableElement harvestable="mineable-entity-guid" harvestableSetup="stale-setup-guid" />
             </harvestables>
           </HarvestableElementGroup>
           <HarvestableElementGroup groupName="Loot_Crates" groupProbability="1">
@@ -156,6 +156,7 @@ function makeGraph(): DataCoreRecordGraph {
       'HarvestableProviderPreset.HPP_Stanton1',
       'HarvestableProviderPreset',
       'HPP_Stanton1',
+      [{ attribute: 'harvestableSetup', value: 'default-setup-guid' }],
     ),
     node(
       defaultSetupPath,
@@ -206,7 +207,14 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(path: string, ref: string, rootTag: string, rootType: string, entityClass: string) {
+function node(
+  path: string,
+  ref: string,
+  rootTag: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordNode['referencedGuidAttributes']> = [],
+) {
   return {
     path,
     ref,
@@ -214,6 +222,7 @@ function node(path: string, ref: string, rootTag: string, rootType: string, enti
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }

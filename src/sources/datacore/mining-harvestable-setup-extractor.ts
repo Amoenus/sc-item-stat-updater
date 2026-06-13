@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningHarvestableSetupRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -95,7 +96,9 @@ async function collectMiningSetupRefs(options: ExtractDataCoreMiningHarvestableS
         const harvestable = harvestableGuid ? options.graph.getByRef(harvestableGuid) : undefined;
         if (!isMiningProviderEntry(groupName, harvestable)) return;
 
-        const setupGuid = entry.attr('harvestableSetup') ?? '';
+        const setupGuid = entry.attr('harvestableSetup')
+          ? graphGuidReference(record, ['harvestableSetup'], entry.attr('harvestableSetup') ?? '')
+          : '';
         if (setupGuid) setupRefs.add(setupGuid);
       });
     });
@@ -112,6 +115,10 @@ function isMiningSetup(record: DataCoreRecordNode, referencedByMiningProvider: S
 function isMiningProviderEntry(groupName: string, harvestable: DataCoreRecordNode | undefined): boolean {
   if (/mineable|mining/i.test(groupName)) return true;
   return harvestable?.path.includes('/entities/mineable/') ?? false;
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function xyz(element: { length: number; attr(name: string): string | undefined }): string {
