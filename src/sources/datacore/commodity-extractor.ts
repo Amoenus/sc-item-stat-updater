@@ -61,8 +61,8 @@ export async function extractDataCoreCommodities(
           uiDisplayParams.attr('displayDescription') ?? commodityParams.attr('description'),
         ),
         displayTypeKey: resolveRecordLocalizationKey(record, ['displayType'], purchasableParams.attr('displayType')),
-        typeGuid: commodityParams.attr('type') ?? '',
-        subtypeGuid: commodityParams.attr('subtype') ?? '',
+        typeGuid: graphGuidReference(record, ['type'], commodityParams.attr('type') ?? ''),
+        subtypeGuid: graphGuidReference(record, ['subtype'], commodityParams.attr('subtype') ?? ''),
         cargoOccupancyUnit: occupancy.unit,
         cargoOccupancyValue: occupancy.value,
         cargoOccupancySCU: occupancy.scu,
@@ -410,6 +410,14 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]):
     (reference) => expectedAttributes.has(reference.attribute.toLowerCase()) && isUsableLocalizationKey(reference.key),
   )?.key;
   return key ?? '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function isUsableLocalizationKey(value: string | undefined): boolean {

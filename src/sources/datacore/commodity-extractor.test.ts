@@ -27,7 +27,7 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
           <EntityUIDisplayParams displayName="@LOC_UNINITIALIZED" displayDescription="@items_commodities_atlasium_stale_desc" />
         </StaticEntityClassData>
         <Components>
-          <CommodityComponentParams type="22325f28-8d37-46ab-8c08-8a9b34101fad" subtype="45f89d34-3167-4723-9b85-f9df3770ce00" name="@items_commodities_atlasium_stale" description="@items_commodities_atlasium_stale_desc" IsUnrefinedElement="0" boxable="1">
+          <CommodityComponentParams type="stale-type-guid" subtype="stale-subtype-guid" name="@items_commodities_atlasium_stale" description="@items_commodities_atlasium_stale_desc" IsUnrefinedElement="0" boxable="1">
             <occupancy>
               <SCentiCargoUnit centiSCU="1" />
             </occupancy>
@@ -223,7 +223,14 @@ function makeGraph(): DataCoreRecordGraph {
           { attribute: 'displayType', key: 'items_commodities_type_alloy' },
           { attribute: 'name', key: 'items_commodities_atlasium' },
         ],
-        referencedGuids: [],
+        referencedGuids: [
+          '22325f28-8d37-46ab-8c08-8a9b34101fad',
+          '45f89d34-3167-4723-9b85-f9df3770ce00',
+        ],
+        referencedGuidAttributes: [
+          { attribute: 'type', value: '22325f28-8d37-46ab-8c08-8a9b34101fad' },
+          { attribute: 'subtype', value: '45f89d34-3167-4723-9b85-f9df3770ce00' },
+        ],
       },
       {
         path: rantadungPath,
