@@ -12,6 +12,16 @@ assert.ok(getTargetKeys, 'getTargetKeys must be defined on the mining elements c
 describe('mining element updater', () => {
   it('targets ore and raw suffixes without touching refined commodity keys', () => {
     assert.deepStrictEqual(
+      getTargetKeys(
+        {
+          'Element Name': 'Agricium (Ore)',
+          'Localization Key': 'items_commodities_datacore_agricium_ore_desc',
+        },
+        (key) => key,
+      ),
+      ['items_commodities_datacore_agricium_ore_desc'],
+    );
+    assert.deepStrictEqual(
       getTargetKeys({ 'Element Name': 'Agricium (Ore)' }, (key) => key),
       ['items_commodities_agricium_ore_desc'],
     );

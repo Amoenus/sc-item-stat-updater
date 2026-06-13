@@ -368,6 +368,8 @@ export default {
     kl.startsWith('items_commodities_') && (kl.endsWith('_ore_desc') || kl.endsWith('_raw_desc')),
 
   getTargetKeys(row, _deriveDescKey) {
+    const localizationKey = row['Localization Key']?.trim();
+    if (localizationKey) return [localizationKey];
     return inferTargetKeys(row);
   },
 
