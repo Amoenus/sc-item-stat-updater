@@ -8,7 +8,7 @@ function isMissionLikeRecord(rootType: string, path: string): boolean {
 }
 
 function isUsableLocalizationKey(key: string): boolean {
-  return key.length > 0 && key !== 'LOC_EMPTY' && key !== 'LOC_UNINITIALIZED';
+  return key.length > 0 && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(key);
 }
 
 function localizationRole(key: string, attribute: string): string {

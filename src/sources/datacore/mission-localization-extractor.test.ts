@@ -18,6 +18,7 @@ test('extractDataCoreMissionLocalization emits usable mission and contract local
           { attribute: 'title', key: 'bounty_title_001' },
           { attribute: 'description', key: 'bounty_desc_001' },
           { attribute: 'name', key: 'LOC_UNINITIALIZED' },
+          { attribute: 'displayName', key: 'LOC_PLACEHOLDER' },
         ],
         referencedGuids: [],
       },

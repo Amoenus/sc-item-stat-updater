@@ -347,12 +347,16 @@ function getDescriptionKeys(
       .map((key) => key.trim()),
   ]
     .map((key) => key.replace(/^@/, '').trim())
-    .filter((key, index, keys) => key && keys.indexOf(key) === index);
+    .filter((key, index, keys) => isUsableLocalizationKey(key) && keys.indexOf(key) === index);
   if (directKeys.length > 0) return { keys: directKeys, usedTemplateFallback: false };
 
   const templateGuid = row['Template GUID'] || row['Template Guid'] || row['Template Ref'];
   const templateKeys = templateGuid ? (templateDescriptionKeysByGuid.get(templateGuid) ?? []) : [];
   return { keys: templateKeys, usedTemplateFallback: templateKeys.length > 0 };
+}
+
+function isUsableLocalizationKey(key: string): boolean {
+  return key.length > 0 && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(key);
 }
 
 function getOrCreateBlueprintFacts(

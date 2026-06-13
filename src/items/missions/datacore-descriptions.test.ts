@@ -29,7 +29,7 @@ async function makeWorkspace() {
       'contract-1,RewardVariant,,template-ref,test_desc,test_desc_variant,,"[{""blueprintPool"":""pool-ref"",""chance"":0.25,""trigger"":""MissionSuccess"",""type"":""BlueprintRewards""}]",RepScope_Contractor_Rank3,standing-rank-4,',
       'contract-2,NoRewardVariant,,template-ref,shared_desc,,,,,,',
       'contract-3,StantonRewardVariant,,template-ref,shared_desc,,pool-ref,,RepScope_Contractor_Rank3,standing-rank-4,',
-      'contract-4,FacilityFollowup,FacilityHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",,,,completed-contract-tag',
+      'contract-4,FacilityFollowup,FacilityHandler,template-repeat-ref,LOC_PLACEHOLDER,LOC_UNINITIALIZED,"repeat-pool-1,repeat-pool-2",,,,completed-contract-tag',
     ].join('\n'),
     'utf8',
   );
