@@ -6,6 +6,7 @@ import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
+import { createDataCoreRelationshipIndex, type DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
 import { loadXml } from '../../sources/datacore/xml-parser';
 
 const logger = getLogger('datacore-descriptions-config');
@@ -249,13 +250,14 @@ export async function loadDatacoreDescriptionsSourceData(
   // 4. Precompute Blueprint Data
   const localizationValues = await loadLocalizationValues(datacoreDir);
   const recordGraph = await loadRecordGraph(datacoreDir);
+  const relationshipIndex = createDataCoreRelationshipIndex(recordGraph);
   const xmlCacheDir = await resolveXmlCacheDir(datacoreDir);
   const templateDescriptionKeysByGuid = await loadTemplateDescriptionKeysByGuid(templates, xmlCacheDir);
   const standingLabelCache = new Map<string, string>();
   const blueprintByGuid = new Map<string, string>();
   for (const row of craftingBlueprints) {
     const guid = row['Ref'];
-    const name = resolveBlueprintDisplayName(row, localizationValues, recordGraph);
+    const name = resolveBlueprintDisplayName(row, localizationValues, recordGraph, relationshipIndex);
     if (guid && name) {
       blueprintByGuid.set(guid, name);
     }
@@ -729,9 +731,10 @@ function resolveBlueprintDisplayName(
   row: Record<string, string>,
   localizationValues: Map<string, string>,
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+  relationshipIndex: DataCoreRelationshipIndex,
 ): string {
-  const targetRecord = resolveBlueprintTargetRecord(row, recordGraph);
-  const targetKey = resolveBlueprintTargetNameKey(row, recordGraph, targetRecord);
+  const targetRecord = resolveBlueprintTargetRecord(row, recordGraph, relationshipIndex);
+  const targetKey = resolveBlueprintTargetNameKey(row, recordGraph, relationshipIndex, targetRecord);
   let name = '';
   if (targetKey) {
     name = localizationValues.get(targetKey.toLowerCase()) ?? `@${targetKey}`;
@@ -745,9 +748,10 @@ function resolveBlueprintDisplayName(
 function resolveBlueprintTargetNameKey(
   row: Record<string, string>,
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+  relationshipIndex: DataCoreRelationshipIndex,
   resolvedTargetRecord?: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
 ): string {
-  const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph);
+  const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph, relationshipIndex);
   const graphKey =
     targetRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
     targetRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
@@ -759,7 +763,7 @@ function resolveBlueprintTargetNameKey(
 
   const targetClass = row['TargetEntityClass'];
   if (targetClass && !isGuid(targetClass)) {
-    const classRecord = recordGraph?.getByEntityClass(targetClass)[0];
+    const classRecord = relationshipIndex.getRecordForEntityClass(targetClass);
     return (
       classRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
       classRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
@@ -773,13 +777,14 @@ function resolveBlueprintTargetNameKey(
 function resolveBlueprintTargetRecord(
   row: Record<string, string>,
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
+  relationshipIndex: DataCoreRelationshipIndex,
 ) {
   const targetRef = row['TargetEntityClassGuid'];
   const targetClass = row['TargetEntityClass'];
   return targetRef
     ? recordGraph?.getByRef(targetRef)
     : targetClass
-      ? recordGraph?.getByRef(targetClass) ?? recordGraph?.getByEntityClass(targetClass)[0]
+      ? recordGraph?.getByRef(targetClass) ?? relationshipIndex.getRecordForEntityClass(targetClass)
       : undefined;
 }
 

@@ -71,7 +71,7 @@ async function makeWorkspace() {
       'Blueprint,,target-ref,item_Name_Test_Repeat_A,"[]",blueprint-ref,blueprint.xml',
       'RepeatBlueprintA,,,item_Name_Test_Repeat_A,"[]",repeat-blueprint-a,repeat-a.xml',
       'RepeatBlueprintB,,,item_Name_Test_Repeat_B,"[]",repeat-blueprint-b,repeat-b.xml',
-      'RepeatBlueprintC,powerplant-ref,,,"[]",repeat-blueprint-c,repeat-c.xml',
+      'RepeatBlueprintC,,TEST_POWERPLANT_SCItem,,"[]",repeat-blueprint-c,repeat-c.xml',
     ].join('\n'),
     'utf8',
   );
