@@ -56,20 +56,6 @@ const TYPE_SLOT_CODE_RULES: Array<readonly [string, string]> = [
   ['laser', 'LSR'],
 ];
 
-const FPS_NAME_KEY_PARTS = [
-  '_pistol',
-  '_smg',
-  '_rifle',
-  '_sniper',
-  '_shotgun',
-  '_lmg',
-  '_ubarrel',
-  '_barrel',
-  '_optics',
-  '_scope',
-  '_attachment',
-];
-
 function normalizeTypeCode(value: string | undefined): string {
   const type = (value ?? '').toLowerCase();
   return TYPE_CODE_RULES.find(([fragment]) => type.includes(fragment))?.[1] ?? 'WPN';
@@ -142,10 +128,6 @@ function normalizeLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
 }
 
-function isFpsNameKey(keyLower: string): boolean {
-  return FPS_NAME_KEY_PARTS.some((part) => keyLower.includes(part));
-}
-
 function applyFpsTitleTags(lines: string[], keyToTag: Map<string, { tag: string }>) {
   const updatedLines = [...lines];
   const familyIndex = buildVariantFamilyIndex(updatedLines);
@@ -162,11 +144,6 @@ function applyFpsTitleTags(lines: string[], keyToTag: Map<string, { tag: string 
     }
 
     scannedCount++;
-    const keyLower = parsed.key.toLowerCase();
-    if (!isFpsNameKey(keyLower)) {
-      continue;
-    }
-
     const base = keyToTag.get(normalizeLocalizationKey(parsed.key));
     if (!base) {
       continue;

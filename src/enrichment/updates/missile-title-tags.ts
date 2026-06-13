@@ -16,19 +16,30 @@ const MISSILE_SIGNAL_TAG = {
   Infrared: 'IR',
 };
 
-const MISSILE_KEY_PATTERN = /^(item_name_?g?misl_.*?)(_short)?$/i;
 const LEADING_TAG_PATTERN = /^\[(CS|EM|IR)\]\s*/i;
 
 async function buildMissileSignalLookupFromDataCore(datacoreDir: string) {
   const missileCsvPath = resolveChildPath(datacoreDir, DATACORE_MISSILE_CSV, 'DataCore missile CSV filename');
   const rows = await readCsvFile(missileCsvPath);
-  return buildLookupMapFromRows(rows, (row) => {
+  const keyToTag = buildLookupMapFromRows(rows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
     const signal = normalizeSpaces(row['Tracking Signal'] || '');
     const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
     if (!key || !tag) return null;
     return [key, tag];
   });
+
+  for (const [key, tag] of buildLookupMapFromRows(rows, (row) => {
+    const key = normalizeLocalizationKey(row['Short Name Key']);
+    const signal = normalizeSpaces(row['Tracking Signal'] || '');
+    const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
+    if (!key || !tag) return null;
+    return [key, tag];
+  })) {
+    keyToTag.set(key, tag);
+  }
+
+  return keyToTag;
 }
 
 function normalizeLocalizationKey(value: unknown): string {
@@ -50,15 +61,14 @@ function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) 
 
     const key = line.substring(0, eqIdx);
     const value = line.substring(eqIdx + 1);
-    const keyMatch = MISSILE_KEY_PATTERN.exec(key);
-    if (!keyMatch) {
+    if (!key.toLowerCase().startsWith('item_')) {
       updatedLines.push(line);
       continue;
     }
 
     scannedCount++;
-    const baseKey = normalizeLocalizationKey(keyMatch[1]);
-    const tag = keyToTag.get(baseKey);
+    const keyLower = normalizeLocalizationKey(key);
+    const tag = keyToTag.get(keyLower) ?? keyToTag.get(keyLower.replace(/_short$/i, ''));
     if (!tag) {
       updatedLines.push(line);
       continue;
