@@ -10,6 +10,7 @@ import {
 } from './component-class-resolver';
 import { createDataCoreManufacturerResolver, type DataCoreManufacturerResolver } from './manufacturer-resolver';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
@@ -351,16 +352,7 @@ function getGraphComponentManufacturerCode(
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[]): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const values = [
-    ...new Set(
-      record.referencedGuidAttributes
-        ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-        .map((reference) => reference.value.trim())
-        .filter(Boolean) ?? [],
-    ),
-  ];
-  return values.length === 1 ? values[0] : '';
+  return uniqueGraphGuidReference(record, attributes);
 }
 
 function getComponentTitleKeySources(

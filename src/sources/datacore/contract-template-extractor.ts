@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -142,16 +143,7 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const values = [
-    ...new Set(
-      record.referencedGuidAttributes
-        ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-        .map((reference) => reference.value.trim())
-        .filter(Boolean) ?? [],
-    ),
-  ];
-  return values.length === 1 ? values[0] : fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function uniqueStrings(values: string[]): string[] {

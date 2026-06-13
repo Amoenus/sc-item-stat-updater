@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { createDataCoreManufacturerResolver } from './manufacturer-resolver';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreRecordGraphLookup, DataCoreRecordNode, DataCoreVehicleRecord } from './types';
 import { loadXml } from './xml-parser';
 
@@ -80,16 +81,7 @@ export async function extractDataCoreVehicles(
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const values = [
-    ...new Set(
-      record.referencedGuidAttributes
-        ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-        .map((reference) => reference.value.trim())
-        .filter(Boolean) ?? [],
-    ),
-  ];
-  return values.length === 1 ? values[0] : fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
