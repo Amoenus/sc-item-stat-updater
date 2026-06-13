@@ -26,11 +26,11 @@ test('extractDataCoreVehicles reads first-party vehicle metadata and resolves ma
             isGravlevVehicle="0"
             vehicleHullDamageNormalizationValue="1650"
             crewSize="1"
-            vehicleName="@vehicle_NameAEGS_Avenger_Titan"
-            vehicleDescription="@vehicle_DescAEGS_Avenger_Titan"
-            vehicleCareer="@vehicle_focus_transporter"
+            vehicleName="@vehicle_NameAEGS_Avenger_Titan_Stale"
+            vehicleDescription="@vehicle_DescAEGS_Avenger_Titan_Stale"
+            vehicleCareer="@vehicle_focus_transporter_stale"
             vehicleCareerRef="d86d770d-1fc4-4525-b3b0-4f670a8a5634"
-            vehicleRole="@vehicle_class_lightfreight"
+            vehicleRole="@vehicle_class_lightfreight_stale"
             vehicleRoleRef="ff99d78e-3a6a-4e4d-8b1c-59e87a005c11"
             inventoryContainerParams="a623a5e1-27db-4e93-af6b-e54912b78e32" />
         </Components>
@@ -86,6 +86,8 @@ function makeGraph(vehiclePath: string): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'vehicleName', key: 'vehicle_NameAEGS_Avenger_Titan' },
           { attribute: 'vehicleDescription', key: 'vehicle_DescAEGS_Avenger_Titan' },
+          { attribute: 'vehicleCareer', key: 'vehicle_focus_transporter' },
+          { attribute: 'vehicleRole', key: 'vehicle_class_lightfreight' },
         ],
         referencedGuids: ['cf4a74bf-eb2c-462a-9b78-f7f2724c31d2'],
       },

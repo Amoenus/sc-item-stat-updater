@@ -23,8 +23,13 @@ const LOCALIZATION_ATTRIBUTES = [
   'displayDescription',
   'displayType',
   'title',
+  'titleHUD',
+  'missionGiver',
+  'commsChannelName',
   'vehicleName',
   'vehicleDescription',
+  'vehicleCareer',
+  'vehicleRole',
 ] as const;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

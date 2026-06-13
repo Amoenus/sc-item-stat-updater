@@ -17,8 +17,8 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
     path.join(xmlCacheDir, factionPath),
     `
       <Faction.Faction_Reputation_Unlawful_HeadHunters
-        name="@HeadHunters_RepUI_Name"
-        description="@HeadHunters_RepUI_Description"
+        name="@HeadHunters_RepUI_Name_Stale"
+        description="@HeadHunters_RepUI_Description_Stale"
         defaultReaction="Neutral"
         factionType="Unlawful"
         ableToArrest="0"
@@ -44,7 +44,7 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
     path.join(xmlCacheDir, reputationPath),
     `
       <FactionReputation.FactionReputation_HeadHunters
-        displayName="@HeadHunters_RepUI_Name"
+        displayName="@HeadHunters_RepUI_Name_Stale"
         __type="FactionReputation"
         __ref="09efeef4-c646-408d-a979-3ae56a3b1beb"
         __path="${reputationPath}">

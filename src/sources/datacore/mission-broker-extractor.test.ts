@@ -17,11 +17,11 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
       <MissionBrokerEntry.TestBroker
         owner="owner-guid"
         missionModule="libs/subsumption/missions/test.xml"
-        title="@mission_title"
-        titleHUD="@LOC_UNINITIALIZED"
-        description="@mission_desc"
-        missionGiver="@mission_from"
-        commsChannelName="@mission_channel"
+        title="@mission_title_stale"
+        titleHUD="@mission_title_hud_stale"
+        description="@mission_desc_stale"
+        missionGiver="@mission_from_stale"
+        commsChannelName="@mission_channel_stale"
         type="type-guid"
         missionDifficulty="3"
         locationMissionAvailable="location-guid"
@@ -73,7 +73,13 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
         rootTag: 'MissionBrokerEntry.TestBroker',
         rootType: 'MissionBrokerEntry',
         entityClass: 'TestBroker',
-        localizationKeys: [],
+        localizationKeys: [
+          { attribute: 'title', key: 'mission_title' },
+          { attribute: 'titleHUD', key: 'mission_title_hud' },
+          { attribute: 'description', key: 'mission_desc' },
+          { attribute: 'missionGiver', key: 'mission_from' },
+          { attribute: 'commsChannelName', key: 'mission_channel' },
+        ],
         referencedGuids: [],
       },
       record('owner-guid', 'FactionOwner'),
@@ -103,7 +109,7 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
       {
         missionClass: 'TestBroker',
         titleKey: 'mission_title',
-        titleHudKey: '',
+        titleHudKey: 'mission_title_hud',
         descriptionKey: 'mission_desc',
         missionGiverKey: 'mission_from',
         commsChannelNameKey: 'mission_channel',

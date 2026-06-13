@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { createDataCoreManufacturerResolver } from './manufacturer-resolver';
-import type { DataCoreRecordGraphLookup, DataCoreVehicleRecord } from './types';
+import type { DataCoreRecordGraphLookup, DataCoreRecordNode, DataCoreVehicleRecord } from './types';
 import { loadXml } from './xml-parser';
 
 const DEFAULT_VEHICLE_PATH_PREFIXES = [
@@ -43,17 +43,25 @@ export async function extractDataCoreVehicles(
       ref: record.ref,
       path: record.path,
       entityClass: record.entityClass,
-      vehicleNameKey: localizationKey(vehicleParams.attr('vehicleName') ?? ''),
-      vehicleDescriptionKey: localizationKey(vehicleParams.attr('vehicleDescription') ?? ''),
+      vehicleNameKey: graphLocalizationKey(
+        record,
+        ['vehicleName', 'name', 'displayName'],
+        vehicleParams.attr('vehicleName') ?? '',
+      ),
+      vehicleDescriptionKey: graphLocalizationKey(
+        record,
+        ['vehicleDescription', 'description', 'displayDescription'],
+        vehicleParams.attr('vehicleDescription') ?? '',
+      ),
       manufacturerGuid,
       manufacturerCode: manufacturer?.code ?? '',
       manufacturerNameKey: manufacturer?.nameKey ?? '',
       movementClass: vehicleParams.attr('movementClass') ?? '',
       vehicleDefinition: vehicleParams.attr('vehicleDefinition') ?? '',
       modification: vehicleParams.attr('modification') ?? '',
-      careerKey: localizationKey(vehicleParams.attr('vehicleCareer') ?? ''),
+      careerKey: graphLocalizationKey(record, ['vehicleCareer'], vehicleParams.attr('vehicleCareer') ?? ''),
       careerGuid: vehicleParams.attr('vehicleCareerRef') ?? '',
-      roleKey: localizationKey(vehicleParams.attr('vehicleRole') ?? ''),
+      roleKey: graphLocalizationKey(record, ['vehicleRole'], vehicleParams.attr('vehicleRole') ?? ''),
       roleGuid: vehicleParams.attr('vehicleRoleRef') ?? '',
       crewSize: vehicleParams.attr('crewSize') ?? '',
       hullDamageNormalization: vehicleParams.attr('vehicleHullDamageNormalizationValue') ?? '',
@@ -67,6 +75,22 @@ export async function extractDataCoreVehicles(
   return rows;
 }
 
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  if (isUsableLocalizationKey(key)) return key ?? '';
+  return localizationKey(fallback);
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = localizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
 function localizationKey(value: string): string {
-  return value.startsWith('@') ? value.slice(1) : value;
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

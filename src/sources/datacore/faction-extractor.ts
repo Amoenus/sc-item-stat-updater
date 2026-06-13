@@ -57,8 +57,12 @@ export async function extractDataCoreFactions(
       ref: record.ref,
       path: record.path,
       factionClass: record.entityClass,
-      nameKey: localizationKey(root.attr('name') ?? ''),
-      descriptionKey: localizationKey(root.attr('description') ?? ''),
+      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKey(
+        record,
+        ['description', 'displayDescription'],
+        root.attr('description') ?? '',
+      ),
       defaultReaction: root.attr('defaultReaction') ?? '',
       factionType: root.attr('factionType') ?? '',
       ableToArrest: root.attr('ableToArrest') ?? '',
@@ -98,7 +102,7 @@ async function readFactionReputation(
 
   return {
     record,
-    displayNameKey: localizationKey(root.attr('displayName') ?? ''),
+    displayNameKey: graphLocalizationKey(record, ['displayName', 'name'], root.attr('displayName') ?? ''),
     descriptionKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.description),
     headquartersKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.headquarters),
     foundedKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.founded),
@@ -142,6 +146,22 @@ function referenceValues($: ReturnType<typeof loadXml>, selector: string): strin
     .sort((a, b) => a.localeCompare(b));
 }
 
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  if (isUsableLocalizationKey(key)) return key ?? '';
+  return localizationKey(fallback);
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = localizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
 function localizationKey(value: string): string {
-  return value.startsWith('@') ? value.slice(1) : value;
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

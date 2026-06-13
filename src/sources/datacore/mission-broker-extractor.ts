@@ -39,11 +39,15 @@ export async function extractDataCoreMissionBrokers(
 
     rows.push({
       missionClass: record.entityClass,
-      titleKey: localizationKey(root.attr('title') ?? ''),
-      titleHudKey: localizationKey(root.attr('titleHUD') ?? ''),
-      descriptionKey: localizationKey(root.attr('description') ?? ''),
-      missionGiverKey: localizationKey(root.attr('missionGiver') ?? ''),
-      commsChannelNameKey: localizationKey(root.attr('commsChannelName') ?? ''),
+      titleKey: graphLocalizationKey(record, ['title'], root.attr('title') ?? ''),
+      titleHudKey: graphLocalizationKey(record, ['titleHUD'], root.attr('titleHUD') ?? ''),
+      descriptionKey: graphLocalizationKey(
+        record,
+        ['description', 'displayDescription'],
+        root.attr('description') ?? '',
+      ),
+      missionGiverKey: graphLocalizationKey(record, ['missionGiver'], root.attr('missionGiver') ?? ''),
+      commsChannelNameKey: graphLocalizationKey(record, ['commsChannelName'], root.attr('commsChannelName') ?? ''),
       missionModule: root.attr('missionModule') ?? '',
       missionTypeGuid,
       missionTypeClass: linkedClass(options.graph.getByRef(missionTypeGuid)),
@@ -103,8 +107,22 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
 }
 
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  if (isUsableLocalizationKey(key)) return key ?? '';
+  return localizationKey(fallback);
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = localizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
 function localizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }
