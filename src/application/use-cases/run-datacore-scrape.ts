@@ -2196,6 +2196,7 @@ async function scrapeDataCoreType(
         }
         const value = await resolveField($, spec, rowRecord, {
           graph: options.graph,
+          record,
           relationships,
           xmlCacheDir: options.xmlCacheDir,
           referencedXmlCache,
@@ -2300,7 +2301,8 @@ function resolveComponentManufacturerCode(
   return graphManufacturer || resolveManufacturerCode(fallbackManufacturer, resolver);
 }
 
-function graphGuidReference(record: DataCoreRecordNode, attributes: string[]): string {
+function graphGuidReference(record: DataCoreRecordNode | undefined, attributes: string[]): string {
+  if (!record || attributes.length === 0) return '';
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
   return (
     record.referencedGuidAttributes
@@ -3683,6 +3685,7 @@ async function resolveField(
   row: Record<string, string>,
   context: {
     graph?: DataCoreRecordGraphLookup;
+    record?: DataCoreRecordNode;
     relationships: DataCoreRelationshipIndex;
     xmlCacheDir: string;
     referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
@@ -3721,6 +3724,7 @@ async function loadReferencedXml(
   ref: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[],
   context: {
     graph?: DataCoreRecordGraphLookup;
+    record?: DataCoreRecordNode;
     relationships: DataCoreRelationshipIndex;
     xmlCacheDir: string;
     referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
@@ -3729,18 +3733,21 @@ async function loadReferencedXml(
   if (!context.graph) return undefined;
 
   let source = $;
+  let sourceRecord = context.record;
   for (const step of Array.isArray(ref) ? ref : [ref]) {
-    const record = resolveReferencedRecord(source, step, context.graph, context.relationships);
+    const record = resolveReferencedRecord(source, sourceRecord, step, context.graph, context.relationships);
     if (!record) return undefined;
 
     const cached = context.referencedXmlCache.get(record.path);
     if (cached) {
       source = cached;
+      sourceRecord = record;
       continue;
     }
 
     const xml = await fs.readFile(path.join(context.xmlCacheDir, record.path), 'utf8');
     source = loadXml(xml);
+    sourceRecord = record;
     context.referencedXmlCache.set(record.path, source);
   }
 
@@ -3749,6 +3756,7 @@ async function loadReferencedXml(
 
 function resolveReferencedRecord(
   source: ReturnType<typeof loadXml>,
+  sourceRecord: DataCoreRecordNode | undefined,
   step: DataCoreFieldReferenceSelector,
   graph: DataCoreRecordGraphLookup,
   relationships: DataCoreRelationshipIndex,
@@ -3756,6 +3764,15 @@ function resolveReferencedRecord(
   const candidates = [step, ...(Array.isArray(step.fallback) ? step.fallback : step.fallback ? [step.fallback] : [])];
 
   for (const candidate of candidates) {
+    const graphReferenceValue = uniqueGraphGuidReference(sourceRecord, candidate.graphAttribute);
+    if (graphReferenceValue) {
+      const record =
+        candidate.by === 'entityClass'
+          ? relationships.getRecordForEntityClass(graphReferenceValue)
+          : graph.getByRef(graphReferenceValue);
+      if (record) return record;
+    }
+
     const referenceValue = source(candidate.selector).first().attr(candidate.attr)?.trim();
     if (!referenceValue) continue;
 
@@ -3767,6 +3784,19 @@ function resolveReferencedRecord(
   }
 
   return undefined;
+}
+
+function uniqueGraphGuidReference(record: DataCoreRecordNode | undefined, attribute: string | undefined): string {
+  if (!record || !attribute) return '';
+  const values = [
+    ...new Set(
+      record.referencedGuidAttributes
+        ?.filter((reference) => reference.attribute.toLowerCase() === attribute.toLowerCase())
+        .map((reference) => reference.value.trim())
+        .filter(Boolean) ?? [],
+    ),
+  ];
+  return values.length === 1 ? values[0] : '';
 }
 
 function formatProduct(values: string[]): string {

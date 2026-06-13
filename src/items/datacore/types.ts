@@ -3,6 +3,7 @@ import type { ItemConfig } from '../../enrichment/item-config';
 export interface DataCoreFieldReferenceSelector {
   selector: string;
   attr: string;
+  graphAttribute?: string;
   by?: 'entityClass' | 'ref';
   fallback?: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[];
 }

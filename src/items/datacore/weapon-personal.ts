@@ -15,7 +15,7 @@ const defaultMagazineRef = {
 };
 const defaultMagazineAmmoRef = [
   defaultMagazineRef,
-  { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' },
+  { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord', graphAttribute: 'ammoParamsRecord' },
 ];
 const fireActionSelector =
   'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';

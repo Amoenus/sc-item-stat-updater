@@ -3,7 +3,11 @@ import { stat } from '../../enrichment/stat-builder';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys, usableDataCoreLocalizationKey } from './types';
 
-const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
+const ammoParamsRef = {
+  selector: 'SAmmoContainerComponentParams',
+  attr: 'ammoParamsRecord',
+  graphAttribute: 'ammoParamsRecord',
+};
 const fireActionSelector =
   'SCItemWeaponComponentParams SWeaponActionFireSingleParams, SCItemWeaponComponentParams SWeaponActionFireRapidParams';
 const fallbackTargetKeys = makeGetTargetKeys('mgun_', 'MGUN_');

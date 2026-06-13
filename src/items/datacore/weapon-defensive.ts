@@ -2,7 +2,11 @@ import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
-const ammoParamsRef = { selector: 'SAmmoContainerComponentParams', attr: 'ammoParamsRecord' };
+const ammoParamsRef = {
+  selector: 'SAmmoContainerComponentParams',
+  attr: 'ammoParamsRecord',
+  graphAttribute: 'ammoParamsRecord',
+};
 const countermeasureParamsSelector = 'CounterMeasureChaffParams, CounterMeasureFlareParams';
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {

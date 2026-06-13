@@ -835,7 +835,8 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
     `
       <EntityClassDefinition.behr_lmg_ballistic_01_mag __ref="b5f37920-ba9a-4a07-85e9-732c31d04d8a" __path="libs/foundry/records/entities/scitem/weapons/magazines/behr_lmg_ballistic_01_mag.xml">
         <Components>
-          <SAmmoContainerComponentParams maxAmmoCount="75" ammoParamsRecord="164cba0d-026f-42a6-a6a0-55a8bfe8b480" />
+          <GraphRelationships ammoParamsRecord="164cba0d-026f-42a6-a6a0-55a8bfe8b480" />
+          <SAmmoContainerComponentParams maxAmmoCount="75" ammoParamsRecord="stale-ammo-param-ref" />
         </Components>
       </EntityClassDefinition.behr_lmg_ballistic_01_mag>
     `,
