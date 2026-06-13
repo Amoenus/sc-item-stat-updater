@@ -325,6 +325,9 @@ function buildDatacoreMiningLocationRows(
   paramRows: Record<string, string>[],
 ): Record<string, string>[] {
   const compositionNames = buildCompositionNameMap(compositionRows);
+  const mineableEntitiesByGuid = new Map(
+    mineableEntityRows.flatMap((row) => (row['Record GUID'] ? [[row['Record GUID'], row]] : [])),
+  );
   const mineableEntitiesByClass = new Map(mineableEntityRows.map((row) => [row['Entity Class'], row]));
   const densityOverrideSummaries = buildDensityOverrideSummaryMap(densityOverrideRows);
   const clusteringSummaries = buildClusteringSummaryMap(clusteringRows);
@@ -410,10 +413,13 @@ function buildDatacoreMiningLocationRows(
       if (family) facts.qualityRows.set(family, qualityRow);
     }
 
+    const mineableEntity =
+      mineableEntitiesByGuid.get(row['Harvestable Entity GUID']) ??
+      mineableEntitiesByClass.get(row['Harvestable Entity Class']);
     addIfPresent(facts.filledFactors, row['Filled Factor']);
-    addIfPresent(facts.mineableEntityClasses, row['Harvestable Entity Class']);
+    addIfPresent(facts.mineableEntityClasses, mineableEntity?.['Entity Class'] ?? row['Harvestable Entity Class']);
 
-    const mineableEntity = mineableEntitiesByClass.get(row['Harvestable Entity Class']);
+    const densityClassGuid = mineableEntity?.['Density Class GUID'];
     const densityClass = mineableEntity?.['Density Class'];
     addIfPresent(facts.densityClasses, densityClass);
 
@@ -427,12 +433,19 @@ function buildDatacoreMiningLocationRows(
       facts.audioParamSummaries.set(row['Audio Params GUID'], audioParamSummary);
     }
 
-    const densityParamSummary = densityClass ? paramSummaries.byClass.get(densityClass) : undefined;
-    if (densityClass && densityParamSummary) facts.densityParamSummaries.set(densityClass, densityParamSummary);
+    const densityParamSummary =
+      (densityClassGuid ? paramSummaries.byGuid.get(densityClassGuid) : undefined) ??
+      (densityClass ? paramSummaries.byClass.get(densityClass) : undefined);
+    if ((densityClassGuid || densityClass) && densityParamSummary) {
+      facts.densityParamSummaries.set(densityClassGuid || densityClass || '', densityParamSummary);
+    }
 
-    const densityOverrideSummary = densityClass ? densityOverrideSummaries.get(densityClass) : undefined;
-    if (densityClass && densityOverrideSummary)
-      facts.densityOverrideSummaries.set(densityClass, densityOverrideSummary);
+    const densityOverrideSummary =
+      (densityClassGuid ? densityOverrideSummaries.byGuid.get(densityClassGuid) : undefined) ??
+      (densityClass ? densityOverrideSummaries.byClass.get(densityClass) : undefined);
+    if ((densityClassGuid || densityClass) && densityOverrideSummary) {
+      facts.densityOverrideSummaries.set(densityClassGuid || densityClass || '', densityOverrideSummary);
+    }
 
     const clusteringClass = row['Clustering Class'];
     const clusteringSummary = clusteringSummaries.get(clusteringClass);
@@ -659,24 +672,42 @@ function addIfPresent(values: Set<string>, value: string | undefined): void {
   if (value?.trim()) values.add(value.trim());
 }
 
-function buildDensityOverrideSummaryMap(rows: Record<string, string>[]): Map<string, string> {
-  const summaries = new Map<string, string[]>();
+function buildDensityOverrideSummaryMap(rows: Record<string, string>[]): {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+} {
+  const summariesByGuid = new Map<string, string[]>();
+  const summariesByClass = new Map<string, string[]>();
   for (const row of rows) {
+    const densityClassGuid = row['Density Class GUID'];
     const densityClass = row['Density Class'];
-    if (!densityClass) continue;
+    if (!densityClassGuid && !densityClass) continue;
 
     const lifetime = row['Lifetime Total Seconds'];
     const overrideClass = row['Override Class'];
-    const label = overrideClass || densityClass;
+    const label = overrideClass || densityClass || densityClassGuid;
     const normalized = lifetime ? `${label} (lifetime ${lifetime}s)` : label;
-    const values = summaries.get(densityClass) ?? [];
-    values.push(normalized);
-    summaries.set(densityClass, values);
+    addSummary(summariesByGuid, densityClassGuid, normalized);
+    addSummary(summariesByClass, densityClass, normalized);
   }
 
+  return {
+    byGuid: flattenSummaryMap(summariesByGuid),
+    byClass: flattenSummaryMap(summariesByClass),
+  };
+}
+
+function addSummary(summaries: Map<string, string[]>, key: string | undefined, value: string): void {
+  if (!key) return;
+  const values = summaries.get(key) ?? [];
+  values.push(value);
+  summaries.set(key, values);
+}
+
+function flattenSummaryMap(summaries: Map<string, string[]>): Map<string, string> {
   return new Map(
-    [...summaries.entries()].map(([densityClass, values]) => [
-      densityClass,
+    [...summaries.entries()].map(([key, values]) => [
+      key,
       values.toSorted((a, b) => a.localeCompare(b)).join(' | '),
     ]),
   );

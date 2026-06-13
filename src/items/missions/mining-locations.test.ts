@@ -12,7 +12,8 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Relative Probability': '3',
         'Composition Class': 'CommonShipMineablesAsteroid_Aluminum',
         'Harvestable Class': 'AsteroidRockPreset_Aluminum',
-        'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Harvestable Entity GUID': 'asteroid-rock-guid',
+        'Harvestable Entity Class': 'AsteroidRock_StaleClass',
         'Harvestable Setup Class': 'ShipRockSetup',
         'Filled Factor': '0.75',
         'Clustering Class': 'Asteroid_Lrg_Med_Sml',
@@ -74,7 +75,9 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     ],
     [
       {
+        'Record GUID': 'asteroid-rock-guid',
         'Entity Class': 'AsteroidRock_Aluminum',
+        'Density Class GUID': 'density-guid',
         'Density Class': 'EntityDensityClass_Mineable',
       },
       {
@@ -97,6 +100,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     [
       {
         'Override Class': 'Stanton_HighTechMiningOutpost',
+        'Density Class GUID': 'density-guid',
         'Density Class': 'EntityDensityClass_Mineable',
         'Lifetime Total Seconds': '72000',
       },
@@ -203,7 +207,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
       miningParamRow({
         'Record GUID': 'density-guid',
         'Param Type': 'SEntityDensityClass',
-        'Param Class': 'EntityDensityClass_Mineable',
+        'Param Class': 'EntityDensityClass_GraphResolved',
         'Cluster Detection Radius': '1200',
         'Cluster Upper Object Count DGS': '20',
         'Cluster Upper Object Count Persistence': '8',
@@ -249,7 +253,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   );
   assert.equal(
     hurston['DataCore Density Param Summary'],
-    'EntityDensityClass_Mineable (cluster radius 1200, DGS max 20, persistent max 8, timeout 300, resetOnMove 1)',
+    'EntityDensityClass_GraphResolved (cluster radius 1200, DGS max 20, persistent max 8, timeout 300, resetOnMove 1)',
   );
 
   const breakerInterior = rows.find((row) => row['Location Name'] === 'Breaker Stations Interior');
