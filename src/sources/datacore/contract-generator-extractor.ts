@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreContractGeneratorRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -56,7 +57,7 @@ export async function extractDataCoreContractGenerators(
             })
             .each((__, contractElement) => {
             const contract = $(contractElement);
-            const templateGuid = contract.attr('template') ?? '';
+            const templateGuid = graphGuidReference(record, ['template'], contract.attr('template') ?? '');
             const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
             const contractStringParams = readStringParamOverrides(
               $,
@@ -74,9 +75,17 @@ export async function extractDataCoreContractGenerators(
               const missionResults = rep.find('> missionResults > Bool').map((_, el) => $(el).attr('value') === '1').get();
               rep.find('> contractResultReputationAmounts').each((_, amountElement) => {
                 const amountEl = $(amountElement);
-                const factionGuid = amountEl.attr('factionReputation') ?? '';
-                const scopeGuid = amountEl.attr('reputationScope') ?? '';
-                const rewardGuid = amountEl.attr('reward') ?? '';
+                const factionGuid = graphGuidReference(
+                  record,
+                  ['factionReputation'],
+                  amountEl.attr('factionReputation') ?? '',
+                );
+                const scopeGuid = graphGuidReference(
+                  record,
+                  ['reputationScope'],
+                  amountEl.attr('reputationScope') ?? '',
+                );
+                const rewardGuid = graphGuidReference(record, ['reward'], amountEl.attr('reward') ?? '');
                 if (rewardGuid && (missionResults[0] || missionResults[1] || missionResults[2])) {
                   const rewardRecord = options.graph.getByRef(rewardGuid);
                   let amount = 0;
@@ -106,6 +115,21 @@ export async function extractDataCoreContractGenerators(
             );
             const locationTagGuids = readLocationTagGuids($, contract);
             const blueprintRewards = readBlueprintRewards($, contractResults);
+            const factionReputationGuid = graphGuidReference(
+              record,
+              ['factionReputation'],
+              handler.attr('factionReputation') ?? '',
+            );
+            const reputationScopeGuid = graphGuidReference(
+              record,
+              ['reputationScope'],
+              handler.attr('reputationScope') ?? '',
+            );
+            const difficultyProfileGuid = graphGuidReference(
+              record,
+              ['difficultyProfile'],
+              difficulty.attr('difficultyProfile') ?? '',
+            );
 
             chunkRows.push({
               generatorClass: record.entityClass,
@@ -113,8 +137,8 @@ export async function extractDataCoreContractGenerators(
               handlerDebugName: handler.attr('debugName') ?? '',
               handlerNotForRelease: handler.attr('notForRelease') ?? '',
               handlerWorkInProgress: handler.attr('workInProgress') ?? '',
-              factionReputationGuid: handler.attr('factionReputation') ?? '',
-              reputationScopeGuid: handler.attr('reputationScope') ?? '',
+              factionReputationGuid,
+              reputationScopeGuid,
               contractSection: section,
               contractId: contract.attr('id') ?? '',
               contractDebugName: contract.attr('debugName') ?? '',
@@ -140,8 +164,8 @@ export async function extractDataCoreContractGenerators(
               instanceLifeTimeVariation: contractLifeTime.attr('instanceLifeTimeVariation') ?? '',
               contractBuyInAmount: contractResults.attr('contractBuyInAmount') ?? '',
               timeToComplete: contractResults.attr('timeToComplete') ?? '',
-              difficultyProfileGuid: difficulty.attr('difficultyProfile') ?? '',
-              difficultyProfileClass: linkedClass(options.graph.getByRef(difficulty.attr('difficultyProfile') ?? '')),
+              difficultyProfileGuid,
+              difficultyProfileClass: linkedClass(options.graph.getByRef(difficultyProfileGuid)),
               mechanicalSkill: difficulty.attr('mechanicalSkill') ?? '',
               mentalLoad: difficulty.attr('mentalLoad') ?? '',
               riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
@@ -246,6 +270,10 @@ function formatStringParams(params: Map<string, string>): string {
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function localizationKey(value: string): string {

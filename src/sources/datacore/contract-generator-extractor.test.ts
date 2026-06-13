@@ -16,14 +16,14 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
     `
       <ContractGenerator.TestGenerator __type="ContractGenerator" __ref="generator-guid" __path="${generatorPath}">
         <generators>
-          <ContractGeneratorHandler_Career notForRelease="0" workInProgress="1" debugName="Career_Handler" factionReputation="faction-guid" reputationScope="scope-guid">
+          <ContractGeneratorHandler_Career notForRelease="0" workInProgress="1" debugName="Career_Handler" factionReputation="stale-faction-guid" reputationScope="stale-scope-guid">
             <contractParams>
               <stringParamOverrides>
                 <ContractStringParam param="Contractor" value="@contractor_from" />
               </stringParamOverrides>
             </contractParams>
             <introContracts>
-              <Contract id="contract-guid" notForRelease="0" workInProgress="0" debugName="Intro_Contract" template="template-guid">
+              <Contract id="contract-guid" notForRelease="0" workInProgress="0" debugName="Intro_Contract" template="stale-template-guid">
                 <paramOverrides>
                   <stringParamOverrides>
                     <ContractStringParam param="Title" value="@intro_title" />
@@ -94,7 +94,7 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                     </ContractResult_CompletionTags>
                   </contractResults>
                   <difficulty>
-                    <ContractDifficulty difficultyProfile="difficulty-guid" mechanicalSkill="Hands_free" mentalLoad="Low" riskOfLoss="Safe" gameKnowledge="Basic" />
+                    <ContractDifficulty difficultyProfile="stale-difficulty-guid" mechanicalSkill="Hands_free" mentalLoad="Low" riskOfLoss="Safe" gameKnowledge="Basic" />
                   </difficulty>
                 </contractResults>
               </Contract>
@@ -167,9 +167,9 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
     `
       <ContractGenerator.CareerGenerator __type="ContractGenerator" __ref="generator-guid" __path="${generatorPath}">
         <generators>
-          <ContractGeneratorHandler_Career debugName="Career_Handler">
+          <ContractGeneratorHandler_Career debugName="Career_Handler" factionReputation="fallback-faction-guid">
             <contracts>
-              <CareerContract id="career-contract-guid" debugName="Career_Intro" template="template-guid">
+              <CareerContract id="career-contract-guid" debugName="Career_Intro" template="fallback-template-guid">
                 <paramOverrides>
                   <stringParamOverrides>
                     <ContractStringParam param="Title" value="@career_title" />
@@ -191,12 +191,14 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
 
   const [row] = await extractDataCoreContractGenerators({
     xmlCacheDir,
-    graph: createDataCoreRecordGraphLookup(graphFixture(generatorPath)),
+    graph: createDataCoreRecordGraphLookup(graphFixture(generatorPath, { ambiguousTemplate: true })),
   });
 
   assert.equal(row.contractId, 'career-contract-guid');
   assert.equal(row.contractDebugName, 'Career_Intro');
-  assert.equal(row.templateClass, 'TemplateClass');
+  assert.equal(row.factionReputationGuid, 'faction-guid');
+  assert.equal(row.templateGuid, 'fallback-template-guid');
+  assert.equal(row.templateClass, '');
   assert.equal(row.titleKey, 'career_title');
   assert.equal(row.descriptionKey, 'career_desc');
   assert.equal(row.timeToComplete, '45');
@@ -204,10 +206,27 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
   assert.equal(row.blueprintRewards, '[{"blueprintPool":"blueprint-pool","chance":1,"trigger":"","type":"BlueprintRewards"}]');
 });
 
-function graphFixture(generatorPath: string): DataCoreRecordGraph {
+function graphFixture(
+  generatorPath: string,
+  options: { ambiguousTemplate?: boolean } = {},
+): DataCoreRecordGraph {
+  const templateReferences = options.ambiguousTemplate
+    ? [
+        { attribute: 'template', value: 'template-guid' },
+        { attribute: 'template', value: 'other-template-guid' },
+      ]
+    : [{ attribute: 'template', value: 'template-guid' }];
+  const referencedGuids = [
+    ...templateReferences.map((reference) => reference.value),
+    'location-guid',
+    'difficulty-guid',
+    'faction-guid',
+    'scope-guid',
+  ];
+
   return {
     source: 'datacore-record-graph',
-    recordCount: 5,
+    recordCount: 4,
     records: [
       {
         path: generatorPath,
@@ -216,16 +235,13 @@ function graphFixture(generatorPath: string): DataCoreRecordGraph {
         rootType: 'ContractGenerator',
         entityClass: 'TestGenerator',
         localizationKeys: [],
-        referencedGuids: [],
-      },
-      {
-        path: generatorPath,
-        ref: 'generator-guid',
-        rootTag: 'ContractGenerator.TestGenerator',
-        rootType: 'ContractGenerator',
-        entityClass: 'TestGenerator',
-        localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids,
+        referencedGuidAttributes: [
+          ...templateReferences,
+          { attribute: 'difficultyProfile', value: 'difficulty-guid' },
+          { attribute: 'factionReputation', value: 'faction-guid' },
+          { attribute: 'reputationScope', value: 'scope-guid' },
+        ],
       },
       record('template-guid', 'TemplateClass'),
       record('location-guid', 'Area18'),
