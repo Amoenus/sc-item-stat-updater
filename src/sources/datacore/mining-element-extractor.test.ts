@@ -12,7 +12,9 @@ const aslaritePath = 'libs/foundry/records/mining/mineableelements/aslarite_raw.
 const aphoritePath = 'libs/foundry/records/mining/mineableelements/minableelement_fps_aphorite.xml';
 const globalParamsPath = 'libs/foundry/records/mining/miningglobalparams.xml';
 const agriciumResourcePath = 'libs/foundry/records/entities/commodities/agricium_ore.xml';
+const aslariteResourcePath = 'libs/foundry/records/entities/commodities/aslarite_raw.xml';
 const agriciumResourceGuid = 'fc1ec740-3047-48d8-81f0-396f4c9a90ef';
+const aslariteResourceGuid = 'f0c1f30b-001c-4a80-ac20-27df27183056';
 
 test('extractDataCoreMiningElements extracts first-party mineable element behavior facts', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-elements-'));
@@ -24,7 +26,7 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   await writeXml(
     xmlCacheDir,
     aslaritePath,
-    `<MineableElement.Aslarite_Raw resourceType="f0c1f30b-001c-4a80-ac20-27df27183056" elementInstability="700" elementResistance="0.5" elementOptimalWindowMidpoint="0.4" elementOptimalWindowMidpointRandomness="0.2" elementOptimalWindowThinness="0.6" elementExplosionMultiplier="240" elementClusterFactor="0.1" __type="MineableElement" __ref="9bd0e34c-2b34-42a3-b41d-381088ff6fed" __path="${aslaritePath}" />`,
+    `<MineableElement.Aslarite_Raw resourceType="stale-aslarite-resource-guid" elementInstability="700" elementResistance="0.5" elementOptimalWindowMidpoint="0.4" elementOptimalWindowMidpointRandomness="0.2" elementOptimalWindowThinness="0.6" elementExplosionMultiplier="240" elementClusterFactor="0.1" __type="MineableElement" __ref="9bd0e34c-2b34-42a3-b41d-381088ff6fed" __path="${aslaritePath}" />`,
   );
   await writeXml(
     xmlCacheDir,
@@ -158,7 +160,7 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 5,
+    recordCount: 6,
     records: [
       node(
         agriciumPath,
@@ -175,6 +177,8 @@ function makeGraph(): DataCoreRecordGraph {
         'MineableElement.Aslarite_Raw',
         'MineableElement',
         'Aslarite_Raw',
+        [],
+        [{ attribute: 'resourceType', value: aslariteResourceGuid }],
       ),
       node(
         aphoritePath,
@@ -198,20 +202,29 @@ function makeGraph(): DataCoreRecordGraph {
         'Agricium_Ore',
         [{ attribute: 'Description', key: 'items_commodities_agricium_ore_graph_desc' }],
       ),
+      node(
+        aslariteResourcePath,
+        aslariteResourceGuid,
+        'Commodity.Aslarite_Raw',
+        'Commodity',
+        'Aslarite_Raw',
+        [{ attribute: 'Description', key: 'LOC_UNINITIALIZED' }],
+      ),
     ],
     indexes: {
-      byRef: { [agriciumResourceGuid]: agriciumResourcePath },
+      byRef: { [agriciumResourceGuid]: agriciumResourcePath, [aslariteResourceGuid]: aslariteResourcePath },
       byPath: {
         [agriciumPath]: 0,
         [aslaritePath]: 1,
         [aphoritePath]: 2,
         [globalParamsPath]: 3,
         [agriciumResourcePath]: 4,
+        [aslariteResourcePath]: 5,
       },
       byRootType: {
         MineableElement: [agriciumPath, aslaritePath, aphoritePath],
         MiningGlobalParams: [globalParamsPath],
-        Commodity: [agriciumResourcePath],
+        Commodity: [agriciumResourcePath, aslariteResourcePath],
       },
       byEntityClass: {},
       byLocalizationKey: {},

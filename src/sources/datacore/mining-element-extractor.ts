@@ -79,7 +79,7 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
 
 function isUsableLocalizationKey(key: string): boolean {
   const trimmed = key.trim();
-  return !!trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER)$/i.test(trimmed);
+  return !!trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed);
 }
 
 function toElementName(elementClass: string): string {
