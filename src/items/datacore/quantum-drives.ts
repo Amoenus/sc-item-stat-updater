@@ -1,6 +1,11 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
+import {
+  addAlternateDescKeysWhenDataCoreLacksDescription,
+  type DataCoreItemTypeConfig,
+  makeAlternateDataCoreDescKeys,
+  makeGetTargetKeys,
+} from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('qdrv_', 'QDRV_');
 const getQuantumDriveAlternateDescKeys = makeAlternateDataCoreDescKeys('QDRV', { includeScItemAlias: true });
@@ -29,7 +34,11 @@ export default {
   descKeyMatch: (kl) => kl.includes('descqdrv_') || kl.includes('desc_qdrv_') || kl.includes('desc_qrdv_'),
   getAlternateDescKeys: getQuantumDriveAlternateDescKeys,
   getTargetKeys(row, deriveDescKey) {
-    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getQuantumDriveAlternateDescKeys(key)]);
+    return addAlternateDescKeysWhenDataCoreLacksDescription(
+      row,
+      fallbackTargetKeys(row, deriveDescKey),
+      getQuantumDriveAlternateDescKeys,
+    );
   },
   buildValue(r, flavorText) {
     return stat(r)

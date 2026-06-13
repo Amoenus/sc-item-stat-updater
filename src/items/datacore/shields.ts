@@ -1,6 +1,11 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
+import {
+  addAlternateDescKeysWhenDataCoreLacksDescription,
+  type DataCoreItemTypeConfig,
+  makeAlternateDataCoreDescKeys,
+  makeGetTargetKeys,
+} from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('shld_', 'SHLD_');
 const getShieldAlternateDescKeys = makeAlternateDataCoreDescKeys('SHLD');
@@ -95,7 +100,11 @@ export default {
   descKeyMatch: (kl) => kl.includes('descshld_') || kl.includes('desc_shld_'),
   getAlternateDescKeys: getShieldAlternateDescKeys,
   getTargetKeys(row, deriveDescKey) {
-    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getShieldAlternateDescKeys(key)]);
+    return addAlternateDescKeysWhenDataCoreLacksDescription(
+      row,
+      fallbackTargetKeys(row, deriveDescKey),
+      getShieldAlternateDescKeys,
+    );
   },
   buildValue(r, flavorText) {
     return stat(r)

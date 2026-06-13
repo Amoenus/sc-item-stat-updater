@@ -1,6 +1,11 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
+import {
+  addAlternateDescKeysWhenDataCoreLacksDescription,
+  type DataCoreItemTypeConfig,
+  makeAlternateDataCoreDescKeys,
+  makeGetTargetKeys,
+} from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
 const getCoolerAlternateDescKeys = makeAlternateDataCoreDescKeys('COOL', { includeScItemAlias: true });
@@ -55,7 +60,11 @@ export default {
   },
   getAlternateDescKeys: getCoolerAlternateDescKeys,
   getTargetKeys(row, deriveDescKey) {
-    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getCoolerAlternateDescKeys(key)]);
+    return addAlternateDescKeysWhenDataCoreLacksDescription(
+      row,
+      fallbackTargetKeys(row, deriveDescKey),
+      getCoolerAlternateDescKeys,
+    );
   },
   buildValue(r, flavorText) {
     return stat(r)

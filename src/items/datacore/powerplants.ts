@@ -1,6 +1,11 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeAlternateDataCoreDescKeys, makeGetTargetKeys } from './types';
+import {
+  addAlternateDescKeysWhenDataCoreLacksDescription,
+  type DataCoreItemTypeConfig,
+  makeAlternateDataCoreDescKeys,
+  makeGetTargetKeys,
+} from './types';
 
 const fallbackTargetKeys = makeGetTargetKeys('powr_', 'POWR_');
 const getPowerPlantAlternateDescKeys = makeAlternateDataCoreDescKeys('POWR', { includeScItemAlias: true });
@@ -51,7 +56,11 @@ export default {
   descKeyMatch: (kl) => kl.includes('descpowr_') || kl.includes('desc_powr_'),
   getAlternateDescKeys: getPowerPlantAlternateDescKeys,
   getTargetKeys(row, deriveDescKey) {
-    return fallbackTargetKeys(row, deriveDescKey).flatMap((key) => [key, ...getPowerPlantAlternateDescKeys(key)]);
+    return addAlternateDescKeysWhenDataCoreLacksDescription(
+      row,
+      fallbackTargetKeys(row, deriveDescKey),
+      getPowerPlantAlternateDescKeys,
+    );
   },
   buildValue(r, flavorText) {
     return stat(r)

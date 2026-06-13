@@ -176,11 +176,24 @@ export function getRawDataCoreTargetKeys(
   row: Record<string, string>,
   deriveDescKey: (nameKey: string) => string,
 ): string[] {
-  const descriptionKey = usableLocalizationKey(row['Description Key']);
+  const descriptionKey = getExplicitDataCoreDescriptionKey(row);
   if (descriptionKey) return [descriptionKey];
 
   const nameKey = usableLocalizationKey(row['Name Key']);
   return nameKey ? [deriveDescKey(nameKey)] : [];
+}
+
+export function getExplicitDataCoreDescriptionKey(row: Record<string, string>): string {
+  return usableLocalizationKey(row['Description Key']);
+}
+
+export function addAlternateDescKeysWhenDataCoreLacksDescription(
+  row: Record<string, string>,
+  targetKeys: string[],
+  getAlternateDescKeys: (descKey: string) => string[],
+): string[] {
+  if (getExplicitDataCoreDescriptionKey(row)) return targetKeys;
+  return targetKeys.flatMap((key) => [key, ...getAlternateDescKeys(key)]);
 }
 
 export function makeAlternateDataCoreDescKeys(
