@@ -10,7 +10,7 @@ import type { DataCoreLocalizationReference } from '../../sources/datacore/types
 const logger = getLogger('datacore-title-key-utils');
 
 const TITLE_LOCALIZATION_ATTRIBUTES = new Set(['displayname', 'name', 'shortname']);
-const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder']);
+const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder', 'loc_uninitialized']);
 
 export async function loadOptionalDataCoreRelationshipIndex(datacoreDir: string): Promise<DataCoreRelationshipIndex> {
   try {

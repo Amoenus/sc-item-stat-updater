@@ -16,6 +16,8 @@ async function makeTempWorkspace() {
     [
       'Entity Class,Name Key,Short Name Key,Tracking Signal',
       'gmisl_s01_cs_fski_spark,item_NameStale_Spark,item_NameStale_Spark_short,CrossSection',
+      'csv_collision,item_NameGMISL_S01_CS_FSKI_Spark,item_NameGMISL_S01_CS_FSKI_Spark_short,Infrared',
+      'placeholder_missile,LOC_PLACEHOLDER,LOC_UNINITIALIZED,Infrared',
       'gmisl_s01_em_behr_pioneer,item_NameGMISL_S01_EM_BEHR_Pioneer,item_NameGMISL_S01_EM_BEHR_Pioneer_short,Electromagnetic',
       'misl_s01_ir_vncl_arrow,item_NameMISL_S01_IR_VNCL_Arrow,item_NameMISL_S01_IR_VNCL_Arrow_short,Infrared',
       'missile_custom,item_NameCustom_Rocket,item_NameCustom_Rocket_short,Infrared',

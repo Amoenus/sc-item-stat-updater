@@ -16,6 +16,8 @@ async function makeTempWorkspace() {
     [
       'Entity Class,Name Key,Size,Class',
       'ksar_rifle_energy_01,item_Name_stale_ksar_rifle_energy_01,2,Medium',
+      'csv_collision,item_Name_ksar_rifle_energy_01,9,Shotgun',
+      'placeholder_weapon,LOC_PLACEHOLDER,9,Shotgun',
       'behr_pistol_ballistic_01,item_Name_behr_pistol_ballistic_01,1,Small',
       'behr_special_case,item_Name_Behr_SpecialCase,3,Energy',
     ].join('\n'),

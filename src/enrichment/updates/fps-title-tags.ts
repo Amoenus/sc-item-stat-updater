@@ -128,18 +128,18 @@ async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
 
   for (const [key, value] of buildLookupMapFromRows(personalRows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
-    if (!key) return null;
+    if (!isUsableLocalizationKey(key)) return null;
     return [key, { tag: buildPersonalTag(row) }];
   })) {
-    keyToTag.set(key, value);
+    setFallbackLookupValue(keyToTag, key, value);
   }
 
   for (const [key, value] of buildLookupMapFromRows(attachmentRows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
-    if (!key) return null;
+    if (!isUsableLocalizationKey(key)) return null;
     return [key, { tag: buildAttachmentTag(row) }];
   })) {
-    keyToTag.set(key, value);
+    setFallbackLookupValue(keyToTag, key, value);
   }
 
   return keyToTag;
@@ -147,6 +147,14 @@ async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
 
 function normalizeLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
+}
+
+function isUsableLocalizationKey(key: string): boolean {
+  return key !== '' && !/^loc_(?:empty|placeholder|uninitialized)$/i.test(key);
+}
+
+function setFallbackLookupValue<V>(lookup: Map<string, V>, key: string, value: V): void {
+  if (!lookup.has(key)) lookup.set(key, value);
 }
 
 function applyFpsTitleTags(lines: string[], keyToTag: Map<string, { tag: string }>) {

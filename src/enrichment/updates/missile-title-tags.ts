@@ -40,20 +40,20 @@ async function buildMissileSignalLookupFromDataCore(datacoreDir: string) {
     const key = normalizeLocalizationKey(row['Name Key']);
     const signal = normalizeSpaces(row['Tracking Signal'] || '');
     const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
-    if (!key || !tag) return null;
+    if (!isUsableLocalizationKey(key) || !tag) return null;
     return [key, tag];
   })) {
-    keyToTag.set(key, tag);
+    setFallbackLookupValue(keyToTag, key, tag);
   }
 
   for (const [key, tag] of buildLookupMapFromRows(rows, (row) => {
     const key = normalizeLocalizationKey(row['Short Name Key']);
     const signal = normalizeSpaces(row['Tracking Signal'] || '');
     const tag = MISSILE_SIGNAL_TAG[signal as keyof typeof MISSILE_SIGNAL_TAG];
-    if (!key || !tag) return null;
+    if (!isUsableLocalizationKey(key) || !tag) return null;
     return [key, tag];
   })) {
-    keyToTag.set(key, tag);
+    setFallbackLookupValue(keyToTag, key, tag);
   }
 
   return keyToTag;
@@ -61,6 +61,14 @@ async function buildMissileSignalLookupFromDataCore(datacoreDir: string) {
 
 function normalizeLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
+}
+
+function isUsableLocalizationKey(key: string): boolean {
+  return key !== '' && !/^loc_(?:empty|placeholder|uninitialized)$/i.test(key);
+}
+
+function setFallbackLookupValue<V>(lookup: Map<string, V>, key: string, value: V): void {
+  if (!lookup.has(key)) lookup.set(key, value);
 }
 
 function applyMissileSignalTags(lines: string[], keyToTag: Map<string, string>) {
