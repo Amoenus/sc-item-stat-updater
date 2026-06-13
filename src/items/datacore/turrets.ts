@@ -32,17 +32,11 @@ export default {
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('turret'),
   getTargetKeys(row, deriveDescKey) {
+    const descriptionKey = usableKey(row['Description Key']);
+    if (descriptionKey) return [descriptionKey];
+
     const shortNameKey = usableKey(row['Short Name Key']);
     if (/^item_Desc/i.test(shortNameKey)) return [shortNameKey];
-
-    const descriptionKey = usableKey(row['Description Key']);
-    const nameKey = usableKey(row['Name Key']);
-    if (nameKey) {
-      const derivedDescriptionKey = deriveDescKey(nameKey);
-      if (!descriptionKey || descriptionKey.toLowerCase() !== derivedDescriptionKey.toLowerCase()) {
-        return [derivedDescriptionKey];
-      }
-    }
 
     return fallbackTargetKeys(row, deriveDescKey);
   },
