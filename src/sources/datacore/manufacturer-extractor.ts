@@ -36,10 +36,22 @@ export async function extractDataCoreManufacturers(
       logo: root.attr('Logo') ?? '',
       logoFullColor: root.attr('LogoFullColor') ?? '',
       logoSimplifiedWhite: root.attr('LogoSimplifiedWhite') ?? '',
-      dashboardCanvasConfigGuid: root.attr('DashboardCanvasConfig') ?? '',
-      buildingBlocksStyleGuid: root.attr('BuildingBlocksStyle') ?? '',
-      audioManufacturerTagGuid: root.attr('AudioManufacturerTag') ?? '',
-      lightAmplificationGuid: root.attr('LightAmplification') ?? '',
+      dashboardCanvasConfigGuid: graphGuidReference(
+        record,
+        ['DashboardCanvasConfig'],
+        root.attr('DashboardCanvasConfig') ?? '',
+      ),
+      buildingBlocksStyleGuid: graphGuidReference(
+        record,
+        ['BuildingBlocksStyle'],
+        root.attr('BuildingBlocksStyle') ?? '',
+      ),
+      audioManufacturerTagGuid: graphGuidReference(
+        record,
+        ['AudioManufacturerTag'],
+        root.attr('AudioManufacturerTag') ?? '',
+      ),
+      lightAmplificationGuid: graphGuidReference(record, ['LightAmplification'], root.attr('LightAmplification') ?? ''),
     });
   }
 
@@ -52,6 +64,14 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], 
     if (isUsableLocalizationKey(key)) return key;
   }
   return localizationKey(fallback);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function isUsableLocalizationKey(value: string): boolean {

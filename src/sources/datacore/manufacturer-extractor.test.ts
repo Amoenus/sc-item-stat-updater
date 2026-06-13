@@ -19,10 +19,10 @@ test('extractDataCoreManufacturers reads raw manufacturer identity and asset met
         LogoFullColor="ui/textures/logos/logo_corp_aegs_square_color.tif"
         LogoSimplifiedWhite="ui/textures/logos/logo_corp_aegs_square_white.tif"
         Code="AEG"
-        DashboardCanvasConfig="3db6a90f-4e32-40b5-b583-da02478b1f69"
-        BuildingBlocksStyle="bcf008bc-19c3-4fc5-8629-9f18e462dbe0"
-        AudioManufacturerTag="3a4880d2-c4d7-4b78-a5ab-bd9a54fd3e5f"
-        LightAmplification="41883412-2a2c-47a0-b5a9-c0f40e3fed63"
+        DashboardCanvasConfig="stale-dashboard-canvas-config"
+        BuildingBlocksStyle="stale-building-blocks-style"
+        AudioManufacturerTag="stale-audio-manufacturer-tag"
+        LightAmplification="stale-light-amplification"
         __type="SCItemManufacturer"
         __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2"
         __path="${manufacturerPath}">
@@ -80,6 +80,8 @@ test('extractDataCoreManufacturers ignores placeholder XML fallback keys', async
   graph.records[0].rootTag = 'SCItemManufacturer.PLCH';
   graph.records[0].entityClass = 'PLCH';
   graph.records[0].localizationKeys = [];
+  graph.records[0].referencedGuids = [];
+  graph.records[0].referencedGuidAttributes = [];
   graph.indexes = {
     byRef: { 'placeholder-manufacturer': manufacturerPath },
     byPath: { [manufacturerPath]: 0 },
@@ -115,7 +117,18 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
           { attribute: 'Name', key: 'manufacturer_NameAEGS' },
           { attribute: 'ShortName', key: 'manufacturer_ShortNameAEGS' },
         ],
-        referencedGuids: [],
+        referencedGuids: [
+          '3db6a90f-4e32-40b5-b583-da02478b1f69',
+          'bcf008bc-19c3-4fc5-8629-9f18e462dbe0',
+          '3a4880d2-c4d7-4b78-a5ab-bd9a54fd3e5f',
+          '41883412-2a2c-47a0-b5a9-c0f40e3fed63',
+        ],
+        referencedGuidAttributes: [
+          { attribute: 'DashboardCanvasConfig', value: '3db6a90f-4e32-40b5-b583-da02478b1f69' },
+          { attribute: 'BuildingBlocksStyle', value: 'bcf008bc-19c3-4fc5-8629-9f18e462dbe0' },
+          { attribute: 'AudioManufacturerTag', value: '3a4880d2-c4d7-4b78-a5ab-bd9a54fd3e5f' },
+          { attribute: 'LightAmplification', value: '41883412-2a2c-47a0-b5a9-c0f40e3fed63' },
+        ],
       },
     ],
     indexes: {
