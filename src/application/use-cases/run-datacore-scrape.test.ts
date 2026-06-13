@@ -1386,7 +1386,7 @@ test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML
   );
   assert.match(
     csv,
-    /jdrv_aegs_s04_javelin,LOC_PLACEHOLDER,,,AEGS,4,3,,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
+    /jdrv_aegs_s04_javelin,,,,AEGS,4,3,,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
   );
 });
 
@@ -3971,6 +3971,6 @@ test('runDatacoreScrape extracts salvage modifier stats from real-shaped DataCor
   );
   assert.match(
     csv,
-    /salvage_modifier_scraper_large,item_scraper_GRIN_Large_Name,LOC_PLACEHOLDER,item_scraper_GRIN_Large_Desc,GRIN,1,1,,100,0\.05,6,0\.6/,
+    /salvage_modifier_scraper_large,item_scraper_GRIN_Large_Name,,item_scraper_GRIN_Large_Desc,GRIN,1,1,,100,0\.05,6,0\.6/,
   );
 });
