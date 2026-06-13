@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type {
   DataCoreContractTemplateHaulingOrderRecord,
   DataCoreRecordGraphLookup,
@@ -42,7 +43,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
       $(objective)
         .find('ObjectiveHandler_Hauling HaulingOrder_Resource')
         .each((orderIndex, order) => {
-          const resourceGuid = $(order).attr('resource') ?? '';
+          const resourceGuid = graphGuidReference(record, ['resource'], $(order).attr('resource') ?? '');
           const minSCU = $(order).attr('minSCU') ?? '';
           const maxSCU = $(order).attr('maxSCU') ?? '';
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
@@ -100,7 +101,7 @@ async function buildCarryableResourceResolver(
     const resourceClass = record.entityClass || resourceClassFromNameKey(resourceNameKey);
 
     $('ResourceContainerDefaultCompositionEntry[entry]').each((_, entry) => {
-      const resourceGuid = $(entry).attr('entry') ?? '';
+      const resourceGuid = graphGuidReference(record, ['entry'], $(entry).attr('entry') ?? '');
       if (!resourceGuid || resources.has(resourceGuid)) return;
       resources.set(resourceGuid, { resourceClass, resourceNameKey });
     });
@@ -111,6 +112,10 @@ async function buildCarryableResourceResolver(
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {

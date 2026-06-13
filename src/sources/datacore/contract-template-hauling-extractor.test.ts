@@ -89,7 +89,74 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
   );
 });
 
+test('extractDataCoreContractTemplateHaulingOrders prefers unique graph refs for resources', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-template-hauling-refs-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/haul_graph.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.HaulGraph __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <objectiveTokens>
+          <ObjectiveToken debugName="Hauling">
+            <objectiveHandler>
+              <ObjectiveHandler_Hauling>
+                <haulingOrders>
+                  <HaulingOrder_Resource resource="stale-resource-guid" minSCU="2" maxSCU="4" maxContainerSize="8" />
+                </haulingOrders>
+              </ObjectiveHandler_Hauling>
+            </objectiveHandler>
+          </ObjectiveToken>
+        </objectiveTokens>
+      </ContractTemplate.HaulGraph>
+    `,
+  );
+  const carryablePath = 'libs/foundry/records/entities/scitem/carryables/carryable_carbon.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, carryablePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, carryablePath),
+    `
+      <EntityClassDefinition.CarryableCarbon __type="EntityClassDefinition" __ref="carryable-guid" __path="${carryablePath}">
+        <ResourceContainer>
+          <defaultComposition>
+            <ResourceContainerDefaultCompositionEntry entry="stale-resource-guid" weight="1" />
+          </defaultComposition>
+        </ResourceContainer>
+      </EntityClassDefinition.CarryableCarbon>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0].referencedGuids = ['resource-guid'];
+  graph.records[0].referencedGuidAttributes = [{ attribute: 'resource', value: 'resource-guid' }];
+  graph.records[2].referencedGuids = ['resource-guid'];
+  graph.records[2].referencedGuidAttributes = [{ attribute: 'entry', value: 'resource-guid' }];
+
+  assert.deepEqual(
+    await extractDataCoreContractTemplateHaulingOrders({
+      xmlCacheDir,
+      graph: createDataCoreRecordGraphLookup(graph),
+    }),
+    [
+      {
+        templateClass: 'HaulGraph',
+        objectiveDebugName: 'Hauling',
+        orderIndex: '1',
+        resourceGuid: 'resource-guid',
+        resourceClass: 'Carbon',
+        resourceNameKey: 'items_commodities_carbon',
+        minSCU: '2',
+        maxSCU: '4',
+        maxContainerSize: '8',
+        orderSummary: '',
+        recordGuid: 'template-guid',
+        recordPath: templatePath,
+      },
+    ],
+  );
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
+  const templateClass = templatePath.includes('haul_graph') ? 'HaulGraph' : 'HaulTest';
   return {
     source: 'datacore-record-graph',
     recordCount: 3,
@@ -97,9 +164,9 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
       {
         path: templatePath,
         ref: 'template-guid',
-        rootTag: 'ContractTemplate.HaulTest',
+        rootTag: `ContractTemplate.${templateClass}`,
         rootType: 'ContractTemplate',
-        entityClass: 'HaulTest',
+        entityClass: templateClass,
         localizationKeys: [],
         referencedGuids: [],
       },
