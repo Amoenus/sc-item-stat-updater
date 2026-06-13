@@ -1039,6 +1039,12 @@ function toLocationSlug(name: string): string {
 }
 
 function toLocationDescKeyCandidates(row: Record<string, string>): string[] {
+  const graphKeys = String(row['DataCore Location Description Keys'] ?? '')
+    .split(';')
+    .map((key) => key.trim())
+    .filter(Boolean);
+  if (graphKeys.length > 0) return graphKeys;
+
   const slugs = String(row['DataCore Location Slugs'] ?? '')
     .split(';')
     .map((slug) => slug.trim())
@@ -1094,7 +1100,8 @@ export default {
 
   /**
    * Derives the target INI key(s) for a location row.
-   * Priority: DataCore provider location slug, then display-name slug fallback.
+   * Priority: DataCore location description keys, then provider location slug,
+   * then display-name slug fallback.
    */
   getTargetKeys(row) {
     const withPVariants = (keys: string[]): string[] => {

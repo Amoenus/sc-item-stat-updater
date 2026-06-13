@@ -269,7 +269,16 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hathor['Ship Mineables'], '');
 });
 
-test('mining location target keys are derived from DataCore provider slugs instead of static map rows', () => {
+test('mining location target keys prefer DataCore description keys before slug fallback', () => {
+  assert.deepEqual(
+    miningLocationsConfig.getTargetKeys?.({
+      'Location Name': 'Hurston',
+      'DataCore Location Slugs': 'hpp_stanton1',
+      'DataCore Location Description Keys': 'AsteroidCluster_MiningBase_Desc',
+    }),
+    ['AsteroidCluster_MiningBase_Desc', 'AsteroidCluster_MiningBase_Desc,P'],
+  );
+
   assert.deepEqual(
     miningLocationsConfig.getTargetKeys?.({
       'Location Name': 'Hurston',
