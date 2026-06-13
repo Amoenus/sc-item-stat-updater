@@ -18,17 +18,18 @@ async function makeWorkspace() {
       'item_Name_Test_Repeat_B=Repeat Blueprint B',
       'item_Name_Test_Repeat_C=Repeat Powerplant',
       'RepScope_Contractor_Rank3=Sr. Contractor',
+      'RepScope_Contractor_Rank4=Veteran Contractor',
     ].join('\n'),
     'utf8',
   );
   await fs.writeFile(
     path.join(datacoreDir, 'contract-generators.datacore.csv'),
     [
-      'Contract ID,Contract Debug Name,Handler Debug Name,Template GUID,Description Key,Description Variant Keys,Blueprint Reward Pool Guids,Blueprint Rewards,Min Standing Name Key,Required Completed Contract Tags',
-      'contract-1,RewardVariant,,template-ref,test_desc,test_desc_variant,,"[{""blueprintPool"":""pool-ref"",""chance"":0.25,""trigger"":""MissionSuccess"",""type"":""BlueprintRewards""}]",RepScope_Contractor_Rank3,',
-      'contract-2,NoRewardVariant,,template-ref,shared_desc,,,,,',
-      'contract-3,StantonRewardVariant,,template-ref,shared_desc,,pool-ref,,RepScope_Contractor_Rank3,',
-      'contract-4,FacilityFollowup,FacilityHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",,,completed-contract-tag',
+      'Contract ID,Contract Debug Name,Handler Debug Name,Template GUID,Description Key,Description Variant Keys,Blueprint Reward Pool Guids,Blueprint Rewards,Min Standing Name Key,Min Standing GUID,Required Completed Contract Tags',
+      'contract-1,RewardVariant,,template-ref,test_desc,test_desc_variant,,"[{""blueprintPool"":""pool-ref"",""chance"":0.25,""trigger"":""MissionSuccess"",""type"":""BlueprintRewards""}]",RepScope_Contractor_Rank3,standing-rank-4,',
+      'contract-2,NoRewardVariant,,template-ref,shared_desc,,,,,,',
+      'contract-3,StantonRewardVariant,,template-ref,shared_desc,,pool-ref,,RepScope_Contractor_Rank3,standing-rank-4,',
+      'contract-4,FacilityFollowup,FacilityHandler,template-repeat-ref,,,"repeat-pool-1,repeat-pool-2",,,,completed-contract-tag',
     ].join('\n'),
     'utf8',
   );
@@ -96,7 +97,7 @@ async function makeWorkspace() {
     path.join(datacoreDir, 'record-graph.json'),
     JSON.stringify({
       source: 'datacore-record-graph',
-      recordCount: 2,
+      recordCount: 3,
       records: [
         {
           path: 'target.xml',
@@ -116,23 +117,40 @@ async function makeWorkspace() {
           localizationKeys: [{ attribute: 'Name', key: 'item_Name_Test_Repeat_C' }],
           referencedGuids: [],
         },
+        {
+          path: 'reputation/contractor-rank-4.xml',
+          ref: 'standing-rank-4',
+          rootTag: 'ReputationScope.Contractor_Rank4',
+          rootType: 'ReputationScope',
+          entityClass: 'Contractor_Rank4',
+          localizationKeys: [{ attribute: 'displayName', key: 'RepScope_Contractor_Rank4' }],
+          referencedGuids: [],
+        },
       ],
       indexes: {
         byRef: {
           'target-ref': 'target.xml',
           'powerplant-ref': 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml',
+          'standing-rank-4': 'reputation/contractor-rank-4.xml',
         },
-        byPath: { 'target.xml': 0, 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml': 1 },
+        byPath: {
+          'target.xml': 0,
+          'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml': 1,
+          'reputation/contractor-rank-4.xml': 2,
+        },
         byRootType: {
           EntityClassDefinition: ['target.xml', 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+          ReputationScope: ['reputation/contractor-rank-4.xml'],
         },
         byEntityClass: {
           Test_Target: ['target.xml'],
           Test_Powerplant: ['libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+          Contractor_Rank4: ['reputation/contractor-rank-4.xml'],
         },
         byLocalizationKey: {
           item_Name_Test_Target: ['target.xml'],
           item_Name_Test_Repeat_C: ['libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+          RepScope_Contractor_Rank4: ['reputation/contractor-rank-4.xml'],
         },
         byReferencedGuid: {},
       },
@@ -152,12 +170,12 @@ describe('loadDatacoreDescriptionsSourceData', () => {
 
       assert.equal(
         row?.RewardList,
-        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Veteran Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
       );
       assert.equal(row?.ContractIntel, String.raw`Time Limit: 12 min\nReputation Awarded: 100`);
       assert.equal(
         missionDescriptionValue(row ?? {}, 'Base description.'),
-        String.raw`Base description.\n\n<EM4>Reputation Awarded:</EM4> 100\n\n** Contract Intel **\nTime Limit: 12 min\n\n<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`Base description.\n\n<EM4>Reputation Awarded:</EM4> 100\n\n** Contract Intel **\nTime Limit: 12 min\n\n<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Veteran Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
       );
 
       const brokerRow = rows.find((candidate) => candidate['Localization Key'] === 'broker_desc');
@@ -184,13 +202,13 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       const variantRow = rows.find((candidate) => candidate['Localization Key'] === 'test_desc_variant');
       assert.equal(
         variantRow?.RewardList,
-        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Veteran Contractor level variants</EM4>\n- Test Blueprint Item (100%)`,
       );
 
       const sharedRow = rows.find((candidate) => candidate['Localization Key'] === 'shared_desc');
       assert.equal(
         sharedRow?.RewardList,
-        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Sr. Contractor level variants</EM4>\n<EM4>Applies only to variants containing: StantonRewardVariant</EM4>\n- Test Blueprint Item (100%)`,
+        String.raw`<EM4>Potential Blueprints</EM4>\n<EM4>Awarded from Veteran Contractor level variants</EM4>\n<EM4>Applies only to variants containing: StantonRewardVariant</EM4>\n- Test Blueprint Item (100%)`,
       );
 
       const repeatRow = rows.find((candidate) => candidate['Localization Key'] === 'repeat_desc');

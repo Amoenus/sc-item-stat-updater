@@ -514,33 +514,38 @@ async function resolveContractStandingLabel(
   if (cached !== undefined) return cached;
 
   const explicitKey = row['Min Standing Name Key'] || row['MinStandingNameKey'];
+  const explicitGuid = row['Min Standing GUID'] || row['MinStandingGuid'];
+  const standingGuid = explicitGuid || (await readContractMinStandingGuid(row, xmlCacheDir));
+
+  if (standingGuid) {
+    const standingRecord = recordGraph?.getByRef(standingGuid);
+    const standingKey =
+      standingRecord?.localizationKeys.find(
+        (l) => /displayname|name/i.test(l.attribute) && isUsableGraphLocalizationKey(l.key),
+      )?.key ??
+      standingRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
+      '';
+    if (standingKey) {
+      const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
+      cache.set(cacheKey, label);
+      return label;
+    }
+
+    const inferredLabel = inferStandingLabel(standingRecord?.entityClass ?? standingGuid);
+    if (inferredLabel) {
+      cache.set(cacheKey, inferredLabel);
+      return inferredLabel;
+    }
+  }
+
   if (explicitKey) {
     const label = resolveLocalizedValue(explicitKey, localizationValues) || explicitKey;
     cache.set(cacheKey, label);
     return label;
   }
 
-  const explicitGuid = row['Min Standing GUID'] || row['MinStandingGuid'];
-  const standingGuid = explicitGuid || (await readContractMinStandingGuid(row, xmlCacheDir));
-  if (!standingGuid) {
-    cache.set(cacheKey, '');
-    return '';
-  }
-
-  const standingRecord = recordGraph?.getByRef(standingGuid);
-  const standingKey =
-    standingRecord?.localizationKeys.find((l) => /displayname|name/i.test(l.attribute))?.key ??
-    standingRecord?.localizationKeys[0]?.key ??
-    '';
-  if (standingKey) {
-    const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
-    cache.set(cacheKey, label);
-    return label;
-  }
-
-  const label = inferStandingLabel(standingRecord?.entityClass ?? standingGuid);
-  cache.set(cacheKey, label);
-  return label;
+  cache.set(cacheKey, '');
+  return '';
 }
 
 async function readContractMinStandingGuid(row: Record<string, string>, xmlCacheDir: string | null): Promise<string> {
@@ -626,6 +631,11 @@ function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
   return trimmed.replace(/^@/, '');
+}
+
+function isUsableGraphLocalizationKey(value: string): boolean {
+  const key = normalizeLocalizationKey(value);
+  return !!key && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(key);
 }
 
 function uniqueOrderedStrings(values: string[]): string[] {
