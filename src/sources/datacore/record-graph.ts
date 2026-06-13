@@ -113,7 +113,7 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
     for (const attribute of LOCALIZATION_ATTRIBUTES) {
       const rawKey = $(element).attr(attribute)?.trim();
       const key = rawKey?.startsWith('@') ? rawKey.slice(1).trim() : '';
-      if (!key) continue;
+      if (!isUsableLocalizationKey(key)) continue;
 
       const flatAttribute = flattenString(attribute);
       const flatKey = flattenString(key);
@@ -126,6 +126,10 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
   });
 
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
+}
+
+function isUsableLocalizationKey(value: string): boolean {
+  return value !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(value);
 }
 
 function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): DataCoreGuidReference[] {

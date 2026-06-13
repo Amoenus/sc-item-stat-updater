@@ -24,6 +24,7 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
         <Hauling orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Name" />
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
         <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" />
+        <Placeholder Name="@LOC_PLACEHOLDER" Description="@LOC_UNINITIALIZED" />
         <Fallback Name="Raw entity name is not a localization reference" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
@@ -76,9 +77,15 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);
+  assert.equal(graph.indexes.byLocalizationKey.LOC_PLACEHOLDER, undefined);
+  assert.equal(graph.indexes.byLocalizationKey.LOC_UNINITIALIZED, undefined);
   assert.deepEqual(graph.indexes.byLocalizationKey.manufacturer_Desc_AEGS, [
     'libs/foundry/records/scitemmanufacturer/aegs.xml',
   ]);
+  assert.equal(
+    graph.records[0]?.localizationKeys.some((reference) => /^LOC_(?:PLACEHOLDER|UNINITIALIZED)$/i.test(reference.key)),
+    false,
+  );
   assert.deepEqual(graph.indexes.byReferencedGuid['22222222-2222-2222-2222-222222222222'], [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
