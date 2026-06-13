@@ -2295,21 +2295,11 @@ function resolveComponentManufacturerCode(
   fallbackManufacturer: string,
   resolver: DataCoreManufacturerResolver | undefined,
 ): string {
-  const graphManufacturerGuid = record ? graphGuidReference(record, ['Manufacturer', 'manufacturer']) : '';
+  const graphManufacturerGuid =
+    uniqueGraphGuidReference(record, 'Manufacturer') || uniqueGraphGuidReference(record, 'manufacturer');
   const graphManufacturer =
     graphManufacturerGuid && resolver ? resolver.getByRef(graphManufacturerGuid)?.code ?? '' : '';
   return graphManufacturer || resolveManufacturerCode(fallbackManufacturer, resolver);
-}
-
-function graphGuidReference(record: DataCoreRecordNode | undefined, attributes: string[]): string {
-  if (!record || attributes.length === 0) return '';
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.referencedGuidAttributes
-      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => reference.value.trim())
-      .find((value) => value !== '') ?? ''
-  );
 }
 
 function getDataCoreGraphLocalizationKey(

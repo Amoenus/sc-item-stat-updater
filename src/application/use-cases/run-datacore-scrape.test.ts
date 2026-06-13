@@ -154,6 +154,40 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
   );
 });
 
+test('runDatacoreScrape falls back when graph component manufacturer refs are ambiguous', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-ambiguous-manufacturer-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.SHLD_Ambiguous_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_ambiguous_scitem.xml">
+        <GraphLocalization Name="@item_NameSHLD_Ambiguous" Description="@item_DescSHLD_Ambiguous" />
+        <GraphRelationships Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />
+        <OtherRelationship Manufacturer="65a5d887-3b21-4046-a718-6912c0c7c3be" />
+        <SAttachableComponentParams>
+          <AttachDef Size="2" Grade="b" SubType="CIVILIAN" Manufacturer="RSI" />
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="500" />
+      </EntityClassDefinition.SHLD_Ambiguous_SCItem>
+    `,
+  );
+
+  await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [typeEntry],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shields.datacore.csv'), 'utf8');
+  assert.match(csv, /shld_ambiguous,item_NameSHLD_Ambiguous,,item_DescSHLD_Ambiguous,RSI,2,B,Civilian,500,,/);
+});
+
 test('runDatacoreScrape discovers selector-matched item records outside legacy path filters', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-structural-discovery-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
