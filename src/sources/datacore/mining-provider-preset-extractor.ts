@@ -36,7 +36,9 @@ export async function extractDataCoreMiningProviderPresets(
 
       group.find('> harvestables > HarvestableElement').each((entryIndex, element) => {
         const entry = $(element);
-        const harvestableGuid = entry.attr('harvestable') ?? entry.attr('harvestableEntityClass') ?? '';
+        const harvestableGuid = entry.attr('harvestable')
+          ? graphGuidReference(record, ['harvestable'], entry.attr('harvestable') ?? '')
+          : graphGuidReference(record, ['harvestableEntityClass'], entry.attr('harvestableEntityClass') ?? '');
         const harvestable = harvestableGuid ? options.graph.getByRef(harvestableGuid) : undefined;
         const harvestableSetupGuid = entry.attr('harvestableSetup')
           ? graphGuidReference(record, ['harvestableSetup'], entry.attr('harvestableSetup') ?? '')
@@ -55,7 +57,9 @@ export async function extractDataCoreMiningProviderPresets(
             graph: options.graph,
             cache: mineableCache,
             harvestable,
-            directEntityGuid: entry.attr('harvestableEntityClass') ?? '',
+            directEntityGuid: entry.attr('harvestableEntityClass')
+              ? graphGuidReference(record, ['harvestableEntityClass'], entry.attr('harvestableEntityClass') ?? '')
+              : '',
           }).then((mineable) => ({
             ref: record.ref,
             path: record.path,
