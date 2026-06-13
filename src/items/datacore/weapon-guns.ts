@@ -33,27 +33,16 @@ function usableKey(value: string | undefined): string {
   return trimmed && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED' ? trimmed : '';
 }
 
-function hasSpecificVariantDescription(nameKey: string, descriptionKey: string): boolean {
-  return (
-    /_Shark$/i.test(nameKey) &&
-    descriptionKey.toLowerCase() !== nameKey.replace(/^item_Name/i, 'item_Desc').toLowerCase()
-  );
-}
-
 export default {
   csvFile: 'weapongun.datacore.csv',
   label: 'DC Weapon Guns',
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Alpha', 'Rate of Fire', 'Health'],
   descKeyMatch: isWeaponDescKey,
   getTargetKeys(row, deriveDescKey) {
-    const nameKey = usableKey(row['Name Key']);
     const descriptionKey = usableKey(row['Description Key']);
 
-    if (nameKey) {
-      const derivedDescriptionKey = deriveDescKey(nameKey);
-      if (/^item_Name/i.test(descriptionKey) || hasSpecificVariantDescription(nameKey, descriptionKey)) {
-        return [derivedDescriptionKey];
-      }
+    if (descriptionKey) {
+      return [/^item_Name/i.test(descriptionKey) ? deriveDescKey(descriptionKey) : descriptionKey];
     }
 
     return fallbackTargetKeys(row, deriveDescKey);

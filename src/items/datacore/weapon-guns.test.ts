@@ -6,7 +6,7 @@ const getTargetKeys = config.getTargetKeys;
 
 assert.ok(getTargetKeys, 'weapon-guns config must define getTargetKeys');
 
-test('weapon-guns derives variant-specific Sharkmouth description keys from name keys', () => {
+test('weapon-guns keeps explicit DataCore family description keys instead of variant name heuristics', () => {
   assert.deepEqual(
     getTargetKeys(
       {
@@ -16,7 +16,7 @@ test('weapon-guns derives variant-specific Sharkmouth description keys from name
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
+    ['item_DescAPAR_BallisticScatterGun_S1'],
   );
 });
 
@@ -45,5 +45,19 @@ test('weapon-guns keeps ordinary raw description keys', () => {
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
     ['item_DescBEHR_BallisticCannon_S4'],
+  );
+});
+
+test('weapon-guns derives variant description keys only when DataCore lacks a description key', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'apar_ballisticscattergun_s1_shark',
+        'Name Key': 'item_NameAPAR_BallisticScatterGun_S1_Shark',
+        'Description Key': '',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
   );
 });
