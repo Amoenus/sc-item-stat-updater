@@ -72,7 +72,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     callout1Key: '',
     callout2Key: '',
     callout3Key: '',
-    typeGuid: 'e60452a5-b85c-4ab1-97e7-9cefb466f87b',
+    typeGuid: 'stale-type-guid',
     parentGuid: 'a14bec87-5801-4440-8ca8-35597487ac9a',
     parentClass: 'PyroAsteroidBelt',
     parentPath,
@@ -117,6 +117,7 @@ function makeGraph(): DataCoreRecordGraph {
         { attribute: 'parent', value: 'a14bec87-5801-4440-8ca8-35597487ac9a' },
         { attribute: 'type', value: '' },
         { attribute: 'type', value: 'e60452a5-b85c-4ab1-97e7-9cefb466f87b' },
+        { attribute: 'type', value: '4e23177a-79e4-42d4-938c-c36c65b0b129' },
       ],
     ),
     node(pyroSystemPath, '286cb603-b4ae-4279-80a1-d4505fee1916', 'StarMapObject', 'PyroSolarSystem', [

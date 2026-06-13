@@ -64,6 +64,7 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   assert.equal(aslarite.elementName, 'Aslarite (Raw)');
   assert.equal(aslarite.materialName, 'Aslarite');
   assert.equal(aslarite.inferredDescriptionKey, 'items_commodities_aslarite_raw_desc');
+  assert.equal(aslarite.resourceTypeGuid, 'stale-aslarite-resource-guid');
 
   const aphorite = rows.find((row) => row.elementClass === 'MinableElement_FPS_Aphorite');
   assert.ok(aphorite);
@@ -184,6 +185,7 @@ function makeGraph(): DataCoreRecordGraph {
         [
           { attribute: 'resourceType', value: '' },
           { attribute: 'resourceType', value: aslariteResourceGuid },
+          { attribute: 'resourceType', value: '7afcd406-f76b-4dd7-8700-25a74a12ecbd' },
         ],
       ),
       node(

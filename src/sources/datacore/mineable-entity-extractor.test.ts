@@ -44,8 +44,8 @@ test('extractDataCoreMineableEntities extracts first-party mineable entity param
       ref: 'entity-guid',
       path: entityPath,
       entityClass: 'AsteroidCTypeMineableRock_Aluminium',
-      compositionGuid: 'composition-guid',
-      compositionClass: 'Asteroid_CType_Aluminium',
+      compositionGuid: 'stale-composition-guid',
+      compositionClass: '',
       globalParamsGuid: 'global-guid',
       globalParamsClass: 'MiningGlobalParams_Ship',
       audioParamsGuid: 'audio-guid',
@@ -77,6 +77,7 @@ function makeGraph(): DataCoreRecordGraph {
       [
         { attribute: 'composition', value: '' },
         { attribute: 'composition', value: 'composition-guid' },
+        { attribute: 'composition', value: 'alternate-composition-guid' },
         { attribute: 'globalParams', value: '' },
         { attribute: 'globalParams', value: 'global-guid' },
         { attribute: 'audioParams', value: '' },
