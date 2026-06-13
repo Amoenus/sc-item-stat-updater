@@ -1,9 +1,8 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup } from './types';
+import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
-
 
 export interface ExtractDataCoreMaterialLocalizationsOptions {
   xmlCacheDir: string;
@@ -34,11 +33,13 @@ export async function extractDataCoreMaterialLocalizations(
         const el = $(element);
         const resourceGuid = el.attr('entry');
         if (resourceGuid) {
-          const locName = $('Localization').first().attr('Name');
+          const locName =
+            graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) ||
+            normalizeLocalizationKey($('Localization').first().attr('Name') ?? '');
           if (locName) {
             chunkRows.push({
               resourceGuid,
-              localizationKey: locName.startsWith('@') ? locName.slice(1) : locName,
+              localizationKey: locName,
             });
           }
         }
@@ -63,4 +64,23 @@ export async function extractDataCoreMaterialLocalizations(
 
   options.onProgress?.(records.length, records.length);
   return rows;
+}
+
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  return isUsableLocalizationKey(key) ? (key ?? '') : '';
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = normalizeLocalizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
+function normalizeLocalizationKey(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }
