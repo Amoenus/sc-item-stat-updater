@@ -24,12 +24,12 @@ test('extractDataCoreMiningProviderPresets extracts mining provider rows and res
         <harvestableGroups>
           <HarvestableElementGroup groupName="SpaceShip_Mineables" groupProbability="6">
             <harvestables>
-              <HarvestableElement harvestable="e576319a-80bf-46a6-b600-ab4d5e34c00f" relativeProbability="44" clustering="70128b72-7c50-4315-bed8-59a1c2ef7996">
+              <HarvestableElement harvestable="e576319a-80bf-46a6-b600-ab4d5e34c00f" relativeProbability="44" clustering="stale-clustering-guid">
                 <geometries>
                   <HarvestableGeometry tag="6874072c-c021-43bc-b8d9-d06b810102c5" />
                 </geometries>
               </HarvestableElement>
-              <HarvestableElement harvestableEntityClass="dfa89ac4-393b-4e8d-97b4-5ce21ee61970" harvestableSetup="0aa9921e-8de0-487e-bc87-1d457c56d74f" relativeProbability="1" />
+              <HarvestableElement harvestableEntityClass="dfa89ac4-393b-4e8d-97b4-5ce21ee61970" harvestableSetup="stale-setup-guid" relativeProbability="1" />
             </harvestables>
           </HarvestableElementGroup>
           <HarvestableElementGroup groupName="Salvage_FreshDerelicts" groupProbability="0.04">
@@ -114,7 +114,11 @@ function makeGraph(): DataCoreRecordGraph {
         rootType: 'HarvestableProviderPreset',
         entityClass: 'HPP_Stanton1',
         localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids: ['70128b72-7c50-4315-bed8-59a1c2ef7996', '0aa9921e-8de0-487e-bc87-1d457c56d74f'],
+        referencedGuidAttributes: [
+          { attribute: 'clustering', value: '70128b72-7c50-4315-bed8-59a1c2ef7996' },
+          { attribute: 'harvestableSetup', value: '0aa9921e-8de0-487e-bc87-1d457c56d74f' },
+        ],
       },
       {
         path: harvestablePresetPath,

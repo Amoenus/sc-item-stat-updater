@@ -38,9 +38,13 @@ export async function extractDataCoreMiningProviderPresets(
         const entry = $(element);
         const harvestableGuid = entry.attr('harvestable') ?? entry.attr('harvestableEntityClass') ?? '';
         const harvestable = harvestableGuid ? options.graph.getByRef(harvestableGuid) : undefined;
-        const harvestableSetupGuid = entry.attr('harvestableSetup') ?? '';
+        const harvestableSetupGuid = entry.attr('harvestableSetup')
+          ? graphGuidReference(record, ['harvestableSetup'], entry.attr('harvestableSetup') ?? '')
+          : '';
         const harvestableSetup = harvestableSetupGuid ? options.graph.getByRef(harvestableSetupGuid) : undefined;
-        const clusteringGuid = entry.attr('clustering') ?? '';
+        const clusteringGuid = entry.attr('clustering')
+          ? graphGuidReference(record, ['clustering'], entry.attr('clustering') ?? '')
+          : '';
         const clustering = clusteringGuid ? options.graph.getByRef(clusteringGuid) : undefined;
 
         if (!isMiningProviderEntry(groupName, harvestable)) return;
