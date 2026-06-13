@@ -59,10 +59,13 @@ export async function extractDataCoreManufacturers(
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  for (const attribute of attributes) {
-    const key = record.localizationKeys.find((reference) => reference.attribute === attribute)?.key ?? '';
-    if (isUsableLocalizationKey(key)) return key;
-  }
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key =
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => localizationKey(reference.key))
+      .find((candidate) => candidate !== '') ?? '';
+  if (key) return key;
   return localizationKey(fallback);
 }
 
@@ -72,11 +75,6 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
     record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
       ?.value ?? fallback
   );
-}
-
-function isUsableLocalizationKey(value: string): boolean {
-  const normalized = localizationKey(value);
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function localizationKey(value: string): string {

@@ -113,8 +113,10 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
         rootType: 'SCItemManufacturer',
         entityClass: 'AEGS',
         localizationKeys: [
-          { attribute: 'Description', key: 'manufacturer_DescAEGS' },
-          { attribute: 'Name', key: 'manufacturer_NameAEGS' },
+          { attribute: 'Description', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayDescription', key: 'manufacturer_DescAEGS' },
+          { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayName', key: 'manufacturer_NameAEGS' },
           { attribute: 'ShortName', key: 'manufacturer_ShortNameAEGS' },
         ],
         referencedGuids: [

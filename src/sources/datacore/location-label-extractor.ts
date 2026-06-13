@@ -95,10 +95,12 @@ export async function extractDataCoreLocationLabels(
 function firstLocalizationKey(record: DataCoreRecordNode | undefined, attributes: string[]): string {
   if (!record) return '';
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  return usableLocalizationKey(key);
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => localizationKey(reference.key))
+      .find((candidate) => candidate !== '') ?? ''
+  );
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
@@ -113,14 +115,8 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
   );
 }
 
-function usableLocalizationKey(value: string | undefined): string {
-  if (!value || value === 'LOC_EMPTY' || value === 'LOC_UNINITIALIZED' || value === 'LOC_PLACEHOLDER') return '';
-  return value;
-}
-
 function localizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED' || trimmed === '@LOC_PLACEHOLDER')
-    return '';
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

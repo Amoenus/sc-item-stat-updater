@@ -112,11 +112,12 @@ function qualityFamily(recordPath: string): string {
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  if (key && key !== 'LOC_EMPTY' && key !== 'LOC_UNINITIALIZED' && key !== 'LOC_PLACEHOLDER') return key;
-  return localizationKey(fallback);
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => localizationKey(reference.key))
+      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
+  );
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
@@ -128,5 +129,7 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
 }
 
 function localizationKey(value: string): string {
-  return value.startsWith('@') ? value.slice(1) : value;
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

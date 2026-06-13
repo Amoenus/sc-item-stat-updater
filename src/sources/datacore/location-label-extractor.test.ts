@@ -124,8 +124,10 @@ function makeGraph(locationPath: string): DataCoreRecordGraph {
     records: [
       {
         ...node(locationPath, '407847a6-4aae-4c3c-9a36-b80108d776f0', 'StarMapObject', 'Pyro3_Outpost', [
-          { attribute: 'name', key: 'Pyro3_Outpost' },
-          { attribute: 'description', key: 'Pyro3_Outpost_desc' },
+          { attribute: 'name', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayName', key: 'Pyro3_Outpost' },
+          { attribute: 'description', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayDescription', key: 'Pyro3_Outpost_desc' },
           { attribute: 'callout1', key: 'Pyro3_Outpost_callout1' },
         ]),
         referencedGuids: [

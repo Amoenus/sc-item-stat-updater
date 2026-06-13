@@ -69,7 +69,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     sourceReason: 'class-or-path-mining',
     nameKey: 'ab_mine_pyro_regiona_med_001',
     descriptionKey: 'ab_mine_pyro_desc',
-    callout1Key: 'LOC_UNINITIALIZED',
+    callout1Key: '',
     callout2Key: '',
     callout3Key: '',
     typeGuid: 'e60452a5-b85c-4ab1-97e7-9cefb466f87b',
@@ -107,8 +107,10 @@ function makeGraph(): DataCoreRecordGraph {
       'StarMapObject',
       'AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01',
       [
-        { attribute: 'name', key: 'ab_mine_pyro_regiona_med_001' },
-        { attribute: 'description', key: 'ab_mine_pyro_desc' },
+        { attribute: 'name', key: 'LOC_PLACEHOLDER' },
+        { attribute: 'displayName', key: 'ab_mine_pyro_regiona_med_001' },
+        { attribute: 'description', key: 'LOC_PLACEHOLDER' },
+        { attribute: 'displayDescription', key: 'ab_mine_pyro_desc' },
       ],
       [
         { attribute: 'parent', value: 'a14bec87-5801-4440-8ca8-35597487ac9a' },
