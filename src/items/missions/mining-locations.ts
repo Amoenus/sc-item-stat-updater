@@ -324,7 +324,7 @@ function buildDatacoreMiningLocationRows(
   subHarvestableConfigRows: Record<string, string>[],
   paramRows: Record<string, string>[],
 ): Record<string, string>[] {
-  const compositionNames = buildCompositionNameMap(compositionRows);
+  const compositionNames = buildCompositionNameLookup(compositionRows);
   const mineableEntitiesByGuid = new Map(
     mineableEntityRows.flatMap((row) => (row['Record GUID'] ? [[row['Record GUID'], row]] : [])),
   );
@@ -389,7 +389,9 @@ function buildDatacoreMiningLocationRows(
     const locationSlug = toProviderLocationSlug(row);
     const miningType = classifyMiningGroup(row['Group Name'] || '');
     const compositionName =
-      compositionNames.get(row['Composition Class']) || cleanCompositionClass(row['Composition Class']);
+      compositionNames.byGuid.get(row['Composition GUID']) ??
+      compositionNames.byClass.get(row['Composition Class']) ??
+      cleanCompositionClass(row['Composition Class']);
     if (!locationName || !miningType || !compositionName) continue;
 
     const facts = getFacts(locationName);
@@ -477,6 +479,7 @@ function buildDatacoreMiningLocationRows(
   addSpecialDatacoreSitePools({
     compositionNames,
     getFacts,
+    mineableEntitiesByGuid,
     mineableEntitiesByClass,
     qualityDistributionRows,
     subHarvestableConfigRows,
@@ -540,13 +543,14 @@ function relatedLocationLabelRows(
 }
 
 function addSpecialDatacoreSitePools(context: {
-  compositionNames: Map<string, string>;
+  compositionNames: CompositionNameLookup;
   getFacts: (locationName: string) => {
     weights: LocationWeights;
     qualityRows: Map<string, Record<string, string>>;
     mineableEntityClasses: Set<string>;
     subHarvestableSummaries: Map<string, string>;
   };
+  mineableEntitiesByGuid: Map<string, Record<string, string>>;
   mineableEntitiesByClass: Map<string, Record<string, string>>;
   qualityDistributionRows: Record<string, string>[];
   subHarvestableConfigRows: Record<string, string>[];
@@ -573,11 +577,14 @@ function addSpecialDatacoreSitePools(context: {
     const sourceClasses = new Set<string>();
     for (const row of rows) {
       const entityClass = row['Harvestable Entity Class'] || row['Harvestable Class'];
-      const mineableEntity = context.mineableEntitiesByClass.get(entityClass);
+      const mineableEntity =
+        context.mineableEntitiesByGuid.get(row['Harvestable Entity GUID']) ??
+        context.mineableEntitiesByClass.get(entityClass);
       const compositionClass = mineableEntity?.['Composition Class'] || '';
       const elementName = normalizeSpecialMineableName(
         pool.collapsedElementName ||
-          context.compositionNames.get(compositionClass) ||
+          context.compositionNames.byGuid.get(mineableEntity?.['Composition GUID'] ?? '') ||
+          context.compositionNames.byClass.get(compositionClass) ||
           cleanCompositionClass(compositionClass),
       );
       if (!elementName) continue;
@@ -586,7 +593,7 @@ function addSpecialDatacoreSitePools(context: {
         pool.explicitElementWeights?.get(elementName) ??
         parseWeight(row['Initial Slots Probability'], 1) * parseWeight(row['Relative Probability'], 1);
       facts.weights[pool.miningType][elementName] = (facts.weights[pool.miningType][elementName] ?? 0) + weight;
-      addIfPresent(facts.mineableEntityClasses, entityClass);
+      addIfPresent(facts.mineableEntityClasses, mineableEntity?.['Entity Class'] ?? entityClass);
       addIfPresent(sourceClasses, row['Config Class']);
     }
 
@@ -979,25 +986,51 @@ function normalizeSpecialMineableName(value: string): string {
   return normalized;
 }
 
-function buildCompositionNameMap(compositionRows: Record<string, string>[]): Map<string, string> {
-  const scores = new Map<string, Map<string, number>>();
+interface CompositionNameLookup {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+}
+
+function buildCompositionNameLookup(compositionRows: Record<string, string>[]): CompositionNameLookup {
+  const scoresByGuid = new Map<string, Map<string, number>>();
+  const scoresByClass = new Map<string, Map<string, number>>();
   for (const row of compositionRows) {
+    const compositionGuid = row['Record GUID'];
     const compositionClass = row['Composition Class'];
     const elementName = row['Mineable Element Name'];
     if (!compositionClass || !elementName) continue;
 
-    const byElement = scores.get(compositionClass) ?? new Map<string, number>();
     const min = parseWeight(row['Min Percentage'], 0);
     const max = parseWeight(row['Max Percentage'], min);
     const probability = parseWeight(row.Probability, 1);
-    byElement.set(elementName, (byElement.get(elementName) ?? 0) + ((min + max) / 2) * probability);
-    scores.set(compositionClass, byElement);
+    const score = ((min + max) / 2) * probability;
+    addElementScore(scoresByGuid, compositionGuid, elementName, score);
+    addElementScore(scoresByClass, compositionClass, elementName, score);
   }
 
+  return {
+    byGuid: bestElementNames(scoresByGuid),
+    byClass: bestElementNames(scoresByClass),
+  };
+}
+
+function addElementScore(
+  scores: Map<string, Map<string, number>>,
+  key: string | undefined,
+  elementName: string,
+  score: number,
+): void {
+  if (!key) return;
+  const byElement = scores.get(key) ?? new Map<string, number>();
+  byElement.set(elementName, (byElement.get(elementName) ?? 0) + score);
+  scores.set(key, byElement);
+}
+
+function bestElementNames(scores: Map<string, Map<string, number>>): Map<string, string> {
   const names = new Map<string, string>();
-  for (const [compositionClass, byElement] of scores) {
+  for (const [key, byElement] of scores) {
     const best = [...byElement.entries()].toSorted((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
-    if (best) names.set(compositionClass, best[0]);
+    if (best) names.set(key, best[0]);
   }
   return names;
 }

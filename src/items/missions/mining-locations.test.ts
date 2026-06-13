@@ -10,7 +10,8 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Group Name': 'SpaceShip_Mineables',
         'Group Probability': '6',
         'Relative Probability': '3',
-        'Composition Class': 'CommonShipMineablesAsteroid_Aluminum',
+        'Composition GUID': 'composition-aluminum-guid',
+        'Composition Class': 'CommonShipMineablesAsteroid_StaleClass',
         'Harvestable Class': 'AsteroidRockPreset_Aluminum',
         'Harvestable Entity GUID': 'asteroid-rock-guid',
         'Harvestable Entity Class': 'AsteroidRock_StaleClass',
@@ -43,11 +44,15 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
       }),
     ],
     [
-      compositionRow('CommonShipMineablesAsteroid_Aluminum', 'Aluminum (Ore)', '80'),
+      compositionRow('CommonShipMineablesAsteroid_Aluminum', 'Aluminum (Ore)', '80', {
+        'Record GUID': 'composition-aluminum-guid',
+      }),
       compositionRow('CommonShipMineablesAsteroid_Iron', 'Iron (Ore)', '80'),
       compositionRow('FPS_Hadanite', 'Hadanite', '100'),
       compositionRow('GroundVehicle_Beradom', 'Beradom', '100'),
-      compositionRow('FPS_Composition_AphoriteDeposit', 'Aphorite', '100'),
+      compositionRow('FPS_Composition_AphoriteDeposit', 'Aphorite', '100', {
+        'Record GUID': 'composition-aphorite-guid',
+      }),
       compositionRow('FPS_Composition_SadaryxDeposit', 'Sadaryx', '100'),
       compositionRow('FPS_Composition_JacliumDeposit', 'Jaclium', '100'),
       compositionRow('LegendaryShipMineablesAsteroid_Savrilium_RCD', 'Savrilium (Ore)', '100'),
@@ -81,8 +86,10 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Density Class': 'EntityDensityClass_Mineable',
       },
       {
+        'Record GUID': 'aphorite-entity-guid',
         'Entity Class': 'MineableRock_FPS_Aphorite',
-        'Composition Class': 'FPS_Composition_AphoriteDeposit',
+        'Composition GUID': 'composition-aphorite-guid',
+        'Composition Class': 'FPS_Composition_StaleAphorite',
       },
       {
         'Entity Class': 'MineableRock_FPS_Sadaryx',
@@ -152,7 +159,8 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Config Class': 'V3SlotPreset_RockCracker',
         'Tagged Config Name': 'Aphorite minable',
         'Harvestable Class': 'MineableRock_FPS_Aphorite',
-        'Harvestable Entity Class': 'MineableRock_FPS_Aphorite',
+        'Harvestable Entity GUID': 'aphorite-entity-guid',
+        'Harvestable Entity Class': 'MineableRock_FPS_StaleAphorite',
         'Relative Probability': '1',
       }),
       subHarvestableRow({
@@ -355,7 +363,9 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
     'Group Name': '',
     'Group Probability': '',
     'Relative Probability': '',
+    'Composition GUID': '',
     'Composition Class': '',
+    'Harvestable Entity GUID': '',
     'Harvestable Class': '',
     'Harvestable Entity Class': '',
     'Harvestable Setup Class': '',
@@ -367,13 +377,20 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
   };
 }
 
-function compositionRow(compositionClass: string, elementName: string, maxPercentage: string): Record<string, string> {
+function compositionRow(
+  compositionClass: string,
+  elementName: string,
+  maxPercentage: string,
+  overrides: Record<string, string> = {},
+): Record<string, string> {
   return {
     'Composition Class': compositionClass,
     'Mineable Element Name': elementName,
     'Min Percentage': '0',
     'Max Percentage': maxPercentage,
     Probability: '1',
+    'Record GUID': '',
+    ...overrides,
   };
 }
 
@@ -384,6 +401,7 @@ function subHarvestableRow(overrides: Record<string, string>): Record<string, st
     'Tagged Config Name': '',
     'Initial Slots Probability': '1',
     'Harvestable Class': '',
+    'Harvestable Entity GUID': '',
     'Harvestable Entity Class': '',
     'Relative Probability': '',
     'Deepest Relative Probability': '',
