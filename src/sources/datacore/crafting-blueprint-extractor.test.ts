@@ -49,6 +49,33 @@ test('extractDataCoreCraftingBlueprints resolves target items by normalized grap
   ]);
 });
 
+test('extractDataCoreCraftingBlueprints prefers graph name attributes over key-name heuristics', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-crafting-blueprints-name-'));
+  await writeXml(
+    xmlCacheDir,
+    blueprintPath,
+    `
+      <CraftingBlueprintRecord.AEGS_Component_Blueprint __type="CraftingBlueprintRecord" __ref="blueprint-ref" __path="${blueprintPath}">
+        <processSpecificData>
+          <CraftingProcess_Creation entityClass="target-ref" />
+        </processSpecificData>
+      </CraftingBlueprintRecord.AEGS_Component_Blueprint>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[1].localizationKeys = [
+    { attribute: 'description', key: 'item_NameHeuristic_Wrong' },
+    { attribute: 'displayName', key: 'ui_PowerPlant_Display' },
+  ];
+
+  const rows = await extractDataCoreCraftingBlueprints({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0].targetItemNameKey, 'ui_PowerPlant_Display');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });

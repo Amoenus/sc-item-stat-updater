@@ -114,7 +114,10 @@ async function makeWorkspace() {
           rootTag: 'EntityClassDefinition.Test_Powerplant',
           rootType: 'EntityClassDefinition',
           entityClass: 'Test_Powerplant',
-          localizationKeys: [{ attribute: 'Name', key: 'item_Name_Test_Repeat_C' }],
+          localizationKeys: [
+            { attribute: 'description', key: 'item_Name_Test_Repeat_Wrong' },
+            { attribute: 'displayName', key: 'item_Name_Test_Repeat_C' },
+          ],
           referencedGuids: [],
         },
         {

@@ -7,6 +7,7 @@ import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
 import { createDataCoreRelationshipIndex, type DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
+import type { DataCoreRecordNode } from '../../sources/datacore/types';
 import { loadXml } from '../../sources/datacore/xml-parser';
 
 const logger = getLogger('datacore-descriptions-config');
@@ -752,10 +753,7 @@ function resolveBlueprintTargetNameKey(
   resolvedTargetRecord?: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
 ): string {
   const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph, relationshipIndex);
-  const graphKey =
-    targetRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
-    targetRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
-    '';
+  const graphKey = targetRecord ? graphNameLocalizationKey(targetRecord) : '';
   if (graphKey) return graphKey;
 
   const csvKey = row['TargetItemNameKey'];
@@ -764,14 +762,28 @@ function resolveBlueprintTargetNameKey(
   const targetClass = row['TargetEntityClass'];
   if (targetClass && !isGuid(targetClass)) {
     const classRecord = relationshipIndex.getRecordForEntityClass(targetClass);
-    return (
-      classRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
-      classRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
-      ''
-    );
+    return classRecord ? graphNameLocalizationKey(classRecord) || fallbackNameLocalizationKey(classRecord) : '';
   }
 
-  return '';
+  return targetRecord ? fallbackNameLocalizationKey(targetRecord) : '';
+}
+
+function graphNameLocalizationKey(record: DataCoreRecordNode): string {
+  const nameAttributes = new Set(['name', 'displayname', 'shortname']);
+  return (
+    record.localizationKeys.find(
+      (localization) =>
+        nameAttributes.has(localization.attribute.toLowerCase()) && isUsableGraphLocalizationKey(localization.key),
+    )?.key ?? ''
+  );
+}
+
+function fallbackNameLocalizationKey(record: DataCoreRecordNode): string {
+  return (
+    record.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
+    record.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
+    ''
+  );
 }
 
 function resolveBlueprintTargetRecord(
