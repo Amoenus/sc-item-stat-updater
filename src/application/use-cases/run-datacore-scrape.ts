@@ -63,7 +63,10 @@ import {
   writeDataCoreRecordGraph,
 } from '../../sources/datacore/record-graph';
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
-import { uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference } from '../../sources/datacore/record-graph-relations';
+import {
+  graphLocalizationKey as dataCoreGraphLocalizationKey,
+  uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference,
+} from '../../sources/datacore/record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
@@ -2307,18 +2310,27 @@ function getDataCoreGraphLocalizationKey(
   role: 'name' | 'shortName' | 'description',
   source: 'attribute' | 'key-pattern',
 ): string {
+  if (!record) return '';
+  if (source === 'attribute') {
+    const attributes =
+      role === 'name'
+        ? ['Name', 'name', 'displayName']
+        : role === 'shortName'
+          ? ['ShortName', 'shortName']
+          : ['Description', 'description', 'displayDescription'];
+    return dataCoreGraphLocalizationKey(record, attributes);
+  }
+
   const references = record?.localizationKeys ?? [];
-  const attributePattern =
-    role === 'name' ? /^(?:display)?name$/i : role === 'shortName' ? /^shortname$/i : /^(?:display)?description$/i;
   const keyPattern =
     role === 'name' ? /(?:^|_)name/i : role === 'shortName' ? /(?:^|_)short/i : /(?:^|_)desc(?:ription)?/i;
 
   const reference = references.find((candidate) => {
     if (!isUsableLocalizationKey(candidate.key)) return false;
-    return source === 'attribute' ? attributePattern.test(candidate.attribute) : keyPattern.test(candidate.key);
+    return keyPattern.test(candidate.key);
   });
 
-  return (reference?.key ?? '').replace(/^@/, '');
+  return localizationKey(reference?.key ?? '');
 }
 
 function resolveDataCoreLocalizationKey(

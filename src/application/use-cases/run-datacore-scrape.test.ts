@@ -105,7 +105,12 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
     xmlPath,
     `
       <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
-        <GraphLocalization Name="@item_NameSHLD_Graph" ShortName="@item_NameSHLD_Graph_short" Description="@item_DescSHLD_Graph" />
+        <GraphLocalization
+          displayName="@item_A_DisplaySHLD_Graph"
+          Name="@item_Z_NameSHLD_Graph"
+          ShortName="@item_NameSHLD_Graph_short"
+          displayDescription="@item_A_DisplayDescSHLD_Graph"
+          Description="@item_Z_DescSHLD_Graph" />
         <GraphRelationships Manufacturer="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2" />
         <SAttachableComponentParams>
           <AttachDef Size="2" Grade="b" SubType="CIVILIAN">
@@ -150,7 +155,7 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
   );
   assert.match(
     csv,
-    /shld_test,item_NameSHLD_Graph,item_NameSHLD_Graph_short,item_DescSHLD_Graph,AEGS,2,B,Civilian,500,42,87.5%/,
+    /shld_test,item_Z_NameSHLD_Graph,item_NameSHLD_Graph_short,item_Z_DescSHLD_Graph,AEGS,2,B,Civilian,500,42,87.5%/,
   );
 });
 
