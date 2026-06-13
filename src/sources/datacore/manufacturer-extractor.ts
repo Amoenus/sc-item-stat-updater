@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import type { DataCoreManufacturerRecord, DataCoreRecordGraphLookup } from './types';
+import type { DataCoreManufacturerRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
 export interface ExtractDataCoreManufacturersOptions {
@@ -26,9 +26,13 @@ export async function extractDataCoreManufacturers(
       path: record.path,
       manufacturerClass: record.entityClass,
       code: root.attr('Code') ?? '',
-      nameKey: localizationKey(localization.attr('Name') ?? ''),
-      shortNameKey: localizationKey(localization.attr('ShortName') ?? ''),
-      descriptionKey: localizationKey(localization.attr('Description') ?? ''),
+      nameKey: graphLocalizationKey(record, ['Name', 'name', 'displayName'], localization.attr('Name') ?? ''),
+      shortNameKey: graphLocalizationKey(record, ['ShortName'], localization.attr('ShortName') ?? ''),
+      descriptionKey: graphLocalizationKey(
+        record,
+        ['Description', 'description', 'displayDescription'],
+        localization.attr('Description') ?? '',
+      ),
       logo: root.attr('Logo') ?? '',
       logoFullColor: root.attr('LogoFullColor') ?? '',
       logoSimplifiedWhite: root.attr('LogoSimplifiedWhite') ?? '',
@@ -40,6 +44,19 @@ export async function extractDataCoreManufacturers(
   }
 
   return rows;
+}
+
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  for (const attribute of attributes) {
+    const key = record.localizationKeys.find((reference) => reference.attribute === attribute)?.key ?? '';
+    if (isUsableLocalizationKey(key)) return key;
+  }
+  return localizationKey(fallback);
+}
+
+function isUsableLocalizationKey(value: string): boolean {
+  const normalized = localizationKey(value);
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function localizationKey(value: string): string {

@@ -26,7 +26,7 @@ test('extractDataCoreManufacturers reads raw manufacturer identity and asset met
         __type="SCItemManufacturer"
         __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2"
         __path="${manufacturerPath}">
-        <Localization Name="@manufacturer_NameAEGS" ShortName="@LOC_EMPTY" Description="@manufacturer_DescAEGS" />
+        <Localization Name="@manufacturer_NameStale" ShortName="@LOC_EMPTY" Description="@manufacturer_DescStale" />
       </SCItemManufacturer.AEGS>
     `,
     'utf8',
@@ -44,7 +44,7 @@ test('extractDataCoreManufacturers reads raw manufacturer identity and asset met
       manufacturerClass: 'AEGS',
       code: 'AEG',
       nameKey: 'manufacturer_NameAEGS',
-      shortNameKey: '',
+      shortNameKey: 'manufacturer_ShortNameAEGS',
       descriptionKey: 'manufacturer_DescAEGS',
       logo: 'UI/SharedAssets/ManufacturerLogos/Aegis_256.tif',
       logoFullColor: 'ui/textures/logos/logo_corp_aegs_square_color.tif',
@@ -71,6 +71,7 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'Description', key: 'manufacturer_DescAEGS' },
           { attribute: 'Name', key: 'manufacturer_NameAEGS' },
+          { attribute: 'ShortName', key: 'manufacturer_ShortNameAEGS' },
         ],
         referencedGuids: [],
       },
@@ -90,6 +91,7 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
       },
       byLocalizationKey: {
         manufacturer_NameAEGS: [manufacturerPath],
+        manufacturer_ShortNameAEGS: [manufacturerPath],
         manufacturer_DescAEGS: [manufacturerPath],
       },
       byReferencedGuid: {},
