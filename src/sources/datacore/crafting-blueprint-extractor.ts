@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { createDataCoreRelationshipIndex } from './relationship-index';
 import type { DataCoreCraftingBlueprintRecord, DataCoreRecordGraphLookup } from './types';
 import { loadXml } from './xml-parser';
 
@@ -14,6 +15,7 @@ export async function extractDataCoreCraftingBlueprints(
   options: ExtractDataCoreCraftingBlueprintsOptions,
 ): Promise<DataCoreCraftingBlueprintRecord[]> {
   const records = options.graph.getByRootType('CraftingBlueprintRecord');
+  const relationships = createDataCoreRelationshipIndex(options.graph);
   const rows: DataCoreCraftingBlueprintRecord[] = [];
 
   options.onProgress?.(0, records.length);
@@ -28,7 +30,7 @@ export async function extractDataCoreCraftingBlueprints(
 
       const targetEntityClassRef = $('processSpecificData > CraftingProcess_Creation').attr('entityClass') ?? '';
       const targetEntityNode =
-        options.graph.getByRef(targetEntityClassRef) ?? options.graph.getByEntityClass(targetEntityClassRef)[0];
+        options.graph.getByRef(targetEntityClassRef) ?? relationships.getRecordForEntityClass(targetEntityClassRef);
       const targetEntityClassGuid = targetEntityNode?.ref ?? targetEntityClassRef;
       const targetEntityClass = targetEntityNode?.entityClass ?? targetEntityClassRef;
       const targetItemNameKey =
@@ -43,7 +45,7 @@ export async function extractDataCoreCraftingBlueprints(
         const resource = el.attr('resource');
         const minQuality = Number(el.attr('minQuality')) || 0;
         const amount = Number(el.find('> quantity > SStandardCargoUnit').attr('standardCargoUnits')) || 0;
-        
+
         if (resource) {
           recipeCosts.push({ resource, minQuality, amount });
         }

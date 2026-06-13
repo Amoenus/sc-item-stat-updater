@@ -1,0 +1,94 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { extractDataCoreCraftingBlueprints } from './crafting-blueprint-extractor';
+import { createDataCoreRecordGraphLookup } from './record-graph-loader';
+import type { DataCoreRecordGraph } from './types';
+
+const blueprintPath = 'libs/foundry/records/crafting/blueprints/aegs_component_blueprint.xml';
+const targetPath = 'libs/foundry/records/entities/scitem/ships/powerplant/powr_aegs_s01_charger.xml';
+
+test('extractDataCoreCraftingBlueprints resolves target items by normalized graph entity class refs', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-crafting-blueprints-'));
+  await writeXml(
+    xmlCacheDir,
+    blueprintPath,
+    `
+      <CraftingBlueprintRecord.AEGS_Component_Blueprint __type="CraftingBlueprintRecord" __ref="blueprint-ref" __path="${blueprintPath}">
+        <processSpecificData>
+          <CraftingProcess_Creation entityClass="POWR_AEGS_S01_CHARGER_SCItem" />
+        </processSpecificData>
+        <CraftingRecipeCosts>
+          <CraftingCost_Resource resource="resource-guid" minQuality="2">
+            <quantity>
+              <SStandardCargoUnit standardCargoUnits="12" />
+            </quantity>
+          </CraftingCost_Resource>
+        </CraftingRecipeCosts>
+      </CraftingBlueprintRecord.AEGS_Component_Blueprint>
+    `,
+  );
+
+  const rows = await extractDataCoreCraftingBlueprints({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(makeGraph()),
+  });
+
+  assert.deepEqual(rows, [
+    {
+      ref: 'blueprint-ref',
+      path: blueprintPath,
+      blueprintClass: 'AEGS_Component_Blueprint',
+      targetEntityClassGuid: 'target-ref',
+      targetEntityClass: 'powr_aegs_s01_charger',
+      targetItemNameKey: 'item_NamePOWR_AEGS_S01_Charger',
+      recipeCosts: '[{"resource":"resource-guid","minQuality":2,"amount":12}]',
+    },
+  ]);
+});
+
+async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
+  const xmlPath = path.join(xmlCacheDir, recordPath);
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(xmlPath, xml, 'utf8');
+}
+
+function makeGraph(): DataCoreRecordGraph {
+  return {
+    source: 'datacore-record-graph',
+    recordCount: 2,
+    records: [
+      {
+        path: blueprintPath,
+        ref: 'blueprint-ref',
+        rootTag: 'CraftingBlueprintRecord.AEGS_Component_Blueprint',
+        rootType: 'CraftingBlueprintRecord',
+        entityClass: 'AEGS_Component_Blueprint',
+        localizationKeys: [],
+        referencedGuids: [],
+      },
+      {
+        path: targetPath,
+        ref: 'target-ref',
+        rootTag: 'EntityClassDefinition.powr_aegs_s01_charger',
+        rootType: 'EntityClassDefinition',
+        entityClass: 'powr_aegs_s01_charger',
+        localizationKeys: [{ attribute: 'Name', key: 'item_NamePOWR_AEGS_S01_Charger' }],
+        referencedGuids: [],
+      },
+    ],
+    indexes: {
+      byRef: { 'blueprint-ref': blueprintPath, 'target-ref': targetPath },
+      byPath: { [blueprintPath]: 0, [targetPath]: 1 },
+      byRootType: { CraftingBlueprintRecord: [blueprintPath], EntityClassDefinition: [targetPath] },
+      byEntityClass: {
+        AEGS_Component_Blueprint: [blueprintPath],
+        powr_aegs_s01_charger: [targetPath],
+      },
+      byLocalizationKey: { item_NamePOWR_AEGS_S01_Charger: [targetPath] },
+      byReferencedGuid: {},
+    },
+  };
+}
