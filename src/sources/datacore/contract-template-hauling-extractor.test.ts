@@ -21,6 +21,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
               <ObjectiveHandler_Hauling>
                 <haulingOrders>
                   <HaulingOrder_Resource resource="resource-guid" minSCU="12" maxSCU="87" maxContainerSize="8" />
+                  <HaulingOrder_Resource resource="fallback-resource-guid" minSCU="1" maxSCU="1" maxContainerSize="1" />
                 </haulingOrders>
               </ObjectiveHandler_Hauling>
             </objectiveHandler>
@@ -43,6 +44,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
         <ResourceContainer>
           <defaultComposition>
             <ResourceContainerDefaultCompositionEntry entry="resource-guid" weight="1" />
+            <ResourceContainerDefaultCompositionEntry entry="fallback-resource-guid" weight="1" />
           </defaultComposition>
         </ResourceContainer>
       </EntityClassDefinition.CarryableCarbon>
@@ -60,11 +62,25 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
         objectiveDebugName: 'Hauling',
         orderIndex: '1',
         resourceGuid: 'resource-guid',
-        resourceClass: 'carbon',
+        resourceClass: 'Carbon',
         resourceNameKey: 'items_commodities_carbon',
         minSCU: '12',
         maxSCU: '87',
         maxContainerSize: '8',
+        orderSummary: '',
+        recordGuid: 'template-guid',
+        recordPath: templatePath,
+      },
+      {
+        templateClass: 'HaulTest',
+        objectiveDebugName: 'Hauling',
+        orderIndex: '2',
+        resourceGuid: 'fallback-resource-guid',
+        resourceClass: 'CarryableCarbon',
+        resourceNameKey: 'items_commodities_carbon',
+        minSCU: '1',
+        maxSCU: '1',
+        maxContainerSize: '1',
         orderSummary: '',
         recordGuid: 'template-guid',
         recordPath: templatePath,

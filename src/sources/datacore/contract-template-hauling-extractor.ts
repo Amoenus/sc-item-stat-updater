@@ -47,7 +47,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
           const maxSCU = $(order).attr('maxSCU') ?? '';
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
           const resolvedResource = resourceResolver.get(resourceGuid);
-          const resourceClass = resolvedResource?.resourceClass ?? linkedClass(options.graph.getByRef(resourceGuid));
+          const resourceClass = linkedClass(options.graph.getByRef(resourceGuid)) || resolvedResource?.resourceClass || '';
           const resourceNameKey = resolvedResource?.resourceNameKey ?? '';
           rows.push({
             templateClass: record.entityClass,
@@ -94,7 +94,7 @@ async function buildCarryableResourceResolver(
       $('SCItemPurchasableParams').first().attr('displayName') ?? '',
       $('LocStringUserVariable[name="ItemName"]').first().attr('defaultValue') ?? '',
     ]);
-    const resourceClass = resourceClassFromNameKey(resourceNameKey) || record.entityClass;
+    const resourceClass = record.entityClass || resourceClassFromNameKey(resourceNameKey);
 
     $('ResourceContainerDefaultCompositionEntry[entry]').each((_, entry) => {
       const resourceGuid = $(entry).attr('entry') ?? '';
