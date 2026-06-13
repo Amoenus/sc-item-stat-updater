@@ -27,6 +27,7 @@ export interface DataCoreRelationshipCoverageDiagnostic {
     csvNameKey: number;
     guessedAlias: number;
   };
+  titleKeyGaps: DataCoreRelationshipCoverageTitleGapDiagnostic;
   componentFamilies: DataCoreRelationshipCoverageFamilyDiagnostic[];
   guessedOnlyMatches: DataCoreRelationshipCoverageGuessedMatch[];
   warnings: string[];
@@ -44,6 +45,21 @@ export interface DataCoreRelationshipCoverageGuessedMatch {
   key: string;
   entityClass: string;
   componentType: string;
+}
+
+export interface DataCoreRelationshipCoverageTitleGapDiagnostic {
+  placeholderNameKey: number;
+  missingNameKey: number;
+  csvNameKeyOnly: number;
+  other: number;
+  samples: DataCoreRelationshipCoverageTitleGapSample[];
+}
+
+export interface DataCoreRelationshipCoverageTitleGapSample {
+  entityClass: string;
+  componentType: string;
+  nameKey: string;
+  reason: 'placeholder-name-key' | 'missing-name-key' | 'csv-name-key-only' | 'other';
 }
 
 export interface BuildDataCoreRelationshipCoverageDiagnosticsOptions {
@@ -76,6 +92,7 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
   const guessedOnlyMatches = collectGuessedOnlyMatches(facts, iniKeys, keySources, options.guessedOnlyMatchLimit);
   const componentFamilies = summarizeComponentFamilies(facts);
   const titleKeyCounts = countTitleKeysBySource(keySources);
+  const titleKeyGaps = summarizeTitleKeyGaps(facts);
 
   return {
     versionDir,
@@ -85,6 +102,7 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
     componentsWithoutGraphTitleKeys: facts.filter((fact) => !hasGraphTitleKey(fact)).length,
     titleKeys: titleKeyCounts,
     matchedIniKeys,
+    titleKeyGaps,
     componentFamilies,
     guessedOnlyMatches,
     warnings: collectWarnings(componentFamilies, titleKeyCounts, matchedIniKeys, iniKeys),
@@ -228,6 +246,44 @@ function summarizeComponentFamilies(facts: ComponentFact[]): DataCoreRelationshi
     .sort((a, b) => a.componentType.localeCompare(b.componentType));
 }
 
+function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCoverageTitleGapDiagnostic {
+  const gaps: DataCoreRelationshipCoverageTitleGapDiagnostic = {
+    placeholderNameKey: 0,
+    missingNameKey: 0,
+    csvNameKeyOnly: 0,
+    other: 0,
+    samples: [],
+  };
+
+  for (const fact of facts) {
+    if (hasGraphTitleKey(fact)) continue;
+
+    const reason = titleGapReason(fact);
+    if (reason === 'placeholder-name-key') gaps.placeholderNameKey++;
+    if (reason === 'missing-name-key') gaps.missingNameKey++;
+    if (reason === 'csv-name-key-only') gaps.csvNameKeyOnly++;
+    if (reason === 'other') gaps.other++;
+
+    if (gaps.samples.length < 12) {
+      gaps.samples.push({
+        entityClass: fact.entityClass,
+        componentType: fact.componentType,
+        nameKey: fact.nameKey,
+        reason,
+      });
+    }
+  }
+
+  return gaps;
+}
+
+function titleGapReason(fact: ComponentFact): DataCoreRelationshipCoverageTitleGapSample['reason'] {
+  if (fact.titleKeySources.some(({ source }) => source === 'csv-name-key')) return 'csv-name-key-only';
+  if (fact.nameKey === 'loc_empty' || fact.nameKey === 'loc_placeholder') return 'placeholder-name-key';
+  if (!fact.nameKey) return 'missing-name-key';
+  return 'other';
+}
+
 function hasGraphTitleKey(fact: ComponentFact): boolean {
   return fact.titleKeySources.some(({ source }) => source === 'graph-localization');
 }
@@ -246,9 +302,6 @@ function collectWarnings(
   const uncoveredFamilies = componentFamilies.filter((family) => family.status === 'no-graph-title-keys');
   if (uncoveredFamilies.length > 0) {
     warnings.push(`${uncoveredFamilies.length} component families have no graph-derived title keys.`);
-  }
-  if (titleKeys.guessedOnly > 0) {
-    warnings.push(`${titleKeys.guessedOnly} component title keys are guessed aliases only.`);
   }
   if (!iniKeys) {
     warnings.push('global.ini was not readable; matched localization key coverage was skipped.');
@@ -277,6 +330,7 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     `Components: ${diagnostics.totalComponents} total; ${diagnostics.componentsWithGraphTitleKeys} with graph title keys; ${diagnostics.componentsWithoutGraphTitleKeys} without graph title keys.`,
     `Title keys: ${diagnostics.titleKeys.total} total; ${diagnostics.titleKeys.graphLocalization} graph; ${diagnostics.titleKeys.csvNameKey} CSV name keys; ${diagnostics.titleKeys.guessedAlias} guessed aliases; ${diagnostics.titleKeys.guessedOnly} guessed-only.`,
     `Matched INI name keys: ${diagnostics.matchedIniKeys.total} total; ${diagnostics.matchedIniKeys.graphLocalization} graph; ${diagnostics.matchedIniKeys.csvNameKey} CSV name keys; ${diagnostics.matchedIniKeys.guessedAlias} guessed aliases.`,
+    `Rows without graph title keys: ${diagnostics.titleKeyGaps.placeholderNameKey} placeholder name keys; ${diagnostics.titleKeyGaps.missingNameKey} missing name keys; ${diagnostics.titleKeyGaps.csvNameKeyOnly} CSV name-key only; ${diagnostics.titleKeyGaps.other} other.`,
     '',
     '| Component family | Status | Rows | Rows with graph title keys | Rows without graph title keys |',
     '| --- | --- | ---: | ---: | ---: |',
@@ -294,6 +348,15 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
   } else {
     for (const match of diagnostics.guessedOnlyMatches) {
       lines.push(`  ${match.key} (${match.componentType}, ${match.entityClass})`);
+    }
+  }
+
+  lines.push('', 'Rows without graph title keys sample:');
+  if (diagnostics.titleKeyGaps.samples.length === 0) {
+    lines.push('  none');
+  } else {
+    for (const sample of diagnostics.titleKeyGaps.samples) {
+      lines.push(`  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`);
     }
   }
 

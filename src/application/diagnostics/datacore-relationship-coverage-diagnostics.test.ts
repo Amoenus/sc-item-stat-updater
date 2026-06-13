@@ -118,6 +118,26 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     assert.equal(diagnostics.titleKeys.graphLocalization, 1);
     assert.equal(diagnostics.titleKeys.csvNameKey, 2);
     assert.equal(diagnostics.titleKeys.guessedOnly, 4);
+    assert.deepEqual(diagnostics.titleKeyGaps, {
+      placeholderNameKey: 0,
+      missingNameKey: 1,
+      csvNameKeyOnly: 1,
+      other: 0,
+      samples: [
+        {
+          entityClass: 'cool_test',
+          componentType: 'cooler',
+          nameKey: 'item_name_csv_cool',
+          reason: 'csv-name-key-only',
+        },
+        {
+          entityClass: 'shld_test',
+          componentType: 'shield',
+          nameKey: '',
+          reason: 'missing-name-key',
+        },
+      ],
+    });
     assert.deepEqual(
       diagnostics.componentFamilies.map((family) => [family.componentType, family.status]),
       [
@@ -133,7 +153,9 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     const formatted = formatDataCoreRelationshipCoverageDiagnostics(diagnostics);
     assert.match(formatted, /DataCore relationship coverage audit/);
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
+    assert.match(formatted, /Rows without graph title keys: 0 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
     assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);
+    assert.match(formatted, /cooler, cool_test: csv-name-key-only \(item_name_csv_cool\)/);
     assert.match(formatted, /Summary: \d+ relationship coverage warnings\./);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
