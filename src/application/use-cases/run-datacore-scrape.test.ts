@@ -892,6 +892,126 @@ test('runDatacoreScrape extracts personal weapon stats through default magazine 
   );
 });
 
+test('runDatacoreScrape resolves default magazines by normalized graph entity class references', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-weapon-personal-entity-ref-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const weaponPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'weapons',
+    'fps_weapons',
+    'behr_lmg_ballistic_02.xml',
+  );
+  const magazinePath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'weapons',
+    'magazines',
+    'behr_lmg_ballistic_02_mag.xml',
+  );
+  const ammoPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'ammoparams',
+    'fps',
+    'behr_lmg_ballistic_02_ammo.xml',
+  );
+  await fs.mkdir(path.dirname(weaponPath), { recursive: true });
+  await fs.mkdir(path.dirname(magazinePath), { recursive: true });
+  await fs.mkdir(path.dirname(ammoPath), { recursive: true });
+  await fs.writeFile(
+    weaponPath,
+    `
+      <EntityClassDefinition.behr_lmg_ballistic_02 __path="libs/foundry/records/entities/scitem/weapons/fps_weapons/behr_lmg_ballistic_02.xml">
+        <Components>
+          <SAttachableComponentParams>
+            <AttachDef Type="WeaponPersonal" SubType="Medium" Size="4" Grade="1" Manufacturer="BEHR">
+              <Localization Name="@item_Namebehr_lmg_ballistic_02" ShortName="@item_Namebehr_lmg_ballistic_02_short" Description="@item_Descbehr_lmg_ballistic_02" />
+            </AttachDef>
+          </SAttachableComponentParams>
+          <SCItemWeaponComponentParams>
+            <fireActions>
+              <SWeaponActionFireRapidParams aiShootingMode="Rapid" fireRate="700" />
+            </fireActions>
+          </SCItemWeaponComponentParams>
+          <SEntityComponentDefaultLoadoutParams>
+            <loadout>
+              <SItemPortLoadoutManualParams>
+                <entries>
+                  <SItemPortLoadoutEntryParams itemPortName="magazine_attach" entityClassName="BEHR_LMG_BALLISTIC_02_MAG_SCItem" />
+                </entries>
+              </SItemPortLoadoutManualParams>
+            </loadout>
+          </SEntityComponentDefaultLoadoutParams>
+        </Components>
+      </EntityClassDefinition.behr_lmg_ballistic_02>
+    `,
+  );
+  await fs.writeFile(
+    magazinePath,
+    `
+      <EntityClassDefinition.behr_lmg_ballistic_02_mag __path="libs/foundry/records/entities/scitem/weapons/magazines/behr_lmg_ballistic_02_mag.xml">
+        <Components>
+          <SAmmoContainerComponentParams maxAmmoCount="60" ammoParamsRecord="264cba0d-026f-42a6-a6a0-55a8bfe8b480" />
+        </Components>
+      </EntityClassDefinition.behr_lmg_ballistic_02_mag>
+    `,
+  );
+  await fs.writeFile(
+    ammoPath,
+    `
+      <AmmoParams.behr_lmg_ballistic_02_ammo __type="AmmoParams" __ref="264cba0d-026f-42a6-a6a0-55a8bfe8b480" __path="libs/foundry/records/ammoparams/fps/behr_lmg_ballistic_02_ammo.xml" lifetime="2" speed="500">
+        <projectileParams>
+          <BulletProjectileParams>
+            <damage>
+              <DamageInfo DamagePhysical="30" DamageEnergy="0" DamageDistortion="0" DamageThermal="0" DamageBiochemical="0" DamageStun="0" />
+            </damage>
+          </BulletProjectileParams>
+        </projectileParams>
+      </AmmoParams.behr_lmg_ballistic_02_ammo>
+    `,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'weapon-personal',
+        csvFile: 'weaponpersonal.datacore.csv',
+        typeConfig: WEAPON_PERSONAL_TYPE_CONFIG,
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 3,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'weaponpersonal.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'weapon-personal', rows: 1, skipped: 0, csvFile: 'weaponpersonal.datacore.csv' },
+  ]);
+  assert.match(
+    csv,
+    /behr_lmg_ballistic_02,item_Namebehr_lmg_ballistic_02,item_Namebehr_lmg_ballistic_02_short,item_Descbehr_lmg_ballistic_02,BEHR,4,1,Medium,,30,700,Rapid,500,1000,60/,
+  );
+});
+
 test('runDatacoreScrape extracts bomb params and skips missile records in shared ordnance folder', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-bombs-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');

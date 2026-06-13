@@ -2191,6 +2191,7 @@ async function scrapeDataCoreType(
         }
         const value = await resolveField($, spec, rowRecord, {
           graph: options.graph,
+          relationships,
           xmlCacheDir: options.xmlCacheDir,
           referencedXmlCache,
         });
@@ -3656,6 +3657,7 @@ async function resolveField(
   row: Record<string, string>,
   context: {
     graph?: DataCoreRecordGraphLookup;
+    relationships: DataCoreRelationshipIndex;
     xmlCacheDir: string;
     referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
   },
@@ -3693,6 +3695,7 @@ async function loadReferencedXml(
   ref: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[],
   context: {
     graph?: DataCoreRecordGraphLookup;
+    relationships: DataCoreRelationshipIndex;
     xmlCacheDir: string;
     referencedXmlCache: Map<string, ReturnType<typeof loadXml>>;
   },
@@ -3701,7 +3704,7 @@ async function loadReferencedXml(
 
   let source = $;
   for (const step of Array.isArray(ref) ? ref : [ref]) {
-    const record = resolveReferencedRecord(source, step, context.graph);
+    const record = resolveReferencedRecord(source, step, context.graph, context.relationships);
     if (!record) return undefined;
 
     const cached = context.referencedXmlCache.get(record.path);
@@ -3722,6 +3725,7 @@ function resolveReferencedRecord(
   source: ReturnType<typeof loadXml>,
   step: DataCoreFieldReferenceSelector,
   graph: DataCoreRecordGraphLookup,
+  relationships: DataCoreRelationshipIndex,
 ): ReturnType<DataCoreRecordGraphLookup['getByRef']> {
   const candidates = [step, ...(Array.isArray(step.fallback) ? step.fallback : step.fallback ? [step.fallback] : [])];
 
@@ -3730,7 +3734,9 @@ function resolveReferencedRecord(
     if (!referenceValue) continue;
 
     const record =
-      candidate.by === 'entityClass' ? graph.getByEntityClass(referenceValue)[0] : graph.getByRef(referenceValue);
+      candidate.by === 'entityClass'
+        ? relationships.getRecordForEntityClass(referenceValue)
+        : graph.getByRef(referenceValue);
     if (record) return record;
   }
 
