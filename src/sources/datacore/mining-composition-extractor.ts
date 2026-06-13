@@ -59,16 +59,12 @@ export async function extractDataCoreMiningCompositions(
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  if (isUsableLocalizationKey(key)) return key ?? '';
-  return normalizeLocalizationKey(fallback);
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = normalizeLocalizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => normalizeLocalizationKey(reference.key))
+      .find((candidate) => candidate !== '') ?? normalizeLocalizationKey(fallback)
+  );
 }
 
 function normalizeLocalizationKey(value: string): string {

@@ -69,7 +69,10 @@ function makeGraph(): DataCoreRecordGraph {
         rootTag: 'MineableComposition.Asteroid_CType_Aluminium',
         rootType: 'MineableComposition',
         entityClass: 'Asteroid_CType_Aluminium',
-        localizationKeys: [{ attribute: 'depositName', key: 'hud_mining_asteroid_name_5' }],
+        localizationKeys: [
+          { attribute: 'depositName', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'depositName', key: 'hud_mining_asteroid_name_5' },
+        ],
         referencedGuids: [],
       },
       {

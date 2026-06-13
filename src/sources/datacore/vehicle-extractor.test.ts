@@ -84,8 +84,10 @@ function makeGraph(vehiclePath: string): DataCoreRecordGraph {
         rootType: 'EntityClassDefinition',
         entityClass: 'AEGS_Avenger_Titan',
         localizationKeys: [
-          { attribute: 'vehicleName', key: 'vehicle_NameAEGS_Avenger_Titan' },
-          { attribute: 'vehicleDescription', key: 'vehicle_DescAEGS_Avenger_Titan' },
+          { attribute: 'vehicleName', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayName', key: 'vehicle_NameAEGS_Avenger_Titan' },
+          { attribute: 'vehicleDescription', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayDescription', key: 'vehicle_DescAEGS_Avenger_Titan' },
           { attribute: 'vehicleCareer', key: 'vehicle_focus_transporter' },
           { attribute: 'vehicleRole', key: 'vehicle_class_lightfreight' },
         ],

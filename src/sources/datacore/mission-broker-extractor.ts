@@ -125,16 +125,12 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  if (isUsableLocalizationKey(key)) return key ?? '';
-  return localizationKey(fallback);
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = localizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => localizationKey(reference.key))
+      .find((candidate) => candidate !== '') ?? localizationKey(fallback)
+  );
 }
 
 function localizationKey(value: string): string {

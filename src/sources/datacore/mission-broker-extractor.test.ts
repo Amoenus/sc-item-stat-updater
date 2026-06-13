@@ -74,9 +74,12 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
         rootType: 'MissionBrokerEntry',
         entityClass: 'TestBroker',
         localizationKeys: [
+          { attribute: 'title', key: 'LOC_PLACEHOLDER' },
           { attribute: 'title', key: 'mission_title' },
+          { attribute: 'titleHUD', key: 'LOC_UNINITIALIZED' },
           { attribute: 'titleHUD', key: 'mission_title_hud' },
-          { attribute: 'description', key: 'mission_desc' },
+          { attribute: 'description', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayDescription', key: 'mission_desc' },
           { attribute: 'missionGiver', key: 'mission_from' },
           { attribute: 'commsChannelName', key: 'mission_channel' },
         ],

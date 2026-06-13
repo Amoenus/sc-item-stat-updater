@@ -122,8 +122,10 @@ function makeGraph(factionPath: string, reputationPath: string): DataCoreRecordG
         rootType: 'Faction',
         entityClass: 'Faction_Reputation_Unlawful_HeadHunters',
         localizationKeys: [
-          { attribute: 'name', key: 'HeadHunters_RepUI_Name' },
-          { attribute: 'description', key: 'HeadHunters_RepUI_Description' },
+          { attribute: 'name', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayName', key: 'HeadHunters_RepUI_Name' },
+          { attribute: 'description', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayDescription', key: 'HeadHunters_RepUI_Description' },
         ],
         referencedGuids: [
           '14789370-bf3a-42b9-ac55-a49ee406e1f1',
@@ -144,7 +146,10 @@ function makeGraph(factionPath: string, reputationPath: string): DataCoreRecordG
         rootTag: 'FactionReputation.FactionReputation_HeadHunters',
         rootType: 'FactionReputation',
         entityClass: 'FactionReputation_HeadHunters',
-        localizationKeys: [{ attribute: 'displayName', key: 'HeadHunters_RepUI_Name' }],
+        localizationKeys: [
+          { attribute: 'displayName', key: 'LOC_UNINITIALIZED' },
+          { attribute: 'name', key: 'HeadHunters_RepUI_Name' },
+        ],
         referencedGuids: [],
       },
     ],
