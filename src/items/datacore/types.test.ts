@@ -43,6 +43,15 @@ test('makeGetTargetKeys keeps entity-class derivation as an older CSV fallback',
   );
 });
 
+test('makeGetTargetKeys skips entity-class derivation when the configured prefix does not match', () => {
+  const getTargetKeys = makeGetTargetKeys('jdrv_', 'JDRV_');
+
+  assert.deepEqual(
+    getTargetKeys({ 'Entity Class': 'helper_orig_s3_holvn' }, (nameKey) => nameKey.replace('Name', 'Desc')),
+    [],
+  );
+});
+
 test('makeGetTargetKeys ignores placeholder DataCore localization keys before fallback', () => {
   const getTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
 

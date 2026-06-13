@@ -141,6 +141,7 @@ export function makeGetTargetKeys(
 
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
+    if (entityClassPrefix && !entityClass.toLowerCase().startsWith(entityClassPrefix.toLowerCase())) return [];
     const suffix = entityClass.replace(new RegExp(`^${entityClassPrefix}`, 'i'), '').toUpperCase();
     const nameKey = `item_Name${nameKeyInfix}${suffix}`;
     return [deriveDescKey(nameKey)];
