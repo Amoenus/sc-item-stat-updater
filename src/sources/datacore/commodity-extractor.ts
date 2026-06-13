@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import type { Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -320,31 +320,18 @@ function selectLocalizationKey(
   predicate = isUpdaterCommodityLocalizationKey,
 ): string {
   for (const attribute of attributes) {
-    const byAttribute = record.localizationKeys.find(
-      (reference) => reference.attribute.toLowerCase() === attribute.toLowerCase() && predicate(reference.key),
-    );
-    if (byAttribute) return byAttribute.key;
+    const byAttribute = record.localizationKeys
+      .filter((reference) => reference.attribute.toLowerCase() === attribute.toLowerCase())
+      .map((reference) => normalizeLocalizationKey(reference.key))
+      .find(predicate);
+    if (byAttribute) return byAttribute;
   }
 
-  const byKey = record.localizationKeys.find((reference) => predicate(reference.key));
-  return byKey?.key ?? '';
+  return record.localizationKeys.map((reference) => normalizeLocalizationKey(reference.key)).find(predicate) ?? '';
 }
 
 function selectDescriptionLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  for (const attribute of attributes) {
-    const byAttribute = record.localizationKeys.find(
-      (reference) =>
-        reference.attribute.toLowerCase() === attribute.toLowerCase() &&
-        reference.key.startsWith('items_commodities_') &&
-        reference.key.endsWith('_desc'),
-    );
-    if (byAttribute) return byAttribute.key;
-  }
-
-  const byKey = record.localizationKeys.find(
-    (reference) => reference.key.startsWith('items_commodities_') && reference.key.endsWith('_desc'),
-  );
-  return byKey?.key ?? '';
+  return selectLocalizationKey(record, attributes, isUpdaterCommodityDescriptionLocalizationKey);
 }
 
 function markEmittedCommodityKeys(emittedKeys: Set<string>, row: DataCoreCommodityRecord): void {
@@ -359,6 +346,10 @@ function isDataCoreCommodityLocalizationKey(key: string): boolean {
 
 function isUpdaterCommodityLocalizationKey(key: string): boolean {
   return key.startsWith('items_commodities_') && !key.endsWith('_desc') && !key.startsWith('items_commodities_type_');
+}
+
+function isUpdaterCommodityDescriptionLocalizationKey(key: string): boolean {
+  return key.startsWith('items_commodities_') && key.endsWith('_desc');
 }
 
 function isHarvestableNameKey(key: string): boolean {
@@ -405,21 +396,8 @@ function resolveRecordLocalizationKey(
   return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(rawValue ?? '');
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find(
-    (reference) => expectedAttributes.has(reference.attribute.toLowerCase()) && isUsableLocalizationKey(reference.key),
-  )?.key;
-  return key ?? '';
-}
-
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = normalizeLocalizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeLocalizationKey(value: string): string {

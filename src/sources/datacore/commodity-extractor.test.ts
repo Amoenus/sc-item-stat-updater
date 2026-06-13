@@ -149,7 +149,7 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.ok(atlasium);
   assert.equal(atlasium.nameKey, 'items_commodities_atlasium');
   assert.equal(atlasium.descriptionKey, 'items_commodities_atlasium_desc');
-  assert.equal(atlasium.displayNameKey, 'items_commodities_atlasium');
+  assert.equal(atlasium.displayNameKey, 'items_commodities_atlasium_display');
   assert.equal(atlasium.displayDescriptionKey, 'items_commodities_atlasium_desc');
   assert.equal(atlasium.displayTypeKey, 'items_commodities_type_alloy');
   assert.equal(atlasium.typeGuid, '22325f28-8d37-46ab-8c08-8a9b34101fad');
@@ -268,7 +268,7 @@ function makeGraph(): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'description', key: 'items_commodities_atlasium_desc' },
           { attribute: 'displayDescription', key: 'items_commodities_atlasium_desc' },
-          { attribute: 'displayName', key: 'items_commodities_atlasium' },
+          { attribute: 'displayName', key: 'items_commodities_atlasium_display' },
           { attribute: 'displayType', key: 'items_commodities_type_alloy' },
           { attribute: 'name', key: 'items_commodities_atlasium' },
         ],
