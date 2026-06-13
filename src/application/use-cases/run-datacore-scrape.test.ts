@@ -154,6 +154,49 @@ test('runDatacoreScrape writes raw component identity keys and capitalized Attac
   );
 });
 
+test('runDatacoreScrape prefers explicit localization before graph key-shape fallback', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-localization-fallback-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(
+    xmlPath,
+    `
+      <EntityClassDefinition.SHLD_Test_SCItem __path="libs/foundry/records/entities/scitem/shieldgenerator/shld_test_scitem.xml">
+        <GraphLocalization displayType="@item_NameSHLD_GraphFallback" />
+        <SAttachableComponentParams>
+          <AttachDef Size="2" Grade="b" SubType="CIVILIAN" Manufacturer="ACME">
+            <Localization Name="@item_NameSHLD_Explicit" ShortName="@item_NameSHLD_Explicit_short" Description="@item_DescSHLD_Explicit" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="500" />
+        <Power value="42" />
+        <Efficiency value="0.875" />
+      </EntityClassDefinition.SHLD_Test_SCItem>
+    `,
+    'utf8',
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [typeEntry],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shields.datacore.csv'), 'utf8');
+
+  assert.deepEqual(result.results, [{ type: 'shields', rows: 1, skipped: 0, csvFile: 'shields.datacore.csv' }]);
+  assert.match(
+    csv,
+    /shld_test,item_NameSHLD_Explicit,item_NameSHLD_Explicit_short,item_DescSHLD_Explicit,ACME,2,B,Civilian,500,42,87.5%/,
+  );
+  assert.doesNotMatch(csv, /item_NameSHLD_GraphFallback/);
+});
+
 test('runDatacoreScrape falls back when graph component manufacturer refs are ambiguous', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-ambiguous-manufacturer-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');

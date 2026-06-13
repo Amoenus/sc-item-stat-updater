@@ -2173,14 +2173,14 @@ async function scrapeDataCoreType(
       }
       const rowRecord: Record<string, string> = {
         'Entity Class': entityClass,
-        'Name Key':
-          getDataCoreGraphLocalizationKey(record, 'name') || localizationKey(attachLocalization.attr('Name') ?? ''),
-        'Short Name Key':
-          getDataCoreGraphLocalizationKey(record, 'shortName') ||
-          localizationKey(attachLocalization.attr('ShortName') ?? ''),
+        'Name Key': resolveDataCoreLocalizationKey(record, 'name', attachLocalization.attr('Name') ?? ''),
+        'Short Name Key': resolveDataCoreLocalizationKey(
+          record,
+          'shortName',
+          attachLocalization.attr('ShortName') ?? '',
+        ),
         'Description Key':
-          getDataCoreGraphLocalizationKey(record, 'description') ||
-          localizationKey(attachLocalization.attr('Description') ?? ''),
+          resolveDataCoreLocalizationKey(record, 'description', attachLocalization.attr('Description') ?? ''),
         Manufacturer: manufacturer,
         Size: attachDef.size,
         Grade: attachDef.grade,
@@ -2305,6 +2305,7 @@ function resolveComponentManufacturerCode(
 function getDataCoreGraphLocalizationKey(
   record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
   role: 'name' | 'shortName' | 'description',
+  source: 'attribute' | 'key-pattern',
 ): string {
   const references = record?.localizationKeys ?? [];
   const attributePattern =
@@ -2312,12 +2313,24 @@ function getDataCoreGraphLocalizationKey(
   const keyPattern =
     role === 'name' ? /(?:^|_)name/i : role === 'shortName' ? /(?:^|_)short/i : /(?:^|_)desc(?:ription)?/i;
 
+  const reference = references.find((candidate) => {
+    if (!isUsableLocalizationKey(candidate.key)) return false;
+    return source === 'attribute' ? attributePattern.test(candidate.attribute) : keyPattern.test(candidate.key);
+  });
+
+  return (reference?.key ?? '').replace(/^@/, '');
+}
+
+function resolveDataCoreLocalizationKey(
+  record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
+  role: 'name' | 'shortName' | 'description',
+  xmlValue: string,
+): string {
   return (
-    references.find((reference) => attributePattern.test(reference.attribute) && isUsableLocalizationKey(reference.key))
-      ?.key ??
-    references.find((reference) => keyPattern.test(reference.key) && isUsableLocalizationKey(reference.key))?.key ??
-    ''
-  ).replace(/^@/, '');
+    getDataCoreGraphLocalizationKey(record, role, 'attribute') ||
+    localizationKey(xmlValue) ||
+    getDataCoreGraphLocalizationKey(record, role, 'key-pattern')
+  );
 }
 
 function isUsableLocalizationKey(value: string): boolean {
