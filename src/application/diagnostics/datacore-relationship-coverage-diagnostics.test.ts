@@ -38,10 +38,18 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       'utf8',
     );
     await fs.writeFile(
+      path.join(datacoreDir, 'radar.datacore.csv'),
+      [
+        'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
+        'RADR_TEST,LOC_UNINITIALIZED,item_desc_radar,ACME,1,A,Industrial,100',
+      ].join('\n'),
+      'utf8',
+    );
+    await fs.writeFile(
       path.join(datacoreDir, 'record-graph.json'),
       `${JSON.stringify({
         source: 'datacore-record-graph',
-        recordCount: 3,
+        recordCount: 4,
         records: [
           {
             path: 'items/power.xml',
@@ -70,20 +78,31 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
             localizationKeys: [],
             referencedGuids: [],
           },
+          {
+            path: 'items/radar.xml',
+            ref: 'radar-ref',
+            rootTag: 'EntityClassDefinition.RADR_TEST_SCItem',
+            rootType: 'EntityClassDefinition',
+            entityClass: 'RADR_TEST_SCItem',
+            localizationKeys: [],
+            referencedGuids: [],
+          },
         ],
         indexes: {
           byRef: {
             'power-ref': 'items/power.xml',
             'cooler-ref': 'items/cooler.xml',
             'shield-ref': 'items/shield.xml',
+            'radar-ref': 'items/radar.xml',
           },
           byPath: {
             'items/power.xml': 0,
             'items/cooler.xml': 1,
             'items/shield.xml': 2,
+            'items/radar.xml': 3,
           },
           byRootType: {
-            EntityClassDefinition: ['items/power.xml', 'items/cooler.xml', 'items/shield.xml'],
+            EntityClassDefinition: ['items/power.xml', 'items/cooler.xml', 'items/shield.xml', 'items/radar.xml'],
           },
           byEntityClass: {},
           byLocalizationKey: {},
@@ -106,9 +125,9 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       iniPath,
     });
 
-    assert.equal(diagnostics.totalComponents, 3);
+    assert.equal(diagnostics.totalComponents, 4);
     assert.equal(diagnostics.componentsWithGraphTitleKeys, 1);
-    assert.equal(diagnostics.componentsWithoutGraphTitleKeys, 2);
+    assert.equal(diagnostics.componentsWithoutGraphTitleKeys, 3);
     assert.deepEqual(diagnostics.matchedIniKeys, {
       total: 3,
       graphLocalization: 1,
@@ -117,9 +136,9 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     });
     assert.equal(diagnostics.titleKeys.graphLocalization, 1);
     assert.equal(diagnostics.titleKeys.csvNameKey, 2);
-    assert.equal(diagnostics.titleKeys.guessedOnly, 4);
+    assert.equal(diagnostics.titleKeys.guessedOnly, 8);
     assert.deepEqual(diagnostics.titleKeyGaps, {
-      placeholderNameKey: 0,
+      placeholderNameKey: 1,
       missingNameKey: 1,
       csvNameKeyOnly: 1,
       other: 0,
@@ -129,6 +148,12 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
           componentType: 'cooler',
           nameKey: 'item_name_csv_cool',
           reason: 'csv-name-key-only',
+        },
+        {
+          entityClass: 'radr_test',
+          componentType: 'radar',
+          nameKey: 'loc_uninitialized',
+          reason: 'placeholder-name-key',
         },
         {
           entityClass: 'shld_test',
@@ -143,6 +168,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       [
         ['cooler', 'no-graph-title-keys'],
         ['powerplant', 'covered'],
+        ['radar', 'no-graph-title-keys'],
         ['shield', 'no-graph-title-keys'],
       ],
     );
@@ -153,9 +179,10 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     const formatted = formatDataCoreRelationshipCoverageDiagnostics(diagnostics);
     assert.match(formatted, /DataCore relationship coverage audit/);
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
-    assert.match(formatted, /Rows without graph title keys: 0 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
+    assert.match(formatted, /Rows without graph title keys: 1 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
     assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);
     assert.match(formatted, /cooler, cool_test: csv-name-key-only \(item_name_csv_cool\)/);
+    assert.match(formatted, /radar, radr_test: placeholder-name-key \(loc_uninitialized\)/);
     assert.match(formatted, /Summary: \d+ relationship coverage warnings\./);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

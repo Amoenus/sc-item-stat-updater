@@ -4,6 +4,7 @@ import { parseNameLine } from '../../enrichment/updates/title-tag-utils';
 import {
   type ComponentFact,
   type ComponentTitleKeySource,
+  isPlaceholderComponentLocalizationKey,
   loadDataCoreComponentFacts,
 } from '../../sources/datacore/component-facts';
 import { resolveLatestVersionDir } from '../use-cases/prepare-update-categories';
@@ -279,7 +280,7 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
 
 function titleGapReason(fact: ComponentFact): DataCoreRelationshipCoverageTitleGapSample['reason'] {
   if (fact.titleKeySources.some(({ source }) => source === 'csv-name-key')) return 'csv-name-key-only';
-  if (fact.nameKey === 'loc_empty' || fact.nameKey === 'loc_placeholder') return 'placeholder-name-key';
+  if (isPlaceholderComponentLocalizationKey(fact.nameKey)) return 'placeholder-name-key';
   if (!fact.nameKey) return 'missing-name-key';
   return 'other';
 }

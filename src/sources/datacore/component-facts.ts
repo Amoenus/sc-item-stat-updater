@@ -98,6 +98,11 @@ const FACT_COLUMNS = new Set([
 ]);
 const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder', 'loc_uninitialized']);
 
+export function isPlaceholderComponentLocalizationKey(value: unknown): boolean {
+  const key = normalizeLocalizationKey(value);
+  return key !== '' && PLACEHOLDER_LOCALIZATION_KEYS.has(key);
+}
+
 export async function loadDataCoreComponentFacts({
   datacoreDir,
   scmdbDir,
@@ -367,7 +372,7 @@ function isTitleLocalizationAttribute(attribute: string): boolean {
 }
 
 function isUsableLocalizationKey(key: string): boolean {
-  return key !== '' && !PLACEHOLDER_LOCALIZATION_KEYS.has(key);
+  return key !== '' && !isPlaceholderComponentLocalizationKey(key);
 }
 
 function getKnownTitleKeyAliases(key: string, entityClass: string): string[] {
