@@ -101,6 +101,38 @@ test('extractDataCoreManufacturers ignores placeholder XML fallback keys', async
   assert.equal(rows[0].descriptionKey, '');
 });
 
+test('extractDataCoreManufacturers falls back when graph GUID refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-manufacturers-ambiguous-'));
+  const manufacturerPath = 'libs/foundry/records/scitemmanufacturer/scitemmanufacturer.aegs.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, manufacturerPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, manufacturerPath),
+    `
+      <SCItemManufacturer.AEGS
+        Code="AEG"
+        DashboardCanvasConfig="stale-dashboard-canvas-config"
+        __type="SCItemManufacturer"
+        __ref="cf4a74bf-eb2c-462a-9b78-f7f2724c31d2"
+        __path="${manufacturerPath}">
+        <Localization Name="@manufacturer_NameAEGS" />
+      </SCItemManufacturer.AEGS>
+    `,
+    'utf8',
+  );
+  const graph = makeGraph(manufacturerPath);
+  graph.records[0].referencedGuidAttributes?.push({
+    attribute: 'DashboardCanvasConfig',
+    value: '11111111-1111-4111-8111-111111111111',
+  });
+
+  const rows = await extractDataCoreManufacturers({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0].dashboardCanvasConfigGuid, 'stale-dashboard-canvas-config');
+});
+
 function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',

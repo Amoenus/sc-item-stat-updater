@@ -71,6 +71,39 @@ test('extractDataCoreVehicles reads first-party vehicle metadata and resolves ma
   ]);
 });
 
+test('extractDataCoreVehicles falls back when graph GUID refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-vehicles-ambiguous-'));
+  const vehiclePath = 'libs/foundry/records/entities/spaceships/aegs_avenger_titan.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, vehiclePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, vehiclePath),
+    `
+      <EntityClassDefinition.AEGS_Avenger_Titan __type="EntityClassDefinition" __ref="11111111-1111-1111-1111-111111111111" __path="${vehiclePath}">
+        <Components>
+          <VehicleComponentParams
+            manufacturer="stale-manufacturer-guid"
+            movementClass="Spaceship"
+            vehicleName="@vehicle_NameAEGS_Avenger_Titan" />
+        </Components>
+      </EntityClassDefinition.AEGS_Avenger_Titan>
+    `,
+    'utf8',
+  );
+  const graph = makeGraph(vehiclePath);
+  graph.records[0]?.referencedGuidAttributes?.push({
+    attribute: 'manufacturer',
+    value: '65a5d887-3b21-4046-a718-6912c0c7c3be',
+  });
+
+  const rows = await extractDataCoreVehicles({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.manufacturerGuid, 'stale-manufacturer-guid');
+  assert.equal(rows[0]?.manufacturerCode, '');
+});
+
 function makeGraph(vehiclePath: string): DataCoreRecordGraph {
   const manufacturerPath = 'libs/foundry/records/scitemmanufacturer/scitemmanufacturer.aegs.xml';
   return {
