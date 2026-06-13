@@ -42,11 +42,15 @@ export async function extractDataCoreMiningLocationLabels(
       path: record.path,
       locationClass: record.entityClass,
       sourceReason: miningSourceReason(record, qualityLocationRefs),
-      nameKey: localizationKey(root.attr('name') ?? ''),
-      descriptionKey: localizationKey(root.attr('description') ?? ''),
-      callout1Key: localizationKey(root.attr('callout1') ?? ''),
-      callout2Key: localizationKey(root.attr('callout2') ?? ''),
-      callout3Key: localizationKey(root.attr('callout3') ?? ''),
+      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKey(
+        record,
+        ['description', 'displayDescription'],
+        root.attr('description') ?? '',
+      ),
+      callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
+      callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
+      callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
       typeGuid: root.attr('type') ?? '',
       parentGuid,
       parentClass: parent?.entityClass ?? '',
@@ -103,6 +107,15 @@ function qualityFamily(recordPath: string): string {
   const parts = recordPath.split('/');
   const index = parts.indexOf('qualitydistribution');
   return index === -1 ? '' : (parts[index + 1] ?? '');
+}
+
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  if (key && key !== 'LOC_EMPTY' && key !== 'LOC_UNINITIALIZED' && key !== 'LOC_PLACEHOLDER') return key;
+  return localizationKey(fallback);
 }
 
 function localizationKey(value: string): string {

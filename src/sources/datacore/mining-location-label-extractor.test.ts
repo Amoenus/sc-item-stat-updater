@@ -19,7 +19,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     xmlCacheDir,
     miningLocationPath,
     `
-      <StarMapObject.AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01 name="@ab_mine_pyro_regiona_med_001" description="@ab_mine_pyro_desc" callout1="@LOC_UNINITIALIZED" type="e60452a5-b85c-4ab1-97e7-9cefb466f87b" parent="a14bec87-5801-4440-8ca8-35597487ac9a" locationHierarchyTag="812520ca-5f0a-4e88-9649-91237b1e4e51" navIcon="Default" size="400" hideInStarmap="0" hideInWorld="0" isScannable="0" blockTravel="0" __type="StarMapObject" __ref="544034db-6fde-44b4-aba8-c2ea35421ccd" __path="${miningLocationPath}">
+      <StarMapObject.AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01 name="@ab_mine_pyro_regiona_med_001_stale" description="@ab_mine_pyro_stale_desc" callout1="@LOC_UNINITIALIZED" type="e60452a5-b85c-4ab1-97e7-9cefb466f87b" parent="a14bec87-5801-4440-8ca8-35597487ac9a" locationHierarchyTag="812520ca-5f0a-4e88-9649-91237b1e4e51" navIcon="Default" size="400" hideInStarmap="0" hideInWorld="0" isScannable="0" blockTravel="0" __type="StarMapObject" __ref="544034db-6fde-44b4-aba8-c2ea35421ccd" __path="${miningLocationPath}">
         <quantumTravelData>
           <StarMapQuantumTravelDataParams arrivalRadius="18000" adoptionRadius="20000" />
         </quantumTravelData>
@@ -33,7 +33,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     xmlCacheDir,
     pyroSystemPath,
     `
-      <StarMapObject.PyroSolarSystem name="@PyroSystem" description="@PyroSystem_Desc" type="32ed44de-920b-43ce-b55d-82cc4ef9fa59" navIcon="Default" size="0.1" hideInStarmap="1" hideInWorld="1" isScannable="0" blockTravel="1" __type="StarMapObject" __ref="286cb603-b4ae-4279-80a1-d4505fee1916" __path="${pyroSystemPath}">
+      <StarMapObject.PyroSolarSystem name="@PyroSystem_Stale" description="@PyroSystem_Desc" type="32ed44de-920b-43ce-b55d-82cc4ef9fa59" navIcon="Default" size="0.1" hideInStarmap="1" hideInWorld="1" isScannable="0" blockTravel="1" __type="StarMapObject" __ref="286cb603-b4ae-4279-80a1-d4505fee1916" __path="${pyroSystemPath}">
         <locationParams>
           <StarMapObjectLocationParams setEntityLocationOnEnter="0" exposeForPlayerCreatedMissions="1" />
         </locationParams>
@@ -106,8 +106,14 @@ function makeGraph(): DataCoreRecordGraph {
       '544034db-6fde-44b4-aba8-c2ea35421ccd',
       'StarMapObject',
       'AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01',
+      [
+        { attribute: 'name', key: 'ab_mine_pyro_regiona_med_001' },
+        { attribute: 'description', key: 'ab_mine_pyro_desc' },
+      ],
     ),
-    node(pyroSystemPath, '286cb603-b4ae-4279-80a1-d4505fee1916', 'StarMapObject', 'PyroSolarSystem'),
+    node(pyroSystemPath, '286cb603-b4ae-4279-80a1-d4505fee1916', 'StarMapObject', 'PyroSolarSystem', [
+      { attribute: 'name', key: 'PyroSystem' },
+    ]),
     node(parentPath, 'a14bec87-5801-4440-8ca8-35597487ac9a', 'StarMapObject', 'PyroAsteroidBelt'),
     node(
       qualityOverridePath,
@@ -135,14 +141,20 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(pathValue: string, ref: string, rootType: string, entityClass: string): DataCoreRecordNode {
+function node(
+  pathValue: string,
+  ref: string,
+  rootType: string,
+  entityClass: string,
+  localizationKeys: DataCoreRecordNode['localizationKeys'] = [],
+): DataCoreRecordNode {
   return {
     path: pathValue,
     ref,
     rootTag: `${rootType}.${entityClass}`,
     rootType,
     entityClass,
-    localizationKeys: [],
+    localizationKeys,
     referencedGuids: [],
   };
 }

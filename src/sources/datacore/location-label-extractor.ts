@@ -40,11 +40,15 @@ export async function extractDataCoreLocationLabels(
       ref: record.ref,
       path: record.path,
       locationClass: record.entityClass,
-      nameKey: localizationKey(root.attr('name') ?? ''),
-      descriptionKey: localizationKey(root.attr('description') ?? ''),
-      callout1Key: localizationKey(root.attr('callout1') ?? ''),
-      callout2Key: localizationKey(root.attr('callout2') ?? ''),
-      callout3Key: localizationKey(root.attr('callout3') ?? ''),
+      nameKey: graphLocalizationKey(record, ['name', 'displayName'], root.attr('name') ?? ''),
+      descriptionKey: graphLocalizationKey(
+        record,
+        ['description', 'displayDescription'],
+        root.attr('description') ?? '',
+      ),
+      callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
+      callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
+      callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
       typeGuid: root.attr('type') ?? '',
       parentGuid,
       parentClass: parent?.entityClass ?? '',
@@ -89,15 +93,25 @@ export async function extractDataCoreLocationLabels(
 
 function firstLocalizationKey(record: DataCoreRecordNode | undefined, attributes: string[]): string {
   if (!record) return '';
-  for (const attribute of attributes) {
-    const key = record.localizationKeys.find((reference) => reference.attribute === attribute)?.key;
-    if (key && key !== 'LOC_EMPTY' && key !== 'LOC_UNINITIALIZED') return key;
-  }
-  return '';
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  return usableLocalizationKey(key);
+}
+
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return firstLocalizationKey(record, attributes) || localizationKey(fallback);
+}
+
+function usableLocalizationKey(value: string | undefined): string {
+  if (!value || value === 'LOC_EMPTY' || value === 'LOC_UNINITIALIZED' || value === 'LOC_PLACEHOLDER') return '';
+  return value;
 }
 
 function localizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED' || trimmed === '@LOC_PLACEHOLDER')
+    return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }
