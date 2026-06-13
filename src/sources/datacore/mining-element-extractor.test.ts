@@ -11,6 +11,8 @@ const agriciumPath = 'libs/foundry/records/mining/mineableelements/agricium_ore.
 const aslaritePath = 'libs/foundry/records/mining/mineableelements/aslarite_raw.xml';
 const aphoritePath = 'libs/foundry/records/mining/mineableelements/minableelement_fps_aphorite.xml';
 const globalParamsPath = 'libs/foundry/records/mining/miningglobalparams.xml';
+const agriciumResourcePath = 'libs/foundry/records/entities/commodities/agricium_ore.xml';
+const agriciumResourceGuid = 'fc1ec740-3047-48d8-81f0-396f4c9a90ef';
 
 test('extractDataCoreMiningElements extracts first-party mineable element behavior facts', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-elements-'));
@@ -45,8 +47,8 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   assert.ok(agricium);
   assert.equal(agricium.elementName, 'Agricium (Ore)');
   assert.equal(agricium.materialName, 'Agricium');
-  assert.equal(agricium.inferredDescriptionKey, 'items_commodities_agricium_ore_desc');
-  assert.equal(agricium.resourceTypeGuid, 'fc1ec740-3047-48d8-81f0-396f4c9a90ef');
+  assert.equal(agricium.inferredDescriptionKey, 'items_commodities_agricium_ore_graph_desc');
+  assert.equal(agricium.resourceTypeGuid, agriciumResourceGuid);
   assert.equal(agricium.instability, '350');
   assert.equal(agricium.resistance, '0.5');
   assert.equal(agricium.optimalWindowMidpoint, '0.5');
@@ -156,7 +158,7 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 function makeGraph(): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
-    recordCount: 4,
+    recordCount: 5,
     records: [
       node(
         agriciumPath,
@@ -186,18 +188,28 @@ function makeGraph(): DataCoreRecordGraph {
         'MiningGlobalParams',
         'MiningGlobalParams',
       ),
+      node(
+        agriciumResourcePath,
+        agriciumResourceGuid,
+        'Commodity.Agricium_Ore',
+        'Commodity',
+        'Agricium_Ore',
+        [{ attribute: 'Description', key: 'items_commodities_agricium_ore_graph_desc' }],
+      ),
     ],
     indexes: {
-      byRef: {},
+      byRef: { [agriciumResourceGuid]: agriciumResourcePath },
       byPath: {
         [agriciumPath]: 0,
         [aslaritePath]: 1,
         [aphoritePath]: 2,
         [globalParamsPath]: 3,
+        [agriciumResourcePath]: 4,
       },
       byRootType: {
         MineableElement: [agriciumPath, aslaritePath, aphoritePath],
         MiningGlobalParams: [globalParamsPath],
+        Commodity: [agriciumResourcePath],
       },
       byEntityClass: {},
       byLocalizationKey: {},
@@ -206,14 +218,21 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(path: string, ref: string, rootTag: string, rootType: string, entityClass: string) {
+function node(
+  path: string,
+  ref: string,
+  rootTag: string,
+  rootType: string,
+  entityClass: string,
+  localizationKeys: DataCoreRecordGraph['records'][number]['localizationKeys'] = [],
+) {
   return {
     path,
     ref,
     rootTag,
     rootType,
     entityClass,
-    localizationKeys: [],
+    localizationKeys,
     referencedGuids: [],
   };
 }

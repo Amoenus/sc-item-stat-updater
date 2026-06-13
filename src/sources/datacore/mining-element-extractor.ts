@@ -34,14 +34,16 @@ export async function extractDataCoreMiningElements(
     const root = $(':root').first();
     if (!root.length) continue;
 
+    const resourceTypeGuid = root.attr('resourceType') ?? '';
     elements.push({
       ref: record.ref,
       path: record.path,
       elementClass: record.entityClass,
       elementName: toElementName(record.entityClass),
       materialName: toMaterialName(record.entityClass),
-      inferredDescriptionKey: toInferredDescriptionKey(record.entityClass),
-      resourceTypeGuid: root.attr('resourceType') ?? '',
+      inferredDescriptionKey:
+        getResourceDescriptionKey(options.graph, resourceTypeGuid) ?? toInferredDescriptionKey(record.entityClass),
+      resourceTypeGuid,
       instability: root.attr('elementInstability') ?? '',
       resistance: root.attr('elementResistance') ?? '',
       optimalWindowMidpoint: root.attr('elementOptimalWindowMidpoint') ?? '',
@@ -53,6 +55,23 @@ export async function extractDataCoreMiningElements(
   }
 
   return elements;
+}
+
+function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTypeGuid: string): string | undefined {
+  const resource = resourceTypeGuid ? graph.getByRef(resourceTypeGuid) : undefined;
+  const localizationKey =
+    resource?.localizationKeys.find(
+      (reference) => /description/i.test(reference.attribute) && isUsableLocalizationKey(reference.key),
+    )?.key ??
+    resource?.localizationKeys.find(
+      (reference) => /_desc$/i.test(reference.key) && isUsableLocalizationKey(reference.key),
+    )?.key;
+  return localizationKey?.trim();
+}
+
+function isUsableLocalizationKey(key: string): boolean {
+  const trimmed = key.trim();
+  return !!trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER)$/i.test(trimmed);
 }
 
 function toElementName(elementClass: string): string {
