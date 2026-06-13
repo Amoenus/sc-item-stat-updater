@@ -327,14 +327,14 @@ function toManufacturerTypeKey(componentType: string, manufacturer: unknown): st
 }
 
 function getComponentManufacturer(row: Record<string, string>, graphManufacturerCode = ''): string {
-  const manufacturer = normalizeSpaces(row.Manufacturer);
-  if (manufacturer) {
-    return manufacturer;
-  }
-
   const graphManufacturer = normalizeSpaces(graphManufacturerCode);
   if (graphManufacturer) {
     return graphManufacturer;
+  }
+
+  const manufacturer = normalizeSpaces(row.Manufacturer);
+  if (manufacturer) {
+    return manufacturer;
   }
 
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);

@@ -34,7 +34,7 @@ async function makeTempDataCoreWorkspace() {
     path.join(datacoreDir, 'weapongun.datacore.csv'),
     [
       'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class',
-      'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,,1,A,Military',
+      'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,STALE,1,A,Military',
       'mgun_ambiguous,item_Name_MGun_Ambiguous,,,1,A,Military',
     ].join('\n'),
     'utf8',
