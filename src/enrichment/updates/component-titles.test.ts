@@ -45,6 +45,7 @@ async function makeTempWorkspace() {
     [
       'Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Damage Alpha',
       'jokr_distortioncannon_s1,item_NameJOKR_DistortionCannon_S1,item_NameJOKR_DistortionCannon_S1_short,item_DescJOKR_DistortionCannon_S1,JOKR,1,1,Gun,550,81',
+      'jokr_collision,item_Name_Component_Collision,,item_DescJOKR_Collision,JOKR,1,1,Gun,550,81',
     ].join('\n'),
     'utf8',
   );
@@ -88,7 +89,7 @@ async function makeTempWorkspace() {
             rootTag: 'EntityClassDefinition.POWR_ACOM_S02_SolarFlare_SCItem',
             rootType: 'EntityClassDefinition',
             entityClass: 'POWR_ACOM_S02_SolarFlare_SCItem',
-            localizationKeys: [],
+            localizationKeys: [{ attribute: 'Name', key: 'item_Name_Component_Collision' }],
             referencedGuids: [],
           },
           {
@@ -176,6 +177,7 @@ describe('runComponentTitleUpdate', () => {
           'item_Mining_Consumable_Brandt_red=Brandt Red',
           'item_Name_POWR_ACOM_S01_LumaCore=LumaCore',
           'item_Name_POWR_ACOM_S02_SolarFlare=SolarFlare',
+          'item_Name_Component_Collision=Collision',
           'item_Name_POWR_AEGS_S02_Bolide=Bolide',
           'item_Name_POWR_MISC_S01_Unknown=Unknown',
           'item_NameCOOL_JUST_S02_Snowfall=Snowfall',
@@ -190,13 +192,14 @@ describe('runComponentTitleUpdate', () => {
       const result = await runComponentTitleUpdate({ iniPath, datacoreDir, dryRun: false });
       const updated = await fs.readFile(iniPath, 'utf8');
 
-      assert.equal(result.updatedCount, 8);
-      assert.equal(result.matchedCount, 7);
-      assert.equal(result.scannedCount, 11);
+      assert.equal(result.updatedCount, 9);
+      assert.equal(result.matchedCount, 8);
+      assert.equal(result.scannedCount, 12);
       assert.match(updated, /item_Mining_Consumable_Brandt=Ind\/1\/A Brandt/);
       assert.match(updated, /item_Mining_Consumable_Brandt_red=Ind\/1\/A Brandt Red/);
       assert.match(updated, /item_Name_POWR_ACOM_S01_LumaCore=Cmp\/1\/A LumaCore/);
       assert.match(updated, /item_Name_POWR_ACOM_S02_SolarFlare=Cmp\/2\/A SolarFlare/);
+      assert.match(updated, /item_Name_Component_Collision=Cmp\/2\/A Collision/);
       assert.match(updated, /item_Name_POWR_AEGS_S02_Bolide=Mil\/2\/B Bolide/);
       assert.match(updated, /item_Name_POWR_MISC_S01_Unknown=Unknown/);
       assert.match(updated, /item_NameCOOL_JUST_S02_Snowfall=Ind\/2\/B Snowfall/);

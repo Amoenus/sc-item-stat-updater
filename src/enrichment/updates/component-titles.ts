@@ -1,6 +1,10 @@
 import { getLogger } from '../../infrastructure/logger';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { type ComponentFact, loadDataCoreComponentFacts } from '../../sources/datacore/component-facts';
+import {
+  type ComponentFact,
+  type ComponentTitleKeySource,
+  loadDataCoreComponentFacts,
+} from '../../sources/datacore/component-facts';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,
@@ -19,6 +23,11 @@ const CLASS_ABBREV = {
   Competition: 'Cmp',
   Commercial: 'Cmp',
   Military: 'Mil',
+};
+const TITLE_KEY_SOURCE_PRIORITY: Record<ComponentTitleKeySource, number> = {
+  'guessed-alias': 1,
+  'csv-name-key': 2,
+  'graph-localization': 3,
 };
 
 function getDisplayGrade(grade: string): string {
@@ -47,14 +56,18 @@ function getComponentPrefix(fact: ComponentFact): string | null {
 }
 
 async function buildComponentTitleLookupFromDataCore(datacoreDir: string, scmdbDir?: string) {
-  const keyToPrefix = new Map<string, { prefix: string }>();
+  const keyToPrefix = new Map<string, { prefix: string; priority: number }>();
   const facts = await loadDataCoreComponentFacts({ datacoreDir, scmdbDir });
 
   for (const fact of facts) {
     const prefix = getComponentPrefix(fact);
     if (!prefix) continue;
-    for (const key of fact.titleKeys) {
-      keyToPrefix.set(key, { prefix });
+    for (const { key, source } of fact.titleKeySources) {
+      const priority = TITLE_KEY_SOURCE_PRIORITY[source];
+      const existing = keyToPrefix.get(key);
+      if (!existing || priority > existing.priority) {
+        keyToPrefix.set(key, { prefix, priority });
+      }
     }
   }
 

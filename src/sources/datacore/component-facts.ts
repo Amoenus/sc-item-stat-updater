@@ -96,7 +96,7 @@ const FACT_COLUMNS = new Set([
   'Grade',
   'Class',
 ]);
-const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder']);
+const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder', 'loc_uninitialized']);
 
 export async function loadDataCoreComponentFacts({
   datacoreDir,
