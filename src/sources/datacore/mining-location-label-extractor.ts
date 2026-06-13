@@ -32,7 +32,8 @@ export async function extractDataCoreMiningLocationLabels(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const parentGuid = root.attr('parent') ?? '';
+    const typeGuid = graphGuidReference(record, ['type'], root.attr('type') ?? '');
+    const parentGuid = graphGuidReference(record, ['parent'], root.attr('parent') ?? '');
     const parent = parentGuid ? options.graph.getByRef(parentGuid) : undefined;
     const quantumTravelData = root.find('> quantumTravelData > StarMapQuantumTravelDataParams').first();
     const locationParams = root.find('> locationParams > StarMapObjectLocationParams').first();
@@ -51,7 +52,7 @@ export async function extractDataCoreMiningLocationLabels(
       callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
       callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
       callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
-      typeGuid: root.attr('type') ?? '',
+      typeGuid,
       parentGuid,
       parentClass: parent?.entityClass ?? '',
       parentPath: parent?.path ?? '',
@@ -116,6 +117,14 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], 
   )?.key;
   if (key && key !== 'LOC_EMPTY' && key !== 'LOC_UNINITIALIZED' && key !== 'LOC_PLACEHOLDER') return key;
   return localizationKey(fallback);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function localizationKey(value: string): string {

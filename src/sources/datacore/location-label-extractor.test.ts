@@ -16,17 +16,17 @@ test('extractDataCoreLocationLabels reads StarMap labels and resolves law and af
     `
       <StarMapObject.Pyro3_Outpost
         name="@Pyro3_Outpost_Stale"
-        affiliation="6f3699dd-123e-4f1a-82da-51207b073fe0"
+        affiliation="stale-affiliation-guid"
         description="@Pyro3_Outpost_stale_desc"
         callout1="@Pyro3_Outpost_stale_callout1"
         callout2="@LOC_UNINITIALIZED"
         callout3="@LOC_EMPTY"
         respawnLocationType="None"
-        jurisdiction="0d2e5d5e-a3d3-4a6d-869f-58dc705e7020"
+        jurisdiction="stale-jurisdiction-guid"
         locationHierarchyTag="cd99a4ac-aeba-43f1-8edd-4f050d50b1bc"
-        type="e207a1ec-1395-4c1c-8e51-b38c4420784c"
+        type="stale-type-guid"
         navIcon="Outpost"
-        parent="59637d5a-c67a-47eb-96dc-b648298f0023"
+        parent="stale-parent-guid"
         isScannable="0"
         size="1"
         hideInStarmap="0"
@@ -122,11 +122,25 @@ function makeGraph(locationPath: string): DataCoreRecordGraph {
     source: 'datacore-record-graph',
     recordCount: 4,
     records: [
-      node(locationPath, '407847a6-4aae-4c3c-9a36-b80108d776f0', 'StarMapObject', 'Pyro3_Outpost', [
-        { attribute: 'name', key: 'Pyro3_Outpost' },
-        { attribute: 'description', key: 'Pyro3_Outpost_desc' },
-        { attribute: 'callout1', key: 'Pyro3_Outpost_callout1' },
-      ]),
+      {
+        ...node(locationPath, '407847a6-4aae-4c3c-9a36-b80108d776f0', 'StarMapObject', 'Pyro3_Outpost', [
+          { attribute: 'name', key: 'Pyro3_Outpost' },
+          { attribute: 'description', key: 'Pyro3_Outpost_desc' },
+          { attribute: 'callout1', key: 'Pyro3_Outpost_callout1' },
+        ]),
+        referencedGuids: [
+          '0d2e5d5e-a3d3-4a6d-869f-58dc705e7020',
+          '59637d5a-c67a-47eb-96dc-b648298f0023',
+          '6f3699dd-123e-4f1a-82da-51207b073fe0',
+          'e207a1ec-1395-4c1c-8e51-b38c4420784c',
+        ],
+        referencedGuidAttributes: [
+          { attribute: 'affiliation', value: '6f3699dd-123e-4f1a-82da-51207b073fe0' },
+          { attribute: 'jurisdiction', value: '0d2e5d5e-a3d3-4a6d-869f-58dc705e7020' },
+          { attribute: 'parent', value: '59637d5a-c67a-47eb-96dc-b648298f0023' },
+          { attribute: 'type', value: 'e207a1ec-1395-4c1c-8e51-b38c4420784c' },
+        ],
+      },
       node(parentPath, '59637d5a-c67a-47eb-96dc-b648298f0023', 'StarMapObject', 'Pyro3'),
       node(affiliationPath, '6f3699dd-123e-4f1a-82da-51207b073fe0', 'Faction_LEGACY', 'HeadHunters', [
         { attribute: 'displayName', key: 'HeadHunters_RepUI_Name' },

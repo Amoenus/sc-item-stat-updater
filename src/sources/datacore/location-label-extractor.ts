@@ -27,9 +27,10 @@ export async function extractDataCoreLocationLabels(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const parentGuid = root.attr('parent') ?? '';
-    const affiliationGuid = root.attr('affiliation') ?? '';
-    const jurisdictionGuid = root.attr('jurisdiction') ?? '';
+    const typeGuid = graphGuidReference(record, ['type'], root.attr('type') ?? '');
+    const parentGuid = graphGuidReference(record, ['parent'], root.attr('parent') ?? '');
+    const affiliationGuid = graphGuidReference(record, ['affiliation'], root.attr('affiliation') ?? '');
+    const jurisdictionGuid = graphGuidReference(record, ['jurisdiction'], root.attr('jurisdiction') ?? '');
     const parent = parentGuid ? options.graph.getByRef(parentGuid) : undefined;
     const affiliation = affiliationGuid ? options.graph.getByRef(affiliationGuid) : undefined;
     const jurisdiction = jurisdictionGuid ? options.graph.getByRef(jurisdictionGuid) : undefined;
@@ -49,7 +50,7 @@ export async function extractDataCoreLocationLabels(
       callout1Key: graphLocalizationKey(record, ['callout1'], root.attr('callout1') ?? ''),
       callout2Key: graphLocalizationKey(record, ['callout2'], root.attr('callout2') ?? ''),
       callout3Key: graphLocalizationKey(record, ['callout3'], root.attr('callout3') ?? ''),
-      typeGuid: root.attr('type') ?? '',
+      typeGuid,
       parentGuid,
       parentClass: parent?.entityClass ?? '',
       parentPath: parent?.path ?? '',
@@ -102,6 +103,14 @@ function firstLocalizationKey(record: DataCoreRecordNode | undefined, attributes
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return firstLocalizationKey(record, attributes) || localizationKey(fallback);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function usableLocalizationKey(value: string | undefined): string {
