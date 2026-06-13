@@ -27,7 +27,7 @@ export async function extractDataCoreMiningHarvestablePresets(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const harvestableEntityGuid = root.attr('entityClass') ?? '';
+    const harvestableEntityGuid = graphGuidReference(record, ['entityClass'], root.attr('entityClass') ?? '');
     const harvestableEntity = harvestableEntityGuid ? options.graph.getByRef(harvestableEntityGuid) : undefined;
     if (!isMiningHarvestablePreset(record, harvestableEntity)) continue;
 
@@ -52,4 +52,12 @@ function isMiningHarvestablePreset(
 ): boolean {
   if (/mineable|mining/i.test(record.entityClass)) return true;
   return harvestableEntity?.path.includes('/entities/mineable/') ?? false;
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }

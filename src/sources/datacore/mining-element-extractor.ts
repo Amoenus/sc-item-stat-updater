@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup } from './types';
+import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
 const DEFAULT_MINING_ELEMENT_PATH_PREFIX = 'libs/foundry/records/mining/mineableelements';
@@ -34,7 +34,7 @@ export async function extractDataCoreMiningElements(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const resourceTypeGuid = root.attr('resourceType') ?? '';
+    const resourceTypeGuid = graphGuidReference(record, ['resourceType'], root.attr('resourceType') ?? '');
     elements.push({
       ref: record.ref,
       path: record.path,
@@ -67,6 +67,14 @@ function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTyp
       (reference) => /_desc$/i.test(reference.key) && isUsableLocalizationKey(reference.key),
     )?.key;
   return localizationKey?.trim();
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function isUsableLocalizationKey(key: string): boolean {

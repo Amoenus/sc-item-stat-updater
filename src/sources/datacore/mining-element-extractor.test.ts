@@ -19,7 +19,7 @@ test('extractDataCoreMiningElements extracts first-party mineable element behavi
   await writeXml(
     xmlCacheDir,
     agriciumPath,
-    `<MineableElement.Agricium_Ore resourceType="fc1ec740-3047-48d8-81f0-396f4c9a90ef" elementInstability="350" elementResistance="0.5" elementOptimalWindowMidpoint="0.5" elementOptimalWindowMidpointRandomness="0.15" elementOptimalWindowThinness="2" elementExplosionMultiplier="4" elementClusterFactor="0.2" __type="MineableElement" __ref="d61d6c33-e428-4014-9326-0b06034de16a" __path="${agriciumPath}" />`,
+    `<MineableElement.Agricium_Ore resourceType="stale-resource-guid" elementInstability="350" elementResistance="0.5" elementOptimalWindowMidpoint="0.5" elementOptimalWindowMidpointRandomness="0.15" elementOptimalWindowThinness="2" elementExplosionMultiplier="4" elementClusterFactor="0.2" __type="MineableElement" __ref="d61d6c33-e428-4014-9326-0b06034de16a" __path="${agriciumPath}" />`,
   );
   await writeXml(
     xmlCacheDir,
@@ -166,6 +166,8 @@ function makeGraph(): DataCoreRecordGraph {
         'MineableElement.Agricium_Ore',
         'MineableElement',
         'Agricium_Ore',
+        [],
+        [{ attribute: 'resourceType', value: agriciumResourceGuid }],
       ),
       node(
         aslaritePath,
@@ -225,6 +227,7 @@ function node(
   rootType: string,
   entityClass: string,
   localizationKeys: DataCoreRecordGraph['records'][number]['localizationKeys'] = [],
+  referencedGuidAttributes: NonNullable<DataCoreRecordGraph['records'][number]['referencedGuidAttributes']> = [],
 ) {
   return {
     path,
@@ -233,6 +236,7 @@ function node(
     rootType,
     entityClass,
     localizationKeys,
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }

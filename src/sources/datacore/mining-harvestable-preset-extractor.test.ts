@@ -19,17 +19,17 @@ test('extractDataCoreMiningHarvestablePresets extracts mining preset links and r
   await writeXml(
     xmlCacheDir,
     asteroidPresetPath,
-    `<HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="asteroid-entity-guid" respawnInSlotTime="3600" __type="HarvestablePreset" __ref="asteroid-preset-guid" __path="${asteroidPresetPath}" />`,
+    `<HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="stale-asteroid-entity-guid" respawnInSlotTime="3600" __type="HarvestablePreset" __ref="asteroid-preset-guid" __path="${asteroidPresetPath}" />`,
   );
   await writeXml(
     xmlCacheDir,
     fpsPresetPath,
-    `<HarvestablePreset.FPSMining_Aphorite entityClass="fps-entity-guid" respawnInSlotTime="1800" specialHarvestableString="Rare" __type="HarvestablePreset" __ref="fps-preset-guid" __path="${fpsPresetPath}" />`,
+    `<HarvestablePreset.FPSMining_Aphorite entityClass="stale-fps-entity-guid" respawnInSlotTime="1800" specialHarvestableString="Rare" __type="HarvestablePreset" __ref="fps-preset-guid" __path="${fpsPresetPath}" />`,
   );
   await writeXml(
     xmlCacheDir,
     lootPresetPath,
-    `<HarvestablePreset.Weapons_CZ entityClass="loot-entity-guid" respawnInSlotTime="7200" __type="HarvestablePreset" __ref="loot-preset-guid" __path="${lootPresetPath}" />`,
+    `<HarvestablePreset.Weapons_CZ entityClass="stale-loot-entity-guid" respawnInSlotTime="7200" __type="HarvestablePreset" __ref="loot-preset-guid" __path="${lootPresetPath}" />`,
   );
 
   const rows = await extractDataCoreMiningHarvestablePresets({
@@ -75,6 +75,7 @@ function makeGraph(): DataCoreRecordGraph {
       'HarvestablePreset.Mining_AsteroidCommon_Aluminum',
       'HarvestablePreset',
       'Mining_AsteroidCommon_Aluminum',
+      [{ attribute: 'entityClass', value: 'asteroid-entity-guid' }],
     ),
     node(
       fpsPresetPath,
@@ -82,8 +83,11 @@ function makeGraph(): DataCoreRecordGraph {
       'HarvestablePreset.FPSMining_Aphorite',
       'HarvestablePreset',
       'FPSMining_Aphorite',
+      [{ attribute: 'entityClass', value: 'fps-entity-guid' }],
     ),
-    node(lootPresetPath, 'loot-preset-guid', 'HarvestablePreset.Weapons_CZ', 'HarvestablePreset', 'Weapons_CZ'),
+    node(lootPresetPath, 'loot-preset-guid', 'HarvestablePreset.Weapons_CZ', 'HarvestablePreset', 'Weapons_CZ', [
+      { attribute: 'entityClass', value: 'loot-entity-guid' },
+    ]),
     node(
       asteroidEntityPath,
       'asteroid-entity-guid',
@@ -119,7 +123,14 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(path: string, ref: string, rootTag: string, rootType: string, entityClass: string) {
+function node(
+  path: string,
+  ref: string,
+  rootTag: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordGraph['records'][number]['referencedGuidAttributes']> = [],
+) {
   return {
     path,
     ref,
@@ -127,6 +138,7 @@ function node(path: string, ref: string, rootTag: string, rootType: string, enti
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }
