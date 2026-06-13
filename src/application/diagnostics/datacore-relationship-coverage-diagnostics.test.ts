@@ -26,6 +26,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       [
         'Entity Class,Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
         'COOL_TEST,item_name_csv_cool,item_desc_cool,ACME,1,A,Industrial,100',
+        'COOL_TEST,item_name_csv_cool,item_desc_cool,ACME,1,A,Industrial,100',
       ].join('\n'),
       'utf8',
     );
@@ -126,6 +127,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     });
 
     assert.equal(diagnostics.totalComponents, 4);
+    assert.equal(diagnostics.duplicateComponentRowsIgnored, 1);
     assert.equal(diagnostics.componentsWithGraphTitleKeys, 1);
     assert.equal(diagnostics.componentsWithoutGraphTitleKeys, 3);
     assert.deepEqual(diagnostics.matchedIniKeys, {
@@ -178,6 +180,10 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
 
     const formatted = formatDataCoreRelationshipCoverageDiagnostics(diagnostics);
     assert.match(formatted, /DataCore relationship coverage audit/);
+    assert.match(
+      formatted,
+      /Components: 4 unique; 1 with graph title keys; 3 without graph title keys; 1 duplicate rows ignored\./,
+    );
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
     assert.match(formatted, /Rows without graph title keys: 1 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
     assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);

@@ -118,7 +118,10 @@ test('update-item relationship-coverage-audit reports DataCore graph coverage di
 
   assert.equal(result.exitCode, 0, result.stderr);
   assert.match(result.stdout, /DataCore relationship coverage audit/);
-  assert.match(result.stdout, /Components: \d+ total; \d+ with graph title keys; \d+ without graph title keys\./);
+  assert.match(
+    result.stdout,
+    /Components: \d+ unique; \d+ with graph title keys; \d+ without graph title keys; \d+ duplicate rows ignored\./,
+  );
   assert.match(result.stdout, /Matched INI name keys:/);
   assert.match(result.stdout, /Summary: \d+ relationship coverage warnings\./);
   assert.equal(result.stderr, '');

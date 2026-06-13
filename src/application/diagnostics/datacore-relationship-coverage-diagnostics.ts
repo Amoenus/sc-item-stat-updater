@@ -13,6 +13,7 @@ export interface DataCoreRelationshipCoverageDiagnostic {
   versionDir: string;
   iniPath?: string;
   totalComponents: number;
+  duplicateComponentRowsIgnored: number;
   componentsWithGraphTitleKeys: number;
   componentsWithoutGraphTitleKeys: number;
   titleKeys: {
@@ -86,7 +87,8 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
     options.scmdbVersionDir ??
     (await resolveOptionalLatestVersionDir(path.join(repoRoot, 'csv', 'scmdb'), options.ptu ?? false));
   const iniPath = options.iniPath ?? path.join(repoRoot, 'global.ini');
-  const facts = await loadDataCoreComponentFacts({ datacoreDir: versionDir, scmdbDir });
+  const loadedFacts = await loadDataCoreComponentFacts({ datacoreDir: versionDir, scmdbDir });
+  const { facts, duplicatesIgnored } = uniqueComponentFacts(loadedFacts);
   const iniKeys = await readOptionalIniNameKeys(iniPath);
   const keySources = buildKeySources(facts);
   const matchedIniKeys = countMatchedIniKeys(iniKeys, keySources);
@@ -99,6 +101,7 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
     versionDir,
     iniPath: iniKeys ? iniPath : undefined,
     totalComponents: facts.length,
+    duplicateComponentRowsIgnored: duplicatesIgnored,
     componentsWithGraphTitleKeys: facts.filter(hasGraphTitleKey).length,
     componentsWithoutGraphTitleKeys: facts.filter((fact) => !hasGraphTitleKey(fact)).length,
     titleKeys: titleKeyCounts,
@@ -108,6 +111,20 @@ export async function buildDataCoreRelationshipCoverageDiagnostics(
     guessedOnlyMatches,
     warnings: collectWarnings(componentFamilies, titleKeyCounts, matchedIniKeys, iniKeys),
   };
+}
+
+function uniqueComponentFacts(facts: ComponentFact[]): { facts: ComponentFact[]; duplicatesIgnored: number } {
+  const seen = new Set<string>();
+  const uniqueFacts: ComponentFact[] = [];
+
+  for (const fact of facts) {
+    const key = [fact.componentType, fact.entityClass, fact.recordPath || fact.ref].join('\0');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqueFacts.push(fact);
+  }
+
+  return { facts: uniqueFacts, duplicatesIgnored: facts.length - uniqueFacts.length };
 }
 
 async function resolveOptionalLatestVersionDir(base: string, ptu: boolean): Promise<string | undefined> {
@@ -328,7 +345,7 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     `DataCore version: ${path.basename(diagnostics.versionDir)} (${diagnostics.versionDir})`,
     `INI target: ${diagnostics.iniPath ?? 'not available'}`,
     '',
-    `Components: ${diagnostics.totalComponents} total; ${diagnostics.componentsWithGraphTitleKeys} with graph title keys; ${diagnostics.componentsWithoutGraphTitleKeys} without graph title keys.`,
+    `Components: ${diagnostics.totalComponents} unique; ${diagnostics.componentsWithGraphTitleKeys} with graph title keys; ${diagnostics.componentsWithoutGraphTitleKeys} without graph title keys; ${diagnostics.duplicateComponentRowsIgnored} duplicate rows ignored.`,
     `Title keys: ${diagnostics.titleKeys.total} total; ${diagnostics.titleKeys.graphLocalization} graph; ${diagnostics.titleKeys.csvNameKey} CSV name keys; ${diagnostics.titleKeys.guessedAlias} guessed aliases; ${diagnostics.titleKeys.guessedOnly} guessed-only.`,
     `Matched INI name keys: ${diagnostics.matchedIniKeys.total} total; ${diagnostics.matchedIniKeys.graphLocalization} graph; ${diagnostics.matchedIniKeys.csvNameKey} CSV name keys; ${diagnostics.matchedIniKeys.guessedAlias} guessed aliases.`,
     `Rows without graph title keys: ${diagnostics.titleKeyGaps.placeholderNameKey} placeholder name keys; ${diagnostics.titleKeyGaps.missingNameKey} missing name keys; ${diagnostics.titleKeyGaps.csvNameKeyOnly} CSV name-key only; ${diagnostics.titleKeyGaps.other} other.`,
