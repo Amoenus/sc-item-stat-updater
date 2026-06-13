@@ -3775,7 +3775,9 @@ function resolveReferencedRecord(
           : graph.getByRef(graphReferenceValue);
       if (record) return record;
     }
+  }
 
+  for (const candidate of candidates) {
     const referenceValue = source(candidate.selector).first().attr(candidate.attr)?.trim();
     if (!referenceValue) continue;
 

@@ -329,6 +329,98 @@ test('runDatacoreScrape discovers selector-matched item records outside legacy p
   assert.match(csv, /dynamic_test,item_NameDynamic_Test,,item_DescDynamic_Test,ACME,1,A,,42,9001/);
 });
 
+test('runDatacoreScrape tries all graph reference fallbacks before XML refs', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-reference-fallback-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const mainPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'entities',
+    'scitem',
+    'reference_fallback',
+    'referencefallback_main.xml',
+  );
+  const staleRef = '11111111-1111-4111-8111-111111111111';
+  const graphRef = '22222222-2222-4222-8222-222222222222';
+  await fs.mkdir(path.dirname(mainPath), { recursive: true });
+  await fs.writeFile(
+    mainPath,
+    `
+      <EntityClassDefinition.ReferenceFallback_Main __ref="main-ref" __path="libs/foundry/records/entities/scitem/reference_fallback/referencefallback_main.xml">
+        <GraphRelationships fallbackRef="${graphRef}" />
+        <SAttachableComponentParams>
+          <AttachDef Type="ReferenceFallback" Size="1" Grade="a" Manufacturer="ACME">
+            <Localization Name="@item_NameReferenceFallback_Main" Description="@item_DescReferenceFallback_Main" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="42" />
+        <PrimaryRef value="${staleRef}" />
+      </EntityClassDefinition.ReferenceFallback_Main>
+    `,
+    'utf8',
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/stale.xml',
+    `<ReferenceRecord.Stale __ref="${staleRef}" __path="libs/foundry/records/references/stale.xml" linkedValue="stale" />`,
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/graph.xml',
+    `<ReferenceRecord.Graph __ref="${graphRef}" __path="libs/foundry/records/references/graph.xml" linkedValue="graph" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'reference-fallback',
+        csvFile: 'reference-fallback.datacore.csv',
+        typeConfig: {
+          recordFilter: 'libs/foundry/records/entities/scitem/reference_fallback',
+          recordSelector: 'SAttachableComponentParams AttachDef[Type="ReferenceFallback"]',
+          entityClassPrefix: '',
+          nameKeyInfix: '',
+          fieldSelectors: {
+            'Linked Value': {
+              ref: {
+                selector: 'PrimaryRef',
+                attr: 'value',
+                graphAttribute: 'missingPrimaryRef',
+                fallback: {
+                  selector: 'FallbackRef',
+                  attr: 'value',
+                  graphAttribute: 'fallbackRef',
+                },
+              },
+              selector: ':root',
+              attr: 'linkedValue',
+            },
+          },
+        },
+      },
+    ],
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'reference-fallback.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'reference-fallback', rows: 1, skipped: 0, csvFile: 'reference-fallback.datacore.csv' },
+  ]);
+  assert.match(csv, /referencefallback_main,item_NameReferenceFallback_Main,,item_DescReferenceFallback_Main,ACME,1,A,,42,graph/);
+  assert.doesNotMatch(csv, /stale/);
+});
+
 test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
@@ -4088,3 +4180,9 @@ test('runDatacoreScrape extracts salvage modifier stats from real-shaped DataCor
     /salvage_modifier_scraper_large,item_scraper_GRIN_Large_Name,,item_scraper_GRIN_Large_Desc,GRIN,1,1,,100,0\.05,6,0\.6/,
   );
 });
+
+async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
+  const xmlPath = path.join(xmlCacheDir, recordPath);
+  await fs.mkdir(path.dirname(xmlPath), { recursive: true });
+  await fs.writeFile(xmlPath, xml, 'utf8');
+}
