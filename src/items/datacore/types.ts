@@ -230,5 +230,6 @@ export function makeAlternateDataCoreDescKeys(
 
 export function usableDataCoreLocalizationKey(value: string | undefined): string {
   const trimmed = value?.trim() ?? '';
-  return trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed) ? trimmed : '';
+  const normalized = trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+  return normalized && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized) ? normalized : '';
 }

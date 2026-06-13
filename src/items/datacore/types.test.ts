@@ -50,12 +50,28 @@ test('makeGetTargetKeys ignores placeholder DataCore localization keys before fa
     getTargetKeys(
       {
         'Entity Class': 'cool_acom_s01_iceplunge',
-        'Name Key': 'LOC_PLACEHOLDER',
-        'Description Key': 'LOC_UNINITIALIZED',
+        'Name Key': '@LOC_PLACEHOLDER',
+        'Description Key': '@LOC_UNINITIALIZED',
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
     ['item_DescCOOL_ACOM_S01_ICEPLUNGE'],
+  );
+});
+
+test('makeGetTargetKeys normalizes raw DataCore localization key prefixes', () => {
+  const getTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
+
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'cool_acom_s01_iceplunge',
+        'Name Key': '@item_Name_COOL_ACOM_S01_IcePlunge',
+        'Description Key': '@item_Desc_COOL_ACOM_S01_IcePlunge',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_Desc_COOL_ACOM_S01_IcePlunge'],
   );
 });
 
