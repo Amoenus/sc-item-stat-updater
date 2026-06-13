@@ -53,8 +53,8 @@ export function createDataCoreManufacturerResolver(graph: DataCoreRecordGraphLoo
 }
 
 function toManufacturer(record: DataCoreRecordNode): DataCoreManufacturer {
-  const nameKey = record.localizationKeys.find((reference) => reference.attribute === 'Name')?.key ?? '';
-  const descriptionKey = record.localizationKeys.find((reference) => reference.attribute === 'Description')?.key ?? '';
+  const nameKey = graphLocalizationKey(record, ['Name', 'name', 'displayName']);
+  const descriptionKey = graphLocalizationKey(record, ['Description', 'description', 'displayDescription']);
 
   return {
     ref: record.ref,
@@ -65,6 +65,21 @@ function toManufacturer(record: DataCoreRecordNode): DataCoreManufacturer {
     descriptionKey,
     record,
   };
+}
+
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.localizationKeys.find(
+      (reference) =>
+        expectedAttributes.has(reference.attribute.toLowerCase()) && isUsableLocalizationKey(reference.key),
+    )?.key ?? ''
+  );
+}
+
+function isUsableLocalizationKey(value: string): boolean {
+  const normalized = normalizeLocalizationKey(value);
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function addFirst(index: Map<string, DataCoreManufacturer>, key: string, manufacturer: DataCoreManufacturer): void {
