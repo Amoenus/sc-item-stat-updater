@@ -30,10 +30,18 @@ export async function extractDataCoreMissionBrokers(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const missionTypeGuid = root.attr('type') ?? '';
-    const ownerGuid = root.attr('owner') ?? '';
-    const missionGiverRecordGuid = root.attr('missionGiverRecord') ?? '';
-    const locationMissionAvailableGuid = root.attr('locationMissionAvailable') ?? '';
+    const missionTypeGuid = graphGuidReference(record, ['type'], root.attr('type') ?? '');
+    const ownerGuid = graphGuidReference(record, ['owner'], root.attr('owner') ?? '');
+    const missionGiverRecordGuid = graphGuidReference(
+      record,
+      ['missionGiverRecord'],
+      root.attr('missionGiverRecord') ?? '',
+    );
+    const locationMissionAvailableGuid = graphGuidReference(
+      record,
+      ['locationMissionAvailable'],
+      root.attr('locationMissionAvailable') ?? '',
+    );
     const missionReward = root.find('> missionReward').first();
     const missionDeadline = root.find('> missionDeadline').first();
 
@@ -105,6 +113,14 @@ export async function extractDataCoreMissionBrokers(
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

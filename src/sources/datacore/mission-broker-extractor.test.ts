@@ -15,16 +15,16 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
     path.join(xmlCacheDir, brokerPath),
     `
       <MissionBrokerEntry.TestBroker
-        owner="owner-guid"
+        owner="stale-owner-guid"
         missionModule="libs/subsumption/missions/test.xml"
         title="@mission_title_stale"
         titleHUD="@mission_title_hud_stale"
         description="@mission_desc_stale"
         missionGiver="@mission_from_stale"
         commsChannelName="@mission_channel_stale"
-        type="type-guid"
+        type="stale-type-guid"
         missionDifficulty="3"
-        locationMissionAvailable="location-guid"
+        locationMissionAvailable="stale-location-guid"
         initiallyActive="1"
         notifyOnAvailable="0"
         showAsOffer="1"
@@ -53,7 +53,7 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
         hasPersonalCooldown="1"
         personalCooldownTime="15"
         personalCooldownTimeVariation="3"
-        missionGiverRecord="giver-guid"
+        missionGiverRecord="stale-giver-guid"
         __type="MissionBrokerEntry"
         __ref="broker-guid"
         __path="${brokerPath}">
@@ -80,7 +80,13 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
           { attribute: 'missionGiver', key: 'mission_from' },
           { attribute: 'commsChannelName', key: 'mission_channel' },
         ],
-        referencedGuids: [],
+        referencedGuids: ['giver-guid', 'location-guid', 'owner-guid', 'type-guid'],
+        referencedGuidAttributes: [
+          { attribute: 'locationMissionAvailable', value: 'location-guid' },
+          { attribute: 'missionGiverRecord', value: 'giver-guid' },
+          { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'type', value: 'type-guid' },
+        ],
       },
       record('owner-guid', 'FactionOwner'),
       record('type-guid', 'Bounty'),
