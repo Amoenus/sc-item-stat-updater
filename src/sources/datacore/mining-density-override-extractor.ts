@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import type { DataCoreMiningDensityOverrideRecord, DataCoreRecordGraphLookup } from './types';
+import { uniqueGraphGuidReference } from './record-graph-relations';
+import type { DataCoreMiningDensityOverrideRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
 const DEFAULT_DENSITY_OVERRIDE_PATH_PREFIX = 'libs/foundry/records/densityclasses/overrides';
@@ -28,7 +29,9 @@ export async function extractDataCoreMiningDensityOverrides(
 
     $('SDensityClassLifetimeOverrideEntry').each((_index, element) => {
       const entry = $(element);
-      const densityClassGuid = entry.attr('densityClass') ?? '';
+      const densityClassGuid = entry.attr('densityClass')
+        ? graphGuidReference(record, ['densityClass'], entry.attr('densityClass') ?? '')
+        : '';
       const densityClass = densityClassGuid ? options.graph.getByRef(densityClassGuid) : undefined;
       const lifetime = entry.find('> lifetimeOverride > TimeValue_Partitioned').first();
       const lifetimeDays = lifetime.attr('days') ?? '';
@@ -59,4 +62,8 @@ function totalSeconds(days: string, hours: string, minutes: string, seconds: str
   const values = [days, hours, minutes, seconds].map((value) => Number(value || '0'));
   if (values.some((value) => !Number.isFinite(value))) return '';
   return String(values[0] * 86400 + values[1] * 3600 + values[2] * 60 + values[3]);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }

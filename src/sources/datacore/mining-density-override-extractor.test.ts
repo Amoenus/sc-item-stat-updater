@@ -20,7 +20,7 @@ test('extractDataCoreMiningDensityOverrides extracts mining lifetime override ro
       <SEntityDensityClassOverridesRecord.Stanton_HighTechMiningOutpost __type="SEntityDensityClassOverridesRecord" __ref="ad7b50ff-f32b-4156-a56e-f0ddfc48f76d" __path="${miningOverridePath}">
         <overrides>
           <densityClassLifetimeOverrides>
-            <SDensityClassLifetimeOverrideEntry densityClass="b6cc39fd-7c14-4568-b261-197834e51116">
+            <SDensityClassLifetimeOverrideEntry densityClass="99999999-9999-9999-9999-999999999998">
               <lifetimeOverride>
                 <TimeValue_Partitioned days="0" hours="20" minutes="30" seconds="5" />
               </lifetimeOverride>
@@ -83,6 +83,7 @@ function makeGraph(): DataCoreRecordGraph {
       'ad7b50ff-f32b-4156-a56e-f0ddfc48f76d',
       'SEntityDensityClassOverridesRecord',
       'Stanton_HighTechMiningOutpost',
+      [{ attribute: 'densityClass', value: 'b6cc39fd-7c14-4568-b261-197834e51116' }],
     ),
     node(
       genericOverridePath,
@@ -111,7 +112,13 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(pathValue: string, ref: string, rootType: string, entityClass: string): DataCoreRecordNode {
+function node(
+  pathValue: string,
+  ref: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordNode['referencedGuidAttributes']> = [],
+): DataCoreRecordNode {
   return {
     path: pathValue,
     ref,
@@ -119,6 +126,7 @@ function node(pathValue: string, ref: string, rootType: string, entityClass: str
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }
