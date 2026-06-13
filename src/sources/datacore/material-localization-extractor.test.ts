@@ -22,7 +22,7 @@ test('extractDataCoreMaterialLocalizations prefers graph localization keys for r
         </SAttachableComponentParams>
         <ResourceContainer>
           <defaultComposition>
-            <ResourceContainerDefaultCompositionEntry entry="resource-guid" weight="1" />
+            <ResourceContainerDefaultCompositionEntry entry="stale-resource-guid" weight="1" />
           </defaultComposition>
         </ResourceContainer>
       </EntityClassDefinition.CarryableTitanium>
@@ -51,7 +51,8 @@ function graphFixture(carryablePath: string): DataCoreRecordGraph {
         rootType: 'EntityClassDefinition',
         entityClass: 'CarryableTitanium',
         localizationKeys: [{ attribute: 'Name', key: 'items_commodities_titanium' }],
-        referencedGuids: [],
+        referencedGuids: ['resource-guid'],
+        referencedGuidAttributes: [{ attribute: 'entry', value: 'resource-guid' }],
       },
     ],
     indexes: {

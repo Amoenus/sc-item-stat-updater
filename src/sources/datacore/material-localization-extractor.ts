@@ -28,10 +28,9 @@ export async function extractDataCoreMaterialLocalizations(
         return chunkRows;
       }
       const $ = loadXml(xml);
+      const resourceGuids = graphGuidReferences(record, ['entry']);
 
-      $('ResourceContainerDefaultCompositionEntry').each((_, element) => {
-        const el = $(element);
-        const resourceGuid = el.attr('entry');
+      for (const resourceGuid of resourceGuids.length ? resourceGuids : xmlResourceGuids($)) {
         if (resourceGuid) {
           const locName =
             graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) ||
@@ -43,7 +42,7 @@ export async function extractDataCoreMaterialLocalizations(
             });
           }
         }
-      });
+      }
 
       completed++;
       options.onProgress?.(completed, records.length);
@@ -72,6 +71,23 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]):
     expectedAttributes.has(reference.attribute.toLowerCase()),
   )?.key;
   return isUsableLocalizationKey(key) ? (key ?? '') : '';
+}
+
+function graphGuidReferences(record: DataCoreRecordNode, attributes: string[]): string[] {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes
+      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => reference.value)
+      .filter(Boolean) ?? []
+  );
+}
+
+function xmlResourceGuids($: ReturnType<typeof loadXml>): string[] {
+  return $('ResourceContainerDefaultCompositionEntry')
+    .toArray()
+    .map((element) => $(element).attr('entry') ?? '')
+    .filter(Boolean);
 }
 
 function isUsableLocalizationKey(value: string | undefined): boolean {
