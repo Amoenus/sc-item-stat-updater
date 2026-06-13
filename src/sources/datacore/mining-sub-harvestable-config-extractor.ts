@@ -170,7 +170,10 @@ async function readSlot(
     harvestableGuid: slot.attr('harvestable') ?? '',
     directEntityGuid: slot.attr('harvestableEntityClass') ?? '',
   });
-  const harvestableSetupGuid = slot.attr('harvestableSetup') ?? '';
+  const relationshipRecord = context.referencedConfig ?? context.record;
+  const harvestableSetupGuid = slot.attr('harvestableSetup')
+    ? graphGuidReference(relationshipRecord, ['harvestableSetup'], slot.attr('harvestableSetup') ?? '')
+    : '';
   const harvestableSetup = harvestableSetupGuid ? context.options.graph.getByRef(harvestableSetupGuid) : undefined;
 
   if (!isMiningSlot(context.record, context.taggedConfigName, harvestable)) return undefined;

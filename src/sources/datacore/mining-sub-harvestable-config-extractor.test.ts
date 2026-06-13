@@ -23,7 +23,7 @@ test('extractDataCoreMiningSubHarvestableConfigs extracts mining slots from dire
       <SubHarvestableConfigRecord.Cave_Aberdeen_Rich __type="SubHarvestableConfigRecord" __ref="1a3fdfbe-bd2e-4db1-b175-060c11db30fc" __path="${directConfigPath}">
         <subConfig initialSlotsProbability="0.8" configRespawnTimeMultiplier="1">
           <subHarvestables>
-            <SubHarvestableSlot harvestable="b4dbb414-4946-437a-870b-0df49007603b" relativeProbability="42" harvestableRespawnTimeMultiplier="2" harvestableSetup="0aa9921e-8de0-487e-bc87-1d457c56d74f">
+            <SubHarvestableSlot harvestable="b4dbb414-4946-437a-870b-0df49007603b" relativeProbability="42" harvestableRespawnTimeMultiplier="2" harvestableSetup="99999999-9999-9999-9999-999999999997">
               <geometries>
                 <HarvestableGeometry tag="9c6ef328-5118-4882-9ad4-2f391322af21" />
               </geometries>
@@ -126,7 +126,13 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records: DataCoreRecordNode[] = [
-    node(directConfigPath, '1a3fdfbe-bd2e-4db1-b175-060c11db30fc', 'SubHarvestableConfigRecord', 'Cave_Aberdeen_Rich'),
+    node(
+      directConfigPath,
+      '1a3fdfbe-bd2e-4db1-b175-060c11db30fc',
+      'SubHarvestableConfigRecord',
+      'Cave_Aberdeen_Rich',
+      [{ attribute: 'harvestableSetup', value: '0aa9921e-8de0-487e-bc87-1d457c56d74f' }],
+    ),
     node(
       multiConfigPath,
       '22222222-2222-2222-2222-222222222222',
