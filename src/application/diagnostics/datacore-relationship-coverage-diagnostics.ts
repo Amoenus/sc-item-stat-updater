@@ -54,6 +54,7 @@ export interface DataCoreRelationshipCoverageTitleGapDiagnostic {
   missingNameKey: number;
   csvNameKeyOnly: number;
   other: number;
+  likelyNonUserFacing: number;
   samples: DataCoreRelationshipCoverageTitleGapSample[];
 }
 
@@ -270,6 +271,7 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
     missingNameKey: 0,
     csvNameKeyOnly: 0,
     other: 0,
+    likelyNonUserFacing: 0,
     samples: [],
   };
 
@@ -281,6 +283,7 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
     if (reason === 'missing-name-key') gaps.missingNameKey++;
     if (reason === 'csv-name-key-only') gaps.csvNameKeyOnly++;
     if (reason === 'other') gaps.other++;
+    if (isLikelyNonUserFacingComponentFact(fact)) gaps.likelyNonUserFacing++;
 
     if (gaps.samples.length < 12) {
       gaps.samples.push({
@@ -293,6 +296,11 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
   }
 
   return gaps;
+}
+
+function isLikelyNonUserFacingComponentFact(fact: ComponentFact): boolean {
+  const value = `${fact.entityClass} ${fact.recordPath}`.toLowerCase();
+  return /(?:^|[_/])(?:template|fake|prototype)(?:[_./]|$)|jumpdriveflighttuning|jumptunnelforces/.test(value);
 }
 
 function titleGapReason(fact: ComponentFact): DataCoreRelationshipCoverageTitleGapSample['reason'] {
@@ -349,6 +357,7 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     `Title keys: ${diagnostics.titleKeys.total} total; ${diagnostics.titleKeys.graphLocalization} graph; ${diagnostics.titleKeys.csvNameKey} CSV name keys; ${diagnostics.titleKeys.guessedAlias} guessed aliases; ${diagnostics.titleKeys.guessedOnly} guessed-only.`,
     `Matched INI name keys: ${diagnostics.matchedIniKeys.total} total; ${diagnostics.matchedIniKeys.graphLocalization} graph; ${diagnostics.matchedIniKeys.csvNameKey} CSV name keys; ${diagnostics.matchedIniKeys.guessedAlias} guessed aliases.`,
     `Rows without graph title keys: ${diagnostics.titleKeyGaps.placeholderNameKey} placeholder name keys; ${diagnostics.titleKeyGaps.missingNameKey} missing name keys; ${diagnostics.titleKeyGaps.csvNameKeyOnly} CSV name-key only; ${diagnostics.titleKeyGaps.other} other.`,
+    `Likely non-user-facing title gaps: ${diagnostics.titleKeyGaps.likelyNonUserFacing}.`,
     '',
     '| Component family | Status | Rows | Rows with graph title keys | Rows without graph title keys |',
     '| --- | --- | ---: | ---: | ---: |',
