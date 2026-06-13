@@ -112,6 +112,40 @@ test('extractDataCoreContractTemplates emits template display and objective fact
   );
 });
 
+test('extractDataCoreContractTemplates falls back when graph GUID refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-template-ambiguous-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/test_template.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.TestTemplate owner="stale-owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <contractClass>
+          <ContractClass_Contract />
+        </contractClass>
+        <contractDisplayInfo>
+          <ContractDisplayInfo type="stale-type-guid" />
+        </contractDisplayInfo>
+      </ContractTemplate.TestTemplate>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0]?.referencedGuidAttributes?.push(
+    { attribute: 'owner', value: 'other-owner-guid' },
+    { attribute: 'type', value: 'other-type-guid' },
+  );
+
+  const rows = await extractDataCoreContractTemplates({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.ownerGuid, 'stale-owner-guid');
+  assert.equal(rows[0]?.ownerClass, '');
+  assert.equal(rows[0]?.displayTypeGuid, 'stale-type-guid');
+  assert.equal(rows[0]?.displayTypeClass, '');
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',

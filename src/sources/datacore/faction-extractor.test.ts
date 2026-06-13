@@ -110,6 +110,50 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
   ]);
 });
 
+test('extractDataCoreFactions falls back when graph GUID refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-factions-ambiguous-'));
+  const factionPath = 'libs/foundry/records/factions/faction_reputation_unlawful_headhunters.xml';
+  const reputationPath = 'libs/foundry/records/factions/factionreputation/factionreputation_headhunters.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, factionPath)), { recursive: true });
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, reputationPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, factionPath),
+    `
+      <Faction.Faction_Reputation_Unlawful_HeadHunters
+        name="@HeadHunters_RepUI_Name"
+        factionReputationRef="stale-reputation-guid"
+        __type="Faction"
+        __ref="9f89edc0-441b-4f40-a502-df12ebf3f1eb"
+        __path="${factionPath}" />
+    `,
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(xmlCacheDir, reputationPath),
+    `
+      <FactionReputation.FactionReputation_HeadHunters
+        displayName="@HeadHunters_RepUI_Name"
+        __type="FactionReputation"
+        __ref="09efeef4-c646-408d-a979-3ae56a3b1beb"
+        __path="${reputationPath}" />
+    `,
+    'utf8',
+  );
+  const graph = makeGraph(factionPath, reputationPath);
+  graph.records[0]?.referencedGuidAttributes?.push({
+    attribute: 'factionReputationRef',
+    value: '11111111-1111-4111-8111-111111111111',
+  });
+
+  const rows = await extractDataCoreFactions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.factionReputationGuid, 'stale-reputation-guid');
+  assert.equal(rows[0]?.factionReputationClass, '');
+});
+
 function makeGraph(factionPath: string, reputationPath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',

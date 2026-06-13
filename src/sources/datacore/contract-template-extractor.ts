@@ -143,12 +143,15 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.referencedGuidAttributes
-      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => reference.value.trim())
-      .find((value) => value !== '') ?? fallback
-  );
+  const values = [
+    ...new Set(
+      record.referencedGuidAttributes
+        ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+        .map((reference) => reference.value.trim())
+        .filter(Boolean) ?? [],
+    ),
+  ];
+  return values.length === 1 ? values[0] : fallback;
 }
 
 function uniqueStrings(values: string[]): string[] {
