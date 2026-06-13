@@ -401,8 +401,8 @@ function buildDatacoreMiningLocationRows(
       parseWeight(row['Group Probability'], 1) * parseWeight(row['Relative Probability'], 1);
 
     for (const labelRow of relatedLocationLabelRows(row, locationLabelRows)) {
-      if (labelRow['Name Key']) facts.locationNameKeys.add(labelRow['Name Key']);
-      if (labelRow['Description Key'] && labelRow['Description Key'] !== 'LOC_UNINITIALIZED') {
+      if (isUsableLocalizationKey(labelRow['Name Key'])) facts.locationNameKeys.add(labelRow['Name Key']);
+      if (isUsableLocalizationKey(labelRow['Description Key'])) {
         facts.locationDescriptionKeys.add(labelRow['Description Key']);
       }
       for (const sourceReason of (labelRow['Source Reason'] || '').split(';')) {
@@ -707,6 +707,11 @@ function sortedJoined(values: Set<string>): string {
 
 function addIfPresent(values: Set<string>, value: string | undefined): void {
   if (value?.trim()) values.add(value.trim());
+}
+
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const trimmed = value?.trim() ?? '';
+  return trimmed.length > 0 && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed);
 }
 
 function buildDensityOverrideSummaryMap(rows: Record<string, string>[]): {

@@ -82,6 +82,14 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Record Path': 'libs/foundry/records/starmap/pu/asteroidcluster_miningbase_stanton1_medium_01.xml',
         'Source Reason': 'class-or-path-mining',
       },
+      {
+        'Location Class': 'AsteroidCluster_MiningBase_Stanton1_Medium_02',
+        'Name Key': 'LOC_PLACEHOLDER',
+        'Description Key': 'LOC_UNINITIALIZED',
+        'Parent Class': 'Stanton1',
+        'Record Path': 'libs/foundry/records/starmap/pu/asteroidcluster_miningbase_stanton1_medium_02.xml',
+        'Source Reason': 'class-or-path-mining',
+      },
     ],
     [
       qualityDistributionRow({
