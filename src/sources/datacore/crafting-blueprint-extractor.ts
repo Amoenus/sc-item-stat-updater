@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import { createDataCoreRelationshipIndex } from './relationship-index';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreCraftingBlueprintRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -28,7 +29,11 @@ export async function extractDataCoreCraftingBlueprints(
       const xml = await fs.readFile(xmlPath, 'utf8');
       const $ = loadXml(xml);
 
-      const targetEntityClassRef = $('processSpecificData > CraftingProcess_Creation').attr('entityClass') ?? '';
+      const targetEntityClassRef = graphGuidReference(
+        record,
+        ['entityClass'],
+        $('processSpecificData > CraftingProcess_Creation').attr('entityClass') ?? '',
+      );
       const targetEntityNode =
         options.graph.getByRef(targetEntityClassRef) ?? relationships.getRecordForEntityClass(targetEntityClassRef);
       const targetEntityClassGuid = targetEntityNode?.ref ?? targetEntityClassRef;
@@ -39,7 +44,9 @@ export async function extractDataCoreCraftingBlueprints(
       const recipeCosts: { resource: string; minQuality: number; amount: number }[] = [];
       $('CraftingRecipeCosts CraftingCost_Resource').each((_, element) => {
         const el = $(element);
-        const resource = el.attr('resource');
+        const resource = el.attr('resource')
+          ? graphGuidReference(record, ['resource'], el.attr('resource') ?? '')
+          : '';
         const minQuality = Number(el.attr('minQuality')) || 0;
         const amount = Number(el.find('> quantity > SStandardCargoUnit').attr('standardCargoUnits')) || 0;
 
@@ -71,6 +78,10 @@ export async function extractDataCoreCraftingBlueprints(
 
 function targetNameLocalizationKey(record: DataCoreRecordNode): string {
   return graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) || fallbackNameKey(record);
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
