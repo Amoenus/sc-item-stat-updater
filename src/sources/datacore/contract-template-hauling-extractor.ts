@@ -47,7 +47,8 @@ export async function extractDataCoreContractTemplateHaulingOrders(
           const maxSCU = $(order).attr('maxSCU') ?? '';
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
           const resolvedResource = resourceResolver.get(resourceGuid);
-          const resourceClass = linkedClass(options.graph.getByRef(resourceGuid)) || resolvedResource?.resourceClass || '';
+          const resourceClass =
+            linkedClass(options.graph.getByRef(resourceGuid)) || resolvedResource?.resourceClass || '';
           const resourceNameKey = resolvedResource?.resourceNameKey ?? '';
           rows.push({
             templateClass: record.entityClass,
@@ -89,11 +90,13 @@ async function buildCarryableResourceResolver(
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore carryable XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
-    const resourceNameKey = firstLocalizationKey([
-      $('SAttachableComponentParams AttachDef > Localization').first().attr('Name') ?? '',
-      $('SCItemPurchasableParams').first().attr('displayName') ?? '',
-      $('LocStringUserVariable[name="ItemName"]').first().attr('defaultValue') ?? '',
-    ]);
+    const resourceNameKey =
+      graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) ||
+      firstLocalizationKey([
+        $('SAttachableComponentParams AttachDef > Localization').first().attr('Name') ?? '',
+        $('SCItemPurchasableParams').first().attr('displayName') ?? '',
+        $('LocStringUserVariable[name="ItemName"]').first().attr('defaultValue') ?? '',
+      ]);
     const resourceClass = record.entityClass || resourceClassFromNameKey(resourceNameKey);
 
     $('ResourceContainerDefaultCompositionEntry[entry]').each((_, entry) => {
@@ -110,16 +113,30 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
 }
 
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find((reference) =>
+    expectedAttributes.has(reference.attribute.toLowerCase()),
+  )?.key;
+  return isUsableLocalizationKey(key) ? (key ?? '') : '';
+}
+
 function firstLocalizationKey(values: string[]): string {
   for (const value of values) {
     const key = normalizeLocalizationKey(value);
-    if (key && key !== 'LOC_EMPTY' && key !== 'LOC_PLACEHOLDER' && key !== 'LOC_UNINITIALIZED') return key;
+    if (isUsableLocalizationKey(key)) return key;
   }
   return '';
 }
 
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = normalizeLocalizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
 function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }
 

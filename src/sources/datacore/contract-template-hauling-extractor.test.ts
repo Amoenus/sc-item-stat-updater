@@ -38,7 +38,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
       <EntityClassDefinition.CarryableCarbon __type="EntityClassDefinition" __ref="carryable-guid" __path="${carryablePath}">
         <SAttachableComponentParams>
           <AttachDef>
-            <Localization Name="@items_commodities_carbon" />
+            <Localization Name="@items_commodities_carbon_stale" />
           </AttachDef>
         </SAttachableComponentParams>
         <ResourceContainer>
@@ -118,7 +118,7 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         rootTag: 'EntityClassDefinition.CarryableCarbon',
         rootType: 'EntityClassDefinition',
         entityClass: 'CarryableCarbon',
-        localizationKeys: [],
+        localizationKeys: [{ attribute: 'Name', key: 'items_commodities_carbon' }],
         referencedGuids: [],
       },
     ],
