@@ -81,7 +81,11 @@ export async function extractDataCoreCommodities(
 
   const carryableRows = extractCarryableCommodityRows(options.graph, emittedKeys, controlledSubstances);
   const harvestableRows = extractHarvestableCommodityRows(options.graph, emittedKeys, controlledSubstances);
-  const haulingEntityClassRows = await extractHaulingEntityClassCommodityRows(options, emittedKeys, controlledSubstances);
+  const haulingEntityClassRows = await extractHaulingEntityClassCommodityRows(
+    options,
+    emittedKeys,
+    controlledSubstances,
+  );
   return [...commodities, ...carryableRows, ...harvestableRows, ...haulingEntityClassRows];
 }
 
@@ -206,7 +210,9 @@ async function extractHaulingEntityClassCommodityRows(
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const root = $.root().children().first();
-    const nameKey = normalizeLocalizationKey(root.attr('orderDisplayName') ?? '');
+    const nameKey =
+      graphLocalizationKey(record, ['orderDisplayName']) ||
+      normalizeLocalizationKey(root.attr('orderDisplayName') ?? '');
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
     if (!isHaulingEntityClassNameKey(nameKey)) continue;
 
@@ -253,7 +259,10 @@ async function extractControlledSubstanceIndex(
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const jurisdictionName =
-      normalizeLocalizationKey($.root().children().first().attr('name') ?? '') || record.entityClass || record.path;
+      graphLocalizationKey(record, ['name', 'displayName']) ||
+      normalizeLocalizationKey($.root().children().first().attr('name') ?? '') ||
+      record.entityClass ||
+      record.path;
 
     $('ControlledSubstanceClass').each((_index, element) => {
       const substanceClass = $(element);
@@ -392,20 +401,25 @@ function resolveRecordLocalizationKey(
   attributes: string[],
   rawValue: string | undefined,
 ): string {
-  const key = normalizeLocalizationKey(rawValue ?? '');
-  if (!key) return '';
+  return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(rawValue ?? '');
+}
 
-  const byAttribute = record.localizationKeys.find(
-    (reference) => attributes.includes(reference.attribute) && reference.key === key,
-  );
-  if (byAttribute) return byAttribute.key;
+function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const key = record.localizationKeys.find(
+    (reference) => expectedAttributes.has(reference.attribute.toLowerCase()) && isUsableLocalizationKey(reference.key),
+  )?.key;
+  return key ?? '';
+}
 
-  const byKey = record.localizationKeys.find((reference) => reference.key === key);
-  return byKey?.key ?? key;
+function isUsableLocalizationKey(value: string | undefined): boolean {
+  const normalized = normalizeLocalizationKey(value ?? '');
+  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }
 

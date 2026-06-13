@@ -24,15 +24,15 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
     `
       <EntityClassDefinition.atlasium __type="EntityClassDefinition" __ref="af5dcf22-7a28-4b1e-88f0-4309d34be11a" __path="${atlasiumPath}">
         <StaticEntityClassData>
-          <EntityUIDisplayParams displayName="@LOC_UNINITIALIZED" displayDescription="@items_commodities_atlasium_desc" />
+          <EntityUIDisplayParams displayName="@LOC_UNINITIALIZED" displayDescription="@items_commodities_atlasium_stale_desc" />
         </StaticEntityClassData>
         <Components>
-          <CommodityComponentParams type="22325f28-8d37-46ab-8c08-8a9b34101fad" subtype="45f89d34-3167-4723-9b85-f9df3770ce00" name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" IsUnrefinedElement="0" boxable="1">
+          <CommodityComponentParams type="22325f28-8d37-46ab-8c08-8a9b34101fad" subtype="45f89d34-3167-4723-9b85-f9df3770ce00" name="@items_commodities_atlasium_stale" description="@items_commodities_atlasium_stale_desc" IsUnrefinedElement="0" boxable="1">
             <occupancy>
               <SCentiCargoUnit centiSCU="1" />
             </occupancy>
           </CommodityComponentParams>
-          <SCItemPurchasableParams displayName="@items_commodities_atlasium" displayType="@items_commodities_type_alloy" />
+          <SCItemPurchasableParams displayName="@items_commodities_atlasium_stale" displayType="@items_commodities_type_stale" />
         </Components>
       </EntityClassDefinition.atlasium>
     `,
@@ -114,7 +114,7 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
     xmlCacheDir,
     salvageShieldPath,
     `
-      <Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01 orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Name" __type="Hauling_EntityClasses" __ref="98675536-a564-4257-8962-7acf7970cdd0" __path="${salvageShieldPath}">
+      <Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01 orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Stale_Name" __type="Hauling_EntityClasses" __ref="98675536-a564-4257-8962-7acf7970cdd0" __path="${salvageShieldPath}">
       </Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01>
     `,
   );
@@ -122,7 +122,7 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
     xmlCacheDir,
     jurisdictionPath,
     `
-      <Jurisdiction.ArcCorp name="@Jurisdictions_Name_004" __type="Jurisdiction" __ref="61e48e63-6822-4f67-9648-d7b884281bd4" __path="${jurisdictionPath}">
+      <Jurisdiction.ArcCorp name="@Jurisdictions_Name_Stale" __type="Jurisdiction" __ref="61e48e63-6822-4f67-9648-d7b884281bd4" __path="${jurisdictionPath}">
         <controlledSubstanceClasses>
           <ControlledSubstanceClass maxPossessionSCU="0.125">
             <commodities>
