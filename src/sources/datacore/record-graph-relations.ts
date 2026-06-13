@@ -1,9 +1,16 @@
-import type { DataCoreRecordNode } from './types';
+import type { DataCoreLocalizationReference, DataCoreRecordNode } from './types';
 
 export function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
+  return graphLocalizationKeyFromReferences(record.localizationKeys, attributes);
+}
+
+export function graphLocalizationKeyFromReferences(
+  references: DataCoreLocalizationReference[],
+  attributes: string[],
+): string {
   for (const attribute of attributes) {
     const key =
-      record.localizationKeys
+      references
         .find(
           (reference) =>
             reference.attribute.trim().toLowerCase() === attribute.trim().toLowerCase() &&

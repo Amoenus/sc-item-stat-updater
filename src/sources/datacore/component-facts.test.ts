@@ -90,8 +90,8 @@ async function makeTempDataCoreWorkspace() {
             entityClass: 'QDRV_WETK_S02_XL1_SCItem',
             localizationKeys: [
               { attribute: 'Name', key: 'item_nameQDRV_WETK_S02_XL1_SCItem' },
-              { attribute: 'Description', key: 'LOC_PLACEHOLDER' },
-              { attribute: 'displayDescription', key: 'item_descQDRV_WETK_S02_XL1_SCItem' },
+              { attribute: 'displayDescription', key: 'item_descA_QDRV_WETK_S02_XL1_SCItem' },
+              { attribute: 'Description', key: '@item_descZ_QDRV_WETK_S02_XL1_SCItem' },
               { attribute: 'displayName', key: 'item_name_QDRV_WETK_S02_XL1_Display' },
             ],
             referencedGuids: [],
@@ -225,7 +225,7 @@ describe('DataCore component facts', () => {
       assert.equal(gun?.descriptionKey, '');
       assert.equal(xl1?.componentClass, 'Military');
       assert.equal(xl1?.componentClassSource, 'scmdb-bridge');
-      assert.equal(xl1?.descriptionKey, 'item_descqdrv_wetk_s02_xl1_scitem');
+      assert.equal(xl1?.descriptionKey, 'item_descz_qdrv_wetk_s02_xl1_scitem');
       assert.deepEqual(xl1?.titleKeys, [
         'item_nameqdrv_wetk_s02_xl1',
         'item_name_qdrv_wetk_s02_xl1',

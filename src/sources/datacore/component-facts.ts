@@ -10,7 +10,7 @@ import {
 } from './component-class-resolver';
 import { createDataCoreManufacturerResolver, type DataCoreManufacturerResolver } from './manufacturer-resolver';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKeyFromReferences, uniqueGraphGuidReference } from './record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
@@ -396,20 +396,13 @@ function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizat
 }
 
 function getGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): string {
-  return (
-    recordLocalizationKeys
-      .filter(({ attribute }) => isDescriptionLocalizationAttribute(attribute))
-      .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
-      .find(isUsableLocalizationKey) ?? ''
+  return normalizeDataCoreRelationshipLocalizationKey(
+    graphLocalizationKeyFromReferences(recordLocalizationKeys, ['Description', 'description', 'displayDescription']),
   );
 }
 
 function isTitleLocalizationAttribute(attribute: string): boolean {
   return ['displayname', 'name'].includes(attribute.trim().toLowerCase());
-}
-
-function isDescriptionLocalizationAttribute(attribute: string): boolean {
-  return ['description', 'displaydescription'].includes(attribute.trim().toLowerCase());
 }
 
 function isUsableLocalizationKey(key: string): boolean {

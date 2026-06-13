@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { graphGuidReferences, graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphGuidReferences,
+  graphLocalizationKey,
+  graphLocalizationKeyFromReferences,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreRecordNode } from './types';
 
 test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back', () => {
@@ -63,6 +68,7 @@ test('graphLocalizationKey follows requested attribute priority before graph key
   };
 
   assert.equal(graphLocalizationKey(record, ['Name', 'displayName']), 'zzz_name');
+  assert.equal(graphLocalizationKeyFromReferences(record.localizationKeys, ['Name', 'displayName']), 'zzz_name');
   assert.equal(graphLocalizationKey(record, ['displayName', 'Name']), 'aaa_display_name');
   assert.equal(graphLocalizationKey(record, ['ShortName']), '');
 });
