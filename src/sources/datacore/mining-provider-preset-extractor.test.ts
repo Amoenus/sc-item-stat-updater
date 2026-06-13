@@ -124,7 +124,10 @@ function makeGraph(): DataCoreRecordGraph {
         entityClass: 'Mining_AsteroidCommon_Aluminum',
         localizationKeys: [],
         referencedGuids: ['1c949ce0-c99b-485b-b783-2ea3b49162c0'],
-        referencedGuidAttributes: [{ attribute: 'entityClass', value: '1c949ce0-c99b-485b-b783-2ea3b49162c0' }],
+        referencedGuidAttributes: [
+          { attribute: 'entityClass', value: '' },
+          { attribute: 'entityClass', value: '1c949ce0-c99b-485b-b783-2ea3b49162c0' },
+        ],
       },
       {
         path: harvestablePath,
@@ -139,8 +142,11 @@ function makeGraph(): DataCoreRecordGraph {
           '5f5c1a61-6500-46a1-8a01-7ba4956751d1',
         ],
         referencedGuidAttributes: [
+          { attribute: 'composition', value: '' },
           { attribute: 'composition', value: '3a6e7bb4-0f23-4c46-b822-333afe9d63ab' },
+          { attribute: 'globalParams', value: '' },
           { attribute: 'globalParams', value: 'aa727a56-9937-4eb5-80c6-51b418d43177' },
+          { attribute: 'audioParams', value: '' },
           { attribute: 'audioParams', value: '5f5c1a61-6500-46a1-8a01-7ba4956751d1' },
         ],
       },

@@ -123,8 +123,10 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
   return (
-    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      ?.value ?? fallback
+    record.referencedGuidAttributes
+      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => reference.value.trim())
+      .find((value) => value !== '') ?? fallback
   );
 }
 

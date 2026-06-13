@@ -75,7 +75,10 @@ function makeGraph(): DataCoreRecordGraph {
       'HarvestablePreset.Mining_AsteroidCommon_Aluminum',
       'HarvestablePreset',
       'Mining_AsteroidCommon_Aluminum',
-      [{ attribute: 'entityClass', value: 'asteroid-entity-guid' }],
+      [
+        { attribute: 'entityClass', value: '' },
+        { attribute: 'entityClass', value: 'asteroid-entity-guid' },
+      ],
     ),
     node(
       fpsPresetPath,
@@ -83,9 +86,13 @@ function makeGraph(): DataCoreRecordGraph {
       'HarvestablePreset.FPSMining_Aphorite',
       'HarvestablePreset',
       'FPSMining_Aphorite',
-      [{ attribute: 'entityClass', value: 'fps-entity-guid' }],
+      [
+        { attribute: 'entityClass', value: '' },
+        { attribute: 'entityClass', value: 'fps-entity-guid' },
+      ],
     ),
     node(lootPresetPath, 'loot-preset-guid', 'HarvestablePreset.Weapons_CZ', 'HarvestablePreset', 'Weapons_CZ', [
+      { attribute: 'entityClass', value: '' },
       { attribute: 'entityClass', value: 'loot-entity-guid' },
     ]),
     node(

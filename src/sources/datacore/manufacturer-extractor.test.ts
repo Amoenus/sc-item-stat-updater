@@ -126,9 +126,13 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
           '41883412-2a2c-47a0-b5a9-c0f40e3fed63',
         ],
         referencedGuidAttributes: [
+          { attribute: 'DashboardCanvasConfig', value: '' },
           { attribute: 'DashboardCanvasConfig', value: '3db6a90f-4e32-40b5-b583-da02478b1f69' },
+          { attribute: 'BuildingBlocksStyle', value: '' },
           { attribute: 'BuildingBlocksStyle', value: 'bcf008bc-19c3-4fc5-8629-9f18e462dbe0' },
+          { attribute: 'AudioManufacturerTag', value: '' },
           { attribute: 'AudioManufacturerTag', value: '3a4880d2-c4d7-4b78-a5ab-bd9a54fd3e5f' },
+          { attribute: 'LightAmplification', value: '' },
           { attribute: 'LightAmplification', value: '41883412-2a2c-47a0-b5a9-c0f40e3fed63' },
         ],
       },

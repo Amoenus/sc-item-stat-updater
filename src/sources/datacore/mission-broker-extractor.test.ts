@@ -85,9 +85,13 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
         ],
         referencedGuids: ['giver-guid', 'location-guid', 'owner-guid', 'type-guid'],
         referencedGuidAttributes: [
+          { attribute: 'locationMissionAvailable', value: '' },
           { attribute: 'locationMissionAvailable', value: 'location-guid' },
+          { attribute: 'missionGiverRecord', value: '' },
           { attribute: 'missionGiverRecord', value: 'giver-guid' },
+          { attribute: 'owner', value: '' },
           { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'type', value: '' },
           { attribute: 'type', value: 'type-guid' },
         ],
       },

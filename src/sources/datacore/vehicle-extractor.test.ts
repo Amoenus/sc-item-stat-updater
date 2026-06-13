@@ -98,9 +98,13 @@ function makeGraph(vehiclePath: string): DataCoreRecordGraph {
           'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11',
         ],
         referencedGuidAttributes: [
+          { attribute: 'inventoryContainerParams', value: '' },
           { attribute: 'inventoryContainerParams', value: 'a623a5e1-27db-4e93-af6b-e54912b78e32' },
+          { attribute: 'manufacturer', value: '' },
           { attribute: 'manufacturer', value: 'cf4a74bf-eb2c-462a-9b78-f7f2724c31d2' },
+          { attribute: 'vehicleCareerRef', value: '' },
           { attribute: 'vehicleCareerRef', value: 'd86d770d-1fc4-4525-b3b0-4f670a8a5634' },
+          { attribute: 'vehicleRoleRef', value: '' },
           { attribute: 'vehicleRoleRef', value: 'ff99d78e-3a6a-4e4d-8b1c-59e87a005c11' },
         ],
       },

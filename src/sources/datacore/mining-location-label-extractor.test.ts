@@ -113,7 +113,9 @@ function makeGraph(): DataCoreRecordGraph {
         { attribute: 'displayDescription', key: 'ab_mine_pyro_desc' },
       ],
       [
+        { attribute: 'parent', value: '' },
         { attribute: 'parent', value: 'a14bec87-5801-4440-8ca8-35597487ac9a' },
+        { attribute: 'type', value: '' },
         { attribute: 'type', value: 'e60452a5-b85c-4ab1-97e7-9cefb466f87b' },
       ],
     ),

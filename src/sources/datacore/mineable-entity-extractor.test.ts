@@ -75,9 +75,13 @@ function makeGraph(): DataCoreRecordGraph {
       'EntityClassDefinition',
       'AsteroidCTypeMineableRock_Aluminium',
       [
+        { attribute: 'composition', value: '' },
         { attribute: 'composition', value: 'composition-guid' },
+        { attribute: 'globalParams', value: '' },
         { attribute: 'globalParams', value: 'global-guid' },
+        { attribute: 'audioParams', value: '' },
         { attribute: 'audioParams', value: 'audio-guid' },
+        { attribute: 'entityDensityClass', value: '' },
         { attribute: 'entityDensityClass', value: 'density-guid' },
       ],
     ),

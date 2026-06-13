@@ -228,7 +228,9 @@ function makeGraph(): DataCoreRecordGraph {
           '45f89d34-3167-4723-9b85-f9df3770ce00',
         ],
         referencedGuidAttributes: [
+          { attribute: 'type', value: '' },
           { attribute: 'type', value: '22325f28-8d37-46ab-8c08-8a9b34101fad' },
+          { attribute: 'subtype', value: '' },
           { attribute: 'subtype', value: '45f89d34-3167-4723-9b85-f9df3770ce00' },
         ],
       },

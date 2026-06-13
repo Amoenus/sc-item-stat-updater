@@ -137,9 +137,13 @@ function makeGraph(locationPath: string): DataCoreRecordGraph {
           'e207a1ec-1395-4c1c-8e51-b38c4420784c',
         ],
         referencedGuidAttributes: [
+          { attribute: 'affiliation', value: '' },
           { attribute: 'affiliation', value: '6f3699dd-123e-4f1a-82da-51207b073fe0' },
+          { attribute: 'jurisdiction', value: '' },
           { attribute: 'jurisdiction', value: '0d2e5d5e-a3d3-4a6d-869f-58dc705e7020' },
+          { attribute: 'parent', value: '' },
           { attribute: 'parent', value: '59637d5a-c67a-47eb-96dc-b648298f0023' },
+          { attribute: 'type', value: '' },
           { attribute: 'type', value: 'e207a1ec-1395-4c1c-8e51-b38c4420784c' },
         ],
       },

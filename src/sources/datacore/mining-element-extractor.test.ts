@@ -169,7 +169,10 @@ function makeGraph(): DataCoreRecordGraph {
         'MineableElement',
         'Agricium_Ore',
         [],
-        [{ attribute: 'resourceType', value: agriciumResourceGuid }],
+        [
+          { attribute: 'resourceType', value: '' },
+          { attribute: 'resourceType', value: agriciumResourceGuid },
+        ],
       ),
       node(
         aslaritePath,
@@ -178,7 +181,10 @@ function makeGraph(): DataCoreRecordGraph {
         'MineableElement',
         'Aslarite_Raw',
         [],
-        [{ attribute: 'resourceType', value: aslariteResourceGuid }],
+        [
+          { attribute: 'resourceType', value: '' },
+          { attribute: 'resourceType', value: aslariteResourceGuid },
+        ],
       ),
       node(
         aphoritePath,

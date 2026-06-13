@@ -126,7 +126,9 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         localizationKeys: [],
         referencedGuids: ['owner-guid', 'type-guid'],
         referencedGuidAttributes: [
+          { attribute: 'owner', value: '' },
           { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'type', value: '' },
           { attribute: 'type', value: 'type-guid' },
         ],
       },

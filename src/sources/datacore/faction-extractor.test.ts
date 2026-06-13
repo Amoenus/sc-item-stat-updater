@@ -134,6 +134,7 @@ function makeGraph(factionPath: string, reputationPath: string): DataCoreRecordG
           '09efeef4-c646-408d-a979-3ae56a3b1beb',
         ],
         referencedGuidAttributes: [
+          { attribute: 'factionReputationRef', value: '' },
           { attribute: 'factionReputationRef', value: '09efeef4-c646-408d-a979-3ae56a3b1beb' },
           { attribute: 'value', value: '14789370-bf3a-42b9-ac55-a49ee406e1f1' },
           { attribute: 'value', value: '3c9a42a9-a986-494f-b724-4d74415f6016' },
