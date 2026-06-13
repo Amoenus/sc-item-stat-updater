@@ -199,6 +199,55 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.equal(salvageShield.typeGuid, '');
 });
 
+test('extractDataCoreCommodities falls back when graph commodity GUID refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    atlasiumPath,
+    `
+      <EntityClassDefinition.atlasium __type="EntityClassDefinition" __ref="af5dcf22-7a28-4b1e-88f0-4309d34be11a" __path="${atlasiumPath}">
+        <Components>
+          <CommodityComponentParams type="stale-type-guid" subtype="stale-subtype-guid" name="@items_commodities_atlasium_stale" description="@items_commodities_atlasium_stale_desc" IsUnrefinedElement="0" boxable="1" />
+        </Components>
+      </EntityClassDefinition.atlasium>
+    `,
+  );
+
+  const graph = makeGraph();
+  graph.recordCount = 1;
+  graph.records = [graph.records[0]];
+  graph.records[0].referencedGuidAttributes?.push({
+    attribute: 'type',
+    value: '11111111-1111-4111-8111-111111111111',
+  });
+  graph.indexes = {
+    byRef: {
+      'af5dcf22-7a28-4b1e-88f0-4309d34be11a': atlasiumPath,
+    },
+    byPath: {
+      [atlasiumPath]: 0,
+    },
+    byRootType: {
+      EntityClassDefinition: [atlasiumPath],
+    },
+    byEntityClass: {
+      atlasium: [atlasiumPath],
+    },
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const rows = await extractDataCoreCommodities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    pathPrefix: atlasiumPath,
+  });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].typeGuid, 'stale-type-guid');
+  assert.equal(rows[0].subtypeGuid, '45f89d34-3167-4723-9b85-f9df3770ce00');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
