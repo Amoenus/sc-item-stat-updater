@@ -68,7 +68,7 @@ async function makeWorkspace() {
     path.join(datacoreDir, 'crafting-blueprints.datacore.csv'),
     [
       'BlueprintClass,TargetEntityClassGuid,TargetEntityClass,TargetItemNameKey,RecipeCosts,Ref,Path',
-      'Blueprint,,target-ref,,"[]",blueprint-ref,blueprint.xml',
+      'Blueprint,,target-ref,item_Name_Test_Repeat_A,"[]",blueprint-ref,blueprint.xml',
       'RepeatBlueprintA,,,item_Name_Test_Repeat_A,"[]",repeat-blueprint-a,repeat-a.xml',
       'RepeatBlueprintB,,,item_Name_Test_Repeat_B,"[]",repeat-blueprint-b,repeat-b.xml',
       'RepeatBlueprintC,powerplant-ref,,,"[]",repeat-blueprint-c,repeat-c.xml',

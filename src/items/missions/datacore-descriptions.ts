@@ -743,22 +743,22 @@ function resolveBlueprintTargetNameKey(
   recordGraph: Awaited<ReturnType<typeof loadDataCoreRecordGraph>> | null,
   resolvedTargetRecord?: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
 ): string {
-  const csvKey = row['TargetItemNameKey'];
-  if (csvKey && !/^LOC_/i.test(csvKey)) return csvKey;
-
   const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph);
   const graphKey =
-    targetRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && !/^LOC_/i.test(l.key))?.key ??
-    targetRecord?.localizationKeys.find((l) => !/^LOC_/i.test(l.key))?.key ??
+    targetRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
+    targetRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
     '';
   if (graphKey) return graphKey;
+
+  const csvKey = row['TargetItemNameKey'];
+  if (csvKey && isUsableGraphLocalizationKey(csvKey)) return csvKey;
 
   const targetClass = row['TargetEntityClass'];
   if (targetClass && !isGuid(targetClass)) {
     const classRecord = recordGraph?.getByEntityClass(targetClass)[0];
     return (
-      classRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && !/^LOC_/i.test(l.key))?.key ??
-      classRecord?.localizationKeys.find((l) => !/^LOC_/i.test(l.key))?.key ??
+      classRecord?.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
+      classRecord?.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
       ''
     );
   }
