@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import type { DataCoreMineableEntityRecord, DataCoreRecordGraphLookup } from './types';
+import type { DataCoreMineableEntityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
 const DEFAULT_MINEABLE_ENTITY_PATH_PREFIX = 'libs/foundry/records/entities/mineable';
@@ -28,13 +28,13 @@ export async function extractDataCoreMineableEntities(
     const mineableParams = $('MineableParams').first();
     if (!root.length || !mineableParams.length) continue;
 
-    const compositionGuid = mineableParams.attr('composition') ?? '';
+    const compositionGuid = graphGuidReference(record, ['composition'], mineableParams.attr('composition') ?? '');
     const composition = compositionGuid ? options.graph.getByRef(compositionGuid) : undefined;
-    const globalParamsGuid = mineableParams.attr('globalParams') ?? '';
+    const globalParamsGuid = graphGuidReference(record, ['globalParams'], mineableParams.attr('globalParams') ?? '');
     const globalParams = globalParamsGuid ? options.graph.getByRef(globalParamsGuid) : undefined;
-    const audioParamsGuid = mineableParams.attr('audioParams') ?? '';
+    const audioParamsGuid = graphGuidReference(record, ['audioParams'], mineableParams.attr('audioParams') ?? '');
     const audioParams = audioParamsGuid ? options.graph.getByRef(audioParamsGuid) : undefined;
-    const densityClassGuid = root.attr('entityDensityClass') ?? '';
+    const densityClassGuid = graphGuidReference(record, ['entityDensityClass'], root.attr('entityDensityClass') ?? '');
     const densityClass = densityClassGuid ? options.graph.getByRef(densityClassGuid) : undefined;
 
     rows.push({
@@ -57,4 +57,12 @@ export async function extractDataCoreMineableEntities(
   }
 
   return rows;
+}
+
+function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  return (
+    record.referencedGuidAttributes?.find((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      ?.value ?? fallback
+  );
 }

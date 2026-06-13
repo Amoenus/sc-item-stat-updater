@@ -20,9 +20,9 @@ test('extractDataCoreMineableEntities extracts first-party mineable entity param
     xmlCacheDir,
     entityPath,
     `
-      <EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium entityDensityClass="density-guid" __type="EntityClassDefinition" __ref="entity-guid" __path="${entityPath}">
+      <EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium entityDensityClass="stale-density-guid" __type="EntityClassDefinition" __ref="entity-guid" __path="${entityPath}">
         <Components>
-          <MineableParams globalParams="global-guid" audioParams="audio-guid" composition="composition-guid" filledFactor="1" glowCurvePower="0.5" glowLerpSpeed="0.25" />
+          <MineableParams globalParams="stale-global-guid" audioParams="stale-audio-guid" composition="stale-composition-guid" filledFactor="1" glowCurvePower="0.5" glowLerpSpeed="0.25" />
           <HarvestableParams allowAutoRespawning="1" />
         </Components>
       </EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium>
@@ -74,6 +74,12 @@ function makeGraph(): DataCoreRecordGraph {
       'EntityClassDefinition.AsteroidCTypeMineableRock_Aluminium',
       'EntityClassDefinition',
       'AsteroidCTypeMineableRock_Aluminium',
+      [
+        { attribute: 'composition', value: 'composition-guid' },
+        { attribute: 'globalParams', value: 'global-guid' },
+        { attribute: 'audioParams', value: 'audio-guid' },
+        { attribute: 'entityDensityClass', value: 'density-guid' },
+      ],
     ),
     node(
       nonMineablePath,
@@ -133,7 +139,14 @@ function makeGraph(): DataCoreRecordGraph {
   };
 }
 
-function node(path: string, ref: string, rootTag: string, rootType: string, entityClass: string) {
+function node(
+  path: string,
+  ref: string,
+  rootTag: string,
+  rootType: string,
+  entityClass: string,
+  referencedGuidAttributes: NonNullable<DataCoreRecordGraph['records'][number]['referencedGuidAttributes']> = [],
+) {
   return {
     path,
     ref,
@@ -141,6 +154,7 @@ function node(path: string, ref: string, rootTag: string, rootType: string, enti
     rootType,
     entityClass,
     localizationKeys: [],
-    referencedGuids: [],
+    referencedGuids: referencedGuidAttributes.map((reference) => reference.value),
+    referencedGuidAttributes,
   };
 }
