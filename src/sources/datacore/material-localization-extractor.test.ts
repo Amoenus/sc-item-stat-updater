@@ -50,7 +50,10 @@ function graphFixture(carryablePath: string): DataCoreRecordGraph {
         rootTag: 'EntityClassDefinition.CarryableTitanium',
         rootType: 'EntityClassDefinition',
         entityClass: 'CarryableTitanium',
-        localizationKeys: [{ attribute: 'Name', key: 'items_commodities_titanium' }],
+        localizationKeys: [
+          { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'displayName', key: 'items_commodities_titanium' },
+        ],
         referencedGuids: ['resource-guid'],
         referencedGuidAttributes: [{ attribute: 'entry', value: 'resource-guid' }],
       },

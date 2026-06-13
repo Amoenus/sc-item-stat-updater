@@ -67,10 +67,12 @@ export async function extractDataCoreMaterialLocalizations(
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  return isUsableLocalizationKey(key) ? (key ?? '') : '';
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => normalizeLocalizationKey(reference.key))
+      .find((key) => key !== '') ?? ''
+  );
 }
 
 function graphGuidReferences(record: DataCoreRecordNode, attributes: string[]): string[] {
@@ -88,11 +90,6 @@ function xmlResourceGuids($: ReturnType<typeof loadXml>): string[] {
     .toArray()
     .map((element) => $(element).attr('entry') ?? '')
     .filter(Boolean);
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = normalizeLocalizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeLocalizationKey(value: string): string {

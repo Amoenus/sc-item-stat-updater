@@ -115,23 +115,20 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
 
 function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
   const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key = record.localizationKeys.find((reference) =>
-    expectedAttributes.has(reference.attribute.toLowerCase()),
-  )?.key;
-  return isUsableLocalizationKey(key) ? (key ?? '') : '';
+  return (
+    record.localizationKeys
+      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+      .map((reference) => normalizeLocalizationKey(reference.key))
+      .find((key) => key !== '') ?? ''
+  );
 }
 
 function firstLocalizationKey(values: string[]): string {
   for (const value of values) {
     const key = normalizeLocalizationKey(value);
-    if (isUsableLocalizationKey(key)) return key;
+    if (key) return key;
   }
   return '';
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = normalizeLocalizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeLocalizationKey(value: string): string {
