@@ -35,7 +35,10 @@ test('extractDataCoreMaterialLocalizations prefers graph localization keys for r
       xmlCacheDir,
       graph: createDataCoreRecordGraphLookup(graphFixture(carryablePath)),
     }),
-    [{ resourceGuid: 'resource-guid', localizationKey: 'items_commodities_titanium' }],
+    [
+      { resourceGuid: 'resource-guid', localizationKey: 'items_commodities_titanium' },
+      { resourceGuid: 'secondary-resource-guid', localizationKey: 'items_commodities_titanium' },
+    ],
   );
 });
 
@@ -54,8 +57,13 @@ function graphFixture(carryablePath: string): DataCoreRecordGraph {
           { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
           { attribute: 'displayName', key: 'items_commodities_titanium' },
         ],
-        referencedGuids: ['resource-guid'],
-        referencedGuidAttributes: [{ attribute: 'entry', value: 'resource-guid' }],
+        referencedGuids: ['resource-guid', 'secondary-resource-guid'],
+        referencedGuidAttributes: [
+          { attribute: 'entry', value: '' },
+          { attribute: 'entry', value: ' resource-guid ' },
+          { attribute: 'entry', value: 'resource-guid' },
+          { attribute: 'entry', value: 'secondary-resource-guid' },
+        ],
       },
     ],
     indexes: {

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { graphGuidReferences } from './record-graph-relations';
 import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -72,16 +73,6 @@ function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]):
       .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
       .map((reference) => normalizeLocalizationKey(reference.key))
       .find((key) => key !== '') ?? ''
-  );
-}
-
-function graphGuidReferences(record: DataCoreRecordNode, attributes: string[]): string[] {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  return (
-    record.referencedGuidAttributes
-      ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => reference.value)
-      .filter(Boolean) ?? []
   );
 }
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreRecordNode } from './types';
 
 test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back', () => {
@@ -23,4 +23,25 @@ test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back'
   assert.equal(uniqueGraphGuidReference(record, ['type'], 'fallback-type-guid'), 'type-guid');
   assert.equal(uniqueGraphGuidReference(record, ['owner'], 'fallback-owner-guid'), 'fallback-owner-guid');
   assert.equal(uniqueGraphGuidReference(record, ['missing'], 'fallback-missing-guid'), 'fallback-missing-guid');
+});
+
+test('graphGuidReferences returns distinct non-empty graph refs in source order', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [],
+    referencedGuids: ['resource-a', 'resource-b'],
+    referencedGuidAttributes: [
+      { attribute: 'entry', value: '' },
+      { attribute: 'entry', value: ' resource-a ' },
+      { attribute: 'entry', value: 'resource-a' },
+      { attribute: 'entry', value: 'resource-b' },
+      { attribute: 'other', value: 'ignored-resource' },
+    ],
+  };
+
+  assert.deepEqual(graphGuidReferences(record, ['entry']), ['resource-a', 'resource-b']);
 });
