@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -87,10 +87,15 @@ async function collectMiningQualityLocationRefs(
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore mining quality location XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
-    $('CraftingQualityLocationOverrideEntry[location]').each((_index, element) => {
-      const ref = $(element).attr('location') ?? '';
-      if (ref) refs.add(ref);
-    });
+    const graphLocationRefs = graphGuidReferences(record, ['location']);
+    if (graphLocationRefs.length) {
+      for (const ref of graphLocationRefs) refs.add(ref);
+    } else {
+      $('CraftingQualityLocationOverrideEntry[location]').each((_index, element) => {
+        const ref = $(element).attr('location') ?? '';
+        if (ref) refs.add(ref);
+      });
+    }
   }
 
   return refs;

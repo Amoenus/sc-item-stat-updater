@@ -48,7 +48,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
         <locationOverride>
           <CraftingQualityLocationOverride>
             <locationOverrideList>
-              <CraftingQualityLocationOverrideEntry location="286cb603-b4ae-4279-80a1-d4505fee1916" />
+              <CraftingQualityLocationOverrideEntry location="stale-location-guid" />
             </locationOverrideList>
           </CraftingQualityLocationOverride>
         </locationOverride>
@@ -129,6 +129,8 @@ function makeGraph(): DataCoreRecordGraph {
       'd4574707-cc74-423b-b098-d061bd500d39',
       'CraftingQualityLocationOverrideRecord',
       'FPSMineable_QualityDistribution_Pyro',
+      [],
+      [{ attribute: 'location', value: '286cb603-b4ae-4279-80a1-d4505fee1916' }],
     ),
   ];
 
