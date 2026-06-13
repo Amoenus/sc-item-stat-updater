@@ -12,12 +12,15 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Relative Probability': '3',
         'Composition GUID': 'composition-aluminum-guid',
         'Composition Class': 'CommonShipMineablesAsteroid_StaleClass',
-        'Harvestable Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable GUID': 'harvestable-preset-guid',
+        'Harvestable Class': 'AsteroidRockPreset_StaleAluminum',
         'Harvestable Entity GUID': 'asteroid-rock-guid',
         'Harvestable Entity Class': 'AsteroidRock_StaleClass',
-        'Harvestable Setup Class': 'ShipRockSetup',
+        'Harvestable Setup GUID': 'setup-guid',
+        'Harvestable Setup Class': 'ShipRockSetup_Stale',
         'Filled Factor': '0.75',
-        'Clustering Class': 'Asteroid_Lrg_Med_Sml',
+        'Clustering GUID': 'clustering-guid',
+        'Clustering Class': 'Asteroid_StaleCluster',
         'Global Params GUID': 'global-guid',
         'Audio Params GUID': 'audio-guid',
       }),
@@ -41,6 +44,19 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Group Probability': '10',
         'Relative Probability': '4',
         'Composition Class': 'GroundVehicle_Beradom',
+      }),
+      providerRow({
+        Location: 'hpp_stanton2b',
+        'Group Name': 'SpaceShip_Mineables',
+        'Group Probability': '1',
+        'Relative Probability': '1',
+        'Composition Class': 'CommonShipMineablesAsteroid_Iron',
+        'Harvestable GUID': 'missing-harvestable-guid',
+        'Harvestable Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable Entity GUID': 'missing-entity-guid',
+        'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Harvestable Setup GUID': 'missing-setup-guid',
+        'Harvestable Setup Class': 'ShipRockSetup',
       }),
     ],
     [
@@ -114,6 +130,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     ],
     [
       {
+        'Record GUID': 'clustering-guid',
         'Clustering Class': 'Asteroid_Lrg_Med_Sml',
         'Probability Of Clustering': '10',
         'Relative Probability': '1',
@@ -125,7 +142,9 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     ],
     [
       {
+        'Record GUID': 'harvestable-preset-guid',
         'Harvestable Preset Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable Entity GUID': 'asteroid-rock-guid',
         'Harvestable Entity Class': 'AsteroidRock_Aluminum',
         'Respawn In Slot Time': '1800',
         'Special Harvestable String': 'rare-rock',
@@ -133,6 +152,7 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
     ],
     [
       {
+        'Record GUID': 'setup-guid',
         'Setup Class': 'ShipRockSetup',
         'Respawn In Slot Time': '3600',
         'Despawn Time Seconds': '600',
@@ -147,8 +167,11 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
         'Tagged Config Name': 'Ship rocks',
         'Initial Slots Probability': '0.8',
         'Config Respawn Time Multiplier': '1.5',
+        'Harvestable GUID': 'harvestable-preset-guid',
         'Harvestable Class': 'AsteroidRockPreset_Aluminum',
+        'Harvestable Entity GUID': 'asteroid-rock-guid',
         'Harvestable Entity Class': 'AsteroidRock_Aluminum',
+        'Harvestable Setup GUID': 'setup-guid',
         'Harvestable Setup Class': 'ShipRockSetup',
         'Relative Probability': '0.25',
         'Deepest Relative Probability': '0.1',
@@ -279,6 +302,18 @@ test('buildMiningLocationRowsFromSources prefers DataCore provider weights and q
   assert.equal(hathor.Source, 'DataCore');
   assert.equal(hathor['Hand Mineables'], 'Aphorite - 60%\nJaclium (Ore) - 40%');
   assert.equal(hathor['Ship Mineables'], '');
+
+  const daymar = rows.find((row) => row['Location Name'] === 'Daymar');
+  assert.ok(daymar);
+  assert.equal(
+    daymar['DataCore Harvestable Preset Summary'],
+    'AsteroidRockPreset_Aluminum (respawn 1800, special rare-rock)',
+  );
+  assert.equal(daymar['DataCore Setup Summary'], 'ShipRockSetup (respawn 3600, despawn 600s, scale 0.75-1.5)');
+  assert.equal(
+    daymar['DataCore Sub-Harvestable Summary'],
+    'AsteroidSubHarvestables/Ship rocks (single, rel 0.25, deep 0.1, slots 0.8, config respawn x1.5, harvest respawn x2, geometry asteroid;large)',
+  );
 });
 
 test('mining location target keys prefer DataCore description keys before slug fallback', () => {
@@ -365,11 +400,14 @@ function providerRow(overrides: Record<string, string>): Record<string, string> 
     'Relative Probability': '',
     'Composition GUID': '',
     'Composition Class': '',
+    'Harvestable GUID': '',
     'Harvestable Entity GUID': '',
     'Harvestable Class': '',
     'Harvestable Entity Class': '',
+    'Harvestable Setup GUID': '',
     'Harvestable Setup Class': '',
     'Filled Factor': '',
+    'Clustering GUID': '',
     'Clustering Class': '',
     'Global Params GUID': '',
     'Audio Params GUID': '',

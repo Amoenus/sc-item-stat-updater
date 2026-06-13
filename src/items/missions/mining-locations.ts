@@ -449,27 +449,57 @@ function buildDatacoreMiningLocationRows(
       facts.densityOverrideSummaries.set(densityClassGuid || densityClass || '', densityOverrideSummary);
     }
 
+    const clusteringGuid = row['Clustering GUID'];
     const clusteringClass = row['Clustering Class'];
-    const clusteringSummary = clusteringSummaries.get(clusteringClass);
-    if (clusteringClass && clusteringSummary) facts.clusteringSummaries.set(clusteringClass, clusteringSummary);
+    const clusteringSummary =
+      (clusteringGuid ? clusteringSummaries.byGuid.get(clusteringGuid) : undefined) ??
+      (clusteringClass ? clusteringSummaries.byClass.get(clusteringClass) : undefined);
+    if ((clusteringGuid || clusteringClass) && clusteringSummary) {
+      facts.clusteringSummaries.set(clusteringGuid || clusteringClass || '', clusteringSummary);
+    }
 
+    let hasHarvestablePresetSummary = false;
+    for (const harvestableKey of [row['Harvestable GUID'], row['Harvestable Entity GUID']]) {
+      const harvestablePresetSummary = harvestablePresetSummaries.byGuid.get(harvestableKey);
+      if (harvestableKey && harvestablePresetSummary) {
+        facts.harvestablePresetSummaries.set(harvestableKey, harvestablePresetSummary);
+        hasHarvestablePresetSummary = true;
+      }
+    }
     for (const harvestableKey of [row['Harvestable Class'], row['Harvestable Entity Class']]) {
-      const harvestablePresetSummary = harvestablePresetSummaries.get(harvestableKey);
+      if (hasHarvestablePresetSummary) continue;
+      const harvestablePresetSummary = harvestablePresetSummaries.byClass.get(harvestableKey);
       if (harvestableKey && harvestablePresetSummary) {
         facts.harvestablePresetSummaries.set(harvestableKey, harvestablePresetSummary);
       }
     }
 
+    const setupGuid = row['Harvestable Setup GUID'];
     const setupClass = row['Harvestable Setup Class'];
-    const setupSummary = setupSummaries.get(setupClass);
-    if (setupClass && setupSummary) facts.setupSummaries.set(setupClass, setupSummary);
+    const setupSummary =
+      (setupGuid ? setupSummaries.byGuid.get(setupGuid) : undefined) ??
+      (setupClass ? setupSummaries.byClass.get(setupClass) : undefined);
+    if ((setupGuid || setupClass) && setupSummary) facts.setupSummaries.set(setupGuid || setupClass || '', setupSummary);
 
+    let hasSubHarvestableSummary = false;
+    for (const subHarvestableKey of [
+      row['Harvestable GUID'],
+      row['Harvestable Entity GUID'],
+      row['Harvestable Setup GUID'],
+    ]) {
+      const subHarvestableSummary = subHarvestableSummaries.byGuid.get(subHarvestableKey);
+      if (subHarvestableKey && subHarvestableSummary) {
+        facts.subHarvestableSummaries.set(subHarvestableKey, subHarvestableSummary);
+        hasSubHarvestableSummary = true;
+      }
+    }
     for (const subHarvestableKey of [
       row['Harvestable Class'],
       row['Harvestable Entity Class'],
       row['Harvestable Setup Class'],
     ]) {
-      const subHarvestableSummary = subHarvestableSummaries.get(subHarvestableKey);
+      if (hasSubHarvestableSummary) continue;
+      const subHarvestableSummary = subHarvestableSummaries.byClass.get(subHarvestableKey);
       if (subHarvestableKey && subHarvestableSummary) {
         facts.subHarvestableSummaries.set(subHarvestableKey, subHarvestableSummary);
       }
@@ -720,11 +750,25 @@ function flattenSummaryMap(summaries: Map<string, string[]>): Map<string, string
   );
 }
 
-function buildClusteringSummaryMap(rows: Record<string, string>[]): Map<string, string> {
+function flattenUniqueSummaryMap(summaries: Map<string, string[]>): Map<string, string> {
+  return new Map(
+    [...summaries.entries()].map(([key, values]) => [
+      key,
+      [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | '),
+    ]),
+  );
+}
+
+function buildClusteringSummaryMap(rows: Record<string, string>[]): {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+} {
+  const partsByGuid = new Map<string, string[]>();
   const partsByClass = new Map<string, string[]>();
   for (const row of rows) {
+    const clusteringGuid = row['Record GUID'];
     const clusteringClass = row['Clustering Class'];
-    if (!clusteringClass) continue;
+    if (!clusteringGuid && !clusteringClass) continue;
 
     const size = rangeLabel(row['Min Size'], row['Max Size']);
     const proximity = rangeLabel(row['Min Proximity'], row['Max Proximity']);
@@ -734,55 +778,59 @@ function buildClusteringSummaryMap(rows: Record<string, string>[]): Map<string, 
       size ? `size ${size}` : '',
       proximity ? `prox ${proximity}` : '',
     ].filter(Boolean);
-    const part = details.length ? `${clusteringClass} (${details.join(', ')})` : clusteringClass;
+    const label = clusteringClass || clusteringGuid;
+    const part = details.length ? `${label} (${details.join(', ')})` : label;
 
-    const parts = partsByClass.get(clusteringClass) ?? [];
-    parts.push(part);
-    partsByClass.set(clusteringClass, parts);
+    addSummary(partsByGuid, clusteringGuid, part);
+    addSummary(partsByClass, clusteringClass, part);
   }
 
-  return new Map(
-    [...partsByClass.entries()].map(([clusteringClass, parts]) => [
-      clusteringClass,
-      parts.toSorted((a, b) => a.localeCompare(b)).join(' | '),
-    ]),
-  );
+  return {
+    byGuid: flattenSummaryMap(partsByGuid),
+    byClass: flattenSummaryMap(partsByClass),
+  };
 }
 
-function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): Map<string, string> {
-  const summaries = new Map<string, string[]>();
+function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+} {
+  const summariesByGuid = new Map<string, string[]>();
+  const summariesByClass = new Map<string, string[]>();
   for (const row of rows) {
-    const keys = [row['Harvestable Preset Class'], row['Harvestable Entity Class']].filter(Boolean);
-    if (keys.length === 0) continue;
+    const guidKeys = [row['Record GUID'], row['Harvestable Entity GUID']].filter(Boolean);
+    const classKeys = [row['Harvestable Preset Class'], row['Harvestable Entity Class']].filter(Boolean);
+    if (guidKeys.length === 0 && classKeys.length === 0) continue;
 
     const details = [
       row['Respawn In Slot Time'] ? `respawn ${row['Respawn In Slot Time']}` : '',
       row['Special Harvestable String'] ? `special ${row['Special Harvestable String']}` : '',
     ].filter(Boolean);
+    const label = row['Harvestable Preset Class'] || row['Record GUID'];
     const summary = details.length
-      ? `${row['Harvestable Preset Class']} (${details.join(', ')})`
-      : row['Harvestable Preset Class'];
+      ? `${label} (${details.join(', ')})`
+      : label;
 
-    for (const key of keys) {
-      const values = summaries.get(key) ?? [];
-      values.push(summary);
-      summaries.set(key, values);
-    }
+    for (const key of guidKeys) addSummary(summariesByGuid, key, summary);
+    for (const key of classKeys) addSummary(summariesByClass, key, summary);
   }
 
-  return new Map(
-    [...summaries.entries()].map(([key, values]) => [
-      key,
-      [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | '),
-    ]),
-  );
+  return {
+    byGuid: flattenUniqueSummaryMap(summariesByGuid),
+    byClass: flattenUniqueSummaryMap(summariesByClass),
+  };
 }
 
-function buildSetupSummaryMap(rows: Record<string, string>[]): Map<string, string> {
-  const summaries = new Map<string, string>();
+function buildSetupSummaryMap(rows: Record<string, string>[]): {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+} {
+  const byGuid = new Map<string, string>();
+  const byClass = new Map<string, string>();
   for (const row of rows) {
+    const setupGuid = row['Record GUID'];
     const setupClass = row['Setup Class'];
-    if (!setupClass) continue;
+    if (!setupGuid && !setupClass) continue;
 
     const scale = rangeLabel(row['Min Scale'], row['Max Scale']);
     const slope = rangeLabel(row['Min Slope'], row['Max Slope']);
@@ -795,18 +843,28 @@ function buildSetupSummaryMap(rows: Record<string, string>[]): Map<string, strin
       elevation ? `elevation ${elevation}` : '',
     ].filter(Boolean);
 
-    summaries.set(setupClass, details.length ? `${setupClass} (${details.join(', ')})` : setupClass);
+    const label = setupClass || setupGuid;
+    const summary = details.length ? `${label} (${details.join(', ')})` : label;
+    if (setupGuid) byGuid.set(setupGuid, summary);
+    if (setupClass) byClass.set(setupClass, summary);
   }
-  return summaries;
+  return { byGuid, byClass };
 }
 
-function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<string, string> {
-  const summaries = new Map<string, string[]>();
+function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): {
+  byGuid: Map<string, string>;
+  byClass: Map<string, string>;
+} {
+  const summariesByGuid = new Map<string, string[]>();
+  const summariesByClass = new Map<string, string[]>();
   for (const row of rows) {
-    const keys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(
+    const guidKeys = [row['Harvestable GUID'], row['Harvestable Entity GUID'], row['Harvestable Setup GUID']].filter(
       Boolean,
     );
-    if (keys.length === 0) continue;
+    const classKeys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(
+      Boolean,
+    );
+    if (guidKeys.length === 0 && classKeys.length === 0) continue;
 
     const configLabel = [row['Config Class'], row['Tagged Config Name']].filter(Boolean).join('/');
     const details = [
@@ -822,19 +880,14 @@ function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): Map<stri
     ].filter(Boolean);
     const summary = details.length ? `${configLabel} (${details.join(', ')})` : configLabel;
 
-    for (const key of keys) {
-      const values = summaries.get(key) ?? [];
-      values.push(summary);
-      summaries.set(key, values);
-    }
+    for (const key of guidKeys) addSummary(summariesByGuid, key, summary);
+    for (const key of classKeys) addSummary(summariesByClass, key, summary);
   }
 
-  return new Map(
-    [...summaries.entries()].map(([key, values]) => [
-      key,
-      [...new Set(values)].toSorted((a, b) => a.localeCompare(b)).join(' | '),
-    ]),
-  );
+  return {
+    byGuid: flattenUniqueSummaryMap(summariesByGuid),
+    byClass: flattenUniqueSummaryMap(summariesByClass),
+  };
 }
 
 function buildParamSummaryMaps(rows: Record<string, string>[]): {
