@@ -84,6 +84,7 @@ export default {
 
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
+    if (!entityClass.toLowerCase().startsWith('mining_laser_')) return [];
     const suffix = entityClass.replace(/^mining_laser_/i, '').toUpperCase();
     const nameKey = `item_NameMINING_LASER_${suffix}`;
     return [deriveDescKey(nameKey)];
