@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreManufacturerRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -27,9 +27,13 @@ export async function extractDataCoreManufacturers(
       path: record.path,
       manufacturerClass: record.entityClass,
       code: root.attr('Code') ?? '',
-      nameKey: graphLocalizationKey(record, ['Name', 'name', 'displayName'], localization.attr('Name') ?? ''),
-      shortNameKey: graphLocalizationKey(record, ['ShortName'], localization.attr('ShortName') ?? ''),
-      descriptionKey: graphLocalizationKey(
+      nameKey: graphLocalizationKeyWithFallback(
+        record,
+        ['Name', 'name', 'displayName'],
+        localization.attr('Name') ?? '',
+      ),
+      shortNameKey: graphLocalizationKeyWithFallback(record, ['ShortName'], localization.attr('ShortName') ?? ''),
+      descriptionKey: graphLocalizationKeyWithFallback(
         record,
         ['Description', 'description', 'displayDescription'],
         localization.attr('Description') ?? '',
@@ -59,13 +63,8 @@ export async function extractDataCoreManufacturers(
   return rows;
 }
 
-function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
-  const key =
-    record.localizationKeys
-      .filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
-      .map((reference) => localizationKey(reference.key))
-      .find((candidate) => candidate !== '') ?? '';
+function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
+  const key = graphLocalizationKey(record, attributes);
   if (key) return key;
   return localizationKey(fallback);
 }

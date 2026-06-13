@@ -147,8 +147,8 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'Description', key: 'LOC_PLACEHOLDER' },
           { attribute: 'displayDescription', key: 'manufacturer_DescAEGS' },
-          { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
-          { attribute: 'displayName', key: 'manufacturer_NameAEGS' },
+          { attribute: 'displayName', key: 'manufacturer_DisplayNameAEGS' },
+          { attribute: 'Name', key: 'manufacturer_NameAEGS' },
           { attribute: 'ShortName', key: 'manufacturer_ShortNameAEGS' },
         ],
         referencedGuids: [
@@ -184,6 +184,7 @@ function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
       },
       byLocalizationKey: {
         manufacturer_NameAEGS: [manufacturerPath],
+        manufacturer_DisplayNameAEGS: [manufacturerPath],
         manufacturer_ShortNameAEGS: [manufacturerPath],
         manufacturer_DescAEGS: [manufacturerPath],
       },

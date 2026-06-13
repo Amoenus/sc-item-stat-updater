@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { graphGuidReferences, uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences, graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreRecordNode } from './types';
 
 test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back', () => {
@@ -44,4 +44,25 @@ test('graphGuidReferences returns distinct non-empty graph refs in source order'
   };
 
   assert.deepEqual(graphGuidReferences(record, ['entry']), ['resource-a', 'resource-b']);
+});
+
+test('graphLocalizationKey follows requested attribute priority before graph key order', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [
+      { attribute: 'displayName', key: 'aaa_display_name' },
+      { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+      { attribute: 'Name', key: '@zzz_name' },
+      { attribute: 'description', key: 'record_desc' },
+    ],
+    referencedGuids: [],
+  };
+
+  assert.equal(graphLocalizationKey(record, ['Name', 'displayName']), 'zzz_name');
+  assert.equal(graphLocalizationKey(record, ['displayName', 'Name']), 'aaa_display_name');
+  assert.equal(graphLocalizationKey(record, ['ShortName']), '');
 });
