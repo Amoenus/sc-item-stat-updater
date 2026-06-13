@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -60,23 +60,25 @@ export async function extractDataCoreMiningElements(
 
 function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTypeGuid: string): string | undefined {
   const resource = resourceTypeGuid ? graph.getByRef(resourceTypeGuid) : undefined;
-  const localizationKey =
-    resource?.localizationKeys.find(
-      (reference) => /description/i.test(reference.attribute) && isUsableLocalizationKey(reference.key),
-    )?.key ??
-    resource?.localizationKeys.find(
-      (reference) => /_desc$/i.test(reference.key) && isUsableLocalizationKey(reference.key),
-    )?.key;
-  return localizationKey?.trim();
+  if (!resource) return undefined;
+
+  return (
+    graphLocalizationKey(resource, ['Description', 'description', 'displayDescription']) ||
+    resource.localizationKeys
+      .map((reference) => localizationKey(reference.key))
+      .find((key) => /_desc$/i.test(key)) ||
+    undefined
+  );
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
-function isUsableLocalizationKey(key: string): boolean {
-  const trimmed = key.trim();
-  return !!trimmed && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed);
+function localizationKey(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }
 
 function toElementName(elementClass: string): string {

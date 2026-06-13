@@ -208,7 +208,10 @@ function makeGraph(): DataCoreRecordGraph {
         'Commodity.Agricium_Ore',
         'Commodity',
         'Agricium_Ore',
-        [{ attribute: 'Description', key: 'items_commodities_agricium_ore_graph_desc' }],
+        [
+          { attribute: 'displayDescription', key: 'items_commodities_agricium_ore_display_desc' },
+          { attribute: 'Description', key: '@items_commodities_agricium_ore_graph_desc' },
+        ],
       ),
       node(
         aslariteResourcePath,
