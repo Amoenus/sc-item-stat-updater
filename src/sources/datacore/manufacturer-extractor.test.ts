@@ -57,6 +57,48 @@ test('extractDataCoreManufacturers reads raw manufacturer identity and asset met
   ]);
 });
 
+test('extractDataCoreManufacturers ignores placeholder XML fallback keys', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-manufacturers-placeholder-'));
+  const manufacturerPath = 'libs/foundry/records/scitemmanufacturer/scitemmanufacturer.placeholder.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, manufacturerPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, manufacturerPath),
+    `
+      <SCItemManufacturer.PLCH
+        Code="PLCH"
+        __type="SCItemManufacturer"
+        __ref="placeholder-manufacturer"
+        __path="${manufacturerPath}">
+        <Localization Name="@LOC_PLACEHOLDER" ShortName="@LOC_EMPTY" Description="@LOC_UNINITIALIZED" />
+      </SCItemManufacturer.PLCH>
+    `,
+    'utf8',
+  );
+
+  const graph = makeGraph(manufacturerPath);
+  graph.records[0].ref = 'placeholder-manufacturer';
+  graph.records[0].rootTag = 'SCItemManufacturer.PLCH';
+  graph.records[0].entityClass = 'PLCH';
+  graph.records[0].localizationKeys = [];
+  graph.indexes = {
+    byRef: { 'placeholder-manufacturer': manufacturerPath },
+    byPath: { [manufacturerPath]: 0 },
+    byRootType: { SCItemManufacturer: [manufacturerPath] },
+    byEntityClass: { PLCH: [manufacturerPath] },
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const rows = await extractDataCoreManufacturers({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0].nameKey, '');
+  assert.equal(rows[0].shortNameKey, '');
+  assert.equal(rows[0].descriptionKey, '');
+});
+
 function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',

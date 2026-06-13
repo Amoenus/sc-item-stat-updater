@@ -317,7 +317,7 @@ test('source freshness diagnostics warn when DataCore item rows have no raw iden
     await fs.mkdir(itemVersionDir, { recursive: true });
     await fs.writeFile(
       path.join(itemVersionDir, 'coolers.datacore.csv'),
-      'Entity Class,Name Key,Description Key\ncool_test,LOC_EMPTY,LOC_UNINITIALIZED\n',
+      'Entity Class,Name Key,Description Key\ncool_test,LOC_EMPTY,LOC_UNINITIALIZED\ncool_placeholder,LOC_PLACEHOLDER,\n',
       'utf8',
     );
     await writeDataCoreRawFactFiles(itemVersionDir);
@@ -342,7 +342,7 @@ test('source freshness diagnostics warn when DataCore item rows have no raw iden
     assert.match(diagnostics.warnings[0].message, /expected at least one usable Name Key or Description Key/);
 
     const formatted = formatSourceFreshnessDiagnostics(diagnostics);
-    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 0\/1 rows with raw keys/);
+    assert.match(formatted, /dc-coolers \| DataCore Coolers \| 0\/2 rows with raw keys/);
     assert.match(formatted, /WARNING DataCore LIVE dc-coolers/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });

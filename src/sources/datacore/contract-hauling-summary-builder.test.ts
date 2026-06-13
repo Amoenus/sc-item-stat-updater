@@ -12,7 +12,7 @@ describe('buildDataCoreContractHaulingSummary', () => {
         contractDebugName: 'RedWind_Pyro',
         templateClass: 'HaulCargo_AtoB_Supply_Carbon',
         descriptionKey: 'RedWind_HaulCargo_desc_intro',
-        descriptionVariantKeys: 'RedWind_HaulCargo_desc_variant1 | @RedWind_HaulCargo_desc_variant2',
+        descriptionVariantKeys: 'RedWind_HaulCargo_desc_variant1 | @LOC_PLACEHOLDER | @RedWind_HaulCargo_desc_variant2',
         blueprintRewardPoolGuids: '',
         blueprintRewards: '',
         requiredCompletedContractTags: '',

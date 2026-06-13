@@ -44,6 +44,7 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                         <MissionPropertyValue_StringHash>
                           <options>
                             <MissionPropertyValueOption_StringHash textId="@intro_desc_001" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@LOC_PLACEHOLDER" weighting="1" />
                             <MissionPropertyValueOption_StringHash textId="@intro_desc_002" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>

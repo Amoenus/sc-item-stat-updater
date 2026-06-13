@@ -633,7 +633,7 @@ async function readTemplateDisplayDescriptionKeys(
 
 function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.replace(/^@/, '');
 }
 

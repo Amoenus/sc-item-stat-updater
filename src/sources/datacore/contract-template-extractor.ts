@@ -147,6 +147,6 @@ function uniqueStrings(values: string[]): string[] {
 
 function localizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY' || trimmed === '@LOC_UNINITIALIZED') return '';
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

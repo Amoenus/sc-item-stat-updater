@@ -50,7 +50,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
           <ObjectiveToken id="objective-guid" debugName="Main" startsActive="1">
             <objectiveHandler>
               <ObjectiveHandler_NearLocation module="libs/subsumption/missions/test.xml">
-                <travelObjectiveInfo shortDescription="@travel_short" longDescription="@travel_long" objectiveMarkerLabel="@travel_marker" />
+                <travelObjectiveInfo shortDescription="@travel_short" longDescription="@travel_long" objectiveMarkerLabel="@LOC_PLACEHOLDER" />
                 <returnObjectiveInfo shortDescription="@return_short" longDescription="@return_long" objectiveMarkerLabel="@return_marker" />
                 <navPointSpawnInfo>
                   <NavPointSpawnInformation name="@nav_name" />
@@ -98,7 +98,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
         objectiveHandlerTypes: 'ObjectiveHandler_NearLocation',
         objectiveHandlerModules: 'libs/subsumption/missions/test.xml',
         objectiveDisplayKeys: 'objective_long | objective_marker | objective_short',
-        travelObjectiveKeys: 'travel_long | travel_marker | travel_short',
+        travelObjectiveKeys: 'travel_long | travel_short',
         returnObjectiveKeys: 'return_long | return_marker | return_short',
         overrideMissionDetailsKeys: 'override_desc | override_title',
         navPointNameKeys: 'nav_name',

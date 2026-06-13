@@ -293,7 +293,7 @@ function countCsvDataRows(contents: string): number {
 
 function isUsableLocalizationKey(value: string | undefined): boolean {
   const trimmed = value?.trim() ?? '';
-  return trimmed.length > 0 && trimmed !== 'LOC_EMPTY' && trimmed !== 'LOC_UNINITIALIZED';
+  return trimmed.length > 0 && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed);
 }
 
 function hasValue(value: string | undefined): boolean {

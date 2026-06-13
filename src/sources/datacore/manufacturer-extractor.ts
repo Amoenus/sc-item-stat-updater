@@ -61,6 +61,6 @@ function isUsableLocalizationKey(value: string): boolean {
 
 function localizationKey(value: string): string {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '@LOC_EMPTY') return '';
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }
