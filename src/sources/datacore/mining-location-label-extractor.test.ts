@@ -72,7 +72,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     callout1Key: '',
     callout2Key: '',
     callout3Key: '',
-    typeGuid: 'stale-type-guid',
+    typeGuid: '',
     parentGuid: 'a14bec87-5801-4440-8ca8-35597487ac9a',
     parentClass: 'PyroAsteroidBelt',
     parentPath,
