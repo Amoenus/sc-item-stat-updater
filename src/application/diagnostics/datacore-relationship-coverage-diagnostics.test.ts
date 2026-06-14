@@ -163,6 +163,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       csvNameKeyOnly: 1,
       other: 0,
       likelyNonUserFacing: 1,
+      needsReview: 3,
       samples: [
         {
           entityClass: 'cool_test',
@@ -180,6 +181,26 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
           entityClass: 'radr_s01_template',
           componentType: 'radar',
           nameKey: 'loc_placeholder',
+          reason: 'placeholder-name-key',
+        },
+        {
+          entityClass: 'shld_test',
+          componentType: 'shield',
+          nameKey: '',
+          reason: 'missing-name-key',
+        },
+      ],
+      needsReviewSamples: [
+        {
+          entityClass: 'cool_test',
+          componentType: 'cooler',
+          nameKey: 'item_name_csv_cool',
+          reason: 'csv-name-key-only',
+        },
+        {
+          entityClass: 'radr_test',
+          componentType: 'radar',
+          nameKey: 'loc_uninitialized',
           reason: 'placeholder-name-key',
         },
         {
@@ -212,9 +233,12 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
     assert.match(formatted, /Rows without graph title keys: 2 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
     assert.match(formatted, /Likely non-user-facing title gaps: 1\./);
+    assert.match(formatted, /Reviewable title gaps: 3\./);
     assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);
     assert.match(formatted, /cooler, cool_test: csv-name-key-only \(item_name_csv_cool\)/);
     assert.match(formatted, /radar, radr_test: placeholder-name-key \(loc_uninitialized\)/);
+    assert.match(formatted, /Reviewable rows without graph title keys sample:/);
+    assert.doesNotMatch(formatted, /Reviewable rows without graph title keys sample:[\s\S]*radar, radr_s01_template/);
     assert.match(formatted, /Summary: \d+ relationship coverage warnings\./);
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

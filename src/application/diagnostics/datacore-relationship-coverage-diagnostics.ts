@@ -56,7 +56,9 @@ export interface DataCoreRelationshipCoverageTitleGapDiagnostic {
   csvNameKeyOnly: number;
   other: number;
   likelyNonUserFacing: number;
+  needsReview: number;
   samples: DataCoreRelationshipCoverageTitleGapSample[];
+  needsReviewSamples: DataCoreRelationshipCoverageTitleGapSample[];
 }
 
 export interface DataCoreRelationshipCoverageTitleGapSample {
@@ -273,26 +275,37 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
     csvNameKeyOnly: 0,
     other: 0,
     likelyNonUserFacing: 0,
+    needsReview: 0,
     samples: [],
+    needsReviewSamples: [],
   };
 
   for (const fact of facts) {
     if (hasGraphTitleKey(fact)) continue;
 
     const reason = titleGapReason(fact);
+    const sample = {
+      entityClass: fact.entityClass,
+      componentType: fact.componentType,
+      nameKey: fact.nameKey,
+      reason,
+    };
+    const likelyNonUserFacing = isLikelyNonUserFacingComponentFact(fact);
     if (reason === 'placeholder-name-key') gaps.placeholderNameKey++;
     if (reason === 'missing-name-key') gaps.missingNameKey++;
     if (reason === 'csv-name-key-only') gaps.csvNameKeyOnly++;
     if (reason === 'other') gaps.other++;
-    if (isLikelyNonUserFacingComponentFact(fact)) gaps.likelyNonUserFacing++;
+    if (likelyNonUserFacing) {
+      gaps.likelyNonUserFacing++;
+    } else {
+      gaps.needsReview++;
+      if (gaps.needsReviewSamples.length < 12) {
+        gaps.needsReviewSamples.push(sample);
+      }
+    }
 
     if (gaps.samples.length < 12) {
-      gaps.samples.push({
-        entityClass: fact.entityClass,
-        componentType: fact.componentType,
-        nameKey: fact.nameKey,
-        reason,
-      });
+      gaps.samples.push(sample);
     }
   }
 
@@ -358,6 +371,7 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     `Matched INI name keys: ${diagnostics.matchedIniKeys.total} total; ${diagnostics.matchedIniKeys.graphLocalization} graph; ${diagnostics.matchedIniKeys.csvNameKey} CSV name keys; ${diagnostics.matchedIniKeys.guessedAlias} guessed aliases.`,
     `Rows without graph title keys: ${diagnostics.titleKeyGaps.placeholderNameKey} placeholder name keys; ${diagnostics.titleKeyGaps.missingNameKey} missing name keys; ${diagnostics.titleKeyGaps.csvNameKeyOnly} CSV name-key only; ${diagnostics.titleKeyGaps.other} other.`,
     `Likely non-user-facing title gaps: ${diagnostics.titleKeyGaps.likelyNonUserFacing}.`,
+    `Reviewable title gaps: ${diagnostics.titleKeyGaps.needsReview}.`,
     '',
     '| Component family | Status | Rows | Rows with graph title keys | Rows without graph title keys |',
     '| --- | --- | ---: | ---: | ---: |',
@@ -383,6 +397,15 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     lines.push('  none');
   } else {
     for (const sample of diagnostics.titleKeyGaps.samples) {
+      lines.push(`  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`);
+    }
+  }
+
+  lines.push('', 'Reviewable rows without graph title keys sample:');
+  if (diagnostics.titleKeyGaps.needsReviewSamples.length === 0) {
+    lines.push('  none');
+  } else {
+    for (const sample of diagnostics.titleKeyGaps.needsReviewSamples) {
       lines.push(`  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`);
     }
   }
