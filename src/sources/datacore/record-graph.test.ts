@@ -294,7 +294,7 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
   await fs.writeFile(
     templatePath,
     `
-      <ContractTemplate.TestTemplate __ref="template-guid" __type="ContractTemplate" __path="libs/foundry/records/contracts/contracttemplates/test_template.xml">
+      <ContractTemplate.TestTemplate owner="88888888-8888-4888-8888-888888888888" __ref="template-guid" __type="ContractTemplate" __path="libs/foundry/records/contracts/contracttemplates/test_template.xml">
         <contractDisplayInfo>
           <ContractDisplayInfo type="77777777-7777-4777-8777-777777777777" />
         </contractDisplayInfo>
@@ -327,6 +327,14 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
       (reference) =>
         reference.attribute === 'contractDisplayInfo.type' &&
         reference.value === '77777777-7777-4777-8777-777777777777',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'ContractTemplate.owner' &&
+        reference.value === '88888888-8888-4888-8888-888888888888',
     ),
     true,
   );

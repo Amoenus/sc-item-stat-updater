@@ -43,7 +43,7 @@ export async function extractDataCoreContractTemplates(
         return null;
       }
 
-      const ownerGuid = graphGuidReference(record, ['owner'], root.attr('owner') ?? '');
+      const ownerGuid = graphGuidReference(record, ['ContractTemplate.owner'], root.attr('owner') ?? '');
       const contractClass = root.find('> contractClass > *').first();
       const contractClassType = contractClass[0]?.type === 'tag' ? contractClass[0].name : '';
       const additionalParams = contractClass.find('> additionalParams').first();

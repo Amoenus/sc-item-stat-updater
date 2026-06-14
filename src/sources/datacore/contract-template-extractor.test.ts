@@ -140,8 +140,8 @@ test('extractDataCoreContractTemplates does not use XML fallback when graph GUID
     graph: createDataCoreRecordGraphLookup(graph),
   });
 
-  assert.equal(rows[0]?.ownerGuid, '');
-  assert.equal(rows[0]?.ownerClass, '');
+  assert.equal(rows[0]?.ownerGuid, 'owner-guid');
+  assert.equal(rows[0]?.ownerClass, 'OwnerFaction');
   assert.equal(rows[0]?.displayTypeGuid, 'type-guid');
   assert.equal(rows[0]?.displayTypeClass, 'Bounty');
 });
@@ -289,6 +289,7 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         referencedGuidAttributes: [
           { attribute: 'owner', value: '' },
           { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'ContractTemplate.owner', value: 'owner-guid' },
           { attribute: 'contractDisplayInfo.type', value: 'type-guid' },
           { attribute: 'template:MissionLocation.Reference.value', value: 'location-guid' },
           { attribute: 'type', value: '' },
