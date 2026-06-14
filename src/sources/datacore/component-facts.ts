@@ -10,7 +10,11 @@ import {
 } from './component-class-resolver';
 import { createDataCoreManufacturerResolver, type DataCoreManufacturerResolver } from './manufacturer-resolver';
 import { loadDataCoreRecordGraph } from './record-graph-loader';
-import { graphLocalizationKeyFromReferences, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKeyFromReferences,
+  hasGraphLocalizationReferenceFromReferences,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
   type DataCoreRelationshipIndex,
@@ -276,6 +280,7 @@ function toComponentFact(
   const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys, row.recordPath);
   const graphDescriptionKey = getGraphDescriptionLocalizationKey(row.recordLocalizationKeys);
   const csvDescriptionKey = normalizeLocalizationKey(row.row['Description Key']);
+  const graphExposesDescriptionKey = hasGraphDescriptionLocalizationKey(row.recordLocalizationKeys);
 
   return {
     source: 'datacore',
@@ -283,7 +288,9 @@ function toComponentFact(
     ref: row.recordRef,
     recordPath: row.recordPath,
     nameKey: normalizeLocalizationKey(row.row['Name Key']),
-    descriptionKey: graphDescriptionKey || (isUsableLocalizationKey(csvDescriptionKey) ? csvDescriptionKey : ''),
+    descriptionKey:
+      graphDescriptionKey ||
+      (!graphExposesDescriptionKey && isUsableLocalizationKey(csvDescriptionKey) ? csvDescriptionKey : ''),
     manufacturerCode,
     componentType: row.componentType,
     size: normalizeSpaces(row.row.Size),
@@ -434,6 +441,14 @@ function getGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLoca
   return normalizeDataCoreRelationshipLocalizationKey(
     graphLocalizationKeyFromReferences(recordLocalizationKeys, ['Description', 'description', 'displayDescription']),
   );
+}
+
+function hasGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): boolean {
+  return hasGraphLocalizationReferenceFromReferences(recordLocalizationKeys, [
+    'Description',
+    'description',
+    'displayDescription',
+  ]);
 }
 
 function isUsableLocalizationKey(key: string): boolean {

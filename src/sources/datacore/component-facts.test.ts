@@ -41,6 +41,7 @@ async function makeTempDataCoreWorkspace() {
       'mgun_test,item_Name_MGun,LOC_UNINITIALIZED,STALE,1,A,Military',
       'mgun_ambiguous,item_Name_MGun_Ambiguous,,,1,A,Military',
       'mgun_placeholder,LOC_PLACEHOLDER,,BEHR,1,A,Military',
+      'mgun_descplaceholder,item_Name_MGun_DescPlaceholder,item_Desc_MGun_DescPlaceholder,BEHR,1,A,Military',
     ].join('\n'),
     'utf8',
   );
@@ -137,6 +138,18 @@ async function makeTempDataCoreWorkspace() {
             referencedGuids: [],
           },
           {
+            path: 'weapongun/mgun_desc_placeholder.xml',
+            ref: 'mgun-desc-placeholder-ref',
+            rootTag: 'EntityClassDefinition.MGun_DescPlaceholder_SCItem',
+            rootType: 'EntityClassDefinition',
+            entityClass: 'MGun_DescPlaceholder_SCItem',
+            localizationKeys: [
+              { attribute: 'Name', key: 'item_Name_MGun_DescPlaceholder' },
+              { attribute: 'Description', key: 'LOC_PLACEHOLDER' },
+            ],
+            referencedGuids: [],
+          },
+          {
             path: 'manufacturer/behr.xml',
             ref: 'behr-ref',
             rootTag: 'SCItemManufacturer.BEHR',
@@ -163,6 +176,7 @@ async function makeTempDataCoreWorkspace() {
             'mgun-ref': 'weapongun/mgun_test.xml',
             'mgun-ambiguous-ref': 'weapongun/mgun_ambiguous.xml',
             'mgun-placeholder-ref': 'weapongun/mgun_placeholder.xml',
+            'mgun-desc-placeholder-ref': 'weapongun/mgun_desc_placeholder.xml',
             'behr-ref': 'manufacturer/behr.xml',
             'aegs-ref': 'manufacturer/aegs.xml',
           },
@@ -176,6 +190,7 @@ async function makeTempDataCoreWorkspace() {
               'weapongun/mgun_test.xml',
               'weapongun/mgun_ambiguous.xml',
               'weapongun/mgun_placeholder.xml',
+              'weapongun/mgun_desc_placeholder.xml',
             ],
             SCItemManufacturer: ['manufacturer/behr.xml', 'manufacturer/aegs.xml'],
           },
@@ -264,6 +279,7 @@ describe('DataCore component facts', () => {
       const gun = facts.find((fact) => fact.entityClass === 'mgun_test');
       const ambiguousGun = facts.find((fact) => fact.entityClass === 'mgun_ambiguous');
       const placeholderGun = facts.find((fact) => fact.entityClass === 'mgun_placeholder');
+      const descriptionPlaceholderGun = facts.find((fact) => fact.entityClass === 'mgun_descplaceholder');
       const xl1 = facts.find((fact) => fact.entityClass === 'qdrv_wetk_s02_xl1');
 
       assert.equal(lumacore?.componentClass, 'Competition');
@@ -279,6 +295,7 @@ describe('DataCore component facts', () => {
       assert.equal(ambiguousGun?.manufacturerCode, 'AMBIGUOUS');
       assert.deepEqual(placeholderGun?.titleKeySources, []);
       assert.equal(gun?.descriptionKey, '');
+      assert.equal(descriptionPlaceholderGun?.descriptionKey, '');
       assert.equal(xl1?.componentClass, 'Military');
       assert.equal(xl1?.componentClassSource, 'scmdb-bridge');
       assert.equal(xl1?.descriptionKey, 'item_descz_qdrv_wetk_s02_xl1_scitem');
