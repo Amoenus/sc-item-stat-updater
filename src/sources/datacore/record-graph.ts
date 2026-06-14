@@ -147,6 +147,28 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
       });
   });
 
+  $('ObjectiveToken > displayInfo').each((_, element) => {
+    addReference('objectiveDisplayInfo.shortDescription', $(element).attr('shortDescription'));
+    addReference('objectiveDisplayInfo.longDescription', $(element).attr('longDescription'));
+    addReference('objectiveDisplayInfo.objectiveMarkerLabel', $(element).attr('objectiveMarkerLabel'));
+  });
+
+  $('travelObjectiveInfo').each((_, element) => {
+    addReference('travelObjectiveInfo.shortDescription', $(element).attr('shortDescription'));
+    addReference('travelObjectiveInfo.longDescription', $(element).attr('longDescription'));
+    addReference('travelObjectiveInfo.objectiveMarkerLabel', $(element).attr('objectiveMarkerLabel'));
+  });
+
+  $('returnObjectiveInfo').each((_, element) => {
+    addReference('returnObjectiveInfo.shortDescription', $(element).attr('shortDescription'));
+    addReference('returnObjectiveInfo.longDescription', $(element).attr('longDescription'));
+    addReference('returnObjectiveInfo.objectiveMarkerLabel', $(element).attr('objectiveMarkerLabel'));
+  });
+
+  $('NavPointSpawnInformation').each((_, element) => {
+    addReference('NavPointSpawnInformation.name', $(element).attr('name'));
+  });
+
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
 }
 

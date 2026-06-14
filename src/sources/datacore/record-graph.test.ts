@@ -30,6 +30,14 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
         </MissionProperty>
         </Contract>
         <Override titleOverride="@mission_override_title" descriptionOverride="@mission_override_desc" />
+        <ObjectiveToken>
+          <displayInfo shortDescription="@objective_short" longDescription="@objective_long" objectiveMarkerLabel="@objective_marker" />
+          <ObjectiveHandler>
+            <travelObjectiveInfo shortDescription="@travel_short" longDescription="@travel_long" objectiveMarkerLabel="@travel_marker" />
+            <returnObjectiveInfo shortDescription="@return_short" longDescription="@return_long" objectiveMarkerLabel="@return_marker" />
+            <NavPointSpawnInformation name="@nav_name" />
+          </ObjectiveHandler>
+        </ObjectiveToken>
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
         <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" shortName="@items_commodities_atlasium_short_lower" />
         <Placeholder Name="@LOC_PLACEHOLDER" Description="@LOC_UNINITIALIZED" />
@@ -108,6 +116,18 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.deepEqual(graph.indexes.byLocalizationKey.mission_override_desc, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.objective_short, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.travel_long, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.return_marker, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.nav_name, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);

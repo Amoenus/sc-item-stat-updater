@@ -88,21 +88,45 @@ export async function extractDataCoreContractTemplates(
             .toArray()
             .map((element) => $(element).attr('module') ?? ''),
         ).join(' | '),
-        objectiveDisplayKeys: readLocalizationAttrs($, root.find('ObjectiveToken > displayInfo').toArray(), [
-          'shortDescription',
-          'longDescription',
-          'objectiveMarkerLabel',
-        ]).join(' | '),
-        travelObjectiveKeys: readLocalizationAttrs($, root.find('travelObjectiveInfo').toArray(), [
-          'shortDescription',
-          'longDescription',
-          'objectiveMarkerLabel',
-        ]).join(' | '),
-        returnObjectiveKeys: readLocalizationAttrs($, root.find('returnObjectiveInfo').toArray(), [
-          'shortDescription',
-          'longDescription',
-          'objectiveMarkerLabel',
-        ]).join(' | '),
+        objectiveDisplayKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          [
+            'objectiveDisplayInfo.shortDescription',
+            'objectiveDisplayInfo.longDescription',
+            'objectiveDisplayInfo.objectiveMarkerLabel',
+          ],
+          readLocalizationAttrs($, root.find('ObjectiveToken > displayInfo').toArray(), [
+            'shortDescription',
+            'longDescription',
+            'objectiveMarkerLabel',
+          ]),
+        ).join(' | '),
+        travelObjectiveKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          [
+            'travelObjectiveInfo.shortDescription',
+            'travelObjectiveInfo.longDescription',
+            'travelObjectiveInfo.objectiveMarkerLabel',
+          ],
+          readLocalizationAttrs($, root.find('travelObjectiveInfo').toArray(), [
+            'shortDescription',
+            'longDescription',
+            'objectiveMarkerLabel',
+          ]),
+        ).join(' | '),
+        returnObjectiveKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          [
+            'returnObjectiveInfo.shortDescription',
+            'returnObjectiveInfo.longDescription',
+            'returnObjectiveInfo.objectiveMarkerLabel',
+          ],
+          readLocalizationAttrs($, root.find('returnObjectiveInfo').toArray(), [
+            'shortDescription',
+            'longDescription',
+            'objectiveMarkerLabel',
+          ]),
+        ).join(' | '),
         overrideMissionDetailsKeys: readGraphLocalizationAttrsWithFallback(
           record,
           ['titleOverride', 'descriptionOverride'],
@@ -111,9 +135,11 @@ export async function extractDataCoreContractTemplates(
             'descriptionOverride',
           ]),
         ).join(' | '),
-        navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(
-          ' | ',
-        ),
+        navPointNameKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          ['NavPointSpawnInformation.name'],
+          readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']),
+        ).join(' | '),
         stringHashKeys: readGraphLocalizationAttrsWithFallback(
           record,
           ['textId'],

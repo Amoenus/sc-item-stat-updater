@@ -50,14 +50,14 @@ test('extractDataCoreContractTemplates emits template display and objective fact
           <ObjectiveToken id="objective-guid" debugName="Main" startsActive="1">
             <objectiveHandler>
               <ObjectiveHandler_NearLocation module="libs/subsumption/missions/test.xml">
-                <travelObjectiveInfo shortDescription="@travel_short" longDescription="@travel_long" objectiveMarkerLabel="@LOC_PLACEHOLDER" />
-                <returnObjectiveInfo shortDescription="@return_short" longDescription="@return_long" objectiveMarkerLabel="@return_marker" />
+                <travelObjectiveInfo shortDescription="@travel_short_stale" longDescription="@travel_long_stale" objectiveMarkerLabel="@travel_marker_stale" />
+                <returnObjectiveInfo shortDescription="@return_short_stale" longDescription="@return_long_stale" objectiveMarkerLabel="@return_marker_stale" />
                 <navPointSpawnInfo>
-                  <NavPointSpawnInformation name="@nav_name" />
+                  <NavPointSpawnInformation name="@nav_name_stale" />
                 </navPointSpawnInfo>
               </ObjectiveHandler_NearLocation>
             </objectiveHandler>
-            <displayInfo shortDescription="@objective_short" longDescription="@objective_long" objectiveMarkerLabel="@objective_marker" />
+            <displayInfo shortDescription="@objective_short_stale" longDescription="@objective_long_stale" objectiveMarkerLabel="@objective_marker_stale" />
             <overrideMissionDetailsDisplayInfo titleOverride="@override_title_stale" descriptionOverride="@override_desc_stale" />
           </ObjectiveToken>
         </objectiveTokens>
@@ -221,6 +221,42 @@ test('extractDataCoreContractTemplates does not use override XML fallback when g
   assert.equal(rows[0]?.overrideMissionDetailsKeys, '');
 });
 
+test('extractDataCoreContractTemplates does not use objective display XML fallback when graph display keys are placeholders', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-template-display-placeholder-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/test_template.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.TestTemplate owner="owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <contractClass>
+          <ContractClass_Contract />
+        </contractClass>
+        <contractDisplayInfo>
+          <ContractDisplayInfo type="type-guid" />
+        </contractDisplayInfo>
+        <objectiveTokens>
+          <ObjectiveToken>
+            <displayInfo shortDescription="@objective_short_stale" longDescription="@objective_long_stale" objectiveMarkerLabel="@objective_marker_stale" />
+          </ObjectiveToken>
+        </objectiveTokens>
+      </ContractTemplate.TestTemplate>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0].localizationKeys = [
+    { attribute: 'objectiveDisplayInfo.shortDescription', key: 'LOC_PLACEHOLDER' },
+    { attribute: 'objectiveDisplayInfo.longDescription', key: 'LOC_EMPTY' },
+  ];
+
+  const rows = await extractDataCoreContractTemplates({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.objectiveDisplayKeys, '');
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
@@ -238,6 +274,16 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
           { attribute: 'textId', key: 'danger_high' },
           { attribute: 'titleOverride', key: 'override_title' },
           { attribute: 'descriptionOverride', key: 'override_desc' },
+          { attribute: 'objectiveDisplayInfo.shortDescription', key: 'objective_short' },
+          { attribute: 'objectiveDisplayInfo.longDescription', key: 'objective_long' },
+          { attribute: 'objectiveDisplayInfo.objectiveMarkerLabel', key: 'objective_marker' },
+          { attribute: 'travelObjectiveInfo.shortDescription', key: 'travel_short' },
+          { attribute: 'travelObjectiveInfo.longDescription', key: 'travel_long' },
+          { attribute: 'travelObjectiveInfo.objectiveMarkerLabel', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'returnObjectiveInfo.shortDescription', key: 'return_short' },
+          { attribute: 'returnObjectiveInfo.longDescription', key: 'return_long' },
+          { attribute: 'returnObjectiveInfo.objectiveMarkerLabel', key: 'return_marker' },
+          { attribute: 'NavPointSpawnInformation.name', key: 'nav_name' },
         ],
         referencedGuids: ['owner-guid', 'type-guid'],
         referencedGuidAttributes: [
