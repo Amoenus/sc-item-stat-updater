@@ -55,7 +55,7 @@ const DYNAMIC_TARGET_KEY_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
   { pattern: /\bgetRawDataCoreTargetKeys\b/, signal: 'uses raw DataCore localization keys' },
   {
     pattern: /\bmakeGetTargetKeys\b|\bmakeGetTargetKeysFromPrefixMap\b/,
-    signal: 'uses shared DataCore target-key derivation',
+    signal: 'uses shared DataCore target-key fallback after raw keys',
   },
   { pattern: /\bmakeAlternateDataCoreDescKeys\b/, signal: 'uses shared DataCore localization variant handling' },
 ];
