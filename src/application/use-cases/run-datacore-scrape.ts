@@ -2338,11 +2338,14 @@ function resolveDataCoreLocalizationKey(
   role: 'name' | 'shortName' | 'description',
   xmlValue: string,
 ): string {
-  return (
-    getDataCoreGraphLocalizationKey(record, role, 'attribute') ||
-    localizationKey(xmlValue) ||
-    getDataCoreGraphLocalizationKey(record, role, 'key-pattern')
-  );
+  const graphKey = getDataCoreGraphLocalizationKey(record, role, 'attribute');
+  if (graphKey) return graphKey;
+
+  const xmlKey = localizationKey(xmlValue);
+  if (xmlKey) return xmlKey;
+  if (hasAnyLocalizationKey(xmlValue)) return '';
+
+  return getDataCoreGraphLocalizationKey(record, role, 'key-pattern');
 }
 
 function isUsableLocalizationKey(value: string): boolean {
@@ -3855,6 +3858,11 @@ function localizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+}
+
+function hasAnyLocalizationKey(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() !== '' : trimmed !== '';
 }
 
 function resolveManufacturerCode(manufacturer: string, resolver: DataCoreManufacturerResolver | undefined): string {
