@@ -238,11 +238,11 @@ describe('DataCore component facts', () => {
         { key: 'item_name_qdrv_wetk_s02_xl1', source: 'csv-name-key' },
         { key: 'item_nameqdrv_wetk_s02_xl1_scitem', source: 'csv-name-key' },
         { key: 'item_name_qdrv_wetk_s02_xl1_scitem', source: 'csv-name-key' },
-        { key: 'item_name_qdrv_wetk_s02_xl1_display', source: 'graph-localization' },
         { key: 'item_nameqdrv_wetk_s02_xl1', source: 'graph-localization' },
         { key: 'item_name_qdrv_wetk_s02_xl1', source: 'graph-localization' },
         { key: 'item_nameqdrv_wetk_s02_xl1_scitem', source: 'graph-localization' },
         { key: 'item_name_qdrv_wetk_s02_xl1_scitem', source: 'graph-localization' },
+        { key: 'item_name_qdrv_wetk_s02_xl1_display', source: 'graph-localization' },
       ]);
     } finally {
       await fs.rm(dir, { recursive: true, force: true });

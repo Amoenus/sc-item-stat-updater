@@ -386,23 +386,22 @@ function getComponentTitleKeySources(
 }
 
 function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizationReference[]): string[] {
-  return uniqueKeys(
-    recordLocalizationKeys
-      .filter(({ attribute }) => isTitleLocalizationAttribute(attribute))
-      .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
-      .filter(isUsableLocalizationKey)
-      .sort((a, b) => a.localeCompare(b)),
-  );
+  const keys: string[] = [];
+  for (const attribute of ['Name', 'name', 'displayName']) {
+    keys.push(
+      ...recordLocalizationKeys
+        .filter(({ attribute: candidate }) => candidate.trim().toLowerCase() === attribute.toLowerCase())
+        .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
+        .filter(isUsableLocalizationKey),
+    );
+  }
+  return uniqueKeys(keys);
 }
 
 function getGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): string {
   return normalizeDataCoreRelationshipLocalizationKey(
     graphLocalizationKeyFromReferences(recordLocalizationKeys, ['Description', 'description', 'displayDescription']),
   );
-}
-
-function isTitleLocalizationAttribute(attribute: string): boolean {
-  return ['displayname', 'name'].includes(attribute.trim().toLowerCase());
 }
 
 function isUsableLocalizationKey(key: string): boolean {
