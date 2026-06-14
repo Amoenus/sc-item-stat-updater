@@ -199,7 +199,7 @@ test('extractDataCoreCommodities extracts first-party commodity facts discovered
   assert.equal(salvageShield.typeGuid, '');
 });
 
-test('extractDataCoreCommodities falls back when graph commodity GUID refs are ambiguous', async () => {
+test('extractDataCoreCommodities does not use XML fallback when graph commodity GUID refs are ambiguous', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-ambiguous-'));
   await writeXml(
     xmlCacheDir,
@@ -244,7 +244,7 @@ test('extractDataCoreCommodities falls back when graph commodity GUID refs are a
   });
 
   assert.equal(rows.length, 1);
-  assert.equal(rows[0].typeGuid, 'stale-type-guid');
+  assert.equal(rows[0].typeGuid, '');
   assert.equal(rows[0].subtypeGuid, '45f89d34-3167-4723-9b85-f9df3770ce00');
 });
 
