@@ -65,6 +65,7 @@ import {
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
 import {
   graphLocalizationKey as dataCoreGraphLocalizationKey,
+  hasGraphLocalizationReference as hasDataCoreGraphLocalizationReference,
   uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference,
 } from '../../sources/datacore/record-graph-relations';
 import {
@@ -2312,13 +2313,7 @@ function getDataCoreGraphLocalizationKey(
 ): string {
   if (!record) return '';
   if (source === 'attribute') {
-    const attributes =
-      role === 'name'
-        ? ['Name', 'name', 'displayName']
-        : role === 'shortName'
-          ? ['ShortName', 'shortName']
-          : ['Description', 'description', 'displayDescription'];
-    return dataCoreGraphLocalizationKey(record, attributes);
+    return dataCoreGraphLocalizationKey(record, dataCoreLocalizationAttributesForRole(role));
   }
 
   const references = record?.localizationKeys ?? [];
@@ -2333,6 +2328,21 @@ function getDataCoreGraphLocalizationKey(
   return localizationKey(reference?.key ?? '');
 }
 
+function hasDataCoreGraphLocalizationRole(
+  record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
+  role: 'name' | 'shortName' | 'description',
+): boolean {
+  return record ? hasDataCoreGraphLocalizationReference(record, dataCoreLocalizationAttributesForRole(role)) : false;
+}
+
+function dataCoreLocalizationAttributesForRole(role: 'name' | 'shortName' | 'description'): string[] {
+  return role === 'name'
+    ? ['Name', 'name', 'displayName']
+    : role === 'shortName'
+      ? ['ShortName', 'shortName']
+      : ['Description', 'description', 'displayDescription'];
+}
+
 function resolveDataCoreLocalizationKey(
   record: DataCoreRecordGraphLookup['graph']['records'][number] | undefined,
   role: 'name' | 'shortName' | 'description',
@@ -2343,6 +2353,7 @@ function resolveDataCoreLocalizationKey(
 
   const xmlKey = localizationKey(xmlValue);
   if (xmlKey) return xmlKey;
+  if (hasDataCoreGraphLocalizationRole(record, role)) return '';
   if (hasAnyLocalizationKey(xmlValue)) return '';
 
   return getDataCoreGraphLocalizationKey(record, role, 'key-pattern');

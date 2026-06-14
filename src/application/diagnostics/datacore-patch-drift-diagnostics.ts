@@ -211,11 +211,27 @@ function relationshipMetric(
 function summarizeGraphRelationships(graph: DataCoreRecordGraph): Map<string, number> {
   return new Map([
     ['records.total', graph.recordCount],
-    ['records.with-localization-keys', graph.records.filter((record) => record.localizationKeys.length > 0).length],
-    ['relationships.localization-keys', graph.records.reduce((sum, record) => sum + record.localizationKeys.length, 0)],
+    [
+      'records.with-localization-keys',
+      graph.records.filter((record) => record.localizationKeys.some((reference) => isUsableGraphLocalizationKey(reference.key)))
+        .length,
+    ],
+    [
+      'relationships.localization-keys',
+      graph.records.reduce(
+        (sum, record) =>
+          sum + record.localizationKeys.filter((reference) => isUsableGraphLocalizationKey(reference.key)).length,
+        0,
+      ),
+    ],
     ['relationships.referenced-guids', graph.records.reduce((sum, record) => sum + record.referencedGuids.length, 0)],
     ['relationships.inbound-reference-targets', Object.keys(graph.indexes.byReferencedGuid).length],
   ]);
+}
+
+function isUsableGraphLocalizationKey(value: string): boolean {
+  const trimmed = value.trim().replace(/^@/, '');
+  return trimmed !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed);
 }
 
 async function readOptionalGraph(versionDir: string): Promise<DataCoreRecordGraph | null> {

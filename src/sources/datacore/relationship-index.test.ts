@@ -22,6 +22,7 @@ describe('DataCore relationship index', () => {
       index.getRecordsByLocalizationKey('@item_NamePOWR_AEGS_S01_Charger_SCItem').map((record) => record.path),
       ['items/powr_aegs_s01_charger.xml'],
     );
+    assert.deepEqual(index.getRecordsByLocalizationKey('@LOC_PLACEHOLDER'), []);
     assert.deepEqual(
       index.getRecordsReferencingEntityClass('POWR_AEGS_S01_Charger').map((record) => record.path),
       ['hauling/powerplant_s01_military.xml'],
@@ -95,6 +96,7 @@ function makeGraph(): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'Name', key: '@item_NamePOWR_AEGS_S01_Charger_SCItem' },
           { attribute: 'Description', key: 'item_DescPOWR_AEGS_S01_Charger_SCItem' },
+          { attribute: 'ShortName', key: 'LOC_PLACEHOLDER' },
         ],
         referencedGuids: [],
       },

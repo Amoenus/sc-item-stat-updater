@@ -113,7 +113,7 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
     for (const attribute of LOCALIZATION_ATTRIBUTES) {
       const rawKey = $(element).attr(attribute)?.trim();
       const key = rawKey?.startsWith('@') ? rawKey.slice(1).trim() : '';
-      if (!isUsableLocalizationKey(key)) continue;
+      if (!key) continue;
 
       const flatAttribute = flattenString(attribute);
       const flatKey = flattenString(key);
@@ -185,7 +185,7 @@ function buildGraph(records: DataCoreRecordNode[]): DataCoreRecordGraph {
     addToIndex(graph.indexes.byRootType, record.rootType, record.path);
     addToIndex(graph.indexes.byEntityClass, record.entityClass, record.path);
 
-    for (const { key } of record.localizationKeys) {
+    for (const { key } of record.localizationKeys.filter((reference) => isUsableLocalizationKey(reference.key))) {
       addToIndex(graph.indexes.byLocalizationKey, key, record.path);
     }
 

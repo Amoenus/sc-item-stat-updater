@@ -82,10 +82,8 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   assert.deepEqual(graph.indexes.byLocalizationKey.manufacturer_Desc_AEGS, [
     'libs/foundry/records/scitemmanufacturer/aegs.xml',
   ]);
-  assert.equal(
-    graph.records[0]?.localizationKeys.some((reference) => /^LOC_(?:PLACEHOLDER|UNINITIALIZED)$/i.test(reference.key)),
-    false,
-  );
+  assert.equal(graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_PLACEHOLDER'), true);
+  assert.equal(graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_UNINITIALIZED'), true);
   assert.deepEqual(graph.indexes.byReferencedGuid['22222222-2222-2222-2222-222222222222'], [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);

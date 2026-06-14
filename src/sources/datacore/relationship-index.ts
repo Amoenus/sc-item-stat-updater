@@ -37,6 +37,7 @@ export function createDataCoreRelationshipIndex(
     if (rootType) appendRecord(rootTypeToRecords, rootType, record);
 
     for (const { key } of record.localizationKeys) {
+      if (!isUsableDataCoreRelationshipLocalizationKey(key)) continue;
       const localizationKey = normalizeDataCoreRelationshipLocalizationKey(key);
       if (localizationKey) appendRecord(normalizedLocalizationKeyToRecords, localizationKey, record);
     }
@@ -60,6 +61,7 @@ export function createDataCoreRelationshipIndex(
     getLocalizationKeysForRecord(record) {
       return uniqueSorted(
         (record?.localizationKeys ?? [])
+          .filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key))
           .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
           .filter((key) => key !== ''),
       );
@@ -75,10 +77,13 @@ export function createDataCoreRelationshipIndex(
     getRelationshipSummary() {
       return {
         totalRecords: graph?.graph.recordCount ?? 0,
-        recordsWithLocalizationKeys: (graph?.graph.records ?? []).filter((record) => record.localizationKeys.length > 0)
-          .length,
+        recordsWithLocalizationKeys: (graph?.graph.records ?? []).filter((record) =>
+          record.localizationKeys.some(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)),
+        ).length,
         localizationKeyReferences: (graph?.graph.records ?? []).reduce(
-          (sum, record) => sum + record.localizationKeys.length,
+          (sum, record) =>
+            sum +
+            record.localizationKeys.filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)).length,
           0,
         ),
         referencedGuidReferences: (graph?.graph.records ?? []).reduce(
@@ -102,6 +107,11 @@ export function normalizeDataCoreRelationshipEntityClass(value: unknown): string
 
 export function normalizeDataCoreRelationshipLocalizationKey(value: unknown): string {
   return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
+}
+
+function isUsableDataCoreRelationshipLocalizationKey(value: unknown): boolean {
+  const key = normalizeDataCoreRelationshipLocalizationKey(value);
+  return key !== '' && !/^loc_(?:empty|placeholder|uninitialized)$/i.test(key);
 }
 
 function uniqueRecords(records: DataCoreRecordNode[]): DataCoreRecordNode[] {
