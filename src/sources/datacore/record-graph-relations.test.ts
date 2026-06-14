@@ -4,6 +4,8 @@ import {
   graphGuidReferences,
   graphLocalizationKey,
   graphLocalizationKeyFromReferences,
+  graphLocalizationKeyFromReferencesMatching,
+  graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
@@ -104,4 +106,28 @@ test('graphLocalizationKeyWithFallback prefers graph keys and normalizes fallbac
   assert.equal(graphLocalizationKeyWithFallback(record, ['displayName'], '@xml_name'), 'graph_name');
   assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@xml_name'), 'xml_name');
   assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@LOC_PLACEHOLDER'), '');
+});
+
+test('graphLocalizationKeyMatching filters graph keys while preserving attribute priority', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [
+      { attribute: 'displayName', key: '@ui_generic_label' },
+      { attribute: 'displayName', key: '@items_commodities_graph_label' },
+      { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+      { attribute: 'Name', key: '@items_commodities_name_label' },
+    ],
+    referencedGuids: [],
+  };
+  const isCommodityKey = (key: string) => key.startsWith('items_commodities_');
+
+  assert.equal(graphLocalizationKeyMatching(record, ['displayName', 'Name'], isCommodityKey), 'items_commodities_graph_label');
+  assert.equal(
+    graphLocalizationKeyFromReferencesMatching(record.localizationKeys, ['Name', 'displayName'], isCommodityKey),
+    'items_commodities_name_label',
+  );
 });

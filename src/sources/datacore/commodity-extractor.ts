@@ -4,6 +4,7 @@ import type { AnyNode } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import {
   graphLocalizationKey,
+  graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
@@ -322,15 +323,8 @@ function selectLocalizationKey(
   attributes: string[],
   predicate = isUpdaterCommodityLocalizationKey,
 ): string {
-  for (const attribute of attributes) {
-    const normalizedAttribute = normalizeGraphAttributeName(attribute);
-    const byAttribute = record.localizationKeys
-      .filter((reference) => normalizeGraphAttributeName(reference.attribute) === normalizedAttribute)
-      .map((reference) => normalizeLocalizationKey(reference.key))
-      .find(predicate);
-    if (byAttribute) return byAttribute;
-  }
-
+  const graphKey = graphLocalizationKeyMatching(record, attributes, predicate);
+  if (graphKey) return graphKey;
   return record.localizationKeys.map((reference) => normalizeLocalizationKey(reference.key)).find(predicate) ?? '';
 }
 
@@ -408,10 +402,6 @@ function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
-}
-
-function normalizeGraphAttributeName(value: string): string {
-  return value.trim().toLowerCase();
 }
 
 function readAttribute(element: Cheerio<AnyNode>, names: string[]): string {

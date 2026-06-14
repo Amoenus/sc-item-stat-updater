@@ -4,6 +4,14 @@ export function graphLocalizationKey(record: DataCoreRecordNode, attributes: str
   return graphLocalizationKeyFromReferences(record.localizationKeys, attributes);
 }
 
+export function graphLocalizationKeyMatching(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  predicate: (key: string) => boolean,
+): string {
+  return graphLocalizationKeyFromReferencesMatching(record.localizationKeys, attributes, predicate);
+}
+
 export function graphLocalizationKeyWithFallback(
   record: DataCoreRecordNode,
   attributes: string[],
@@ -16,16 +24,24 @@ export function graphLocalizationKeyFromReferences(
   references: DataCoreLocalizationReference[],
   attributes: string[],
 ): string {
+  return graphLocalizationKeyFromReferencesMatching(references, attributes, () => true);
+}
+
+export function graphLocalizationKeyFromReferencesMatching(
+  references: DataCoreLocalizationReference[],
+  attributes: string[],
+  predicate: (key: string) => boolean,
+): string {
   for (const attribute of attributes) {
     const key =
       references
-        .find(
-          (reference) =>
-            reference.attribute.trim().toLowerCase() === attribute.trim().toLowerCase() &&
-            isUsableLocalizationKey(reference.key),
+        .map((reference) =>
+          reference.attribute.trim().toLowerCase() === attribute.trim().toLowerCase()
+            ? normalizeLocalizationKey(reference.key)
+            : '',
         )
-        ?.key.trim() ?? '';
-    if (key) return key.startsWith('@') ? key.slice(1).trim() : key;
+        .find((value) => value && predicate(value)) ?? '';
+    if (key) return key;
   }
   return '';
 }
@@ -49,11 +65,6 @@ export function uniqueGraphGuidReference(
 ): string {
   const values = graphGuidReferences(record, attributes);
   return values.length === 1 ? values[0] : fallback;
-}
-
-function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = normalizeLocalizationKey(value ?? '');
-  return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeGraphAttributeName(value: string): string {
