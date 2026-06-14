@@ -58,7 +58,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
               </ObjectiveHandler_NearLocation>
             </objectiveHandler>
             <displayInfo shortDescription="@objective_short" longDescription="@objective_long" objectiveMarkerLabel="@objective_marker" />
-            <overrideMissionDetailsDisplayInfo titleOverride="@override_title" descriptionOverride="@override_desc" />
+            <overrideMissionDetailsDisplayInfo titleOverride="@override_title_stale" descriptionOverride="@override_desc_stale" />
           </ObjectiveToken>
         </objectiveTokens>
       </ContractTemplate.TestTemplate>
@@ -185,6 +185,42 @@ test('extractDataCoreContractTemplates does not use string-hash XML fallback whe
   assert.equal(rows[0]?.stringHashKeys, '');
 });
 
+test('extractDataCoreContractTemplates does not use override XML fallback when graph override keys are placeholders', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-template-override-placeholder-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/test_template.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.TestTemplate owner="owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <contractClass>
+          <ContractClass_Contract />
+        </contractClass>
+        <contractDisplayInfo>
+          <ContractDisplayInfo type="type-guid" />
+        </contractDisplayInfo>
+        <objectiveTokens>
+          <ObjectiveToken>
+            <overrideMissionDetailsDisplayInfo titleOverride="@override_title_stale" descriptionOverride="@override_desc_stale" />
+          </ObjectiveToken>
+        </objectiveTokens>
+      </ContractTemplate.TestTemplate>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0].localizationKeys = [
+    { attribute: 'titleOverride', key: 'LOC_PLACEHOLDER' },
+    { attribute: 'descriptionOverride', key: 'LOC_EMPTY' },
+  ];
+
+  const rows = await extractDataCoreContractTemplates({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.overrideMissionDetailsKeys, '');
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
@@ -200,6 +236,8 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
           { attribute: 'textId', key: 'danger_low' },
           { attribute: 'textId', key: 'LOC_PLACEHOLDER' },
           { attribute: 'textId', key: 'danger_high' },
+          { attribute: 'titleOverride', key: 'override_title' },
+          { attribute: 'descriptionOverride', key: 'override_desc' },
         ],
         referencedGuids: ['owner-guid', 'type-guid'],
         referencedGuidAttributes: [

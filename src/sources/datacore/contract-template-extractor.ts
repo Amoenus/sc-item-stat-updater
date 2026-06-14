@@ -103,10 +103,14 @@ export async function extractDataCoreContractTemplates(
           'longDescription',
           'objectiveMarkerLabel',
         ]).join(' | '),
-        overrideMissionDetailsKeys: readLocalizationAttrs($, root.find('overrideMissionDetailsDisplayInfo').toArray(), [
-          'titleOverride',
-          'descriptionOverride',
-        ]).join(' | '),
+        overrideMissionDetailsKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          ['titleOverride', 'descriptionOverride'],
+          readLocalizationAttrs($, root.find('overrideMissionDetailsDisplayInfo').toArray(), [
+            'titleOverride',
+            'descriptionOverride',
+          ]),
+        ).join(' | '),
         navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(
           ' | ',
         ),
