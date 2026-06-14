@@ -96,6 +96,41 @@ test('extractDataCoreMiningProviderPresets extracts mining provider rows and res
   assert.equal(rows[1].harvestableEntityGuid, 'dfa89ac4-393b-4e8d-97b4-5ce21ee61970');
 });
 
+test('extractDataCoreMiningProviderPresets does not use XML fallback when graph harvestable refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-provider-presets-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    providerPath,
+    `
+      <HarvestableProviderPreset.HPP_Stanton1 __type="HarvestableProviderPreset" __ref="449763d3-5ba2-4a97-873d-cedf802b9aea" __path="${providerPath}">
+        <harvestableGroups>
+          <HarvestableElementGroup groupName="SpaceShip_Mineables" groupProbability="6">
+            <harvestables>
+              <HarvestableElement harvestable="stale-harvestable-guid" relativeProbability="44" />
+            </harvestables>
+          </HarvestableElementGroup>
+        </harvestableGroups>
+      </HarvestableProviderPreset.HPP_Stanton1>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['e576319a-80bf-46a6-b600-ab4d5e34c00f', 'other-harvestable-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'harvestable', value: 'e576319a-80bf-46a6-b600-ab4d5e34c00f' },
+    { attribute: 'harvestable', value: 'other-harvestable-guid' },
+  ];
+
+  const [row] = await extractDataCoreMiningProviderPresets({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.harvestableGuid, '');
+  assert.equal(row.harvestableClass, '');
+  assert.equal(row.harvestablePath, '');
+  assert.equal(row.harvestableEntityGuid, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
