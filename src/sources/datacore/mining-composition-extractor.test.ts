@@ -9,6 +9,7 @@ import type { DataCoreRecordGraph, DataCoreRecordNode } from './types';
 
 const compositionPath = 'libs/foundry/records/mining/rockcompositionpresets/asteroid_ctype_aluminium.xml';
 const singleCompositionPath = 'libs/foundry/records/mining/rockcompositionpresets/asteroid_ctype_aluminium_single.xml';
+const ambiguousCompositionPath = 'libs/foundry/records/mining/rockcompositionpresets/asteroid_ctype_ambiguous.xml';
 const elementPath = 'libs/foundry/records/mining/mineableelements/aluminium_ore.xml';
 
 test('extractDataCoreMiningCompositions flattens composition parts and resolves mineable element refs', async () => {
@@ -68,6 +69,55 @@ test('extractDataCoreMiningCompositions flattens composition parts and resolves 
   assert.equal(fallbackPart?.curveExponent, '2');
   assert.equal(single?.mineableElementGuid, '3776294d-5689-41f2-b03d-e8fcd17ede6a');
   assert.equal(single?.mineableElementClass, 'Aluminium_Ore');
+});
+
+test('extractDataCoreMiningCompositions does not use XML fallback when graph element refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-compositions-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    ambiguousCompositionPath,
+    `
+      <MineableComposition.Asteroid_CType_Ambiguous minimumDistinctElements="1" __type="MineableComposition" __ref="ambiguous-composition-ref" __path="${ambiguousCompositionPath}">
+        <compositionArray>
+          <MineableCompositionPart mineableElement="stale-element-guid" minPercentage="100" maxPercentage="100" probability="1" curveExponent="1" qualityScale="1" />
+        </compositionArray>
+      </MineableComposition.Asteroid_CType_Ambiguous>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records = [
+    {
+      path: ambiguousCompositionPath,
+      ref: 'ambiguous-composition-ref',
+      rootTag: 'MineableComposition.Asteroid_CType_Ambiguous',
+      rootType: 'MineableComposition',
+      entityClass: 'Asteroid_CType_Ambiguous',
+      localizationKeys: [],
+      referencedGuids: ['3776294d-5689-41f2-b03d-e8fcd17ede6a', 'other-element-guid'],
+      referencedGuidAttributes: [
+        { attribute: 'mineableElement', value: '3776294d-5689-41f2-b03d-e8fcd17ede6a' },
+        { attribute: 'mineableElement', value: 'other-element-guid' },
+      ],
+    },
+  ];
+  graph.recordCount = graph.records.length;
+  graph.indexes = {
+    byRef: { 'ambiguous-composition-ref': ambiguousCompositionPath },
+    byPath: { [ambiguousCompositionPath]: 0 },
+    byRootType: { MineableComposition: [ambiguousCompositionPath] },
+    byEntityClass: {},
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const [row] = await extractDataCoreMiningCompositions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.mineableElementGuid, '');
+  assert.equal(row.mineableElementClass, '');
+  assert.equal(row.mineableElementName, '');
 });
 
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
