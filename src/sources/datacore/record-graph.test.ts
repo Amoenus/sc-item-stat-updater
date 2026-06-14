@@ -198,6 +198,15 @@ test('buildDataCoreRecordGraph emits effective contract string params by contrac
                     <ContractStringParam param="Title" value="@intro_title" />
                     <ContractStringParam param="Description" value="@intro_desc" />
                   </stringParamOverrides>
+                  <propertyOverrides>
+                    <MissionProperty missionVariableName="MissionLocation">
+                      <value>
+                        <MissionPropertyValue_Location>
+                          <Reference value="44444444-4444-4444-8444-444444444444" />
+                        </MissionPropertyValue_Location>
+                      </value>
+                    </MissionProperty>
+                  </propertyOverrides>
                 </paramOverrides>
               </Contract>
             </introContracts>
@@ -249,6 +258,14 @@ test('buildDataCoreRecordGraph emits effective contract string params by contrac
       (reference) =>
         reference.attribute === 'contract:repeatable-contract-guid:ContractStringParam.Description' &&
         reference.key === 'repeatable_desc',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'contract:intro-contract-guid:MissionLocation.Reference.value' &&
+        reference.value === '44444444-4444-4444-8444-444444444444',
     ),
     true,
   );

@@ -58,7 +58,7 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                               <tagSearch>
                                 <TagSearchTerm>
                                   <positiveTags>
-                                    <Reference value="location-guid" />
+                                    <Reference value="location-xml-fallback-guid" />
                                   </positiveTags>
                                 </TagSearchTerm>
                               </tagSearch>
@@ -350,6 +350,7 @@ function graphFixture(
         referencedGuids,
         referencedGuidAttributes: [
           ...templateReferences,
+          { attribute: 'contract:contract-guid:MissionLocation.Reference.value', value: 'location-guid' },
           { attribute: 'difficultyProfile', value: 'difficulty-guid' },
           { attribute: 'factionReputation', value: 'faction-guid' },
           { attribute: 'reputationScope', value: 'scope-guid' },

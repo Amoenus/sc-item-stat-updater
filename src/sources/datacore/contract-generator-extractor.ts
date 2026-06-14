@@ -5,6 +5,7 @@ import { mapConcurrent } from './concurrency';
 import {
   graphLocalizationKeyWithFallback,
   graphLocalizationKeys,
+  graphGuidReferences,
   hasGraphLocalizationReference,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
@@ -126,9 +127,13 @@ export async function extractDataCoreContractGenerators(
                 contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
               ),
             );
-            const locationTagGuids = readLocationTagGuids($, contract);
             const blueprintRewards = readBlueprintRewards($, contractResults);
             const contractId = contract.attr('id') ?? '';
+            const locationTagGuids = readGraphLocationTagGuidsWithFallback(
+              record,
+              contractId,
+              readLocationTagGuids($, contract),
+            );
             const factionReputationGuid = graphGuidReference(
               record,
               ['factionReputation'],
@@ -309,9 +314,25 @@ function readGraphStringHashKeysWithFallback(
   return fallbackKeys;
 }
 
+function readGraphLocationTagGuidsWithFallback(
+  record: DataCoreRecordNode,
+  contractId: string,
+  fallbackGuids: string[],
+): string[] {
+  const attribute = contractLocationTagAttribute(contractId);
+  if (!attribute) return fallbackGuids;
+  const graphGuids = graphGuidReferences(record, [attribute]);
+  return graphGuids.length > 0 ? graphGuids : fallbackGuids;
+}
+
 function contractStringHashAttribute(contractId: string, missionVariableName: string): string {
   const trimmed = contractId.trim();
   return trimmed ? `contract:${trimmed}:${missionVariableName}.textId` : '';
+}
+
+function contractLocationTagAttribute(contractId: string): string {
+  const trimmed = contractId.trim();
+  return trimmed ? `contract:${trimmed}:MissionLocation.Reference.value` : '';
 }
 
 function readGraphContractStringParamWithFallback(

@@ -219,23 +219,35 @@ function isUsableLocalizationKey(value: string): boolean {
 function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): DataCoreGuidReference[] {
   const references: DataCoreGuidReference[] = [];
   const seen = new Set<string>();
+  const addReference = (attribute: string, rawValue: string | undefined): void => {
+    for (const guid of rawValue?.match(GUID_PATTERN) ?? []) {
+      const value = flattenString(guid.toLowerCase());
+      const flatAttribute = flattenString(attribute);
+      const fingerprint = `${flatAttribute}\0${value}`;
+      if (seen.has(fingerprint)) continue;
+
+      seen.add(fingerprint);
+      references.push({ attribute: flatAttribute, value });
+    }
+  };
 
   $('*').each((_, element) => {
     if (element.type !== 'tag') return;
 
     for (const [attribute, rawValue] of Object.entries(element.attribs ?? {})) {
       if (element === rootElement && attribute === '__ref') continue;
-
-      for (const guid of rawValue.match(GUID_PATTERN) ?? []) {
-        const value = flattenString(guid.toLowerCase());
-        const flatAttribute = flattenString(attribute);
-        const fingerprint = `${flatAttribute}\0${value}`;
-        if (seen.has(fingerprint)) continue;
-
-        seen.add(fingerprint);
-        references.push({ attribute: flatAttribute, value });
-      }
+      addReference(attribute, rawValue);
     }
+  });
+
+  $('MissionProperty[missionVariableName="MissionLocation"]').each((_, element) => {
+    const contractId = $(element).parents('[id]').first().attr('id')?.trim();
+    if (!contractId) return;
+    $(element)
+      .find('MissionPropertyValue_Location Reference[value]')
+      .each((__, referenceElement) => {
+        addReference(`contract:${contractId}:MissionLocation.Reference.value`, $(referenceElement).attr('value'));
+      });
   });
 
   return references.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute));
