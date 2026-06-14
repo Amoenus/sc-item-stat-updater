@@ -156,7 +156,7 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
     });
     assert.equal(diagnostics.titleKeys.graphLocalization, 1);
     assert.equal(diagnostics.titleKeys.csvNameKey, 2);
-    assert.equal(diagnostics.titleKeys.guessedOnly, 8);
+    assert.equal(diagnostics.titleKeys.guessedOnly, 4);
     assert.deepEqual(diagnostics.titleKeyGaps, {
       placeholderNameKey: 2,
       missingNameKey: 1,

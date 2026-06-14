@@ -379,7 +379,14 @@ function getComponentTitleKeySources(
   }
 
   const hasDataCoreTitleKey = keys.some(({ source }) => source === 'graph-localization' || source === 'csv-name-key');
-  if (entityClass && !hasDataCoreTitleKey && !isLikelyNonUserFacingComponent(entityClass, recordPath)) {
+  const hasAnyDataCoreTitleKey =
+    hasGraphTitleLocalizationKey(recordLocalizationKeys) || normalizeLocalizationKey(row['Name Key']) !== '';
+  if (
+    entityClass &&
+    !hasDataCoreTitleKey &&
+    !hasAnyDataCoreTitleKey &&
+    !isLikelyNonUserFacingComponent(entityClass, recordPath)
+  ) {
     keys.push(
       { key: `item_name${entityClass}`, source: 'guessed-alias' },
       { key: `item_name_${entityClass}`, source: 'guessed-alias' },
@@ -389,6 +396,12 @@ function getComponentTitleKeySources(
   }
 
   return keys;
+}
+
+function hasGraphTitleLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): boolean {
+  return recordLocalizationKeys.some(
+    ({ attribute, key }) => isGraphTitleAttribute(attribute) && normalizeLocalizationKey(key) !== '',
+  );
 }
 
 function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizationReference[]): string[] {
@@ -402,6 +415,10 @@ function getGraphTitleLocalizationKeys(recordLocalizationKeys: DataCoreLocalizat
     );
   }
   return uniqueKeys(keys);
+}
+
+function isGraphTitleAttribute(attribute: string): boolean {
+  return ['name', 'displayname'].includes(attribute.trim().toLowerCase());
 }
 
 function getGraphDescriptionLocalizationKey(recordLocalizationKeys: DataCoreLocalizationReference[]): string {
