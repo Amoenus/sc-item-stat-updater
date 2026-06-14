@@ -778,11 +778,13 @@ function graphNameLocalizationKey(record: DataCoreRecordNode): string {
 }
 
 function fallbackNameLocalizationKey(record: DataCoreRecordNode): string {
-  return (
-    record.localizationKeys.find((l) => /(^|_)name/i.test(l.key) && isUsableGraphLocalizationKey(l.key))?.key ??
-    record.localizationKeys.find((l) => isUsableGraphLocalizationKey(l.key))?.key ??
-    ''
-  );
+  const nameKey = record.localizationKeys.find(
+    (reference) => /(^|_)name/i.test(reference.key) && isUsableGraphLocalizationKey(reference.key),
+  )?.key;
+  if (nameKey) return normalizeLocalizationKey(nameKey);
+
+  const fallbackKey = record.localizationKeys.find((reference) => isUsableGraphLocalizationKey(reference.key))?.key;
+  return fallbackKey ? normalizeLocalizationKey(fallbackKey) : '';
 }
 
 function resolveBlueprintTargetRecord(

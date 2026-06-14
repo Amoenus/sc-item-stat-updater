@@ -238,7 +238,7 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       };
       const standingRecord = graph.records.find((record) => record.ref === 'standing-rank-4');
       assert.ok(standingRecord);
-      standingRecord.localizationKeys = [{ attribute: 'description', key: 'RepScope_Contractor_Rank4' }];
+      standingRecord.localizationKeys = [{ attribute: 'description', key: '@RepScope_Contractor_Rank4' }];
       await fs.writeFile(graphPath, JSON.stringify(graph), 'utf8');
 
       const rows = await loadDatacoreDescriptionsSourceData({ sourceDirs: { datacore: datacoreDir } } as never);
