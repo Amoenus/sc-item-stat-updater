@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKey, hasGraphLocalizationReference, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -61,9 +61,12 @@ export async function extractDataCoreMiningElements(
 function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTypeGuid: string): string | undefined {
   const resource = resourceTypeGuid ? graph.getByRef(resourceTypeGuid) : undefined;
   if (!resource) return undefined;
+  const descriptionAttributes = ['Description', 'description', 'displayDescription'];
+  const graphDescriptionKey = graphLocalizationKey(resource, descriptionAttributes);
+  if (graphDescriptionKey) return graphDescriptionKey;
+  if (hasGraphLocalizationReference(resource, descriptionAttributes)) return undefined;
 
   return (
-    graphLocalizationKey(resource, ['Description', 'description', 'displayDescription']) ||
     resource.localizationKeys
       .map((reference) => localizationKey(reference.key))
       .find((key) => /_desc$/i.test(key)) ||

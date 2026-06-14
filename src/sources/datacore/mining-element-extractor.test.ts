@@ -219,7 +219,10 @@ function makeGraph(): DataCoreRecordGraph {
         'Commodity.Aslarite_Raw',
         'Commodity',
         'Aslarite_Raw',
-        [{ attribute: 'Description', key: 'LOC_UNINITIALIZED' }],
+        [
+          { attribute: 'Description', key: 'LOC_UNINITIALIZED' },
+          { attribute: 'displayType', key: 'items_commodities_aslarite_raw_wrong_desc' },
+        ],
       ),
     ],
     indexes: {
