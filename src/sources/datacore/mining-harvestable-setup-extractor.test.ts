@@ -142,6 +142,46 @@ test('extractDataCoreMiningHarvestableSetups extracts mining setup conditions an
   ]);
 });
 
+test('extractDataCoreMiningHarvestableSetups does not include XML setup fallback when graph refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-harvestable-setups-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    providerPath,
+    `
+      <HarvestableProviderPreset.HPP_Stanton1 __type="HarvestableProviderPreset" __ref="provider-guid" __path="${providerPath}">
+        <harvestableGroups>
+          <HarvestableElementGroup groupName="SpaceShip_Mineables" groupProbability="6">
+            <harvestables>
+              <HarvestableElement harvestable="mineable-entity-guid" harvestableSetup="stale-setup-guid" />
+            </harvestables>
+          </HarvestableElementGroup>
+        </harvestableGroups>
+      </HarvestableProviderPreset.HPP_Stanton1>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    mineableSetupPath,
+    `<HarvestableSetup.MineableRockHarvestableSetup __type="HarvestableSetup" __ref="mineable-setup-guid" __path="${mineableSetupPath}" />`,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['default-setup-guid', 'alternate-setup-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'harvestableSetup', value: 'default-setup-guid' },
+    { attribute: 'harvestableSetup', value: 'alternate-setup-guid' },
+  ];
+
+  const rows = await extractDataCoreMiningHarvestableSetups({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.deepEqual(
+    rows.map((row) => row.ref),
+    ['mineable-setup-guid'],
+  );
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
