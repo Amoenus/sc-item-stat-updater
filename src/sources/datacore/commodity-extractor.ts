@@ -264,8 +264,7 @@ async function extractControlledSubstanceIndex(
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const jurisdictionName =
-      graphLocalizationKey(record, ['name', 'displayName']) ||
-      normalizeLocalizationKey($.root().children().first().attr('name') ?? '') ||
+      graphLocalizationKeyWithFallback(record, ['name', 'displayName'], $.root().children().first().attr('name') ?? '') ||
       record.entityClass ||
       record.path;
 

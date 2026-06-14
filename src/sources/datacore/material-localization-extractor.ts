@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { graphGuidReferences, graphLocalizationKey } from './record-graph-relations';
+import { graphGuidReferences, graphLocalizationKeyWithFallback } from './record-graph-relations';
 import type { DataCoreMaterialLocalizationRecord, DataCoreRecordGraphLookup } from './types';
 import { loadXml } from './xml-parser';
 
@@ -33,9 +33,11 @@ export async function extractDataCoreMaterialLocalizations(
 
       for (const resourceGuid of resourceGuids.length ? resourceGuids : xmlResourceGuids($)) {
         if (resourceGuid) {
-          const locName =
-            graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) ||
-            normalizeLocalizationKey($('Localization').first().attr('Name') ?? '');
+          const locName = graphLocalizationKeyWithFallback(
+            record,
+            ['Name', 'name', 'displayName', 'ShortName'],
+            $('Localization').first().attr('Name') ?? '',
+          );
           if (locName) {
             chunkRows.push({
               resourceGuid,
@@ -71,10 +73,4 @@ function xmlResourceGuids($: ReturnType<typeof loadXml>): string[] {
     .toArray()
     .map((element) => $(element).attr('entry') ?? '')
     .filter(Boolean);
-}
-
-function normalizeLocalizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }

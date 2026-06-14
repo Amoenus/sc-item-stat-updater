@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
 import type {
   DataCoreContractTemplateHaulingOrderRecord,
   DataCoreRecordGraphLookup,
@@ -91,13 +91,15 @@ async function buildCarryableResourceResolver(
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore carryable XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
-    const resourceNameKey =
-      graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) ||
+    const resourceNameKey = graphLocalizationKeyWithFallback(
+      record,
+      ['Name', 'name', 'displayName', 'ShortName'],
       firstLocalizationKey([
         $('SAttachableComponentParams AttachDef > Localization').first().attr('Name') ?? '',
         $('SCItemPurchasableParams').first().attr('displayName') ?? '',
         $('LocStringUserVariable[name="ItemName"]').first().attr('defaultValue') ?? '',
-      ]);
+      ]),
+    );
     const resourceClass = record.entityClass || resourceClassFromNameKey(resourceNameKey);
 
     $('ResourceContainerDefaultCompositionEntry[entry]').each((_, entry) => {
