@@ -13,7 +13,7 @@ import {
 } from './record-graph-relations';
 import type { DataCoreRecordNode } from './types';
 
-test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back', () => {
+test('uniqueGraphGuidReference uses fallback only when graph exposes no matching refs', () => {
   const record: DataCoreRecordNode = {
     path: 'record.xml',
     ref: 'record-guid',
@@ -31,7 +31,7 @@ test('uniqueGraphGuidReference uses the only graph ref and otherwise falls back'
   };
 
   assert.equal(uniqueGraphGuidReference(record, ['type'], 'fallback-type-guid'), 'type-guid');
-  assert.equal(uniqueGraphGuidReference(record, ['owner'], 'fallback-owner-guid'), 'fallback-owner-guid');
+  assert.equal(uniqueGraphGuidReference(record, ['owner'], 'fallback-owner-guid'), '');
   assert.equal(uniqueGraphGuidReference(record, ['missing'], 'fallback-missing-guid'), 'fallback-missing-guid');
 });
 

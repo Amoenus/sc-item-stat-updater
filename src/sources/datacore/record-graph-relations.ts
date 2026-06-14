@@ -81,7 +81,8 @@ export function uniqueGraphGuidReference(
   fallback = '',
 ): string {
   const values = graphGuidReferences(record, attributes);
-  return values.length === 1 ? values[0] : fallback;
+  if (values.length > 0) return values.length === 1 ? values[0] : '';
+  return fallback;
 }
 
 function normalizeGraphAttributeName(value: string): string {
