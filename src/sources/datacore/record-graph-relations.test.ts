@@ -110,6 +110,21 @@ test('graphLocalizationKeyWithFallback prefers graph keys and normalizes fallbac
   assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@LOC_PLACEHOLDER'), '');
 });
 
+test('graphLocalizationKeyWithFallback does not use fallback when graph role is placeholder', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [{ attribute: 'Name', key: '@LOC_PLACEHOLDER' }],
+    referencedGuids: [],
+  };
+
+  assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@xml_name'), '');
+  assert.equal(graphLocalizationKeyWithFallback(record, ['displayName'], '@xml_name'), 'xml_name');
+});
+
 test('hasGraphLocalizationReference treats placeholder keys as exposed graph relationships', () => {
   const record: DataCoreRecordNode = {
     path: 'record.xml',

@@ -21,7 +21,9 @@ export function graphLocalizationKeyWithFallback(
   attributes: string[],
   fallback = '',
 ): string {
-  return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(fallback);
+  const graphKey = graphLocalizationKey(record, attributes);
+  if (graphKey || hasGraphLocalizationReference(record, attributes)) return graphKey;
+  return normalizeLocalizationKey(fallback);
 }
 
 export function graphLocalizationKeyFromReferences(
