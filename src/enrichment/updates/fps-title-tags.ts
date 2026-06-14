@@ -2,6 +2,7 @@
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
+import type { DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
 import { getGraphTitleLocalizationKeys, loadOptionalDataCoreRelationshipIndex } from './datacore-title-key-utils';
 import { buildLookupMapFromRows } from './lookup-utils';
 import {
@@ -19,12 +20,30 @@ const DATACORE_PERSONAL_CSV = 'weaponpersonal.datacore.csv';
 const DATACORE_ATTACHMENT_CSV = 'weaponattachment.datacore.csv';
 
 const TYPE_CODE_RULES: Array<readonly [string, string]> = [
+  ['grenade launcher', 'GL'],
+  ['glauncher', 'GL'],
+  ['rocket launcher', 'RL'],
+  ['missile launcher', 'ML'],
+  ['knife', 'KNF'],
+  ['melee', 'KNF'],
   ['sniper', 'SNP'],
   ['shotgun', 'SG'],
   ['smg', 'SMG'],
   ['lmg', 'LMG'],
   ['pistol', 'PST'],
   ['rifle', 'RFL'],
+];
+
+const GRAPH_TYPE_CODE_RULES: Array<readonly [RegExp, string]> = [
+  [/displaytype_meleeweapon\b|\/weapons\/melee\//i, 'KNF'],
+  [/displaytype_sniper\b/i, 'SNP'],
+  [/displaytype_shotgun\b/i, 'SG'],
+  [/displaytype_smg\b/i, 'SMG'],
+  [/displaytype_lmg\b/i, 'LMG'],
+  [/displaytype_pistol\b/i, 'PST'],
+  [/displaytype_rifle\b/i, 'RFL'],
+  [/displaytype_shouldered\b/i, 'SHD'],
+  [/displaytype_special\b/i, 'SPC'],
 ];
 
 const DAMAGE_COLUMNS: Array<readonly [string, string]> = [
@@ -62,6 +81,49 @@ function normalizeTypeCode(value: string | undefined): string {
   return TYPE_CODE_RULES.find(([fragment]) => type.includes(fragment))?.[1] ?? 'WPN';
 }
 
+function weaponTypeHaystack(row: Record<string, string>): string {
+  return [
+    row.Type,
+    row.Name,
+    row.Class,
+    row['Entity Class'],
+    row['Name Key'],
+    row['Short Name Key'],
+    row['Description Key'],
+  ].join(' ');
+}
+
+function graphWeaponTypeHaystack(row: Record<string, string>, relationships: DataCoreRelationshipIndex): string {
+  const record = relationships.getRecordForEntityClass(row['Entity Class']);
+  if (!record) return '';
+  if (!/\/entities\/scitem\/weapons\//i.test(record.path)) return '';
+
+  return [
+    record.path,
+    record.rootTag,
+    record.rootType,
+    record.entityClass,
+    ...record.localizationKeys.map(({ attribute, key }) => `${attribute}:${key}`),
+  ].join(' ');
+}
+
+function normalizeGraphTypeCode(row: Record<string, string>, relationships: DataCoreRelationshipIndex): string | null {
+  if (row.Class?.toLowerCase() === 'gadget') return null;
+
+  const haystack = graphWeaponTypeHaystack(row, relationships);
+  return GRAPH_TYPE_CODE_RULES.find(([pattern]) => pattern.test(haystack))?.[1] ?? null;
+}
+
+function resolvePersonalTypeCode(row: Record<string, string>, relationships: DataCoreRelationshipIndex | null): string {
+  const graphTypeCode = relationships ? normalizeGraphTypeCode(row, relationships) : null;
+  const fallbackTypeCode = normalizeTypeCode(weaponTypeHaystack(row));
+
+  if (graphTypeCode && fallbackTypeCode !== 'WPN') {
+    return fallbackTypeCode;
+  }
+  return graphTypeCode ?? fallbackTypeCode;
+}
+
 function normalizeDamageCode(row: Record<string, string>): string | null {
   const damageValues = new Map(DAMAGE_COLUMNS.map(([column, code]) => [code, Number(row[column] || '0')]));
   const maxDamage = Math.max(...damageValues.values());
@@ -86,9 +148,9 @@ function normalizeSlotCode(value: string | undefined, type: string | undefined):
   return TYPE_SLOT_CODE_RULES.find(([fragment]) => lowerType.includes(fragment))?.[1] ?? 'ATT';
 }
 
-function buildPersonalTag(row: Record<string, string>): string {
+function buildPersonalTag(row: Record<string, string>, relationships: DataCoreRelationshipIndex | null = null): string {
   const size = String(row.Size || '').trim();
-  const typeCode = normalizeTypeCode(row.Type || row.Name || row['Entity Class'] || row['Name Key'] || row.Class || '');
+  const typeCode = resolvePersonalTypeCode(row, relationships);
   const damageCode = normalizeDamageCode(row);
   const parts = [`S${size || '?'}`, typeCode];
   if (damageCode) {
@@ -114,7 +176,7 @@ async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
 
   const keyToTag = new Map<string, { tag: string }>();
   for (const row of personalRows) {
-    const tag = buildPersonalTag(row);
+    const tag = buildPersonalTag(row, relationships);
     for (const key of getGraphTitleLocalizationKeys(row, relationships)) {
       keyToTag.set(key, { tag });
     }
@@ -129,7 +191,7 @@ async function buildFpsTitleLookupFromDataCore(datacoreDir: string) {
   for (const [key, value] of buildLookupMapFromRows(personalRows, (row) => {
     const key = normalizeLocalizationKey(row['Name Key']);
     if (!isUsableLocalizationKey(key)) return null;
-    return [key, { tag: buildPersonalTag(row) }];
+    return [key, { tag: buildPersonalTag(row, relationships) }];
   })) {
     setFallbackLookupValue(keyToTag, key, value);
   }
