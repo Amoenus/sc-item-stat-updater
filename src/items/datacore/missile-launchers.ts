@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
@@ -27,10 +28,10 @@ export default {
     ['mrck_', 'MRCK_'],
     ['gmrck_', 'MRCK_'],
   ]),
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Missile Launcher')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Carriage --')
       .raw('Missile Quantity', 'Missile Quantity')

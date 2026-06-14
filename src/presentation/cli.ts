@@ -59,7 +59,7 @@ export function isNpmConfigFlagEnabled(name: string, env: NodeJS.ProcessEnv = pr
   return env[`npm_config_${normalizedName}`]?.toLowerCase() === 'true';
 }
 
-function printIssues(issues: IssueEntry[], heading = '\nIssues:'): void {
+export function printIssues(issues: IssueEntry[], heading = '\nIssues:'): void {
   printIssuesTo(defaultCommandIO(), issues, heading);
 }
 

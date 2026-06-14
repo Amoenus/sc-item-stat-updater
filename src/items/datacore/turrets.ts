@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import {
   type DataCoreItemTypeConfig,
@@ -41,10 +42,10 @@ export default {
 
     return fallbackTargetKeys(row, deriveDescKey);
   },
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Turret')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Rotation --')
       .rawIf('Yaw Speed', 'Yaw Speed')

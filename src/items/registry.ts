@@ -6,7 +6,13 @@ import type { ItemConfig } from '../enrichment/item-config';
 const itemsDir = path.resolve(import.meta.dirname);
 const missionsDir = path.join(itemsDir, 'missions');
 const datacoreDir = path.join(itemsDir, 'datacore');
-const NON_CATEGORY_FILES = new Set(['registry.ts', 'types.ts', 'shared-stat-sections.ts', 'mining-journal.ts']);
+const NON_CATEGORY_FILES = new Set([
+  'registry.ts',
+  'types.ts',
+  'shared-stat-sections.ts',
+  'mining-journal.ts',
+  'manufacturer-display.ts',
+]);
 
 function isCategoryConfigFile(entry: string): boolean {
   return entry.endsWith('.ts') && !entry.endsWith('.test.ts') && !NON_CATEGORY_FILES.has(entry);

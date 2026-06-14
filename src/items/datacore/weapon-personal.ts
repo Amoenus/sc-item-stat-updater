@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
@@ -87,9 +88,7 @@ function buildPortableLightValue(
   return `Manufacturer: ${manufacturer}${flavorText ? `${newline}${newline}${flavorText}` : ''}`;
 }
 
-async function loadPersonalWeaponSourceData(context: {
-  csvDir: string;
-}): Promise<Array<Record<string, string>>> {
+async function loadPersonalWeaponSourceData(context: { csvDir: string }): Promise<Array<Record<string, string>>> {
   const [weaponRows, manufacturerRows] = await Promise.all([
     readCsvFile(resolveChildPath(context.csvDir, 'weaponpersonal.datacore.csv', 'personal weapon CSV filename')),
     readCsvFile(resolveChildPath(context.csvDir, 'manufacturers.datacore.csv', 'manufacturer CSV filename')),
@@ -167,7 +166,7 @@ export default {
 
     return stat(r)
       .line('Item Type', r['Type'] || 'Personal Weapon')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .rawIf('Fire Mode', 'Fire Mode')
       .section('-- Damage --')

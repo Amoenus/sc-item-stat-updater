@@ -56,7 +56,7 @@ const BlueprintItemSchema = z.object({
 });
 export type BlueprintItem = z.infer<typeof BlueprintItemSchema>;
 
-const BlueprintPoolEntrySchema = z.object({
+export const BlueprintPoolEntrySchema = z.object({
   name: z.string(),
   blueprints: z.array(BlueprintItemSchema),
   source: SourceSchema,

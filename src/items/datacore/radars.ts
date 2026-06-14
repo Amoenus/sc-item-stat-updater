@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
@@ -62,10 +63,10 @@ export default {
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Grade', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc_radr_') || kl.includes('descradr_'),
   getTargetKeys: makeGetTargetKeys('rdar_', 'RADR_'),
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Radar')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .raw('Grade', 'Grade')
       .lineIf('Class', r['Class'])

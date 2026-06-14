@@ -150,7 +150,57 @@ async function loadCsvSourceData(config: ItemConfig, csvDir: string): Promise<Re
   const rows = await readCsvFile(csvPath);
   logger.debug('Parsed CSV rows', { count: rows.length, label: config.label });
   validateColumns(rows, config.requiredColumns, 'CSV');
-  return rows;
+  return enrichDataCoreManufacturerNameKeys(rows, config, csvDir);
+}
+
+async function enrichDataCoreManufacturerNameKeys(
+  rows: Record<string, string>[],
+  config: ItemConfig,
+  csvDir: string,
+): Promise<Record<string, string>[]> {
+  if (
+    rows.length === 0 ||
+    !config.csvFile?.endsWith('.datacore.csv') ||
+    !('Manufacturer' in rows[0]) ||
+    'Manufacturer Name Key' in rows[0]
+  ) {
+    return rows;
+  }
+
+  let manufacturerRows: Record<string, string>[];
+  try {
+    manufacturerRows = await readCsvFile(resolveChildPath(csvDir, 'manufacturers.datacore.csv', 'manufacturer CSV'));
+  } catch {
+    return rows;
+  }
+
+  const nameKeyByCode = new Map<string, string>();
+  for (const row of manufacturerRows) {
+    const nameKey = normalizeManufacturerNameKey(row['Name Key']);
+    for (const code of [row.Code, row['Manufacturer Class']]) {
+      const normalizedCode = normalizeManufacturerCode(code);
+      if (normalizedCode && nameKey && !nameKeyByCode.has(normalizedCode)) {
+        nameKeyByCode.set(normalizedCode, nameKey);
+      }
+    }
+  }
+
+  if (nameKeyByCode.size === 0) return rows;
+
+  return rows.map((row) => ({
+    ...row,
+    'Manufacturer Name Key': nameKeyByCode.get(normalizeManufacturerCode(row.Manufacturer)) ?? '',
+  }));
+}
+
+function normalizeManufacturerCode(value: string | undefined): string {
+  return (value ?? '').trim().toUpperCase();
+}
+
+function normalizeManufacturerNameKey(value: string | undefined): string {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }
 
 /** Reads and validates CSV or JSON data against the config's required columns. */

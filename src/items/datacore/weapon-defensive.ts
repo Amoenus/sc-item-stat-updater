@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
@@ -42,10 +43,10 @@ export default {
     kl.includes('desc') &&
     (kl.includes('chaff') || kl.includes('flare') || kl.includes('noise') || kl.includes('countermeasure')),
   getTargetKeys: makeGetTargetKeys('', ''),
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', r['Type'] || 'Defensive Weapon')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Ammo --')
       .rawIf('Quantity', 'Ammo Quantity')

@@ -57,7 +57,7 @@ interface ScrapeScmdbTaskContext {
   result?: RunScmdbScrapeResult;
 }
 
-async function runScrapeScmdbCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
+export async function runScrapeScmdbCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   const listVersions = argv.includes('--list-versions');
   const rawOnly = argv.includes('--raw');
   const help = argv.includes('--help') || argv.includes('-h');

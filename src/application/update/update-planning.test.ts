@@ -1,8 +1,11 @@
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, it, mock } from 'node:test';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { getLogger } from '../../infrastructure/logger';
-import { buildUpdatePlan, validateRow } from './update-planning';
+import { buildUpdatePlan, loadSourceData, validateRow } from './update-planning';
 
 describe('updater: validateRow', () => {
   it('should return "valid" for a valid localization key', () => {
@@ -124,5 +127,42 @@ describe('updater: buildUpdatePlan', () => {
         { key: 'item_desc', value: 'stat: new collision stat', existingLineIndex: 3 },
       ],
     );
+  });
+});
+
+describe('updater: loadSourceData', () => {
+  it('enriches DataCore manufacturer display name keys from manufacturer metadata', async () => {
+    const csvDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-manufacturer-enrichment-'));
+    try {
+      await fs.writeFile(
+        path.join(csvDir, 'quantumdrive.datacore.csv'),
+        [
+          'Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health',
+          'qdrv_wetk_s01_beacon,item_NameQDRV_WETK_S01_Beacon,,item_DescQDRV_WETK_S01_Beacon,WETK,1,3,Military,240',
+        ].join('\n'),
+      );
+      await fs.writeFile(
+        path.join(csvDir, 'manufacturers.datacore.csv'),
+        [
+          'Manufacturer Class,Code,Name Key,Short Name Key,Description Key',
+          'WETK,WETK,manufacturer_NameWETK,,manufacturer_DescWETK',
+        ].join('\n'),
+      );
+
+      const rows = await loadSourceData(
+        {
+          label: 'DC Quantum Drives',
+          csvFile: 'quantumdrive.datacore.csv',
+          requiredColumns: ['Entity Class', 'Manufacturer', 'Size'],
+          descKeyMatch: () => true,
+        },
+        csvDir,
+      );
+
+      assert.equal(rows[0]?.Manufacturer, 'WETK');
+      assert.equal(rows[0]?.['Manufacturer Name Key'], 'manufacturer_NameWETK');
+    } finally {
+      await fs.rm(csvDir, { recursive: true, force: true });
+    }
   });
 });

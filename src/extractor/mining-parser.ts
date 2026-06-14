@@ -241,7 +241,7 @@ function processOverrideEntries(
  * @param qualityDistribution Quality distribution from mining data
  * @returns Map of location to quality notes
  */
-function buildLocationQualityNotes(
+export function buildLocationQualityNotes(
   qualityDistribution: MiningDataDTO['qualityDistribution'],
 ): Map<string, string[]> {
   const notes: Map<string, string[]> = new Map();
@@ -334,7 +334,7 @@ function buildLocationWeightMaps(
 /**
  * Builds rows for the mining locations CSV.
  */
-function buildMiningLocationRows(miningData: MiningDataDTO): MiningLocationRowDTO[] {
+export function buildMiningLocationRows(miningData: MiningDataDTO): MiningLocationRowDTO[] {
   const compNameCache = buildCompNameCache(miningData.compositions);
   const qualityNotesByLocation = buildLocationQualityNotes(miningData.qualityDistribution);
   const locationWeightMaps = buildLocationWeightMaps(miningData.locations, compNameCache);

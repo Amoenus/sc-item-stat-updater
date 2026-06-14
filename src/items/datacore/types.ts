@@ -222,7 +222,7 @@ function isDescriptionShapedLocalizationKey(localizationKey: string): boolean {
 }
 
 /** @deprecated Use resolvePatchableDataCoreDescriptionTargets for new DataCore item configs. */
-const getRawDataCoreTargetKeys = resolvePatchableDataCoreDescriptionTargets;
+export const getRawDataCoreTargetKeys = resolvePatchableDataCoreDescriptionTargets;
 
 function getExplicitDataCoreDescriptionKey(row: Record<string, string>): string {
   return usableDataCoreLocalizationKey(row['Description Key']);

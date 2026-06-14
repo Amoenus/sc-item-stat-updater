@@ -4,7 +4,7 @@ import { z } from 'zod';
 // versions.json
 // ---------------------------------------------------------------------------
 
-const VersionEntrySchema = z.object({
+export const VersionEntrySchema = z.object({
   version: z.string(),
   file: z.string(),
 });

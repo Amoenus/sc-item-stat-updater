@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys } from './types';
 
@@ -55,10 +56,10 @@ export default {
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Force', 'Range', 'Health'],
   descKeyMatch: (kl) => kl.includes('desc') && kl.includes('tractorbeam'),
   getTargetKeys: makeGetTargetKeys('grin_tractorbeam_', 'GRIN_TRACTORBEAM_'),
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Tractor Beam')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Tractor Stats --')
       .raw('Force', 'Force', ' MN')

@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import {
   addAlternateDescKeysWhenDataCoreLacksDescription,
@@ -106,10 +107,10 @@ export default {
       getShieldAlternateDescKeys,
     );
   },
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Shield Generator')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .raw('Grade', 'Grade')
       .lineIf('Class', r['Class'])

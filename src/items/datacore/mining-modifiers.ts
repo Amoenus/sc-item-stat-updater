@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, resolvePatchableDataCoreDescriptionTargets } from './types';
 
@@ -112,14 +113,14 @@ export default {
   getTargetKeys(row, deriveDescKey) {
     return resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
   },
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     const charges = Number(r['Charges']);
     const showCharges = Number.isFinite(charges) && charges > 1;
     const duration = r['Duration'];
 
     return stat(r)
       .line('Item Type', r['Type'] || 'Mining Modifier')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .lineIf('Charges', showCharges ? String(charges) : '')
       .lineIf('Duration', duration ? `${duration}s` : '')

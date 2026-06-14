@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { type DataCoreItemTypeConfig, makeGetTargetKeysFromPrefixMap } from './types';
 
@@ -31,12 +32,12 @@ export default {
     ['qed_', 'QED_'],
     ['qig_', 'QDMP_'],
   ]),
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     const hasSnare = r['Interdiction Range'] && r['Interdiction Range'] !== '0';
 
     const s = stat(r)
       .line('Item Type', hasSnare ? 'Quantum Enforcement Device' : 'Quantum Dampener')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .rawIf('Size', 'Size')
       .section('-- QED Stats --')
       .raw('Jammer Range', 'Jammer Range');

@@ -10,7 +10,7 @@ export interface FactionRewardsContext {
   factionRewardsRaw: Map<string, string>;
 }
 
-function buildFactionRewardsString(pool: FactionRewardsDTO[], factionNames: Map<string, string>): string {
+export function buildFactionRewardsString(pool: FactionRewardsDTO[], factionNames: Map<string, string>): string {
   return pool
     .map(({ factionGuid, amount }) => {
       const name = factionNames.get(factionGuid) ?? factionGuid;
@@ -51,12 +51,12 @@ export function buildFactionRewardsContext(
   return { factionRewards, factionRewardsRaw };
 }
 
-function formatDirectRewardLine(reward: NonNullable<ContractDTO['itemRewards']>[number]): string {
+export function formatDirectRewardLine(reward: NonNullable<ContractDTO['itemRewards']>[number]): string {
   const qty = reward.amount && reward.amount > 1 ? ` x${reward.amount}` : '';
   return `- ${reward.name}${qty}`;
 }
 
-function formatGroupRewardLines(reward: NonNullable<ContractDTO['itemRewards']>[number]): string[] {
+export function formatGroupRewardLines(reward: NonNullable<ContractDTO['itemRewards']>[number]): string[] {
   const lines: string[] = [];
   for (const group of reward.groups ?? []) {
     if (Number.isFinite(group.probability) && group.probability < 1) {

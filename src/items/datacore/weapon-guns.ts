@@ -1,4 +1,5 @@
 import type { ItemConfig } from '../../enrichment/item-config';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys, resolvePatchableDataCoreDescriptionTargets } from './types';
@@ -41,12 +42,12 @@ export default {
     const relationshipKeys = resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
     return relationshipKeys.length > 0 ? relationshipKeys : fallbackTargetKeys(row, deriveDescKey);
   },
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     const hasAmmo = r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '';
 
     const s = stat(r)
       .line('Item Type', r['Type'] || 'Vehicle Gun')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Combat Stats --')
       .raw('Alpha Damage', 'Damage Alpha')

@@ -1,12 +1,13 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import {
   type DataCoreItemTypeConfig,
   hasAnyDataCoreLocalizationKey,
   resolvePatchableDataCoreDescriptionTargets,
 } from './types';
 
-// Formats a raw integer percentage modifier (e.g. 25 → '+25%', -35 → '-35%').
+// Formats a raw integer percentage modifier (e.g. 25 â†’ '+25%', -35 â†’ '-35%').
 function fmtModifier(v: string): string {
   const n = Number(v);
   if (!Number.isFinite(n) || n === 0) return '';
@@ -30,9 +31,9 @@ export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
     // Range at which the laser deals full / minimum damage.
     'Range Max': { selector: 'SWeaponActionFireBeamParams', attr: 'fullDamageRange' },
     'Range Min': { selector: 'SWeaponActionFireBeamParams', attr: 'zeroDamageRange' },
-    // Throttle minimum fraction — used to derive Power Min.
+    // Throttle minimum fraction â€” used to derive Power Min.
     'Throttle Min': { selector: 'SEntityComponentMiningLaserParams', attr: 'throttleMinimum' },
-    // Power Min = Power Max × Throttle Min (must follow Power Max and Throttle Min).
+    // Power Min = Power Max Ã— Throttle Min (must follow Power Max and Throttle Min).
     'Power Min': {
       derive: (row) => {
         const powerMax = Number(row['Power Max']);
@@ -96,10 +97,10 @@ export default {
     const nameKey = `item_NameMINING_LASER_${suffix}`;
     return [deriveDescKey(nameKey)];
   },
-  buildValue(r, flavorText) {
+  buildValue(r, flavorText, _oldValue, _targetKey, context) {
     return stat(r)
       .line('Item Type', 'Mining Laser')
-      .raw('Manufacturer', 'Manufacturer')
+      .line('Manufacturer', dataCoreManufacturerDisplayName(r, context.localizationValue))
       .raw('Size', 'Size')
       .section('-- Laser Stats --')
       .raw('Power Max', 'Power Max')
