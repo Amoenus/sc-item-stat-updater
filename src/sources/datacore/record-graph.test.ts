@@ -24,7 +24,7 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
         <Hauling orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Name" />
         <Location callout1="@Pyro3_Outpost_callout1" callout2="@LOC_PLACEHOLDER" />
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
-        <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" />
+        <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" shortName="@items_commodities_atlasium_short_lower" />
         <Placeholder Name="@LOC_PLACEHOLDER" Description="@LOC_UNINITIALIZED" />
         <Fallback Name="Raw entity name is not a localization reference" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
@@ -69,6 +69,9 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_atlasium_short, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.items_commodities_atlasium_short_lower, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
   assert.deepEqual(graph.indexes.byLocalizationKey.hud_mining_asteroid_name_5, [

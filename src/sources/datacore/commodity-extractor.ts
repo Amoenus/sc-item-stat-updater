@@ -266,10 +266,14 @@ async function extractControlledSubstanceIndex(
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore jurisdiction XML path');
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
+    const jurisdictionNameKey = graphLocalizationKeyWithFallback(
+      record,
+      ['name', 'displayName'],
+      $.root().children().first().attr('name') ?? '',
+    );
     const jurisdictionName =
-      graphLocalizationKeyWithFallback(record, ['name', 'displayName'], $.root().children().first().attr('name') ?? '') ||
-      record.entityClass ||
-      record.path;
+      jurisdictionNameKey ||
+      (!hasGraphLocalizationReference(record, ['name', 'displayName']) ? record.entityClass || record.path : '');
 
     $('ControlledSubstanceClass').each((_index, element) => {
       const substanceClass = $(element);

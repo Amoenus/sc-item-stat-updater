@@ -314,6 +314,70 @@ test('extractDataCoreCommodities does not use hauling XML display fallback when 
   );
 });
 
+test('extractDataCoreCommodities does not use jurisdiction label heuristic when graph name is placeholder', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-placeholder-jurisdiction-'));
+  await writeXml(
+    xmlCacheDir,
+    rantadungPath,
+    `
+      <EntityClassDefinition.RantaDung __type="EntityClassDefinition" __ref="86c1fde0-1e2b-40d9-a3c7-1d39ef742c68" __path="${rantadungPath}">
+        <Components>
+          <SCItemPurchasableParams displayName="@items_commodities_rantadung" displayType="@items_commodities_type_agriculturalSupply" />
+          <CommodityComponentParams name="@items_commodities_rantadung" description="@items_commodities_rantadung_desc" IsUnrefinedElement="1" boxable="0" />
+        </Components>
+      </EntityClassDefinition.RantaDung>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    jurisdictionPath,
+    `
+      <Jurisdiction.ArcCorp name="@Jurisdictions_Name_Stale" __type="Jurisdiction" __ref="61e48e63-6822-4f67-9648-d7b884281bd4" __path="${jurisdictionPath}">
+        <controlledSubstanceClasses>
+          <ControlledSubstanceClass maxPossessionSCU="0.125">
+            <commodities>
+              <Reference value="86c1fde0-1e2b-40d9-a3c7-1d39ef742c68" />
+            </commodities>
+          </ControlledSubstanceClass>
+        </controlledSubstanceClasses>
+      </Jurisdiction.ArcCorp>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records = [graph.records[1], graph.records[7]];
+  graph.recordCount = graph.records.length;
+  graph.records[1].localizationKeys = [{ attribute: 'name', key: 'LOC_PLACEHOLDER' }];
+  graph.indexes = {
+    byRef: {
+      [graph.records[0].ref]: graph.records[0].path,
+      [graph.records[1].ref]: graph.records[1].path,
+    },
+    byPath: {
+      [graph.records[0].path]: 0,
+      [graph.records[1].path]: 1,
+    },
+    byRootType: {
+      EntityClassDefinition: [graph.records[0].path],
+      Jurisdiction: [graph.records[1].path],
+    },
+    byEntityClass: {
+      [graph.records[0].entityClass]: [graph.records[0].path],
+      [graph.records[1].entityClass]: [graph.records[1].path],
+    },
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const rows = await extractDataCoreCommodities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    pathPrefix: rantadungPath,
+  });
+
+  assert.equal(rows[0]?.controlledSubstanceJurisdictions, '');
+  assert.equal(rows[0]?.controlledSubstanceMaxScu, '0.125');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
