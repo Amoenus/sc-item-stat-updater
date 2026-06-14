@@ -19,7 +19,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     xmlCacheDir,
     miningLocationPath,
     `
-      <StarMapObject.AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01 name="@ab_mine_pyro_regiona_med_001_stale" description="@ab_mine_pyro_stale_desc" callout1="@LOC_UNINITIALIZED" type="stale-type-guid" parent="stale-parent-guid" locationHierarchyTag="812520ca-5f0a-4e88-9649-91237b1e4e51" navIcon="Default" size="400" hideInStarmap="0" hideInWorld="0" isScannable="0" blockTravel="0" __type="StarMapObject" __ref="544034db-6fde-44b4-aba8-c2ea35421ccd" __path="${miningLocationPath}">
+      <StarMapObject.AsteroidCluster_MiningBase_Pyro_RegionA_Medium_01 name="@ab_mine_pyro_regiona_med_001_stale" description="@ab_mine_pyro_stale_desc" callout1="@ab_mine_pyro_stale_callout1" callout2="@ab_mine_pyro_stale_callout2" type="stale-type-guid" parent="stale-parent-guid" locationHierarchyTag="812520ca-5f0a-4e88-9649-91237b1e4e51" navIcon="Default" size="400" hideInStarmap="0" hideInWorld="0" isScannable="0" blockTravel="0" __type="StarMapObject" __ref="544034db-6fde-44b4-aba8-c2ea35421ccd" __path="${miningLocationPath}">
         <quantumTravelData>
           <StarMapQuantumTravelDataParams arrivalRadius="18000" adoptionRadius="20000" />
         </quantumTravelData>
@@ -70,7 +70,7 @@ test('extractDataCoreMiningLocationLabels extracts mining StarMap labels and qua
     nameKey: 'ab_mine_pyro_regiona_med_001',
     descriptionKey: 'ab_mine_pyro_desc',
     callout1Key: '',
-    callout2Key: '',
+    callout2Key: 'ab_mine_pyro_callout2',
     callout3Key: '',
     typeGuid: '',
     parentGuid: 'a14bec87-5801-4440-8ca8-35597487ac9a',
@@ -111,6 +111,8 @@ function makeGraph(): DataCoreRecordGraph {
         { attribute: 'displayName', key: 'ab_mine_pyro_regiona_med_001' },
         { attribute: 'description', key: 'LOC_PLACEHOLDER' },
         { attribute: 'displayDescription', key: 'ab_mine_pyro_desc' },
+        { attribute: 'callout1', key: 'LOC_PLACEHOLDER' },
+        { attribute: 'callout2', key: 'ab_mine_pyro_callout2' },
       ],
       [
         { attribute: 'parent', value: '' },
