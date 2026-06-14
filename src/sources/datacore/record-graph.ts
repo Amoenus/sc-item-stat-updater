@@ -283,6 +283,14 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
 
   $(':root')
     .first()
+    .filter('[__type="CraftingBlueprintRecord"]')
+    .find('CraftingRecipeCosts CraftingCost_Resource[resource]')
+    .each((index, element) => {
+      addReference(`CraftingRecipeCost:${index + 1}.resource`, $(element).attr('resource'));
+    });
+
+  $(':root')
+    .first()
     .find('> generators > *')
     .each((_, handlerElement) => {
       for (const section of ['introContracts', 'contracts']) {

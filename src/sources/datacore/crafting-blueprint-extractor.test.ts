@@ -127,7 +127,7 @@ test('extractDataCoreCraftingBlueprints prefers unique graph refs for target and
   graph.records[0].referencedGuids = ['target-ref', 'resource-guid'];
   graph.records[0].referencedGuidAttributes = [
     { attribute: 'entityClass', value: 'target-ref' },
-    { attribute: 'resource', value: 'resource-guid' },
+    { attribute: 'CraftingRecipeCost:1.resource', value: 'resource-guid' },
   ];
 
   const rows = await extractDataCoreCraftingBlueprints({
@@ -165,8 +165,8 @@ test('extractDataCoreCraftingBlueprints does not use XML fallback when graph ref
   graph.records[0].referencedGuidAttributes = [
     { attribute: 'entityClass', value: 'target-ref' },
     { attribute: 'entityClass', value: 'other-target-ref' },
-    { attribute: 'resource', value: 'resource-guid' },
-    { attribute: 'resource', value: 'other-resource-guid' },
+    { attribute: 'CraftingRecipeCost:1.resource', value: 'resource-guid' },
+    { attribute: 'CraftingRecipeCost:1.resource', value: 'other-resource-guid' },
   ];
 
   const rows = await extractDataCoreCraftingBlueprints({

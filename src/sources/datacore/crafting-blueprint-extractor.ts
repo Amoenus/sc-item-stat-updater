@@ -46,10 +46,11 @@ export async function extractDataCoreCraftingBlueprints(
 
       // Extract Recipes
       const recipeCosts: { resource: string; minQuality: number; amount: number }[] = [];
-      $('CraftingRecipeCosts CraftingCost_Resource').each((_, element) => {
+      $('CraftingRecipeCosts CraftingCost_Resource').each((index, element) => {
         const el = $(element);
+        const costNumber = index + 1;
         const resource = el.attr('resource')
-          ? graphGuidReference(record, ['resource'], el.attr('resource') ?? '')
+          ? graphGuidReference(record, [craftingRecipeCostResourceAttribute(costNumber)], el.attr('resource') ?? '')
           : '';
         const minQuality = Number(el.attr('minQuality')) || 0;
         const amount = Number(el.find('> quantity > SStandardCargoUnit').attr('standardCargoUnits')) || 0;
@@ -89,6 +90,10 @@ function targetNameLocalizationKey(record: DataCoreRecordNode): string {
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
+}
+
+function craftingRecipeCostResourceAttribute(costNumber: number): string {
+  return `CraftingRecipeCost:${costNumber}.resource`;
 }
 
 function fallbackNameKey(record: DataCoreRecordNode): string {

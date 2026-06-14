@@ -356,3 +356,48 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
     true,
   );
 });
+
+test('buildDataCoreRecordGraph emits crafting recipe resource refs by cost index', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-crafting-cost-'));
+  const blueprintPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'crafting',
+    'blueprints',
+    'test_blueprint.xml',
+  );
+  await fs.mkdir(path.dirname(blueprintPath), { recursive: true });
+  await fs.writeFile(
+    blueprintPath,
+    `
+      <CraftingBlueprintRecord.TestBlueprint __ref="blueprint-guid" __type="CraftingBlueprintRecord" __path="libs/foundry/records/crafting/blueprints/test_blueprint.xml">
+        <CraftingRecipeCosts>
+          <CraftingCost_Resource resource="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />
+          <CraftingCost_Resource resource="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" />
+        </CraftingRecipeCosts>
+      </CraftingBlueprintRecord.TestBlueprint>
+    `,
+  );
+
+  const graph = await buildDataCoreRecordGraph({ xmlCacheDir });
+  const record = graph.records[0];
+  assert.ok(record);
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'CraftingRecipeCost:1.resource' &&
+        reference.value === 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'CraftingRecipeCost:2.resource' &&
+        reference.value === 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    ),
+    true,
+  );
+});
