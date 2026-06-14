@@ -112,7 +112,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
   );
 });
 
-test('extractDataCoreContractTemplates falls back when graph GUID refs are ambiguous', async () => {
+test('extractDataCoreContractTemplates does not use XML fallback when graph GUID refs are ambiguous', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-template-ambiguous-'));
   const templatePath = 'libs/foundry/records/contracts/contracttemplates/test_template.xml';
   await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
@@ -140,9 +140,9 @@ test('extractDataCoreContractTemplates falls back when graph GUID refs are ambig
     graph: createDataCoreRecordGraphLookup(graph),
   });
 
-  assert.equal(rows[0]?.ownerGuid, 'stale-owner-guid');
+  assert.equal(rows[0]?.ownerGuid, '');
   assert.equal(rows[0]?.ownerClass, '');
-  assert.equal(rows[0]?.displayTypeGuid, 'stale-type-guid');
+  assert.equal(rows[0]?.displayTypeGuid, '');
   assert.equal(rows[0]?.displayTypeClass, '');
 });
 
