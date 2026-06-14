@@ -71,7 +71,7 @@ test('extractDataCoreVehicles reads first-party vehicle metadata and resolves ma
   ]);
 });
 
-test('extractDataCoreVehicles falls back when graph GUID refs are ambiguous', async () => {
+test('extractDataCoreVehicles does not use XML fallback when graph GUID refs are ambiguous', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-vehicles-ambiguous-'));
   const vehiclePath = 'libs/foundry/records/entities/spaceships/aegs_avenger_titan.xml';
   await fs.mkdir(path.dirname(path.join(xmlCacheDir, vehiclePath)), { recursive: true });
@@ -100,7 +100,7 @@ test('extractDataCoreVehicles falls back when graph GUID refs are ambiguous', as
     graph: createDataCoreRecordGraphLookup(graph),
   });
 
-  assert.equal(rows[0]?.manufacturerGuid, 'stale-manufacturer-guid');
+  assert.equal(rows[0]?.manufacturerGuid, '');
   assert.equal(rows[0]?.manufacturerCode, '');
 });
 
