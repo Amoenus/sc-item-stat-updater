@@ -106,6 +106,11 @@ export function isPlaceholderComponentLocalizationKey(value: unknown): boolean {
   return key !== '' && PLACEHOLDER_LOCALIZATION_KEYS.has(key);
 }
 
+export function isLikelyNonUserFacingComponent(entityClass: string, recordPath: string): boolean {
+  const value = `${entityClass} ${recordPath}`.toLowerCase();
+  return /(?:^|[_/])(?:template|fake|prototype)(?:[_./]|$)|jumpdriveflighttuning|jumptunnelforces/.test(value);
+}
+
 export async function loadDataCoreComponentFacts({
   datacoreDir,
   scmdbDir,
@@ -259,7 +264,7 @@ function toComponentFact(
   const resolvedClass = getComponentClass(row, entityClassToHaulingClass, manufacturerTypeToClass);
   const entityClass = normalizeDataCoreEntityClass(row.row['Entity Class']);
   const manufacturerCode = getComponentManufacturer(row.row, row.recordManufacturerCode);
-  const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys);
+  const titleKeySources = getComponentTitleKeySources(row.row, row.recordLocalizationKeys, row.recordPath);
   const graphDescriptionKey = getGraphDescriptionLocalizationKey(row.recordLocalizationKeys);
   const csvDescriptionKey = normalizeLocalizationKey(row.row['Description Key']);
 
@@ -358,6 +363,7 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[]): s
 function getComponentTitleKeySources(
   row: Record<string, string>,
   recordLocalizationKeys: DataCoreLocalizationReference[],
+  recordPath: string,
 ): ComponentTitleKey[] {
   const keys: ComponentTitleKey[] = [];
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
@@ -373,7 +379,7 @@ function getComponentTitleKeySources(
   }
 
   const hasDataCoreTitleKey = keys.some(({ source }) => source === 'graph-localization' || source === 'csv-name-key');
-  if (entityClass && !hasDataCoreTitleKey) {
+  if (entityClass && !hasDataCoreTitleKey && !isLikelyNonUserFacingComponent(entityClass, recordPath)) {
     keys.push(
       { key: `item_name${entityClass}`, source: 'guessed-alias' },
       { key: `item_name_${entityClass}`, source: 'guessed-alias' },

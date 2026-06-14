@@ -4,6 +4,7 @@ import { parseNameLine } from '../../enrichment/updates/title-tag-utils';
 import {
   type ComponentFact,
   type ComponentTitleKeySource,
+  isLikelyNonUserFacingComponent,
   isPlaceholderComponentLocalizationKey,
   loadDataCoreComponentFacts,
 } from '../../sources/datacore/component-facts';
@@ -299,8 +300,7 @@ function summarizeTitleKeyGaps(facts: ComponentFact[]): DataCoreRelationshipCove
 }
 
 function isLikelyNonUserFacingComponentFact(fact: ComponentFact): boolean {
-  const value = `${fact.entityClass} ${fact.recordPath}`.toLowerCase();
-  return /(?:^|[_/])(?:template|fake|prototype)(?:[_./]|$)|jumpdriveflighttuning|jumptunnelforces/.test(value);
+  return isLikelyNonUserFacingComponent(fact.entityClass, fact.recordPath);
 }
 
 function titleGapReason(fact: ComponentFact): DataCoreRelationshipCoverageTitleGapSample['reason'] {
