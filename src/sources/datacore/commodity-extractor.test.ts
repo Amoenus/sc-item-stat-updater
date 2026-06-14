@@ -278,6 +278,42 @@ test('extractDataCoreCommodities does not use commodity key heuristics when grap
   );
 });
 
+test('extractDataCoreCommodities does not use hauling XML display fallback when graph order name is placeholder', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-placeholder-hauling-'));
+  await writeXml(
+    xmlCacheDir,
+    salvageShieldPath,
+    `
+      <Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01 orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Stale_Name" __type="Hauling_EntityClasses" __ref="98675536-a564-4257-8962-7acf7970cdd0" __path="${salvageShieldPath}">
+      </Hauling_EntityClasses.HaulingEntityClass_ShieldGenerator_S01>
+    `,
+  );
+  const graph = makeGraph();
+  const record = graph.records.find((candidate) => candidate.path === salvageShieldPath);
+  assert.ok(record);
+  graph.recordCount = 1;
+  graph.records = [record];
+  record.localizationKeys = [{ attribute: 'orderDisplayName', key: 'LOC_PLACEHOLDER' }];
+  graph.indexes = {
+    byRef: { [record.ref]: record.path },
+    byPath: { [record.path]: 0 },
+    byRootType: { Hauling_EntityClasses: [record.path] },
+    byEntityClass: { [record.entityClass]: [record.path] },
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const rows = await extractDataCoreCommodities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(
+    rows.some((row) => row.entityClass === 'HaulingEntityClass_ShieldGenerator_S01'),
+    false,
+  );
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });

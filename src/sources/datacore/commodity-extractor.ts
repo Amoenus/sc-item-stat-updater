@@ -3,7 +3,6 @@ import type { Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import {
-  graphLocalizationKey,
   graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
   uniqueGraphGuidReference,
@@ -217,9 +216,11 @@ async function extractHaulingEntityClassCommodityRows(
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const root = $.root().children().first();
-    const nameKey =
-      graphLocalizationKey(record, ['orderDisplayName']) ||
-      normalizeLocalizationKey(root.attr('orderDisplayName') ?? '');
+    const nameKey = graphLocalizationKeyWithFallback(
+      record,
+      ['orderDisplayName'],
+      root.attr('orderDisplayName') ?? '',
+    );
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
     if (!isHaulingEntityClassNameKey(nameKey)) continue;
 
