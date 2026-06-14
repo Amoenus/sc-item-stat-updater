@@ -101,7 +101,7 @@ test('extractDataCoreManufacturers ignores placeholder XML fallback keys', async
   assert.equal(rows[0].descriptionKey, '');
 });
 
-test('extractDataCoreManufacturers falls back when graph GUID refs are ambiguous', async () => {
+test('extractDataCoreManufacturers does not use XML fallback when graph GUID refs are ambiguous', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-manufacturers-ambiguous-'));
   const manufacturerPath = 'libs/foundry/records/scitemmanufacturer/scitemmanufacturer.aegs.xml';
   await fs.mkdir(path.dirname(path.join(xmlCacheDir, manufacturerPath)), { recursive: true });
@@ -130,7 +130,7 @@ test('extractDataCoreManufacturers falls back when graph GUID refs are ambiguous
     graph: createDataCoreRecordGraphLookup(graph),
   });
 
-  assert.equal(rows[0].dashboardCanvasConfigGuid, 'stale-dashboard-canvas-config');
+  assert.equal(rows[0].dashboardCanvasConfigGuid, '');
 });
 
 function makeGraph(manufacturerPath: string): DataCoreRecordGraph {
