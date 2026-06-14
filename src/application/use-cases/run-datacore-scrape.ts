@@ -3779,7 +3779,7 @@ function resolveReferencedRecord(
   const candidates = [step, ...(Array.isArray(step.fallback) ? step.fallback : step.fallback ? [step.fallback] : [])];
 
   for (const candidate of candidates) {
-    const graphReferenceValue = uniqueGraphGuidReference(sourceRecord, candidate.graphAttribute);
+    const graphReferenceValue = uniqueGraphGuidReference(sourceRecord, graphReferenceAttribute(candidate));
     if (graphReferenceValue) {
       const record =
         candidate.by === 'entityClass'
@@ -3801,6 +3801,10 @@ function resolveReferencedRecord(
   }
 
   return undefined;
+}
+
+function graphReferenceAttribute(candidate: DataCoreFieldReferenceSelector): string | undefined {
+  return candidate.graphAttribute ?? (candidate.by === 'entityClass' ? undefined : candidate.attr);
 }
 
 function uniqueGraphGuidReference(

@@ -203,11 +203,11 @@ function graphReferenceSelectorSignals(typeConfig: DataCoreItemTypeConfig | unde
   const selectors: string[] = [];
   for (const [field, selector] of Object.entries(typeConfig.fieldSelectors)) {
     for (const ref of fieldReferenceSelectors(selector)) {
-      if (!ref.graphAttribute && ref.by !== 'entityClass') selectors.push(`${field}:${ref.attr}`);
+      if (ref.by === 'entityClass' && ref.graphAttribute) selectors.push(`${field}:${ref.attr}`);
     }
   }
   return selectors.length > 0
-    ? [`DataCore ref selectors lack graphAttribute: ${selectors.sort().join(', ')}`]
+    ? [`DataCore entity-class ref selectors use graphAttribute: ${selectors.sort().join(', ')}`]
     : [];
 }
 

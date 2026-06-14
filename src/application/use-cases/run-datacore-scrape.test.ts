@@ -426,6 +426,146 @@ test('runDatacoreScrape tries all graph reference fallbacks before XML refs', as
   assert.doesNotMatch(csv, /stale/);
 });
 
+test('runDatacoreScrape uses selector attr as the default graph reference attribute', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-reference-default-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const mainRecordPath = 'libs/foundry/records/entities/scitem/reference_default/reference_default_main.xml';
+  const staleRef = '11111111-1111-4111-8111-111111111111';
+  const graphRef = '22222222-2222-4222-8222-222222222222';
+  await writeXml(
+    xmlCacheDir,
+    mainRecordPath,
+    `
+      <EntityClassDefinition.ReferenceDefault_Main __ref="main-ref" __path="${mainRecordPath}">
+        <SAttachableComponentParams>
+          <AttachDef Type="ReferenceDefault" Size="1" Grade="a" Manufacturer="ACME">
+            <Localization Name="@item_NameReferenceDefault_Main" Description="@item_DescReferenceDefault_Main" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="42" />
+        <PrimaryRef value="${staleRef}" />
+      </EntityClassDefinition.ReferenceDefault_Main>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/stale-default.xml',
+    `<ReferenceRecord.Stale __ref="${staleRef}" __path="libs/foundry/records/references/stale-default.xml" linkedValue="stale" />`,
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/graph-default.xml',
+    `<ReferenceRecord.Graph __ref="${graphRef}" __path="libs/foundry/records/references/graph-default.xml" linkedValue="graph" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'reference-default',
+        csvFile: 'reference-default.datacore.csv',
+        typeConfig: {
+          recordFilter: 'libs/foundry/records/entities/scitem/reference_default',
+          recordSelector: 'SAttachableComponentParams AttachDef[Type="ReferenceDefault"]',
+          entityClassPrefix: '',
+          nameKeyInfix: '',
+          fieldSelectors: {
+            'Linked Value': {
+              ref: {
+                selector: 'PrimaryRef',
+                attr: 'value',
+              },
+              selector: ':root',
+              attr: 'linkedValue',
+            },
+          },
+        },
+      },
+    ],
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 3,
+      records: [
+        {
+          path: mainRecordPath,
+          ref: 'main-ref',
+          rootTag: 'EntityClassDefinition.ReferenceDefault_Main',
+          rootType: 'EntityClassDefinition',
+          entityClass: 'reference_default_main',
+          localizationKeys: [
+            { attribute: 'Name', key: 'item_NameReferenceDefault_Main' },
+            { attribute: 'Description', key: 'item_DescReferenceDefault_Main' },
+          ],
+          referencedGuids: [graphRef],
+          referencedGuidAttributes: [{ attribute: 'value', value: graphRef }],
+        },
+        {
+          path: 'libs/foundry/records/references/stale-default.xml',
+          ref: staleRef,
+          rootTag: 'ReferenceRecord.Stale',
+          rootType: 'ReferenceRecord',
+          entityClass: 'Stale',
+          localizationKeys: [],
+          referencedGuids: [],
+        },
+        {
+          path: 'libs/foundry/records/references/graph-default.xml',
+          ref: graphRef,
+          rootTag: 'ReferenceRecord.Graph',
+          rootType: 'ReferenceRecord',
+          entityClass: 'Graph',
+          localizationKeys: [],
+          referencedGuids: [],
+        },
+      ],
+      indexes: {
+        byRef: {
+          'main-ref': mainRecordPath,
+          [staleRef]: 'libs/foundry/records/references/stale-default.xml',
+          [graphRef]: 'libs/foundry/records/references/graph-default.xml',
+        },
+        byPath: {
+          [mainRecordPath]: 0,
+          'libs/foundry/records/references/stale-default.xml': 1,
+          'libs/foundry/records/references/graph-default.xml': 2,
+        },
+        byRootType: {
+          EntityClassDefinition: [mainRecordPath],
+          ReferenceRecord: [
+            'libs/foundry/records/references/stale-default.xml',
+            'libs/foundry/records/references/graph-default.xml',
+          ],
+        },
+        byEntityClass: {
+          reference_default_main: [mainRecordPath],
+          Stale: ['libs/foundry/records/references/stale-default.xml'],
+          Graph: ['libs/foundry/records/references/graph-default.xml'],
+        },
+        byLocalizationKey: {},
+        byReferencedGuid: {
+          [graphRef]: [mainRecordPath],
+        },
+      },
+    }),
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'reference-default.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'reference-default', rows: 1, skipped: 0, csvFile: 'reference-default.datacore.csv' },
+  ]);
+  assert.match(csv, /reference_default_main,item_NameReferenceDefault_Main,,item_DescReferenceDefault_Main,ACME,1,A,,42,graph/);
+  assert.doesNotMatch(csv, /stale/);
+});
+
 test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');

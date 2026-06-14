@@ -3,6 +3,10 @@ import type { ItemConfig } from '../../enrichment/item-config';
 export interface DataCoreFieldReferenceSelector {
   selector: string;
   attr: string;
+  /**
+   * DataCore graph reference attribute to prefer before reading XML. Defaults
+   * to `attr` for GUID refs; entity-class refs use XML unless this is explicit.
+   */
   graphAttribute?: string;
   by?: 'entityClass' | 'ref';
   fallback?: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[];
