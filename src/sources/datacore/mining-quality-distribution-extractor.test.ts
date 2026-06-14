@@ -95,6 +95,45 @@ test('extractDataCoreMiningQualityDistributions extracts mining default and loca
   });
 });
 
+test('extractDataCoreMiningQualityDistributions does not use XML fallback when graph location refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-quality-distributions-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    overridePath,
+    `
+      <CraftingQualityLocationOverrideRecord.CommonShipMineable_QualityOverride_Pyro __type="CraftingQualityLocationOverrideRecord" __ref="6b3f9232-d6f7-4ce9-8c30-f21aab55f073" __path="${overridePath}">
+        <locationOverride>
+          <CraftingQualityLocationOverride>
+            <locationOverrideList>
+              <CraftingQualityLocationOverrideEntry location="99999999-9999-9999-9999-999999999998">
+                <qualityDistribution>
+                  <CraftingQualityDistributionNormal min="501" max="1000" mean="104" stddev="214" />
+                </qualityDistribution>
+              </CraftingQualityLocationOverrideEntry>
+            </locationOverrideList>
+          </CraftingQualityLocationOverride>
+        </locationOverride>
+      </CraftingQualityLocationOverrideRecord.CommonShipMineable_QualityOverride_Pyro>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[1].referencedGuids = ['286cb603-b4ae-4279-80a1-d4505fee1916', 'other-location-guid'];
+  graph.records[1].referencedGuidAttributes = [
+    { attribute: 'location', value: '286cb603-b4ae-4279-80a1-d4505fee1916' },
+    { attribute: 'location', value: 'other-location-guid' },
+  ];
+
+  const [row] = await extractDataCoreMiningQualityDistributions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    pathPrefix: overridePath,
+  });
+
+  assert.equal(row.locationGuid, '');
+  assert.equal(row.locationClass, '');
+  assert.equal(row.locationPath, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
