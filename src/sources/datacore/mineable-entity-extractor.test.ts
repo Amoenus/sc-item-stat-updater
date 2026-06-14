@@ -44,7 +44,7 @@ test('extractDataCoreMineableEntities extracts first-party mineable entity param
       ref: 'entity-guid',
       path: entityPath,
       entityClass: 'AsteroidCTypeMineableRock_Aluminium',
-      compositionGuid: 'stale-composition-guid',
+      compositionGuid: '',
       compositionClass: '',
       globalParamsGuid: 'global-guid',
       globalParamsClass: 'MiningGlobalParams_Ship',
