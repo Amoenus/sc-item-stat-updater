@@ -1,0 +1,20 @@
+* text=auto eol=lf
+
+# Treat common binary formats as binary so Git never normalizes their bytes.
+*.7z binary
+*.avif binary
+*.bmp binary
+*.bz2 binary
+*.dll binary
+*.exe binary
+*.gif binary
+*.gz binary
+*.ico binary
+*.jar binary
+*.jpeg binary
+*.jpg binary
+*.pdf binary
+*.png binary
+*.tar binary
+*.webp binary
+*.zip binary
