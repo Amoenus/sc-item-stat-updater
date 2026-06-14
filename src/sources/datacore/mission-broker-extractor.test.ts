@@ -130,7 +130,7 @@ test('extractDataCoreMissionBrokers emits first-party mission broker fields', as
         missionModule: 'libs/subsumption/missions/test.xml',
         missionTypeGuid: 'type-guid',
         missionTypeClass: 'Bounty',
-        ownerGuid: 'stale-owner-guid',
+        ownerGuid: '',
         ownerClass: '',
         missionGiverRecordGuid: 'giver-guid',
         missionGiverRecordClass: 'MissionGiverName',
