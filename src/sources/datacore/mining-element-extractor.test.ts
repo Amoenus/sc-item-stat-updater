@@ -152,6 +152,57 @@ test('extractDataCoreMiningElements normalizes Sileron mineable element to Stile
   assert.equal(rows[0].inferredDescriptionKey, 'items_commodities_stileron_ore_desc');
 });
 
+test('extractDataCoreMiningElements does not infer description keys when graph resource description is placeholder', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-placeholder-description-'));
+  const quantainiumPath = 'libs/foundry/records/mining/mineableelements/quantainium_ore.xml';
+  const quantainiumResourcePath = 'libs/foundry/records/entities/commodities/quantainium_ore.xml';
+  const quantainiumElementGuid = '27ba72ac-a16a-4765-9b5f-f7249a6df4181';
+  const quantainiumResourceGuid = 'ee4bd537-2653-4d9e-8f3b-91c220664ba3';
+  await writeXml(
+    xmlCacheDir,
+    quantainiumPath,
+    `<MineableElement.Quantainium_Ore resourceType="${quantainiumResourceGuid}" __type="MineableElement" __ref="${quantainiumElementGuid}" __path="${quantainiumPath}" />`,
+  );
+
+  const rows = await extractDataCoreMiningElements({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup({
+      source: 'datacore-record-graph',
+      recordCount: 2,
+      records: [
+        node(
+          quantainiumPath,
+          quantainiumElementGuid,
+          'MineableElement.Quantainium_Ore',
+          'MineableElement',
+          'Quantainium_Ore',
+          [],
+          [{ attribute: 'resourceType', value: quantainiumResourceGuid }],
+        ),
+        node(
+          quantainiumResourcePath,
+          quantainiumResourceGuid,
+          'Commodity.Quantainium_Ore',
+          'Commodity',
+          'Quantainium_Ore',
+          [{ attribute: 'Description', key: 'LOC_PLACEHOLDER' }],
+        ),
+      ],
+      indexes: {
+        byRef: { [quantainiumResourceGuid]: quantainiumResourcePath },
+        byPath: { [quantainiumPath]: 0, [quantainiumResourcePath]: 1 },
+        byRootType: { MineableElement: [quantainiumPath], Commodity: [quantainiumResourcePath] },
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    }),
+  });
+
+  assert.equal(rows[0].elementName, 'Quantainium (Ore)');
+  assert.equal(rows[0].inferredDescriptionKey, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });

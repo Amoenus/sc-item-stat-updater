@@ -64,7 +64,7 @@ function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTyp
   const descriptionAttributes = ['Description', 'description', 'displayDescription'];
   const graphDescriptionKey = graphLocalizationKey(resource, descriptionAttributes);
   if (graphDescriptionKey) return graphDescriptionKey;
-  if (hasGraphLocalizationReference(resource, descriptionAttributes)) return undefined;
+  if (hasGraphLocalizationReference(resource, descriptionAttributes)) return '';
 
   return (
     resource.localizationKeys
