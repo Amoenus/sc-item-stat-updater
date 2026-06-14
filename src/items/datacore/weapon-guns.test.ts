@@ -62,7 +62,7 @@ test('weapon-guns derives variant description keys only when DataCore lacks a de
   );
 });
 
-test('weapon-guns ignores placeholder DataCore description keys before fallback', () => {
+test('weapon-guns does not derive keys when DataCore exposes placeholder description keys', () => {
   assert.deepEqual(
     getTargetKeys(
       {
@@ -72,11 +72,11 @@ test('weapon-guns ignores placeholder DataCore description keys before fallback'
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
+    [],
   );
 });
 
-test('weapon-guns ignores uninitialized DataCore description keys before fallback', () => {
+test('weapon-guns does not derive keys when DataCore exposes uninitialized description keys', () => {
   assert.deepEqual(
     getTargetKeys(
       {
@@ -86,6 +86,6 @@ test('weapon-guns ignores uninitialized DataCore description keys before fallbac
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescAPAR_BallisticScatterGun_S1_Shark'],
+    [],
   );
 });

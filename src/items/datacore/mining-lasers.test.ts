@@ -33,3 +33,17 @@ test('mining-lasers skip prefix fallback for non-mining-laser helper rows', () =
     [],
   );
 });
+
+test('mining-lasers do not derive keys when DataCore exposes placeholder localization keys', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'mining_laser_shin_s01_hofstede',
+        'Name Key': 'LOC_PLACEHOLDER',
+        'Description Key': 'LOC_UNINITIALIZED',
+      },
+      (nameKey) => `${nameKey}_Desc`,
+    ),
+    [],
+  );
+});

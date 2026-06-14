@@ -1,6 +1,11 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys, usableDataCoreLocalizationKey } from './types';
+import {
+  type DataCoreItemTypeConfig,
+  hasAnyDataCoreLocalizationKey,
+  makeGetTargetKeys,
+  usableDataCoreLocalizationKey,
+} from './types';
 
 const yawAxisSelector = 'SCItemTurretParams yawAxis SCItemTurretJointMovementAxisParams';
 const pitchAxisSelector = 'SCItemTurretParams pitchAxis SCItemTurretJointMovementAxisParams';
@@ -29,6 +34,7 @@ export default {
   getTargetKeys(row, deriveDescKey) {
     const descriptionKey = usableDataCoreLocalizationKey(row['Description Key']);
     if (descriptionKey) return [descriptionKey];
+    if (hasAnyDataCoreLocalizationKey(row['Description Key'])) return [];
 
     const shortNameKey = usableDataCoreLocalizationKey(row['Short Name Key']);
     if (/^item_Desc/i.test(shortNameKey)) return [shortNameKey];

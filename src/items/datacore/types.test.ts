@@ -52,7 +52,7 @@ test('makeGetTargetKeys skips entity-class derivation when the configured prefix
   );
 });
 
-test('makeGetTargetKeys ignores placeholder DataCore localization keys before fallback', () => {
+test('makeGetTargetKeys does not derive keys when DataCore exposes placeholder localization keys', () => {
   const getTargetKeys = makeGetTargetKeys('cool_', 'COOL_');
 
   assert.deepEqual(
@@ -64,7 +64,7 @@ test('makeGetTargetKeys ignores placeholder DataCore localization keys before fa
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescCOOL_ACOM_S01_ICEPLUNGE'],
+    [],
   );
 });
 

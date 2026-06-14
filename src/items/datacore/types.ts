@@ -142,6 +142,9 @@ export function makeGetTargetKeys(
   return (row, deriveDescKey) => {
     const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
     if (rawKeys.length > 0) return rawKeys;
+    if (hasAnyDataCoreLocalizationKey(row['Description Key']) || hasAnyDataCoreLocalizationKey(row['Name Key'])) {
+      return [];
+    }
 
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
@@ -165,6 +168,9 @@ export function makeGetTargetKeysFromPrefixMap(
   return (row, deriveDescKey) => {
     const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
     if (rawKeys.length > 0) return rawKeys;
+    if (hasAnyDataCoreLocalizationKey(row['Description Key']) || hasAnyDataCoreLocalizationKey(row['Name Key'])) {
+      return [];
+    }
 
     const entityClass = row['Entity Class'];
     if (!entityClass) return [];
@@ -184,6 +190,7 @@ export function getRawDataCoreTargetKeys(
 ): string[] {
   const descriptionKey = getExplicitDataCoreDescriptionKey(row);
   if (descriptionKey) return [descriptionKey];
+  if (hasAnyDataCoreLocalizationKey(row['Description Key'])) return [];
 
   const nameKey = usableDataCoreLocalizationKey(row['Name Key']);
   return nameKey ? [deriveDescKey(nameKey)] : [];
@@ -198,7 +205,7 @@ export function addAlternateDescKeysWhenDataCoreLacksDescription(
   targetKeys: string[],
   getAlternateDescKeys: (descKey: string) => string[],
 ): string[] {
-  if (getExplicitDataCoreDescriptionKey(row)) return targetKeys;
+  if (hasAnyDataCoreLocalizationKey(row['Description Key'])) return targetKeys;
   return targetKeys.flatMap((key) => [key, ...getAlternateDescKeys(key)]);
 }
 
@@ -238,4 +245,10 @@ export function usableDataCoreLocalizationKey(value: string | undefined): string
   const trimmed = value?.trim() ?? '';
   const normalized = trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
   return normalized && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized) ? normalized : '';
+}
+
+export function hasAnyDataCoreLocalizationKey(value: string | undefined): boolean {
+  const trimmed = value?.trim() ?? '';
+  const normalized = trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+  return normalized !== '';
 }

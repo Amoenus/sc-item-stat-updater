@@ -51,7 +51,7 @@ test('turrets derive description keys only when DataCore lacks direct descriptio
   );
 });
 
-test('turrets ignore placeholder direct keys before short-name and fallback aliases', () => {
+test('turrets do not derive keys when DataCore exposes placeholder direct keys', () => {
   assert.deepEqual(
     getTargetKeys(
       {
@@ -62,11 +62,11 @@ test('turrets ignore placeholder direct keys before short-name and fallback alia
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescTURR_AEGS_S04'],
+    [],
   );
 });
 
-test('turrets ignore uninitialized direct keys before fallback aliases', () => {
+test('turrets do not derive keys when DataCore exposes uninitialized direct keys', () => {
   assert.deepEqual(
     getTargetKeys(
       {
@@ -77,6 +77,6 @@ test('turrets ignore uninitialized direct keys before fallback aliases', () => {
       },
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
-    ['item_DescTURR_AEGS_S04'],
+    [],
   );
 });
