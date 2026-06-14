@@ -70,6 +70,42 @@ test('extractDataCoreMiningDensityOverrides extracts mining lifetime override ro
   ]);
 });
 
+test('extractDataCoreMiningDensityOverrides does not use XML fallback when graph density refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-density-overrides-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    miningOverridePath,
+    `
+      <SEntityDensityClassOverridesRecord.Stanton_HighTechMiningOutpost __type="SEntityDensityClassOverridesRecord" __ref="ad7b50ff-f32b-4156-a56e-f0ddfc48f76d" __path="${miningOverridePath}">
+        <overrides>
+          <densityClassLifetimeOverrides>
+            <SDensityClassLifetimeOverrideEntry densityClass="99999999-9999-9999-9999-999999999998">
+              <lifetimeOverride>
+                <TimeValue_Partitioned days="0" hours="20" minutes="30" seconds="5" />
+              </lifetimeOverride>
+            </SDensityClassLifetimeOverrideEntry>
+          </densityClassLifetimeOverrides>
+        </overrides>
+      </SEntityDensityClassOverridesRecord.Stanton_HighTechMiningOutpost>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['b6cc39fd-7c14-4568-b261-197834e51116', 'other-density-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'densityClass', value: 'b6cc39fd-7c14-4568-b261-197834e51116' },
+    { attribute: 'densityClass', value: 'other-density-guid' },
+  ];
+
+  const [row] = await extractDataCoreMiningDensityOverrides({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.densityClassGuid, '');
+  assert.equal(row.densityClass, '');
+  assert.equal(row.densityClassPath, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
