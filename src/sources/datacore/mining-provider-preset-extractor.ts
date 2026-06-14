@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningProviderPresetRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -175,8 +175,8 @@ async function readEntityGuidFromHarvestable(
   harvestable: DataCoreRecordNode | undefined,
 ): Promise<string> {
   if (!harvestable) return '';
-  const graphEntityGuid = graphGuidReference(harvestable, ['entityClass'], '');
-  if (graphEntityGuid) return graphEntityGuid;
+  const graphEntityGuids = graphGuidReferences(harvestable, ['entityClass']);
+  if (graphEntityGuids.length > 0) return graphEntityGuids.length === 1 ? graphEntityGuids[0] : '';
 
   const xmlPath = resolveChildPath(xmlCacheDir, harvestable.path, 'DataCore harvestable preset XML path');
   const xml = await fs.readFile(xmlPath, 'utf8');

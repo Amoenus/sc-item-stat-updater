@@ -131,6 +131,52 @@ test('extractDataCoreMiningProviderPresets does not use XML fallback when graph 
   assert.equal(row.harvestableEntityGuid, '');
 });
 
+test('extractDataCoreMiningProviderPresets does not use harvestable XML entity fallback when graph entity refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-provider-entity-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    providerPath,
+    `
+      <HarvestableProviderPreset.HPP_Stanton1 __type="HarvestableProviderPreset" __ref="449763d3-5ba2-4a97-873d-cedf802b9aea" __path="${providerPath}">
+        <harvestableGroups>
+          <HarvestableElementGroup groupName="SpaceShip_Mineables" groupProbability="6">
+            <harvestables>
+              <HarvestableElement harvestable="stale-harvestable-guid" relativeProbability="44" />
+            </harvestables>
+          </HarvestableElementGroup>
+        </harvestableGroups>
+      </HarvestableProviderPreset.HPP_Stanton1>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    harvestablePresetPath,
+    `
+      <HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="stale-harvestable-entity-guid" __type="HarvestablePreset" __ref="e576319a-80bf-46a6-b600-ab4d5e34c00f" __path="${harvestablePresetPath}" />
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[1].referencedGuids = [
+    '1c949ce0-c99b-485b-b783-2ea3b49162c0',
+    'dfa89ac4-393b-4e8d-97b4-5ce21ee61970',
+  ];
+  graph.records[1].referencedGuidAttributes = [
+    { attribute: 'entityClass', value: '1c949ce0-c99b-485b-b783-2ea3b49162c0' },
+    { attribute: 'entityClass', value: 'dfa89ac4-393b-4e8d-97b4-5ce21ee61970' },
+  ];
+
+  const [row] = await extractDataCoreMiningProviderPresets({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.harvestableGuid, 'e576319a-80bf-46a6-b600-ab4d5e34c00f');
+  assert.equal(row.harvestableClass, 'Mining_AsteroidCommon_Aluminum');
+  assert.equal(row.harvestableEntityGuid, '');
+  assert.equal(row.harvestableEntityClass, '');
+  assert.equal(row.compositionGuid, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
