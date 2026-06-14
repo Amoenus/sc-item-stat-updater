@@ -361,15 +361,15 @@ function getComponentTitleKeySources(
 ): ComponentTitleKey[] {
   const keys: ComponentTitleKey[] = [];
   const entityClass = normalizeDataCoreEntityClass(row['Entity Class']);
-  const nameKey = normalizeLocalizationKey(row['Name Key']);
-  for (const key of getKnownTitleKeyAliases(nameKey, entityClass).filter(isUsableLocalizationKey)) {
-    keys.push({ key, source: 'csv-name-key' });
-  }
-
   for (const key of getGraphTitleLocalizationKeys(recordLocalizationKeys)) {
     for (const alias of getKnownTitleKeyAliases(key, entityClass)) {
       keys.push({ key: alias, source: 'graph-localization' });
     }
+  }
+
+  const nameKey = normalizeLocalizationKey(row['Name Key']);
+  for (const key of getKnownTitleKeyAliases(nameKey, entityClass).filter(isUsableLocalizationKey)) {
+    keys.push({ key, source: 'csv-name-key' });
   }
 
   const hasDataCoreTitleKey = keys.some(({ source }) => source === 'graph-localization' || source === 'csv-name-key');
