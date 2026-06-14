@@ -4,6 +4,14 @@ export function graphLocalizationKey(record: DataCoreRecordNode, attributes: str
   return graphLocalizationKeyFromReferences(record.localizationKeys, attributes);
 }
 
+export function graphLocalizationKeyWithFallback(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  fallback = '',
+): string {
+  return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(fallback);
+}
+
 export function graphLocalizationKeyFromReferences(
   references: DataCoreLocalizationReference[],
   attributes: string[],
@@ -44,10 +52,16 @@ export function uniqueGraphGuidReference(
 }
 
 function isUsableLocalizationKey(value: string | undefined): boolean {
-  const normalized = value?.trim().replace(/^@/, '').trim() ?? '';
+  const normalized = normalizeLocalizationKey(value ?? '');
   return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
 }
 
 function normalizeGraphAttributeName(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function normalizeLocalizationKey(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
 }

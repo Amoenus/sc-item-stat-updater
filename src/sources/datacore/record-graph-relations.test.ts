@@ -4,6 +4,7 @@ import {
   graphGuidReferences,
   graphLocalizationKey,
   graphLocalizationKeyFromReferences,
+  graphLocalizationKeyWithFallback,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreRecordNode } from './types';
@@ -87,4 +88,20 @@ test('graphLocalizationKey follows requested attribute priority before graph key
   assert.equal(graphLocalizationKeyFromReferences(record.localizationKeys, ['Name', 'displayName']), 'zzz_name');
   assert.equal(graphLocalizationKey(record, ['displayName', 'Name']), 'aaa_display_name');
   assert.equal(graphLocalizationKey(record, ['ShortName']), '');
+});
+
+test('graphLocalizationKeyWithFallback prefers graph keys and normalizes fallback keys', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [{ attribute: 'displayName', key: '@graph_name' }],
+    referencedGuids: [],
+  };
+
+  assert.equal(graphLocalizationKeyWithFallback(record, ['displayName'], '@xml_name'), 'graph_name');
+  assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@xml_name'), 'xml_name');
+  assert.equal(graphLocalizationKeyWithFallback(record, ['Name'], '@LOC_PLACEHOLDER'), '');
 });

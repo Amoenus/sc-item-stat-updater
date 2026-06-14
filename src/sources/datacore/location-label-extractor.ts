@@ -1,6 +1,10 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKey,
+  graphLocalizationKeyWithFallback,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -97,16 +101,6 @@ function graphLocalizationKeyOrEmpty(record: DataCoreRecordNode | undefined, att
   return record ? graphLocalizationKey(record, attributes) : '';
 }
 
-function graphLocalizationKeyWithFallback(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  return graphLocalizationKey(record, attributes) || localizationKey(fallback);
-}
-
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
-}
-
-function localizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

@@ -2,7 +2,11 @@ import fs from 'node:fs/promises';
 import type { Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKey,
+  graphLocalizationKeyWithFallback,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -394,7 +398,7 @@ function resolveRecordLocalizationKey(
   attributes: string[],
   rawValue: string | undefined,
 ): string {
-  return graphLocalizationKey(record, attributes) || normalizeLocalizationKey(rawValue ?? '');
+  return graphLocalizationKeyWithFallback(record, attributes, rawValue ?? '');
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
