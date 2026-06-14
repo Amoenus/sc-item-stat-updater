@@ -1,6 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import {
+  appendMapValue,
+  appendUniqueRecord,
+  normalizeDataCoreAttributeName,
+  normalizeDataCoreAttributeValue,
+  normalizeDataCoreGraphPath,
+  stripDataCoreLocalizationPrefix,
+} from './normalization';
 import type {
   DataCoreGuidRecordReference,
   DataCoreLocalizationRecordReference,
@@ -48,23 +56,23 @@ export function createDataCoreRecordGraphLookup(graph: DataCoreRecordGraph): Dat
   const guidReferencesByAttributeName = new Map<string, DataCoreGuidRecordReference[]>();
 
   for (const record of graph.records) {
-    recordsByPath.set(normalizeGraphPath(record.path), record);
+    recordsByPath.set(normalizeDataCoreGraphPath(record.path), record);
 
     for (const attribute of record.attributes ?? []) {
-      appendUniqueRecord(recordsByAttributeName, normalizeAttributeName(attribute.attribute), record);
-      appendUniqueRecord(recordsByAttributeValue, normalizeAttributeValue(attribute.rawValue), record);
-      appendUniqueRecord(recordsByAttributeValue, normalizeAttributeValue(attribute.normalizedValue), record);
+      appendUniqueRecord(recordsByAttributeName, normalizeDataCoreAttributeName(attribute.attribute), record);
+      appendUniqueRecord(recordsByAttributeValue, normalizeDataCoreAttributeValue(attribute.rawValue), record);
+      appendUniqueRecord(recordsByAttributeValue, normalizeDataCoreAttributeValue(attribute.normalizedValue), record);
     }
 
     for (const reference of record.localizationKeys) {
-      appendReference(localizationReferencesByAttributeName, normalizeAttributeName(reference.attribute), {
+      appendMapValue(localizationReferencesByAttributeName, normalizeDataCoreAttributeName(reference.attribute), {
         record,
         reference,
       });
     }
 
     for (const reference of record.referencedGuidAttributes ?? []) {
-      appendReference(guidReferencesByAttributeName, normalizeAttributeName(reference.attribute), {
+      appendMapValue(guidReferencesByAttributeName, normalizeDataCoreAttributeName(reference.attribute), {
         record,
         reference,
       });
@@ -75,72 +83,32 @@ export function createDataCoreRecordGraphLookup(graph: DataCoreRecordGraph): Dat
     graph,
     getByRef: (ref) => {
       const recordPath = graph.indexes.byRef[ref.trim()];
-      return recordPath ? recordsByPath.get(normalizeGraphPath(recordPath)) : undefined;
+      return recordPath ? recordsByPath.get(normalizeDataCoreGraphPath(recordPath)) : undefined;
     },
-    getByPath: (recordPath) => recordsByPath.get(normalizeGraphPath(recordPath)),
+    getByPath: (recordPath) => recordsByPath.get(normalizeDataCoreGraphPath(recordPath)),
     getByRootType: (rootType) => recordsForPaths(graph.indexes.byRootType[rootType] ?? [], recordsByPath),
     getByEntityClass: (entityClass) => recordsForPaths(graph.indexes.byEntityClass[entityClass] ?? [], recordsByPath),
     getByLocalizationKey: (key) =>
-      recordsForPaths(graph.indexes.byLocalizationKey[normalizeLocalizationKey(key)] ?? [], recordsByPath),
+      recordsForPaths(graph.indexes.byLocalizationKey[stripDataCoreLocalizationPrefix(key)] ?? [], recordsByPath),
     getByReferencedGuid: (guid) => recordsForPaths(graph.indexes.byReferencedGuid[guid.trim()] ?? [], recordsByPath),
     getByPathPrefix: (pathPrefix) => {
-      const normalizedPrefix = normalizeGraphPath(pathPrefix);
-      return graph.records.filter((record) => normalizeGraphPath(record.path).startsWith(normalizedPrefix));
+      const normalizedPrefix = normalizeDataCoreGraphPath(pathPrefix);
+      return graph.records.filter((record) => normalizeDataCoreGraphPath(record.path).startsWith(normalizedPrefix));
     },
-    getByAttributeName: (attributeName) => recordsByAttributeName.get(normalizeAttributeName(attributeName)) ?? [],
-    getByAttributeValue: (attributeValue) => recordsByAttributeValue.get(normalizeAttributeValue(attributeValue)) ?? [],
+    getByAttributeName: (attributeName) =>
+      recordsByAttributeName.get(normalizeDataCoreAttributeName(attributeName)) ?? [],
+    getByAttributeValue: (attributeValue) =>
+      recordsByAttributeValue.get(normalizeDataCoreAttributeValue(attributeValue)) ?? [],
     getLocalizationReferencesByAttributeName: (attributeName) =>
-      localizationReferencesByAttributeName.get(normalizeAttributeName(attributeName)) ?? [],
+      localizationReferencesByAttributeName.get(normalizeDataCoreAttributeName(attributeName)) ?? [],
     getGuidReferencesByAttributeName: (attributeName) =>
-      guidReferencesByAttributeName.get(normalizeAttributeName(attributeName)) ?? [],
+      guidReferencesByAttributeName.get(normalizeDataCoreAttributeName(attributeName)) ?? [],
   };
 }
 
 function recordsForPaths(paths: string[], recordsByPath: Map<string, DataCoreRecordNode>): DataCoreRecordNode[] {
   return paths.flatMap((recordPath) => {
-    const record = recordsByPath.get(normalizeGraphPath(recordPath));
+    const record = recordsByPath.get(normalizeDataCoreGraphPath(recordPath));
     return record ? [record] : [];
   });
-}
-
-function normalizeGraphPath(recordPath: string): string {
-  return recordPath.trim().replaceAll('\\', '/');
-}
-
-function normalizeLocalizationKey(key: string): string {
-  const trimmed = key.trim();
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
-}
-
-function normalizeAttributeName(attributeName: string): string {
-  return attributeName.trim().toLowerCase();
-}
-
-function normalizeAttributeValue(attributeValue: string): string {
-  const trimmed = attributeValue.trim();
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
-}
-
-function appendUniqueRecord(
-  recordsByKey: Map<string, DataCoreRecordNode[]>,
-  key: string,
-  record: DataCoreRecordNode,
-): void {
-  if (!key) return;
-  const records = recordsByKey.get(key) ?? [];
-  if (!records.some((candidate) => normalizeGraphPath(candidate.path) === normalizeGraphPath(record.path))) {
-    records.push(record);
-  }
-  recordsByKey.set(key, records);
-}
-
-function appendReference<T extends DataCoreLocalizationRecordReference | DataCoreGuidRecordReference>(
-  referencesByKey: Map<string, T[]>,
-  key: string,
-  reference: T,
-): void {
-  if (!key) return;
-  const references = referencesByKey.get(key) ?? [];
-  references.push(reference);
-  referencesByKey.set(key, references);
 }

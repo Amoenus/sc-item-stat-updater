@@ -5,6 +5,12 @@ import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 import Piscina from 'piscina';
 import { mapConcurrent } from './concurrency';
+import {
+  isUsableDataCoreLocalizationKey,
+  normalizeDataCoreAttributeValue,
+  stripDataCoreLocalizationPrefix,
+  uniqueSortedStrings,
+} from './normalization';
 import type {
   DataCoreGuidReference,
   DataCoreLocalizationReference,
@@ -78,7 +84,7 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
     entityClass: flattenString(extractRecordEntityClass(rootTag)),
     attributes,
     localizationKeys: extractLocalizationReferences($, attributes),
-    referencedGuids: uniqueSorted(referencedGuidAttributes.map((reference) => reference.value)),
+    referencedGuids: uniqueSortedStrings(referencedGuidAttributes.map((reference) => reference.value)),
     referencedGuidAttributes,
   };
 }
@@ -100,7 +106,7 @@ function collectRecordAttributes(rootElement: Element): DataCoreRecordAttribute[
         tag,
         attribute: flattenString(attribute),
         rawValue: flattenedRawValue,
-        normalizedValue: normalizeAttributeValue(flattenedRawValue),
+        normalizedValue: normalizeDataCoreAttributeValue(flattenedRawValue),
         valueType: inferAttributeValueType(flattenedRawValue),
       });
     }
@@ -125,13 +131,6 @@ function collectRecordAttributes(rootElement: Element): DataCoreRecordAttribute[
   );
 }
 
-function normalizeAttributeValue(value: string): string {
-  const trimmed = value.trim();
-  if (trimmed.startsWith('@')) return trimmed.slice(1).trim();
-  if (FULL_GUID_PATTERN.test(trimmed)) return trimmed.toLowerCase();
-  return trimmed;
-}
-
 function inferAttributeValueType(value: string): DataCoreRecordAttributeValueType {
   const trimmed = value.trim();
   if (trimmed.startsWith('@')) return 'localizationKey';
@@ -148,7 +147,7 @@ function extractLocalizationReferences(
   const references: DataCoreLocalizationReference[] = [];
   const seen = new Set<string>();
   const addReference = (attribute: string, rawKey: string | undefined): void => {
-    const key = rawKey?.trim().startsWith('@') ? rawKey.trim().slice(1).trim() : '';
+    const key = rawKey?.trim().startsWith('@') ? stripDataCoreLocalizationPrefix(rawKey) : '';
     if (!key) return;
 
     const flatAttribute = flattenString(attribute);
@@ -243,10 +242,6 @@ function readContractStringParams($: CheerioAPI, root: ReturnType<CheerioAPI>): 
     if (param) params.set(param, $(element).attr('value') ?? '');
   });
   return params;
-}
-
-function isUsableLocalizationKey(value: string): boolean {
-  return value !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(value);
 }
 
 function extractGuidAttributeReferences(
@@ -376,7 +371,9 @@ function buildGraph(records: DataCoreRecordNode[]): DataCoreRecordGraph {
     addToIndex(graph.indexes.byRootType, record.rootType, record.path);
     addToIndex(graph.indexes.byEntityClass, record.entityClass, record.path);
 
-    for (const { key } of record.localizationKeys.filter((reference) => isUsableLocalizationKey(reference.key))) {
+    for (const { key } of record.localizationKeys.filter((reference) =>
+      isUsableDataCoreLocalizationKey(reference.key),
+    )) {
       addToIndex(graph.indexes.byLocalizationKey, key, record.path);
     }
 
@@ -392,8 +389,4 @@ function addToIndex(index: Record<string, string[]>, key: string, value: string)
   if (!key) return;
   index[key] ??= [];
   if (!index[key].includes(value)) index[key].push(value);
-}
-
-function uniqueSorted(values: string[]): string[] {
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
 }

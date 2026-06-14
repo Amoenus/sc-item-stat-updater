@@ -1,6 +1,10 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKeyWithFallback,
+  linkedGraphRecordEntityClass,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreMissionBrokerRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -63,13 +67,13 @@ export async function extractDataCoreMissionBrokers(
       ),
       missionModule: root.attr('missionModule') ?? '',
       missionTypeGuid,
-      missionTypeClass: linkedClass(options.graph.getByRef(missionTypeGuid)),
+      missionTypeClass: linkedGraphRecordEntityClass(options.graph.getByRef(missionTypeGuid)),
       ownerGuid,
-      ownerClass: linkedClass(options.graph.getByRef(ownerGuid)),
+      ownerClass: linkedGraphRecordEntityClass(options.graph.getByRef(ownerGuid)),
       missionGiverRecordGuid,
-      missionGiverRecordClass: linkedClass(options.graph.getByRef(missionGiverRecordGuid)),
+      missionGiverRecordClass: linkedGraphRecordEntityClass(options.graph.getByRef(missionGiverRecordGuid)),
       locationMissionAvailableGuid,
-      locationMissionAvailableClass: linkedClass(options.graph.getByRef(locationMissionAvailableGuid)),
+      locationMissionAvailableClass: linkedGraphRecordEntityClass(options.graph.getByRef(locationMissionAvailableGuid)),
       missionDifficulty: root.attr('missionDifficulty') ?? '',
       reward: missionReward.attr('reward') ?? '',
       rewardMax: missionReward.attr('max') ?? '',
@@ -114,10 +118,6 @@ export async function extractDataCoreMissionBrokers(
 
   options.onProgress?.(records.length, records.length);
   return rows;
-}
-
-function linkedClass(record: DataCoreRecordNode | undefined): string {
-  return record?.entityClass ?? '';
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

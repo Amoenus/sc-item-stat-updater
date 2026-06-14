@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { normalizeDataCoreUsableLocalizationKey } from './normalization';
 import {
   graphLocalizationKey,
   hasGraphLocalizationReference,
@@ -81,9 +82,7 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
 }
 
 function localizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+  return normalizeDataCoreUsableLocalizationKey(value);
 }
 
 function toElementName(elementClass: string): string {

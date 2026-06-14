@@ -2,11 +2,13 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { normalizeDataCoreUsableLocalizationKey, uniqueDataCoreRecords } from './normalization';
 import {
   graphGuidReferences,
   graphLocalizationKeys,
   graphLocalizationKeyWithFallback,
   hasGraphLocalizationReference,
+  linkedGraphRecordEntityClass,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreContractGeneratorRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
@@ -24,7 +26,7 @@ export interface ExtractDataCoreContractGeneratorsOptions {
 export async function extractDataCoreContractGenerators(
   options: ExtractDataCoreContractGeneratorsOptions,
 ): Promise<DataCoreContractGeneratorRecord[]> {
-  const records = uniqueRecords(
+  const records = uniqueDataCoreRecords(
     options.graph
       .getByPathPrefix(options.contractGeneratorPathPrefix ?? DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX)
       .filter((record) => record.rootType === 'ContractGenerator'),
@@ -172,7 +174,7 @@ export async function extractDataCoreContractGenerators(
                 contractNotForRelease: contract.attr('notForRelease') ?? '',
                 contractWorkInProgress: contract.attr('workInProgress') ?? '',
                 templateGuid,
-                templateClass: linkedClass(template),
+                templateClass: linkedGraphRecordEntityClass(template),
                 titleKey: readGraphContractStringParamWithFallback(
                   record,
                   contractId,
@@ -196,7 +198,7 @@ export async function extractDataCoreContractGenerators(
                 stringParamOverrides: formatStringParams(record, contractId, stringParams),
                 locationTagGuids: locationTagGuids.join(' | '),
                 locationTagClasses: locationTagGuids
-                  .map((guid) => linkedClass(options.graph.getByRef(guid)))
+                  .map((guid) => linkedGraphRecordEntityClass(options.graph.getByRef(guid)))
                   .join(' | '),
                 successReputationRewards: successReputationRewards.length
                   ? JSON.stringify(successReputationRewards)
@@ -213,7 +215,7 @@ export async function extractDataCoreContractGenerators(
                 contractBuyInAmount: contractResults.attr('contractBuyInAmount') ?? '',
                 timeToComplete: contractResults.attr('timeToComplete') ?? '',
                 difficultyProfileGuid,
-                difficultyProfileClass: linkedClass(options.graph.getByRef(difficultyProfileGuid)),
+                difficultyProfileClass: linkedGraphRecordEntityClass(options.graph.getByRef(difficultyProfileGuid)),
                 mechanicalSkill: difficulty.attr('mechanicalSkill') ?? '',
                 mentalLoad: difficulty.attr('mentalLoad') ?? '',
                 riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
@@ -283,14 +285,6 @@ function readStringParamOverrides(
   return params;
 }
 
-function uniqueRecords(records: DataCoreRecordNode[]): DataCoreRecordNode[] {
-  const unique = new Map<string, DataCoreRecordNode>();
-  for (const record of records) {
-    unique.set(`${record.ref}\0${record.path}`, record);
-  }
-  return [...unique.values()];
-}
-
 function readStringHashKeys($: ReturnType<typeof loadXml>, root: ReturnType<ReturnType<typeof loadXml>>): string[] {
   const keys: string[] = [];
   root.find('MissionPropertyValueOption_StringHash[textId]').each((_, element) => {
@@ -314,10 +308,6 @@ function formatStringParams(record: DataCoreRecordNode, contractId: string, para
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, value]) => `${key}=${formatContractStringParamValue(record, contractId, key, value)}`)
     .join(' | ');
-}
-
-function linkedClass(record: DataCoreRecordNode | undefined): string {
-  return record?.entityClass ?? '';
 }
 
 function readGraphStringHashKeysWithFallback(
@@ -394,7 +384,5 @@ function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fa
 }
 
 function localizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+  return normalizeDataCoreUsableLocalizationKey(value);
 }

@@ -1,6 +1,11 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
+import { normalizeDataCoreUsableLocalizationKey } from './normalization';
+import {
+  graphLocalizationKeyWithFallback,
+  linkedGraphRecordEntityClass,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type {
   DataCoreContractTemplateHaulingOrderRecord,
   DataCoreRecordGraphLookup,
@@ -54,7 +59,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
           const resolvedResource = resourceResolver.get(resourceGuid);
           const resourceClass =
-            linkedClass(options.graph.getByRef(resourceGuid)) || resolvedResource?.resourceClass || '';
+            linkedGraphRecordEntityClass(options.graph.getByRef(resourceGuid)) || resolvedResource?.resourceClass || '';
           const resourceNameKey = resolvedResource?.resourceNameKey ?? '';
           rows.push({
             templateClass: record.entityClass,
@@ -117,10 +122,6 @@ async function buildCarryableResourceResolver(
   return resources;
 }
 
-function linkedClass(record: DataCoreRecordNode | undefined): string {
-  return record?.entityClass ?? '';
-}
-
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
 }
@@ -138,9 +139,7 @@ function firstLocalizationKey(values: string[]): string {
 }
 
 function normalizeLocalizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+  return normalizeDataCoreUsableLocalizationKey(value);
 }
 
 function resourceClassFromNameKey(nameKey: string): string {

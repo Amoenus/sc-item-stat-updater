@@ -2,10 +2,12 @@ import fs from 'node:fs/promises';
 import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
+import { normalizeDataCoreUsableLocalizationKey, uniqueSortedStrings } from './normalization';
 import {
   graphGuidReferences,
   graphLocalizationKeys,
   hasGraphLocalizationReference,
+  linkedGraphRecordEntityClass,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
@@ -32,7 +34,7 @@ export async function extractDataCoreContractTemplates(
   let completed = 0;
   const mapped = await mapConcurrent(
     records,
-    async (record, index) => {
+    async (record) => {
       const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore ContractTemplate XML path');
       const xml = await fs.readFile(xmlPath, 'utf8');
       const $ = loadXml(xml);
@@ -43,14 +45,14 @@ export async function extractDataCoreContractTemplates(
         return null;
       }
 
-      const ownerGuid = graphGuidReference(record, ['ContractTemplate.owner'], root.attr('owner') ?? '');
+      const ownerGuid = uniqueGraphGuidReference(record, ['ContractTemplate.owner'], root.attr('owner') ?? '');
       const contractClass = root.find('> contractClass > *').first();
       const contractClassType = contractClass[0]?.type === 'tag' ? contractClass[0].name : '';
       const additionalParams = contractClass.find('> additionalParams').first();
       const autoFinishSettings = contractClass.find('> autoFinishSettings').first();
       const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
       const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
-      const displayTypeGuid = graphGuidReference(
+      const displayTypeGuid = uniqueGraphGuidReference(
         record,
         ['contractDisplayInfo.type'],
         contractDisplayInfo.attr('type') ?? '',
@@ -70,9 +72,9 @@ export async function extractDataCoreContractTemplates(
         templateClass: record.entityClass,
         contractClassType,
         ownerGuid,
-        ownerClass: linkedClass(options.graph.getByRef(ownerGuid)),
+        ownerClass: linkedGraphRecordEntityClass(options.graph.getByRef(ownerGuid)),
         displayTypeGuid,
-        displayTypeClass: linkedClass(options.graph.getByRef(displayTypeGuid)),
+        displayTypeClass: linkedGraphRecordEntityClass(options.graph.getByRef(displayTypeGuid)),
         illegal: contractDisplayInfo.attr('illegal') ?? '',
         showLifeTimeInMobiGlas: contractDisplayInfo.attr('showLifeTimeInMobiGlas') ?? '',
         preShowObjectives: contractDisplayInfo.attr('preShowObjectives') ?? '',
@@ -155,7 +157,9 @@ export async function extractDataCoreContractTemplates(
           readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), ['textId']),
         ).join(' | '),
         locationTagGuids: locationTagGuids.join(' | '),
-        locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
+        locationTagClasses: locationTagGuids
+          .map((guid) => linkedGraphRecordEntityClass(options.graph.getByRef(guid)))
+          .join(' | '),
         recordGuid: record.ref,
         recordPath: record.path,
       };
@@ -202,20 +206,10 @@ function readGraphGuidRefsWithFallback(
   return graphGuids.length > 0 ? uniqueStrings(graphGuids) : fallbackGuids;
 }
 
-function linkedClass(record: DataCoreRecordNode | undefined): string {
-  return record?.entityClass ?? '';
-}
-
-function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  return uniqueGraphGuidReference(record, attributes, fallback);
-}
-
 function uniqueStrings(values: string[]): string[] {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  return uniqueSortedStrings(values);
 }
 
 function localizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
+  return normalizeDataCoreUsableLocalizationKey(value);
 }

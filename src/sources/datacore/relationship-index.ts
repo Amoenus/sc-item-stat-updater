@@ -1,3 +1,11 @@
+import {
+  appendMapValue,
+  isUsableDataCoreLocalizationKey,
+  normalizeDataCoreLookupKey,
+  normalizeDataCoreSpaces,
+  uniqueDataCoreRecords,
+  uniqueSortedStrings,
+} from './normalization';
 import type { DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 
 export interface DataCoreRelationshipIndex {
@@ -33,13 +41,13 @@ export function createDataCoreRelationshipIndex(
       normalizedEntityClassToRecord.set(entityClass, record);
     }
 
-    const rootType = normalizeSpaces(record.rootType);
-    if (rootType) appendRecord(rootTypeToRecords, rootType, record);
+    const rootType = normalizeDataCoreSpaces(record.rootType);
+    if (rootType) appendMapValue(rootTypeToRecords, rootType, record);
 
     for (const { key } of record.localizationKeys) {
-      if (!isUsableDataCoreRelationshipLocalizationKey(key)) continue;
+      if (!isUsableDataCoreLocalizationKey(key)) continue;
       const localizationKey = normalizeDataCoreRelationshipLocalizationKey(key);
-      if (localizationKey) appendRecord(normalizedLocalizationKeyToRecords, localizationKey, record);
+      if (localizationKey) appendMapValue(normalizedLocalizationKeyToRecords, localizationKey, record);
     }
   }
 
@@ -48,10 +56,10 @@ export function createDataCoreRelationshipIndex(
       return normalizedEntityClassToRecord.get(normalizeDataCoreRelationshipEntityClass(entityClass));
     },
     getRecordsByRootType(rootType) {
-      return uniqueRecords(rootTypeToRecords.get(normalizeSpaces(rootType)) ?? []);
+      return uniqueDataCoreRecords(rootTypeToRecords.get(normalizeDataCoreSpaces(rootType)) ?? []);
     },
     getRecordsByLocalizationKey(localizationKey) {
-      return uniqueRecords(
+      return uniqueDataCoreRecords(
         normalizedLocalizationKeyToRecords.get(normalizeDataCoreRelationshipLocalizationKey(localizationKey)) ?? [],
       );
     },
@@ -59,30 +67,30 @@ export function createDataCoreRelationshipIndex(
       return this.getReferencingRecords(this.getRecordForEntityClass(entityClass));
     },
     getLocalizationKeysForRecord(record) {
-      return uniqueSorted(
+      return uniqueSortedStrings(
         (record?.localizationKeys ?? [])
-          .filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key))
+          .filter(({ key }) => isUsableDataCoreLocalizationKey(key))
           .map(({ key }) => normalizeDataCoreRelationshipLocalizationKey(key))
           .filter((key) => key !== ''),
       );
     },
     getReferencedRecords(record) {
       if (!graph || !record) return [];
-      return uniqueRecords(record.referencedGuids.flatMap((ref) => graph.getByRef(ref) ?? []));
+      return uniqueDataCoreRecords(record.referencedGuids.flatMap((ref) => graph.getByRef(ref) ?? []));
     },
     getReferencingRecords(record) {
       if (!graph || !record?.ref) return [];
-      return uniqueRecords(graph.getByReferencedGuid(record.ref));
+      return uniqueDataCoreRecords(graph.getByReferencedGuid(record.ref));
     },
     getRelationshipSummary() {
       return {
         totalRecords: graph?.graph.recordCount ?? 0,
         recordsWithLocalizationKeys: (graph?.graph.records ?? []).filter((record) =>
-          record.localizationKeys.some(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)),
+          record.localizationKeys.some(({ key }) => isUsableDataCoreLocalizationKey(key)),
         ).length,
         localizationKeyReferences: (graph?.graph.records ?? []).reduce(
           (sum, record) =>
-            sum + record.localizationKeys.filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)).length,
+            sum + record.localizationKeys.filter(({ key }) => isUsableDataCoreLocalizationKey(key)).length,
           0,
         ),
         referencedGuidReferences: (graph?.graph.records ?? []).reduce(
@@ -99,55 +107,11 @@ export function createDataCoreRelationshipIndex(
 }
 
 export function normalizeDataCoreRelationshipEntityClass(value: unknown): string {
-  return normalizeSpaces(value)
+  return normalizeDataCoreSpaces(value)
     .replace(/_SCItem$/i, '')
     .toLowerCase();
 }
 
 export function normalizeDataCoreRelationshipLocalizationKey(value: unknown): string {
-  return normalizeSpaces(value).replace(/^@/, '').toLowerCase();
-}
-
-function isUsableDataCoreRelationshipLocalizationKey(value: unknown): boolean {
-  const key = normalizeDataCoreRelationshipLocalizationKey(value);
-  return key !== '' && !/^loc_(?:empty|placeholder|uninitialized)$/i.test(key);
-}
-
-function uniqueRecords(records: DataCoreRecordNode[]): DataCoreRecordNode[] {
-  const seen = new Set<string>();
-  const unique: DataCoreRecordNode[] = [];
-
-  for (const record of records) {
-    const key = record.path || record.ref;
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    unique.push(record);
-  }
-
-  return unique;
-}
-
-function appendRecord(recordsByKey: Map<string, DataCoreRecordNode[]>, key: string, record: DataCoreRecordNode): void {
-  const records = recordsByKey.get(key) ?? [];
-  records.push(record);
-  recordsByKey.set(key, records);
-}
-
-function uniqueSorted(values: string[]): string[] {
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
-}
-
-function normalizeSpaces(value: unknown): string {
-  let str: string;
-  if (value == null) {
-    str = '';
-  } else if (typeof value === 'string') {
-    str = value;
-  } else {
-    str = JSON.stringify(value);
-  }
-  return str
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
+  return normalizeDataCoreLookupKey(value);
 }

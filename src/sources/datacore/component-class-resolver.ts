@@ -1,3 +1,4 @@
+import { normalizeDataCoreSpaces } from './normalization';
 import { type DataCoreRelationshipIndex, normalizeDataCoreRelationshipEntityClass } from './relationship-index';
 
 const NON_DISPLAY_COMPONENT_CLASSES = new Set([
@@ -57,18 +58,7 @@ export function normalizeDataCoreEntityClass(value: unknown): string {
 }
 
 export function normalizeSpaces(value: unknown): string {
-  let str: string;
-  if (value == null) {
-    str = '';
-  } else if (typeof value === 'string') {
-    str = value;
-  } else {
-    str = JSON.stringify(value);
-  }
-  return str
-    .replaceAll(/[\u00a0\u202f]/g, ' ')
-    .replaceAll(/\s+/g, ' ')
-    .trim();
+  return normalizeDataCoreSpaces(value);
 }
 
 function getHaulingComponentClass(entityClass: string): string {

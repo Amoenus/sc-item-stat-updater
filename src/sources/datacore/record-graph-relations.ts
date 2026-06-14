@@ -1,3 +1,8 @@
+import {
+  hasAnyDataCoreLocalizationKey,
+  normalizeDataCoreAttributeName,
+  normalizeDataCoreUsableLocalizationKey,
+} from './normalization';
 import type { DataCoreLocalizationReference, DataCoreRecordNode } from './types';
 
 export function graphLocalizationKey(record: DataCoreRecordNode, attributes: string[]): string {
@@ -27,7 +32,7 @@ export function graphLocalizationKeyWithFallback(
 ): string {
   const graphKey = graphLocalizationKey(record, attributes);
   if (graphKey || hasGraphLocalizationReference(record, attributes)) return graphKey;
-  return normalizeLocalizationKey(fallback);
+  return normalizeDataCoreUsableLocalizationKey(fallback);
 }
 
 export function graphLocalizationKeyFromReferences(
@@ -44,8 +49,8 @@ export function graphLocalizationKeysFromReferences(
   const keys: string[] = [];
   for (const attribute of attributes) {
     for (const reference of references) {
-      if (reference.attribute.trim().toLowerCase() !== attribute.trim().toLowerCase()) continue;
-      const key = normalizeLocalizationKey(reference.key);
+      if (normalizeDataCoreAttributeName(reference.attribute) !== normalizeDataCoreAttributeName(attribute)) continue;
+      const key = normalizeDataCoreUsableLocalizationKey(reference.key);
       if (key && !keys.includes(key)) keys.push(key);
     }
   }
@@ -56,10 +61,11 @@ export function hasGraphLocalizationReferenceFromReferences(
   references: DataCoreLocalizationReference[],
   attributes: string[],
 ): boolean {
-  const expectedAttributes = new Set(attributes.map(normalizeGraphAttributeName).filter(Boolean));
+  const expectedAttributes = new Set(attributes.map(normalizeDataCoreAttributeName).filter(Boolean));
   return references.some(
     (reference) =>
-      expectedAttributes.has(normalizeGraphAttributeName(reference.attribute)) && hasAnyLocalizationKey(reference.key),
+      expectedAttributes.has(normalizeDataCoreAttributeName(reference.attribute)) &&
+      hasAnyDataCoreLocalizationKey(reference.key),
   );
 }
 
@@ -72,8 +78,8 @@ export function graphLocalizationKeyFromReferencesMatching(
     const key =
       references
         .map((reference) =>
-          reference.attribute.trim().toLowerCase() === attribute.trim().toLowerCase()
-            ? normalizeLocalizationKey(reference.key)
+          normalizeDataCoreAttributeName(reference.attribute) === normalizeDataCoreAttributeName(attribute)
+            ? normalizeDataCoreUsableLocalizationKey(reference.key)
             : '',
         )
         .find((value) => value && predicate(value)) ?? '';
@@ -83,11 +89,11 @@ export function graphLocalizationKeyFromReferencesMatching(
 }
 
 export function graphGuidReferences(record: DataCoreRecordNode, attributes: string[]): string[] {
-  const expectedAttributes = new Set(attributes.map(normalizeGraphAttributeName).filter(Boolean));
+  const expectedAttributes = new Set(attributes.map(normalizeDataCoreAttributeName).filter(Boolean));
   return [
     ...new Set(
       record.referencedGuidAttributes
-        ?.filter((reference) => expectedAttributes.has(normalizeGraphAttributeName(reference.attribute)))
+        ?.filter((reference) => expectedAttributes.has(normalizeDataCoreAttributeName(reference.attribute)))
         .map((reference) => reference.value.trim())
         .filter(Boolean) ?? [],
     ),
@@ -100,17 +106,6 @@ export function uniqueGraphGuidReference(record: DataCoreRecordNode, attributes:
   return fallback;
 }
 
-function normalizeGraphAttributeName(value: string): string {
-  return value.trim().toLowerCase();
-}
-
-function normalizeLocalizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
-}
-
-function hasAnyLocalizationKey(value: string): boolean {
-  const trimmed = value.trim();
-  return trimmed.startsWith('@') ? trimmed.slice(1).trim() !== '' : trimmed !== '';
+export function linkedGraphRecordEntityClass(record: DataCoreRecordNode | undefined): string {
+  return record?.entityClass ?? '';
 }
