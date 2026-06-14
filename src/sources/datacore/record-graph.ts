@@ -113,23 +113,38 @@ function extractRecordEntityClass(rootTag: string): string {
 function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationReference[] {
   const references: DataCoreLocalizationReference[] = [];
   const seen = new Set<string>();
+  const addReference = (attribute: string, rawKey: string | undefined): void => {
+    const key = rawKey?.trim().startsWith('@') ? rawKey.trim().slice(1).trim() : '';
+    if (!key) return;
+
+    const flatAttribute = flattenString(attribute);
+    const flatKey = flattenString(key);
+    const fingerprint = `${flatAttribute}\0${flatKey}`;
+    if (seen.has(fingerprint)) return;
+
+    seen.add(fingerprint);
+    references.push({ attribute: flatAttribute, key: flatKey });
+  };
 
   $('*').each((_, element) => {
     if (element.type !== 'tag') return;
 
     for (const attribute of LOCALIZATION_ATTRIBUTES) {
-      const rawKey = $(element).attr(attribute)?.trim();
-      const key = rawKey?.startsWith('@') ? rawKey.slice(1).trim() : '';
-      if (!key) continue;
-
-      const flatAttribute = flattenString(attribute);
-      const flatKey = flattenString(key);
-
-      const fingerprint = `${flatAttribute}\0${flatKey}`;
-      if (seen.has(fingerprint)) continue;
-      seen.add(fingerprint);
-      references.push({ attribute: flatAttribute, key: flatKey });
+      addReference(attribute, $(element).attr(attribute));
     }
+  });
+
+  $('MissionProperty[missionVariableName]').each((_, element) => {
+    const missionVariableName = $(element).attr('missionVariableName')?.trim();
+    if (!missionVariableName) return;
+    const contractId = $(element).parents('[id]').first().attr('id')?.trim();
+    if (!contractId) return;
+
+    $(element)
+      .find('MissionPropertyValueOption_StringHash[textId]')
+      .each((__, optionElement) => {
+        addReference(`contract:${contractId}:${missionVariableName}.textId`, $(optionElement).attr('textId'));
+      });
   });
 
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));

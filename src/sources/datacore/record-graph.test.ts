@@ -24,6 +24,11 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
         <Hauling orderDisplayName="@Salvage_Ship_Component_Shield_Generator_S1_Name" />
         <Location callout1="@Pyro3_Outpost_callout1" callout2="@LOC_PLACEHOLDER" />
         <MissionPropertyValueOption_StringHash textId="@mission_variant_text" />
+        <Contract id="contract-guid">
+        <MissionProperty missionVariableName="Mission_Title_StringHash">
+          <MissionPropertyValueOption_StringHash textId="@mission_title_variant" />
+        </MissionProperty>
+        </Contract>
         <Override titleOverride="@mission_override_title" descriptionOverride="@mission_override_desc" />
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
         <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" shortName="@items_commodities_atlasium_short_lower" />
@@ -88,6 +93,17 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   assert.deepEqual(graph.indexes.byLocalizationKey.mission_variant_text, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.mission_title_variant, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.equal(
+    graph.records[0]?.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'contract:contract-guid:Mission_Title_StringHash.textId' &&
+        reference.key === 'mission_title_variant',
+    ),
+    true,
+  );
   assert.deepEqual(graph.indexes.byLocalizationKey.mission_override_title, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);

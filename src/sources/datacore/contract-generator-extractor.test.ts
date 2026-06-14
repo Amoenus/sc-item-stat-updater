@@ -34,7 +34,7 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_title_001" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_title_stale" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -43,9 +43,9 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_desc_001" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale_001" weighting="1" />
                             <MissionPropertyValueOption_StringHash textId="@LOC_PLACEHOLDER" weighting="1" />
-                            <MissionPropertyValueOption_StringHash textId="@intro_desc_002" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale_002" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -206,6 +206,62 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
   assert.equal(row.blueprintRewards, '[{"blueprintPool":"blueprint-pool","chance":1,"trigger":"","type":"BlueprintRewards"}]');
 });
 
+test('extractDataCoreContractGenerators does not use XML string-hash fallback when graph variants are placeholders', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-generator-variant-placeholder-'));
+  const generatorPath = 'libs/foundry/records/contracts/contractgenerator/test_generator.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, generatorPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, generatorPath),
+    `
+      <ContractGenerator.TestGenerator __type="ContractGenerator" __ref="generator-guid" __path="${generatorPath}">
+        <generators>
+          <ContractGeneratorHandler_Career debugName="Career_Handler">
+            <introContracts>
+              <Contract id="contract-guid" debugName="Intro_Contract" template="template-guid">
+                <paramOverrides>
+                  <propertyOverrides>
+                    <MissionProperty missionVariableName="Mission_Title_StringHash">
+                      <value>
+                        <MissionPropertyValue_StringHash>
+                          <options>
+                            <MissionPropertyValueOption_StringHash textId="@intro_title_stale" weighting="1" />
+                          </options>
+                        </MissionPropertyValue_StringHash>
+                      </value>
+                    </MissionProperty>
+                    <MissionProperty missionVariableName="Mission_Description_StringHash">
+                      <value>
+                        <MissionPropertyValue_StringHash>
+                          <options>
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale" weighting="1" />
+                          </options>
+                        </MissionPropertyValue_StringHash>
+                      </value>
+                    </MissionProperty>
+                  </propertyOverrides>
+                </paramOverrides>
+              </Contract>
+            </introContracts>
+          </ContractGeneratorHandler_Career>
+        </generators>
+      </ContractGenerator.TestGenerator>
+    `,
+  );
+  const graph = graphFixture(generatorPath);
+  graph.records[0].localizationKeys = [
+    { attribute: 'contract:contract-guid:Mission_Title_StringHash.textId', key: 'LOC_PLACEHOLDER' },
+    { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'LOC_EMPTY' },
+  ];
+
+  const [row] = await extractDataCoreContractGenerators({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.titleVariantKeys, '');
+  assert.equal(row.descriptionVariantKeys, '');
+});
+
 function graphFixture(
   generatorPath: string,
   options: { ambiguousTemplate?: boolean } = {},
@@ -234,7 +290,12 @@ function graphFixture(
         rootTag: 'ContractGenerator.TestGenerator',
         rootType: 'ContractGenerator',
         entityClass: 'TestGenerator',
-        localizationKeys: [],
+        localizationKeys: [
+          { attribute: 'contract:contract-guid:Mission_Title_StringHash.textId', key: 'intro_title_001' },
+          { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'intro_desc_002' },
+          { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'intro_desc_001' },
+        ],
         referencedGuids,
         referencedGuidAttributes: [
           ...templateReferences,

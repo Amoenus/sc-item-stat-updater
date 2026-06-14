@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKeys,
+  hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreContractGeneratorRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -105,13 +109,21 @@ export async function extractDataCoreContractGenerators(
                 }
               });
             });
-            const titleVariantKeys = readStringHashKeys(
-              $,
-              contract.find('MissionProperty[missionVariableName="Mission_Title_StringHash"]'),
+            const titleVariantKeys = readGraphStringHashKeysWithFallback(
+              record,
+              [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Title_StringHash')],
+              readStringHashKeys(
+                $,
+                contract.find('MissionProperty[missionVariableName="Mission_Title_StringHash"]'),
+              ),
             );
-            const descriptionVariantKeys = readStringHashKeys(
-              $,
-              contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
+            const descriptionVariantKeys = readGraphStringHashKeysWithFallback(
+              record,
+              [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Description_StringHash')],
+              readStringHashKeys(
+                $,
+                contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
+              ),
             );
             const locationTagGuids = readLocationTagGuids($, contract);
             const blueprintRewards = readBlueprintRewards($, contractResults);
@@ -270,6 +282,24 @@ function formatStringParams(params: Map<string, string>): string {
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {
   return record?.entityClass ?? '';
+}
+
+function readGraphStringHashKeysWithFallback(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  fallbackKeys: string[],
+): string[] {
+  if (attributes.some((attribute) => !attribute)) return fallbackKeys;
+  const graphKeys = graphLocalizationKeys(record, attributes);
+  if (graphKeys.length > 0 || hasGraphLocalizationReference(record, attributes)) {
+    return [...graphKeys].sort((a, b) => a.localeCompare(b));
+  }
+  return fallbackKeys;
+}
+
+function contractStringHashAttribute(contractId: string, missionVariableName: string): string {
+  const trimmed = contractId.trim();
+  return trimmed ? `contract:${trimmed}:${missionVariableName}.textId` : '';
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
