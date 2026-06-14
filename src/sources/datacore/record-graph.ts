@@ -259,6 +259,14 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
 
   $(':root')
     .first()
+    .filter('[__type="MissionBrokerEntry"]')
+    .each((_, element) => {
+      addReference('MissionBrokerEntry.owner', $(element).attr('owner'));
+      addReference('MissionBrokerEntry.type', $(element).attr('type'));
+    });
+
+  $(':root')
+    .first()
     .filter('[__type="ContractTemplate"]')
     .find('> contractDisplayInfo > ContractDisplayInfo[type]')
     .each((_, element) => {

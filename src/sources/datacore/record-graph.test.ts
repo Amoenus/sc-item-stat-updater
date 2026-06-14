@@ -401,3 +401,47 @@ test('buildDataCoreRecordGraph emits crafting recipe resource refs by cost index
     true,
   );
 });
+
+test('buildDataCoreRecordGraph emits mission broker owner and type refs by role', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-mission-broker-'));
+  const brokerPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'missionbroker',
+    'test_broker.xml',
+  );
+  await fs.mkdir(path.dirname(brokerPath), { recursive: true });
+  await fs.writeFile(
+    brokerPath,
+    `
+      <MissionBrokerEntry.TestBroker
+        owner="cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+        type="dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+        __ref="broker-guid"
+        __type="MissionBrokerEntry"
+        __path="libs/foundry/records/missionbroker/test_broker.xml" />
+    `,
+  );
+
+  const graph = await buildDataCoreRecordGraph({ xmlCacheDir });
+  const record = graph.records[0];
+  assert.ok(record);
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'MissionBrokerEntry.owner' &&
+        reference.value === 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'MissionBrokerEntry.type' &&
+        reference.value === 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+    ),
+    true,
+  );
+});

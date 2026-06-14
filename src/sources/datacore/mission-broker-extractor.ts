@@ -31,8 +31,8 @@ export async function extractDataCoreMissionBrokers(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const missionTypeGuid = graphGuidReference(record, ['type'], root.attr('type') ?? '');
-    const ownerGuid = graphGuidReference(record, ['owner'], root.attr('owner') ?? '');
+    const missionTypeGuid = graphGuidReference(record, ['MissionBrokerEntry.type'], root.attr('type') ?? '');
+    const ownerGuid = graphGuidReference(record, ['MissionBrokerEntry.owner'], root.attr('owner') ?? '');
     const missionGiverRecordGuid = graphGuidReference(
       record,
       ['missionGiverRecord'],
