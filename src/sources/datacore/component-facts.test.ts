@@ -3,7 +3,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { discoverComponentFactCsvFiles, loadDataCoreComponentFacts } from './component-facts';
+import {
+  discoverComponentFactCsvFiles,
+  isLikelyNonUserFacingComponent,
+  loadDataCoreComponentFacts,
+} from './component-facts';
 
 async function makeTempDataCoreWorkspace() {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'component-facts-'));
@@ -190,6 +194,44 @@ async function makeTempDataCoreWorkspace() {
 }
 
 describe('DataCore component facts', () => {
+  it('classifies obvious helper component rows as non-user-facing', () => {
+    assert.equal(
+      isLikelyNonUserFacingComponent(
+        'radr_unmanned_ai_s03',
+        'libs/foundry/records/entities/scitem/ships/radar/radr_unmanned_ai_s03.xml',
+      ),
+      true,
+    );
+    assert.equal(
+      isLikelyNonUserFacingComponent(
+        'aegs_idris_lower_camera_mount',
+        'libs/foundry/records/entities/scitem/ships/weapon_mounts/gimbal/aegs_idris_lower_camera_mount.xml',
+      ),
+      true,
+    );
+    assert.equal(
+      isLikelyNonUserFacingComponent(
+        'salvage_buff_modifier_vulture',
+        'libs/foundry/records/entities/scitem/ships/utility/salvage/salvagemodifiers/salvage_buff_modifier_vulture.xml',
+      ),
+      true,
+    );
+    assert.equal(
+      isLikelyNonUserFacingComponent(
+        'rn_resource_relay',
+        'libs/foundry/records/entities/scitem/locations/resourcenetwork/resourcenetwork_entities/rn_resource_relay.xml',
+      ),
+      true,
+    );
+    assert.equal(
+      isLikelyNonUserFacingComponent(
+        'qdrv_aegs_s04_javelin',
+        'libs/foundry/records/entities/scitem/ships/quantumdrive/qdrv_aegs_s04_javelin_scitem.xml',
+      ),
+      false,
+    );
+  });
+
   it('discovers component CSVs while excluding separately tagged item families', async () => {
     const { dir, datacoreDir } = await makeTempDataCoreWorkspace();
     try {

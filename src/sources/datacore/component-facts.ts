@@ -100,6 +100,15 @@ const FACT_COLUMNS = new Set([
   'Class',
 ]);
 const PLACEHOLDER_LOCALIZATION_KEYS = new Set(['loc_empty', 'loc_placeholder', 'loc_uninitialized']);
+const NON_USER_FACING_COMPONENT_PATTERNS = [
+  /(?:^|[_/])(?:template|fake|prototype|test)(?:[_./]|$)/,
+  /jumpdriveflighttuning|jumptunnelforces/,
+  /(?:^|[_/])(?:unmanned_ai|antipersonnel_turret)(?:[_./]|$)/,
+  /automatedturret/,
+  /(?:^|[_/])camera(?:[_./]|$)|camera_mount|\/cameras\//,
+  /resourcenetwork|(?:^|[_/])rn_/,
+  /salvage_(?:buff_)?modifier_/,
+];
 
 export function isPlaceholderComponentLocalizationKey(value: unknown): boolean {
   const key = normalizeLocalizationKey(value);
@@ -108,7 +117,7 @@ export function isPlaceholderComponentLocalizationKey(value: unknown): boolean {
 
 export function isLikelyNonUserFacingComponent(entityClass: string, recordPath: string): boolean {
   const value = `${entityClass} ${recordPath}`.toLowerCase();
-  return /(?:^|[_/])(?:template|fake|prototype)(?:[_./]|$)|jumpdriveflighttuning|jumptunnelforces/.test(value);
+  return NON_USER_FACING_COMPONENT_PATTERNS.some((pattern) => pattern.test(value));
 }
 
 export async function loadDataCoreComponentFacts({
