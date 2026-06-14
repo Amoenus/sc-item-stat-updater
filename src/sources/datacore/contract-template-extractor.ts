@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { graphGuidReferences } from './record-graph-relations';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -143,9 +143,7 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const graphRefs = graphGuidReferences(record, attributes);
-  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
-  return fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function uniqueStrings(values: string[]): string[] {

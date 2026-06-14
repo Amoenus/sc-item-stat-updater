@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { graphGuidReferences } from './record-graph-relations';
+import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningProviderPresetRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -207,9 +207,7 @@ async function readMineableParams(
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const graphRefs = graphGuidReferences(record, attributes);
-  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
-  return fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function emptyMineableEntity(): ResolvedMineableEntity {

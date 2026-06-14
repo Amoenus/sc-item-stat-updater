@@ -6,7 +6,7 @@ import {
   graphLocalizationKey,
   graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
-  graphGuidReferences,
+  uniqueGraphGuidReference,
   hasGraphLocalizationReference,
 } from './record-graph-relations';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
@@ -397,9 +397,7 @@ function resolveRecordLocalizationKey(
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const graphRefs = graphGuidReferences(record, attributes);
-  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
-  return fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function normalizeLocalizationKey(value: string): string {

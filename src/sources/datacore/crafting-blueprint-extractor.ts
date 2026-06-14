@@ -3,7 +3,7 @@ import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import { createDataCoreRelationshipIndex } from './relationship-index';
 import {
-  graphGuidReferences,
+  uniqueGraphGuidReference,
   graphLocalizationKey,
   hasGraphLocalizationReference,
 } from './record-graph-relations';
@@ -88,9 +88,7 @@ function targetNameLocalizationKey(record: DataCoreRecordNode): string {
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const graphRefs = graphGuidReferences(record, attributes);
-  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
-  return fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
 
 function fallbackNameKey(record: DataCoreRecordNode): string {

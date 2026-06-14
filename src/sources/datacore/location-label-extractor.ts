@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import {
-  graphGuidReferences,
+  uniqueGraphGuidReference,
   graphLocalizationKey,
   graphLocalizationKeyWithFallback,
 } from './record-graph-relations';
@@ -102,7 +102,5 @@ function graphLocalizationKeyOrEmpty(record: DataCoreRecordNode | undefined, att
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  const graphRefs = graphGuidReferences(record, attributes);
-  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
-  return fallback;
+  return uniqueGraphGuidReference(record, attributes, fallback);
 }
