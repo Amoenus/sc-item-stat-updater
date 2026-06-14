@@ -118,6 +118,43 @@ test('extractDataCoreMiningSubHarvestableConfigs extracts mining slots from dire
   assert.equal(rows[2].referencedConfigClass, 'Cave_Aberdeen_Rich');
 });
 
+test('extractDataCoreMiningSubHarvestableConfigs does not use XML setup fallback when graph refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-sub-harvestable-configs-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    directConfigPath,
+    `
+      <SubHarvestableConfigRecord.Cave_Aberdeen_Rich __type="SubHarvestableConfigRecord" __ref="1a3fdfbe-bd2e-4db1-b175-060c11db30fc" __path="${directConfigPath}">
+        <subConfig initialSlotsProbability="0.8" configRespawnTimeMultiplier="1">
+          <subHarvestables>
+            <SubHarvestableSlot harvestable="b4dbb414-4946-437a-870b-0df49007603b" relativeProbability="42" harvestableSetup="99999999-9999-9999-9999-999999999997" />
+          </subHarvestables>
+        </subConfig>
+      </SubHarvestableConfigRecord.Cave_Aberdeen_Rich>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    harvestablePresetPath,
+    `<HarvestablePreset.FPSMining_Aphorite entityClass="99999999-9999-9999-9999-999999999999" __type="HarvestablePreset" __ref="b4dbb414-4946-437a-870b-0df49007603b" __path="${harvestablePresetPath}" />`,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['0aa9921e-8de0-487e-bc87-1d457c56d74f', 'other-setup-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'harvestableSetup', value: '0aa9921e-8de0-487e-bc87-1d457c56d74f' },
+    { attribute: 'harvestableSetup', value: 'other-setup-guid' },
+  ];
+
+  const [row] = await extractDataCoreMiningSubHarvestableConfigs({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    pathPrefix: directConfigPath,
+  });
+
+  assert.equal(row.harvestableSetupGuid, '');
+  assert.equal(row.harvestableSetupClass, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
