@@ -140,6 +140,46 @@ test('extractDataCoreCraftingBlueprints prefers unique graph refs for target and
   assert.equal(rows[0].recipeCosts, '[{"resource":"resource-guid","minQuality":3,"amount":8}]');
 });
 
+test('extractDataCoreCraftingBlueprints does not use XML fallback when graph refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-crafting-blueprints-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    blueprintPath,
+    `
+      <CraftingBlueprintRecord.AEGS_Component_Blueprint __type="CraftingBlueprintRecord" __ref="blueprint-ref" __path="${blueprintPath}">
+        <processSpecificData>
+          <CraftingProcess_Creation entityClass="stale-target-ref" />
+        </processSpecificData>
+        <CraftingRecipeCosts>
+          <CraftingCost_Resource resource="stale-resource-guid" minQuality="3">
+            <quantity>
+              <SStandardCargoUnit standardCargoUnits="8" />
+            </quantity>
+          </CraftingCost_Resource>
+        </CraftingRecipeCosts>
+      </CraftingBlueprintRecord.AEGS_Component_Blueprint>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['target-ref', 'other-target-ref', 'resource-guid', 'other-resource-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'entityClass', value: 'target-ref' },
+    { attribute: 'entityClass', value: 'other-target-ref' },
+    { attribute: 'resource', value: 'resource-guid' },
+    { attribute: 'resource', value: 'other-resource-guid' },
+  ];
+
+  const rows = await extractDataCoreCraftingBlueprints({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0].targetEntityClassGuid, '');
+  assert.equal(rows[0].targetEntityClass, '');
+  assert.equal(rows[0].targetItemNameKey, '');
+  assert.equal(rows[0].recipeCosts, '[]');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
