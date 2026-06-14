@@ -280,7 +280,7 @@ test('runDatacoreScrape does not use key-shape fallback when graph localization 
   assert.doesNotMatch(csv, /item_DescSHLD_PatternFallback/);
 });
 
-test('runDatacoreScrape falls back when graph component manufacturer refs are ambiguous', async () => {
+test('runDatacoreScrape does not use XML manufacturer fallback when graph component manufacturer refs are ambiguous', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-component-ambiguous-manufacturer-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
   const xmlPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'shieldgenerator', 'shield.xml');
@@ -311,7 +311,7 @@ test('runDatacoreScrape falls back when graph component manufacturer refs are am
   });
 
   const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shields.datacore.csv'), 'utf8');
-  assert.match(csv, /shld_ambiguous,item_NameSHLD_Ambiguous,,item_DescSHLD_Ambiguous,RSI,2,B,Civilian,500,,/);
+  assert.match(csv, /shld_ambiguous,item_NameSHLD_Ambiguous,,item_DescSHLD_Ambiguous,,2,B,Civilian,500,,/);
 });
 
 test('runDatacoreScrape treats graph manufacturer alias conflicts as ambiguous', async () => {
@@ -345,7 +345,7 @@ test('runDatacoreScrape treats graph manufacturer alias conflicts as ambiguous',
   });
 
   const csv = await fs.readFile(path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'shields.datacore.csv'), 'utf8');
-  assert.match(csv, /shld_ambiguous,item_NameSHLD_Ambiguous,,item_DescSHLD_Ambiguous,RSI,2,B,Civilian,500,,/);
+  assert.match(csv, /shld_ambiguous,item_NameSHLD_Ambiguous,,item_DescSHLD_Ambiguous,,2,B,Civilian,500,,/);
 });
 
 test('runDatacoreScrape discovers selector-matched item records outside legacy path filters', async () => {

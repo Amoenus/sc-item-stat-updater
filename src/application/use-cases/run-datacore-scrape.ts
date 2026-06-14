@@ -67,7 +67,6 @@ import {
   graphGuidReferences as dataCoreGraphGuidReferences,
   graphLocalizationKey as dataCoreGraphLocalizationKey,
   hasGraphLocalizationReference as hasDataCoreGraphLocalizationReference,
-  uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference,
 } from '../../sources/datacore/record-graph-relations';
 import {
   createDataCoreRelationshipIndex,
@@ -2301,10 +2300,15 @@ function resolveComponentManufacturerCode(
   fallbackManufacturer: string,
   resolver: DataCoreManufacturerResolver | undefined,
 ): string {
-  const graphManufacturerGuid = uniqueGraphGuidReference(record, ['Manufacturer', 'manufacturer']);
-  const graphManufacturer =
-    graphManufacturerGuid && resolver ? resolver.getByRef(graphManufacturerGuid)?.code ?? '' : '';
-  return graphManufacturer || resolveManufacturerCode(fallbackManufacturer, resolver);
+  if (record) {
+    const graphManufacturerGuids = dataCoreGraphGuidReferences(record, ['Manufacturer', 'manufacturer']);
+    if (graphManufacturerGuids.length > 0) {
+      if (graphManufacturerGuids.length !== 1) return '';
+      return resolver?.getByRef(graphManufacturerGuids[0])?.code ?? '';
+    }
+  }
+
+  return resolveManufacturerCode(fallbackManufacturer, resolver);
 }
 
 function getDataCoreGraphLocalizationKey(
@@ -3830,14 +3834,6 @@ function graphGuidReferences(
 ): string[] {
   if (!record || !attributes) return [];
   return dataCoreGraphGuidReferences(record, Array.isArray(attributes) ? attributes : [attributes]);
-}
-
-function uniqueGraphGuidReference(
-  record: DataCoreRecordNode | undefined,
-  attributes: string | string[] | undefined,
-): string {
-  if (!record || !attributes) return '';
-  return uniqueDataCoreGraphGuidReference(record, Array.isArray(attributes) ? attributes : [attributes]);
 }
 
 function formatProduct(values: string[]): string {
