@@ -3,6 +3,7 @@ import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import {
+  graphGuidReferences,
   graphLocalizationKeys,
   hasGraphLocalizationReference,
   uniqueGraphGuidReference,
@@ -50,11 +51,15 @@ export async function extractDataCoreContractTemplates(
       const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
       const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
       const displayTypeGuid = graphGuidReference(record, ['type'], contractDisplayInfo.attr('type') ?? '');
-      const locationTagGuids = uniqueStrings(
-        root
-          .find('MissionPropertyValue_Location Reference[value]')
-          .toArray()
-          .map((element) => $(element).attr('value') ?? ''),
+      const locationTagGuids = readGraphGuidRefsWithFallback(
+        record,
+        ['template:MissionLocation.Reference.value'],
+        uniqueStrings(
+          root
+            .find('MissionPropertyValue_Location Reference[value]')
+            .toArray()
+            .map((element) => $(element).attr('value') ?? ''),
+        ),
       );
 
       const row = {
@@ -182,6 +187,11 @@ function readGraphLocalizationAttrsWithFallback(
   const graphKeys = graphLocalizationKeys(record, attributes);
   if (graphKeys.length > 0 || hasGraphLocalizationReference(record, attributes)) return uniqueStrings(graphKeys);
   return fallbackKeys;
+}
+
+function readGraphGuidRefsWithFallback(record: DataCoreRecordNode, attributes: string[], fallbackGuids: string[]): string[] {
+  const graphGuids = graphGuidReferences(record, attributes);
+  return graphGuids.length > 0 ? uniqueStrings(graphGuids) : fallbackGuids;
 }
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {

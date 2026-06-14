@@ -278,3 +278,45 @@ test('buildDataCoreRecordGraph emits effective contract string params by contrac
     true,
   );
 });
+
+test('buildDataCoreRecordGraph emits template mission location refs by role', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-template-location-'));
+  const templatePath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'contracts',
+    'contracttemplates',
+    'test_template.xml',
+  );
+  await fs.mkdir(path.dirname(templatePath), { recursive: true });
+  await fs.writeFile(
+    templatePath,
+    `
+      <ContractTemplate.TestTemplate __ref="template-guid" __type="ContractTemplate" __path="libs/foundry/records/contracts/contracttemplates/test_template.xml">
+        <contractProperties>
+          <MissionProperty missionVariableName="MissionLocation">
+            <value>
+              <MissionPropertyValue_Location>
+                <Reference value="66666666-6666-4666-8666-666666666666" />
+              </MissionPropertyValue_Location>
+            </value>
+          </MissionProperty>
+        </contractProperties>
+      </ContractTemplate.TestTemplate>
+    `,
+  );
+
+  const graph = await buildDataCoreRecordGraph({ xmlCacheDir });
+  const record = graph.records[0];
+  assert.ok(record);
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'template:MissionLocation.Reference.value' &&
+        reference.value === '66666666-6666-4666-8666-666666666666',
+    ),
+    true,
+  );
+});

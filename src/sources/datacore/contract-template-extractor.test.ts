@@ -31,7 +31,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
             <value>
               <MissionPropertyValue_Location>
                 <resourceTags>
-                  <Reference value="location-guid" />
+                  <Reference value="location-xml-fallback-guid" />
                 </resourceTags>
               </MissionPropertyValue_Location>
             </value>
@@ -289,6 +289,7 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         referencedGuidAttributes: [
           { attribute: 'owner', value: '' },
           { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'template:MissionLocation.Reference.value', value: 'location-guid' },
           { attribute: 'type', value: '' },
           { attribute: 'type', value: 'type-guid' },
         ],

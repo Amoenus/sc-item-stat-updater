@@ -252,6 +252,14 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
 
   $(':root')
     .first()
+    .filter('[__type="ContractTemplate"]')
+    .find('MissionPropertyValue_Location Reference[value]')
+    .each((_, referenceElement) => {
+      addReference('template:MissionLocation.Reference.value', $(referenceElement).attr('value'));
+    });
+
+  $(':root')
+    .first()
     .find('> generators > *')
     .each((_, handlerElement) => {
       for (const section of ['introContracts', 'contracts']) {
