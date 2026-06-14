@@ -166,3 +166,90 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   ]);
   assert.equal(graph.indexes.byReferencedGuid['11111111-1111-1111-1111-111111111111'], undefined);
 });
+
+test('buildDataCoreRecordGraph emits effective contract string params by contract id', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-contract-params-'));
+  const generatorPath = path.join(
+    xmlCacheDir,
+    'libs',
+    'foundry',
+    'records',
+    'contracts',
+    'contractgenerator',
+    'test_generator.xml',
+  );
+  await fs.mkdir(path.dirname(generatorPath), { recursive: true });
+  await fs.writeFile(
+    generatorPath,
+    `
+      <ContractGenerator.TestGenerator __ref="generator-guid" __type="ContractGenerator" __path="libs/foundry/records/contracts/contractgenerator/test_generator.xml">
+        <generators>
+          <ContractGeneratorHandler_Career>
+            <contractParams>
+              <stringParamOverrides>
+                <ContractStringParam param="Contractor" value="@contractor_from" />
+                <ContractStringParam param="Title" value="@handler_title" />
+              </stringParamOverrides>
+            </contractParams>
+            <introContracts>
+              <Contract id="intro-contract-guid">
+                <paramOverrides>
+                  <stringParamOverrides>
+                    <ContractStringParam param="Title" value="@intro_title" />
+                    <ContractStringParam param="Description" value="@intro_desc" />
+                  </stringParamOverrides>
+                </paramOverrides>
+              </Contract>
+            </introContracts>
+            <contracts>
+              <Contract id="repeatable-contract-guid">
+                <paramOverrides>
+                  <stringParamOverrides>
+                    <ContractStringParam param="Description" value="@repeatable_desc" />
+                  </stringParamOverrides>
+                </paramOverrides>
+              </Contract>
+            </contracts>
+          </ContractGeneratorHandler_Career>
+        </generators>
+      </ContractGenerator.TestGenerator>
+    `,
+  );
+
+  const graph = await buildDataCoreRecordGraph({ xmlCacheDir });
+  const record = graph.records[0];
+  assert.ok(record);
+
+  assert.equal(
+    record.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'contract:intro-contract-guid:ContractStringParam.Contractor' &&
+        reference.key === 'contractor_from',
+    ),
+    true,
+  );
+  assert.equal(
+    record.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'contract:intro-contract-guid:ContractStringParam.Title' &&
+        reference.key === 'intro_title',
+    ),
+    true,
+  );
+  assert.equal(
+    record.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'contract:repeatable-contract-guid:ContractStringParam.Title' &&
+        reference.key === 'handler_title',
+    ),
+    true,
+  );
+  assert.equal(
+    record.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'contract:repeatable-contract-guid:ContractStringParam.Description' &&
+        reference.key === 'repeatable_desc',
+    ),
+    true,
+  );
+});

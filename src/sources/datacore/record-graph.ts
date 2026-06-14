@@ -147,6 +147,28 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
       });
   });
 
+  $(':root')
+    .first()
+    .find('> generators > *')
+    .each((_, handlerElement) => {
+      const inheritedParams = readContractStringParams($, $(handlerElement).find('> contractParams > stringParamOverrides'));
+      for (const section of ['introContracts', 'contracts']) {
+        $(handlerElement)
+          .find(`> ${section} > *[id]`)
+          .each((__, contractElement) => {
+            const contractId = $(contractElement).attr('id')?.trim();
+            if (!contractId) return;
+            const contractParams = readContractStringParams(
+              $,
+              $(contractElement).find('> paramOverrides > stringParamOverrides'),
+            );
+            for (const [param, value] of new Map([...inheritedParams, ...contractParams])) {
+              addReference(`contract:${contractId}:ContractStringParam.${param}`, value);
+            }
+          });
+      }
+    });
+
   $('ObjectiveToken > displayInfo').each((_, element) => {
     addReference('objectiveDisplayInfo.shortDescription', $(element).attr('shortDescription'));
     addReference('objectiveDisplayInfo.longDescription', $(element).attr('longDescription'));
@@ -176,6 +198,18 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
   });
 
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
+}
+
+function readContractStringParams(
+  $: CheerioAPI,
+  root: ReturnType<CheerioAPI>,
+): Map<string, string> {
+  const params = new Map<string, string>();
+  root.find('> ContractStringParam[param]').each((_, element) => {
+    const param = $(element).attr('param')?.trim();
+    if (param) params.set(param, $(element).attr('value') ?? '');
+  });
+  return params;
 }
 
 function isUsableLocalizationKey(value: string): boolean {

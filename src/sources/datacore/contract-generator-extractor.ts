@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import {
+  graphLocalizationKeyWithFallback,
   graphLocalizationKeys,
   hasGraphLocalizationReference,
   uniqueGraphGuidReference,
@@ -127,6 +128,7 @@ export async function extractDataCoreContractGenerators(
             );
             const locationTagGuids = readLocationTagGuids($, contract);
             const blueprintRewards = readBlueprintRewards($, contractResults);
+            const contractId = contract.attr('id') ?? '';
             const factionReputationGuid = graphGuidReference(
               record,
               ['factionReputation'],
@@ -152,18 +154,28 @@ export async function extractDataCoreContractGenerators(
               factionReputationGuid,
               reputationScopeGuid,
               contractSection: section,
-              contractId: contract.attr('id') ?? '',
+              contractId,
               contractDebugName: contract.attr('debugName') ?? '',
               contractNotForRelease: contract.attr('notForRelease') ?? '',
               contractWorkInProgress: contract.attr('workInProgress') ?? '',
               templateGuid,
               templateClass: linkedClass(template),
-              titleKey: localizationKey(stringParams.get('Title') ?? ''),
-              descriptionKey: localizationKey(stringParams.get('Description') ?? ''),
-              contractorKey: localizationKey(stringParams.get('Contractor') ?? ''),
+              titleKey: readGraphContractStringParamWithFallback(record, contractId, 'Title', stringParams.get('Title') ?? ''),
+              descriptionKey: readGraphContractStringParamWithFallback(
+                record,
+                contractId,
+                'Description',
+                stringParams.get('Description') ?? '',
+              ),
+              contractorKey: readGraphContractStringParamWithFallback(
+                record,
+                contractId,
+                'Contractor',
+                stringParams.get('Contractor') ?? '',
+              ),
               titleVariantKeys: titleVariantKeys.join(' | '),
               descriptionVariantKeys: descriptionVariantKeys.join(' | '),
-              stringParamOverrides: formatStringParams(stringParams),
+              stringParamOverrides: formatStringParams(record, contractId, stringParams),
               locationTagGuids: locationTagGuids.join(' | '),
               locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
               successReputationRewards: successReputationRewards.length ? JSON.stringify(successReputationRewards) : '',
@@ -273,10 +285,10 @@ function readLocationTagGuids($: ReturnType<typeof loadXml>, root: ReturnType<Re
   return guids;
 }
 
-function formatStringParams(params: Map<string, string>): string {
+function formatStringParams(record: DataCoreRecordNode, contractId: string, params: Map<string, string>): string {
   return [...params.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([key, value]) => `${key}=${localizationKey(value) || value}`)
+    .map(([key, value]) => `${key}=${formatContractStringParamValue(record, contractId, key, value)}`)
     .join(' | ');
 }
 
@@ -300,6 +312,36 @@ function readGraphStringHashKeysWithFallback(
 function contractStringHashAttribute(contractId: string, missionVariableName: string): string {
   const trimmed = contractId.trim();
   return trimmed ? `contract:${trimmed}:${missionVariableName}.textId` : '';
+}
+
+function readGraphContractStringParamWithFallback(
+  record: DataCoreRecordNode,
+  contractId: string,
+  param: string,
+  fallback: string,
+): string {
+  const attribute = contractStringParamAttribute(contractId, param);
+  if (!attribute) return localizationKey(fallback);
+  return graphLocalizationKeyWithFallback(record, [attribute], fallback);
+}
+
+function formatContractStringParamValue(
+  record: DataCoreRecordNode,
+  contractId: string,
+  param: string,
+  fallback: string,
+): string {
+  const attribute = contractStringParamAttribute(contractId, param);
+  if (attribute && hasGraphLocalizationReference(record, [attribute])) {
+    return graphLocalizationKeyWithFallback(record, [attribute], fallback);
+  }
+  return localizationKey(fallback) || fallback;
+}
+
+function contractStringParamAttribute(contractId: string, param: string): string {
+  const trimmedContractId = contractId.trim();
+  const trimmedParam = param.trim();
+  return trimmedContractId && trimmedParam ? `contract:${trimmedContractId}:ContractStringParam.${trimmedParam}` : '';
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {

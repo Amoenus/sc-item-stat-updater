@@ -19,22 +19,22 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
           <ContractGeneratorHandler_Career notForRelease="0" workInProgress="1" debugName="Career_Handler" factionReputation="stale-faction-guid" reputationScope="stale-scope-guid">
             <contractParams>
               <stringParamOverrides>
-                <ContractStringParam param="Contractor" value="@contractor_from" />
+                <ContractStringParam param="Contractor" value="@contractor_from_xml_fallback" />
               </stringParamOverrides>
             </contractParams>
             <introContracts>
               <Contract id="contract-guid" notForRelease="0" workInProgress="0" debugName="Intro_Contract" template="stale-template-guid">
                 <paramOverrides>
                   <stringParamOverrides>
-                    <ContractStringParam param="Title" value="@intro_title" />
-                    <ContractStringParam param="Description" value="@intro_desc" />
+                    <ContractStringParam param="Title" value="@intro_title_xml_fallback" />
+                    <ContractStringParam param="Description" value="@intro_desc_xml_fallback" />
                   </stringParamOverrides>
                   <propertyOverrides>
                     <MissionProperty missionVariableName="Mission_Title_StringHash">
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_title_stale" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_title_xml_fallback" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -43,9 +43,9 @@ test('extractDataCoreContractGenerators emits generated contract variant facts',
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale_001" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_xml_fallback_001" weighting="1" />
                             <MissionPropertyValueOption_StringHash textId="@LOC_PLACEHOLDER" weighting="1" />
-                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale_002" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_xml_fallback_002" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -224,7 +224,7 @@ test('extractDataCoreContractGenerators does not use XML string-hash fallback wh
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_title_stale" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_title_xml_fallback" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -233,7 +233,7 @@ test('extractDataCoreContractGenerators does not use XML string-hash fallback wh
                       <value>
                         <MissionPropertyValue_StringHash>
                           <options>
-                            <MissionPropertyValueOption_StringHash textId="@intro_desc_stale" weighting="1" />
+                            <MissionPropertyValueOption_StringHash textId="@intro_desc_xml_fallback" weighting="1" />
                           </options>
                         </MissionPropertyValue_StringHash>
                       </value>
@@ -260,6 +260,54 @@ test('extractDataCoreContractGenerators does not use XML string-hash fallback wh
 
   assert.equal(row.titleVariantKeys, '');
   assert.equal(row.descriptionVariantKeys, '');
+});
+
+test('extractDataCoreContractGenerators does not use XML string-param fallback when graph params are placeholders', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-generator-param-placeholder-'));
+  const generatorPath = 'libs/foundry/records/contracts/contractgenerator/test_generator.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, generatorPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, generatorPath),
+    `
+      <ContractGenerator.TestGenerator __type="ContractGenerator" __ref="generator-guid" __path="${generatorPath}">
+        <generators>
+          <ContractGeneratorHandler_Career debugName="Career_Handler">
+            <contractParams>
+              <stringParamOverrides>
+                <ContractStringParam param="Contractor" value="@contractor_from_xml" />
+              </stringParamOverrides>
+            </contractParams>
+            <introContracts>
+              <Contract id="contract-guid" debugName="Intro_Contract" template="template-guid">
+                <paramOverrides>
+                  <stringParamOverrides>
+                    <ContractStringParam param="Title" value="@intro_title_xml" />
+                    <ContractStringParam param="Description" value="@intro_desc_xml" />
+                  </stringParamOverrides>
+                </paramOverrides>
+              </Contract>
+            </introContracts>
+          </ContractGeneratorHandler_Career>
+        </generators>
+      </ContractGenerator.TestGenerator>
+    `,
+  );
+  const graph = graphFixture(generatorPath);
+  graph.records[0].localizationKeys = [
+    { attribute: 'contract:contract-guid:ContractStringParam.Contractor', key: 'contractor_from_graph' },
+    { attribute: 'contract:contract-guid:ContractStringParam.Description', key: 'LOC_EMPTY' },
+    { attribute: 'contract:contract-guid:ContractStringParam.Title', key: 'LOC_PLACEHOLDER' },
+  ];
+
+  const [row] = await extractDataCoreContractGenerators({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(row.titleKey, '');
+  assert.equal(row.descriptionKey, '');
+  assert.equal(row.contractorKey, 'contractor_from_graph');
+  assert.equal(row.stringParamOverrides, 'Contractor=contractor_from_graph | Description= | Title=');
 });
 
 function graphFixture(
@@ -291,6 +339,9 @@ function graphFixture(
         rootType: 'ContractGenerator',
         entityClass: 'TestGenerator',
         localizationKeys: [
+          { attribute: 'contract:contract-guid:ContractStringParam.Contractor', key: 'contractor_from' },
+          { attribute: 'contract:contract-guid:ContractStringParam.Description', key: 'intro_desc' },
+          { attribute: 'contract:contract-guid:ContractStringParam.Title', key: 'intro_title' },
           { attribute: 'contract:contract-guid:Mission_Title_StringHash.textId', key: 'intro_title_001' },
           { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'intro_desc_002' },
           { attribute: 'contract:contract-guid:Mission_Description_StringHash.textId', key: 'LOC_PLACEHOLDER' },
