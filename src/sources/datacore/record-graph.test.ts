@@ -38,6 +38,11 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
             <NavPointSpawnInformation name="@nav_name" />
           </ObjectiveHandler>
         </ObjectiveToken>
+        <SReputationContextBBPropertyParams name="entityDescription">
+          <dynamicProperty>
+            <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Description" />
+          </dynamicProperty>
+        </SReputationContextBBPropertyParams>
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
         <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" shortName="@items_commodities_atlasium_short_lower" />
         <Placeholder Name="@LOC_PLACEHOLDER" Description="@LOC_UNINITIALIZED" />
@@ -130,6 +135,17 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   assert.deepEqual(graph.indexes.byLocalizationKey.nav_name, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.HeadHunters_RepUI_Description, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
+  assert.equal(
+    graph.records[0]?.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'reputationProperty:entityDescription' &&
+        reference.key === 'HeadHunters_RepUI_Description',
+    ),
+    true,
+  );
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);
   assert.equal(graph.indexes.byLocalizationKey.LOC_PLACEHOLDER, undefined);
   assert.equal(graph.indexes.byLocalizationKey.LOC_UNINITIALIZED, undefined);

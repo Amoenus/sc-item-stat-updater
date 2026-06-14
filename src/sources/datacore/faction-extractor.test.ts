@@ -51,7 +51,7 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
         <propertiesBB>
           <SReputationContextBBPropertyParams name="entityDescription">
             <dynamicProperty>
-              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Description" />
+              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Description_Stale" />
             </dynamicProperty>
           </SReputationContextBBPropertyParams>
           <SReputationContextBBPropertyParams name="entityLawful">
@@ -61,12 +61,12 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
           </SReputationContextBBPropertyParams>
           <SReputationContextBBPropertyParams name="entityHeadquarters">
             <dynamicProperty>
-              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Headquarters" />
+              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Headquarters_Stale" />
             </dynamicProperty>
           </SReputationContextBBPropertyParams>
           <SReputationContextBBPropertyParams name="entityFocus">
             <dynamicProperty>
-              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Focus" />
+              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Focus_Stale" />
             </dynamicProperty>
           </SReputationContextBBPropertyParams>
         </propertiesBB>
@@ -108,6 +108,59 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
       enemyFactionGuids: '14789370-bf3a-42b9-ac55-a49ee406e1f1;cd2b32d1-0362-41fb-8cfd-d29781daf789',
     },
   ]);
+});
+
+test('extractDataCoreFactions blocks reputation localization XML fallback when graph has placeholder refs', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-factions-placeholder-'));
+  const factionPath = 'libs/foundry/records/factions/faction_reputation_unlawful_headhunters.xml';
+  const reputationPath = 'libs/foundry/records/factions/factionreputation/factionreputation_headhunters.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, factionPath)), { recursive: true });
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, reputationPath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, factionPath),
+    `
+      <Faction.Faction_Reputation_Unlawful_HeadHunters
+        name="@HeadHunters_RepUI_Name"
+        factionReputationRef="09efeef4-c646-408d-a979-3ae56a3b1beb"
+        __type="Faction"
+        __ref="9f89edc0-441b-4f40-a502-df12ebf3f1eb"
+        __path="${factionPath}" />
+    `,
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(xmlCacheDir, reputationPath),
+    `
+      <FactionReputation.FactionReputation_HeadHunters
+        displayName="@HeadHunters_RepUI_Name"
+        __type="FactionReputation"
+        __ref="09efeef4-c646-408d-a979-3ae56a3b1beb"
+        __path="${reputationPath}">
+        <propertiesBB>
+          <SReputationContextBBPropertyParams name="entityDescription">
+            <dynamicProperty>
+              <SBBDynamicPropertyLocString value="@HeadHunters_RepUI_Description_Stale" />
+            </dynamicProperty>
+          </SReputationContextBBPropertyParams>
+        </propertiesBB>
+      </FactionReputation.FactionReputation_HeadHunters>
+    `,
+    'utf8',
+  );
+  const graph = makeGraph(factionPath, reputationPath);
+  const reputation = graph.records[1];
+  assert.ok(reputation);
+  reputation.localizationKeys = [
+    { attribute: 'displayName', key: 'HeadHunters_RepUI_Name' },
+    { attribute: 'reputationProperty:entityDescription', key: 'LOC_PLACEHOLDER' },
+  ];
+
+  const rows = await extractDataCoreFactions({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.reputationDescriptionKey, '');
 });
 
 test('extractDataCoreFactions does not use XML fallback when graph GUID refs are ambiguous', async () => {
@@ -194,6 +247,9 @@ function makeGraph(factionPath: string, reputationPath: string): DataCoreRecordG
         localizationKeys: [
           { attribute: 'displayName', key: 'LOC_UNINITIALIZED' },
           { attribute: 'name', key: 'HeadHunters_RepUI_Name' },
+          { attribute: 'reputationProperty:entityDescription', key: 'HeadHunters_RepUI_Description' },
+          { attribute: 'reputationProperty:entityHeadquarters', key: 'HeadHunters_RepUI_Headquarters' },
+          { attribute: 'reputationProperty:entityFocus', key: 'HeadHunters_RepUI_Focus' },
         ],
         referencedGuids: [],
       },

@@ -104,13 +104,13 @@ async function readFactionReputation(
   return {
     record,
     displayNameKey: graphLocalizationKeyWithFallback(record, ['displayName', 'name'], root.attr('displayName') ?? ''),
-    descriptionKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.description),
-    headquartersKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.headquarters),
-    foundedKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.founded),
-    leadershipKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.leadership),
-    areaKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.area),
-    focusKey: reputationProperty($, REPUTATION_PROPERTY_NAMES.focus),
-    lawful: reputationProperty($, REPUTATION_PROPERTY_NAMES.lawful),
+    descriptionKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.description),
+    headquartersKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.headquarters),
+    foundedKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.founded),
+    leadershipKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.leadership),
+    areaKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.area),
+    focusKey: reputationLocalizationProperty(record, $, REPUTATION_PROPERTY_NAMES.focus),
+    lawful: reputationBoolProperty($, REPUTATION_PROPERTY_NAMES.lawful),
   };
 }
 
@@ -128,15 +128,30 @@ function emptyFactionReputation(record?: DataCoreRecordNode): FactionReputationM
   };
 }
 
-function reputationProperty($: ReturnType<typeof loadXml>, propertyName: string): string {
+function reputationLocalizationProperty(
+  record: DataCoreRecordNode,
+  $: ReturnType<typeof loadXml>,
+  propertyName: string,
+): string {
   const property = $(`SReputationContextBBPropertyParams[name="${propertyName}"]`).first();
   const locString = property.find('SBBDynamicPropertyLocString').first();
-  if (locString.length) return localizationKey(locString.attr('value') ?? '');
+  return graphLocalizationKeyWithFallback(
+    record,
+    [reputationPropertyAttribute(propertyName)],
+    locString.attr('value') ?? '',
+  );
+}
 
+function reputationBoolProperty($: ReturnType<typeof loadXml>, propertyName: string): string {
+  const property = $(`SReputationContextBBPropertyParams[name="${propertyName}"]`).first();
   const boolValue = property.find('SBBDynamicPropertyBool').first();
   if (boolValue.length) return boolValue.attr('value') ?? '';
 
   return '';
+}
+
+function reputationPropertyAttribute(propertyName: string): string {
+  return `reputationProperty:${propertyName}`;
 }
 
 function referenceValues($: ReturnType<typeof loadXml>, selector: string): string[] {
@@ -149,10 +164,4 @@ function referenceValues($: ReturnType<typeof loadXml>, selector: string): strin
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
-}
-
-function localizationKey(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
-  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }

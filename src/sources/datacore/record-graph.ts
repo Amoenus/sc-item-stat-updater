@@ -169,6 +169,12 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
     addReference('NavPointSpawnInformation.name', $(element).attr('name'));
   });
 
+  $('SReputationContextBBPropertyParams[name]').each((_, element) => {
+    const propertyName = $(element).attr('name')?.trim();
+    if (!propertyName) return;
+    addReference(`reputationProperty:${propertyName}`, $(element).find('SBBDynamicPropertyLocString').first().attr('value'));
+  });
+
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
 }
 
