@@ -75,7 +75,7 @@ export function createScmdbScrapePlan(options: RunScmdbScrapeOptions): ScmdbScra
   let selected: ScmdbVersionEntry | undefined;
   let outDir: string | undefined;
   let missionsOutDir: string | undefined;
-  let rawDatasets: Partial<ScmdbRawDatasets> = {};
+  const rawDatasets: Partial<ScmdbRawDatasets> = {};
   const writtenFiles: ScmdbWrittenFile[] = [];
 
   const requireSelected = (): ScmdbVersionEntry => {

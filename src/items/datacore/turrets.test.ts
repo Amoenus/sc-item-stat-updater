@@ -51,6 +51,21 @@ test('turrets derive description keys only when DataCore lacks direct descriptio
   );
 });
 
+test('turrets skip non-item raw name keys instead of patching UI control labels', () => {
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'turret_unmanned_kbar_aa_ground_ea',
+        'Name Key': 'sm_ui_CTRL_A',
+        'Description Key': '',
+        'Short Name Key': '',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    [],
+  );
+});
+
 test('turrets do not derive keys when DataCore exposes placeholder direct keys', () => {
   assert.deepEqual(
     getTargetKeys(

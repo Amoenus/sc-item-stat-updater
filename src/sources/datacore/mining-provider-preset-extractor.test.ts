@@ -156,10 +156,7 @@ test('extractDataCoreMiningProviderPresets does not use harvestable XML entity f
     `,
   );
   const graph = makeGraph();
-  graph.records[1].referencedGuids = [
-    '1c949ce0-c99b-485b-b783-2ea3b49162c0',
-    'dfa89ac4-393b-4e8d-97b4-5ce21ee61970',
-  ];
+  graph.records[1].referencedGuids = ['1c949ce0-c99b-485b-b783-2ea3b49162c0', 'dfa89ac4-393b-4e8d-97b4-5ce21ee61970'];
   graph.records[1].referencedGuidAttributes = [
     { attribute: 'entityClass', value: '1c949ce0-c99b-485b-b783-2ea3b49162c0' },
     { attribute: 'entityClass', value: 'dfa89ac4-393b-4e8d-97b4-5ce21ee61970' },

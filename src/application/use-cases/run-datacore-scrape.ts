@@ -2184,8 +2184,11 @@ async function scrapeDataCoreType(
           'shortName',
           attachLocalization.attr('ShortName') ?? '',
         ),
-        'Description Key':
-          resolveDataCoreLocalizationKey(record, 'description', attachLocalization.attr('Description') ?? ''),
+        'Description Key': resolveDataCoreLocalizationKey(
+          record,
+          'description',
+          attachLocalization.attr('Description') ?? '',
+        ),
         Manufacturer: manufacturer,
         Size: attachDef.size,
         Grade: attachDef.grade,

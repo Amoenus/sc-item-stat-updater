@@ -203,7 +203,10 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
   assert.equal(row.descriptionKey, 'career_desc');
   assert.equal(row.timeToComplete, '45');
   assert.equal(row.blueprintRewardPoolGuids, 'blueprint-pool');
-  assert.equal(row.blueprintRewards, '[{"blueprintPool":"blueprint-pool","chance":1,"trigger":"","type":"BlueprintRewards"}]');
+  assert.equal(
+    row.blueprintRewards,
+    '[{"blueprintPool":"blueprint-pool","chance":1,"trigger":"","type":"BlueprintRewards"}]',
+  );
 });
 
 test('extractDataCoreContractGenerators does not use XML string-hash fallback when graph variants are placeholders', async () => {
@@ -310,10 +313,7 @@ test('extractDataCoreContractGenerators does not use XML string-param fallback w
   assert.equal(row.stringParamOverrides, 'Contractor=contractor_from_graph | Description= | Title=');
 });
 
-function graphFixture(
-  generatorPath: string,
-  options: { ambiguousTemplate?: boolean } = {},
-): DataCoreRecordGraph {
+function graphFixture(generatorPath: string, options: { ambiguousTemplate?: boolean } = {}): DataCoreRecordGraph {
   const templateReferences = options.ambiguousTemplate
     ? [
         { attribute: 'template', value: 'template-guid' },

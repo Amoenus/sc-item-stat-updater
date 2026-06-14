@@ -389,7 +389,12 @@ export async function buildSourceFreshnessDiagnostics(
       : undefined;
   const itemIdentityWarnings = itemIdentity ? collectDataCoreItemIdentityWarnings(itemIdentity) : [];
   const incompleteWarnings = dedupeWarningsByPath([...categoryWarnings, ...rawFactWarnings, ...itemIdentityWarnings]);
-  return { versions, warnings: [...staleWarnings, ...versionMismatchWarnings, ...incompleteWarnings], rawFacts, itemIdentity };
+  return {
+    versions,
+    warnings: [...staleWarnings, ...versionMismatchWarnings, ...incompleteWarnings],
+    rawFacts,
+    itemIdentity,
+  };
 }
 
 export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDiagnostics): string {

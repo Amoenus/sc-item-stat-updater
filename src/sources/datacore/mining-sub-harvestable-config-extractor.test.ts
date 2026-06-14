@@ -163,13 +163,9 @@ async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): P
 
 function makeGraph(): DataCoreRecordGraph {
   const records: DataCoreRecordNode[] = [
-    node(
-      directConfigPath,
-      '1a3fdfbe-bd2e-4db1-b175-060c11db30fc',
-      'SubHarvestableConfigRecord',
-      'Cave_Aberdeen_Rich',
-      [{ attribute: 'harvestableSetup', value: '0aa9921e-8de0-487e-bc87-1d457c56d74f' }],
-    ),
+    node(directConfigPath, '1a3fdfbe-bd2e-4db1-b175-060c11db30fc', 'SubHarvestableConfigRecord', 'Cave_Aberdeen_Rich', [
+      { attribute: 'harvestableSetup', value: '0aa9921e-8de0-487e-bc87-1d457c56d74f' },
+    ]),
     node(
       multiConfigPath,
       '22222222-2222-2222-2222-222222222222',
@@ -177,13 +173,9 @@ function makeGraph(): DataCoreRecordGraph {
       'Cave_Prison_Harvestables',
       [{ attribute: 'subConfigRef', value: '1a3fdfbe-bd2e-4db1-b175-060c11db30fc' }],
     ),
-    node(
-      harvestablePresetPath,
-      'b4dbb414-4946-437a-870b-0df49007603b',
-      'HarvestablePreset',
-      'FPSMining_Aphorite',
-      [{ attribute: 'entityClass', value: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }],
-    ),
+    node(harvestablePresetPath, 'b4dbb414-4946-437a-870b-0df49007603b', 'HarvestablePreset', 'FPSMining_Aphorite', [
+      { attribute: 'entityClass', value: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
+    ]),
     node(
       mineableEntityPath,
       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',

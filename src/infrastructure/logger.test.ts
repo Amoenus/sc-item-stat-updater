@@ -87,9 +87,12 @@ test('logger filters debug records unless verbose logging is enabled', () => {
 test('logger output can be routed to a renderer-owned sink', async () => {
   const lines: string[] = [];
   const output = await captureStderrAsync(async () => {
-    await withLoggerOutputSink((line) => lines.push(line), async () => {
-      getLogger('fixture').error('hidden while rendering');
-    });
+    await withLoggerOutputSink(
+      (line) => lines.push(line),
+      async () => {
+        getLogger('fixture').error('hidden while rendering');
+      },
+    );
   });
 
   assert.equal(output, '');

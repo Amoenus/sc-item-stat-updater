@@ -402,10 +402,7 @@ function makeGraph(): DataCoreRecordGraph {
           { attribute: 'displayType', key: 'items_commodities_type_alloy' },
           { attribute: 'name', key: 'items_commodities_atlasium' },
         ],
-        referencedGuids: [
-          '22325f28-8d37-46ab-8c08-8a9b34101fad',
-          '45f89d34-3167-4723-9b85-f9df3770ce00',
-        ],
+        referencedGuids: ['22325f28-8d37-46ab-8c08-8a9b34101fad', '45f89d34-3167-4723-9b85-f9df3770ce00'],
         referencedGuidAttributes: [
           { attribute: 'type', value: '' },
           { attribute: 'type', value: '22325f28-8d37-46ab-8c08-8a9b34101fad' },

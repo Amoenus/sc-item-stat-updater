@@ -6,7 +6,7 @@ export interface ChainDataDTO {
   blueprintChainDepth: Map<string, number>;
 }
 
-export function buildTagProviders(contracts: ContractDTO[]): Map<string, string[]> {
+function buildTagProviders(contracts: ContractDTO[]): Map<string, string[]> {
   const tagProviders = new Map<string, string[]>();
   for (const contract of contracts) {
     if (!contract.completionTags) continue;
@@ -20,11 +20,11 @@ export function buildTagProviders(contracts: ContractDTO[]): Map<string, string[
   return tagProviders;
 }
 
-export function getRequiredTags(contract: ContractDTO): string[] {
+function getRequiredTags(contract: ContractDTO): string[] {
   return contract.prerequisites.completedContractTags?.tags ?? [];
 }
 
-export function seedBlueprintQueue(
+function seedBlueprintQueue(
   contracts: ContractDTO[],
   tagProviders: Map<string, string[]>,
   isBlueprintReward: Map<string, boolean>,
@@ -44,7 +44,7 @@ export function seedBlueprintQueue(
   return queue;
 }
 
-export function enqueuePrerequisites(
+function enqueuePrerequisites(
   contractId: string,
   depth: number,
   contract: ContractDTO,
@@ -59,7 +59,7 @@ export function enqueuePrerequisites(
   }
 }
 
-export function propagateChainDepths(
+function propagateChainDepths(
   queue: Array<{ contractId: string; depth: number }>,
   contractById: Map<string, ContractDTO>,
   blueprintChainDepth: Map<string, number>,

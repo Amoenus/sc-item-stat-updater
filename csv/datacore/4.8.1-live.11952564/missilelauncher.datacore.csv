@@ -68,10 +68,10 @@ mrck_s04_espr_talon_cap,item_NameMRCK_S06_BEHR_Octo_S03,,item_DescMRCK_S06_BEHR_
 mrck_s04_espr_talon,item_NameMRCK_S06_BEHR_Octo_S03,,item_DescMRCK_S06_BEHR_Octo_S03,ESPR,4,1,MissileRack,200,12,3
 mrck_s04_gama_quad_s02,item_NameMRCK_S04_BEHR_Quad_S02,,item_DescMRCK_S04_BEHR_Quad_S02,GAMA,4,1,MissileRack,200,4,2
 gmrck_anvl_ballista_quad_s05,item_NameMRCK_S05_ANVL_Ballista,,item_DescMRCK_S05_ANVL_Ballista,ANVL,5,1,GroundVehicleMissileRack,,4,5
-gmrck_s01_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,GroundVehicleMissileRack,200,32,1
+gmrck_s01_tmbl_storm_aa_custom,,,,TMBL,2,1,GroundVehicleMissileRack,200,32,1
 gmrck_s02_behr_single_s02_cyclone_aa,item_NameMRCK_S02_BEHR_Single_S02,,item_DescMRCK_S02_BEHR_Single_S02,BEHR,2,1,GroundVehicleMissileRack,200,1,2
 gmrck_s02_behr_single_s02,item_NameMRCK_S02_BEHR_Single_S02,,item_DescMRCK_S02_BEHR_Single_S02,BEHR,2,1,MissileRack,200,1,2
-gmrck_s02_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,GroundVehicleMissileRack,200,8,2
+gmrck_s02_tmbl_storm_aa_custom,,,,TMBL,2,1,GroundVehicleMissileRack,200,8,2
 gmrck_s03_tmbl_dual_s02_cyclone_mt_left,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,GroundVehicleMissileRack,200,2,2
 gmrck_s03_tmbl_dual_s02_cyclone_mt_right,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,GroundVehicleMissileRack,200,2,2
 gmrck_s06_tmbl_nova_custom,item_NameMRCK_S05_MISC_Reliant,,item_DescMRCK_S05_MISC_Reliant,TMBL,6,1,GroundVehicleMissileRack,500,12,2
@@ -132,8 +132,8 @@ mrck_s10_rsi_polaris_torpedo,item_NameMRCK_S04_ORIG_400i_Octo_S02,,item_DescMRCK
 mrck_s4_rsi_polaris_turret,item_NameMRCK_S4_RSI_Polaris_Turret,,item_DescMRCK_S4_RSI_Polaris_Turret,RSI,4,1,MissileRack,200,12,2
 mrck_taln_colonial_s3x8_orison,item_NameMRCK_S04_BEHR_Octo_S01,,item_DescMRCK_S04_BEHR_Octo_S01,BEHR,4,1,MissileRack,200,8,3
 mrck_taln_colonial_s3x8,item_NameMRCK_S04_BEHR_Octo_S01,,item_DescMRCK_S04_BEHR_Octo_S01,BEHR,4,1,MissileRack,200,8,1
-mrck_s01_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,MissileRack,200,32,1
-mrck_s02_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,MissileRack,200,8,2
+mrck_s01_tmbl_storm_aa_custom,,,,TMBL,2,1,MissileRack,200,32,1
+mrck_s02_tmbl_storm_aa_custom,,,,TMBL,2,1,MissileRack,200,8,2
 mrck_s03_tmbl_dual_s02_cyclone_mt_left,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,MissileRack,200,2,2
 mrck_s03_tmbl_dual_s02_cyclone_mt_right,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,MissileRack,200,2,2
 mrck_s06_tmbl_nova_custom,item_NameMRCK_S05_MISC_Reliant,,item_DescMRCK_S05_MISC_Reliant,TMBL,6,1,MissileRack,500,12,2
@@ -213,10 +213,10 @@ mrck_s04_espr_talon_cap,item_NameMRCK_S06_BEHR_Octo_S03,,item_DescMRCK_S06_BEHR_
 mrck_s04_espr_talon,item_NameMRCK_S06_BEHR_Octo_S03,,item_DescMRCK_S06_BEHR_Octo_S03,ESPR,4,1,MissileRack,200,12,3
 mrck_s04_gama_quad_s02,item_NameMRCK_S04_BEHR_Quad_S02,,item_DescMRCK_S04_BEHR_Quad_S02,GAMA,4,1,MissileRack,200,4,2
 gmrck_anvl_ballista_quad_s05,item_NameMRCK_S05_ANVL_Ballista,,item_DescMRCK_S05_ANVL_Ballista,ANVL,5,1,GroundVehicleMissileRack,,4,5
-gmrck_s01_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,GroundVehicleMissileRack,200,32,1
+gmrck_s01_tmbl_storm_aa_custom,,,,TMBL,2,1,GroundVehicleMissileRack,200,32,1
 gmrck_s02_behr_single_s02_cyclone_aa,item_NameMRCK_S02_BEHR_Single_S02,,item_DescMRCK_S02_BEHR_Single_S02,BEHR,2,1,GroundVehicleMissileRack,200,1,2
 gmrck_s02_behr_single_s02,item_NameMRCK_S02_BEHR_Single_S02,,item_DescMRCK_S02_BEHR_Single_S02,BEHR,2,1,MissileRack,200,1,2
-gmrck_s02_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,GroundVehicleMissileRack,200,8,2
+gmrck_s02_tmbl_storm_aa_custom,,,,TMBL,2,1,GroundVehicleMissileRack,200,8,2
 gmrck_s03_tmbl_dual_s02_cyclone_mt_left,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,GroundVehicleMissileRack,200,2,2
 gmrck_s03_tmbl_dual_s02_cyclone_mt_right,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,GroundVehicleMissileRack,200,2,2
 gmrck_s06_tmbl_nova_custom,item_NameMRCK_S05_MISC_Reliant,,item_DescMRCK_S05_MISC_Reliant,TMBL,6,1,GroundVehicleMissileRack,500,12,2
@@ -277,8 +277,8 @@ mrck_s10_rsi_polaris_torpedo,item_NameMRCK_S04_ORIG_400i_Octo_S02,,item_DescMRCK
 mrck_s4_rsi_polaris_turret,item_NameMRCK_S4_RSI_Polaris_Turret,,item_DescMRCK_S4_RSI_Polaris_Turret,RSI,4,1,MissileRack,200,12,2
 mrck_taln_colonial_s3x8_orison,item_NameMRCK_S04_BEHR_Octo_S01,,item_DescMRCK_S04_BEHR_Octo_S01,BEHR,4,1,MissileRack,200,8,3
 mrck_taln_colonial_s3x8,item_NameMRCK_S04_BEHR_Octo_S01,,item_DescMRCK_S04_BEHR_Octo_S01,BEHR,4,1,MissileRack,200,8,1
-mrck_s01_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,MissileRack,200,32,1
-mrck_s02_tmbl_storm_aa_custom,LOC_PLACEHOLDER,,,TMBL,2,1,MissileRack,200,8,2
+mrck_s01_tmbl_storm_aa_custom,,,,TMBL,2,1,MissileRack,200,32,1
+mrck_s02_tmbl_storm_aa_custom,,,,TMBL,2,1,MissileRack,200,8,2
 mrck_s03_tmbl_dual_s02_cyclone_mt_left,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,MissileRack,200,2,2
 mrck_s03_tmbl_dual_s02_cyclone_mt_right,item_NameMRCK_S03_BEHR_Dual_S02,,item_DescMRCK_S03_BEHR_Dual_S02,BEHR,3,1,MissileRack,200,2,2
 mrck_s06_tmbl_nova_custom,item_NameMRCK_S05_MISC_Reliant,,item_DescMRCK_S05_MISC_Reliant,TMBL,6,1,MissileRack,500,12,2

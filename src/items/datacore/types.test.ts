@@ -1,6 +1,87 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { makeAlternateDataCoreDescKeys, makeGetTargetKeys, makeGetTargetKeysFromPrefixMap } from './types';
+import {
+  makeAlternateDataCoreDescKeys,
+  makeGetTargetKeys,
+  makeGetTargetKeysFromPrefixMap,
+  resolvePatchableDataCoreDescriptionTargets,
+} from './types';
+
+test('resolvePatchableDataCoreDescriptionTargets uses explicit description relationships', () => {
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_NameCOOL_ACOM_S01_IcePlunge',
+        'Description Key': 'item_DescCOOL_ACOM_S01_IcePlunge',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescCOOL_ACOM_S01_IcePlunge'],
+  );
+});
+
+test('resolvePatchableDataCoreDescriptionTargets preserves description-shaped explicit relationships', () => {
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_Mining_Laser_Hofstede',
+        'Description Key': 'item_Mining_Laser_Hofstede_Desc',
+      },
+      (nameKey) => (nameKey.startsWith('item_Mining_') ? `${nameKey}_Desc` : nameKey.replace('Name', 'Desc')),
+    ),
+    ['item_Mining_Laser_Hofstede_Desc'],
+  );
+});
+
+test('resolvePatchableDataCoreDescriptionTargets converts name-shaped description relationships to description keys', () => {
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_NameVNCL_PlasmaCannon_S2',
+        'Description Key': 'item_NameVNCL_PlasmaCannon_S2',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescVNCL_PlasmaCannon_S2'],
+  );
+});
+
+test('resolvePatchableDataCoreDescriptionTargets derives only distinct description keys from name relationships', () => {
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_NameCOOL_ACOM_S01_IcePlunge',
+        'Description Key': '',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    ['item_DescCOOL_ACOM_S01_IcePlunge'],
+  );
+
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_displayType_TractorBeam',
+        'Description Key': '',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    [],
+  );
+});
+
+test('resolvePatchableDataCoreDescriptionTargets does not fall back when DataCore exposes an unusable description relationship', () => {
+  assert.deepEqual(
+    resolvePatchableDataCoreDescriptionTargets(
+      {
+        'Name Key': 'item_NameCOOL_ACOM_S01_IcePlunge',
+        'Description Key': 'LOC_PLACEHOLDER',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    [],
+  );
+});
 
 test('makeGetTargetKeys prefers raw DataCore description keys over entity-class derivation', () => {
   const getTargetKeys = makeGetTargetKeys('shld_', 'SHLD_');
@@ -31,6 +112,22 @@ test('makeGetTargetKeys falls back to raw DataCore name keys before entity-class
       (nameKey) => nameKey.replace('Name', 'Desc'),
     ),
     ['item_Desc_COOL_ACOM_S01_IcePlunge'],
+  );
+});
+
+test('makeGetTargetKeys ignores raw DataCore name keys that are not description-key convertible', () => {
+  const getTargetKeys = makeGetTargetKeys('turret_', 'TURR_');
+
+  assert.deepEqual(
+    getTargetKeys(
+      {
+        'Entity Class': 'turret_unmanned_kbar_aa_ground_ea',
+        'Name Key': 'sm_ui_CTRL_A',
+        'Description Key': '',
+      },
+      (nameKey) => nameKey.replace('Name', 'Desc'),
+    ),
+    [],
   );
 });
 

@@ -1,5 +1,5 @@
-import type { DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { graphLocalizationKey } from './record-graph-relations';
+import type { DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 
 export interface DataCoreManufacturer {
   ref: string;

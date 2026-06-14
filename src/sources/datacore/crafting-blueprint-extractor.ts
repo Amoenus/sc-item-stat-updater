@@ -1,12 +1,12 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { createDataCoreRelationshipIndex } from './relationship-index';
 import {
-  uniqueGraphGuidReference,
   graphLocalizationKey,
   hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
 } from './record-graph-relations';
+import { createDataCoreRelationshipIndex } from './relationship-index';
 import type { DataCoreCraftingBlueprintRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 

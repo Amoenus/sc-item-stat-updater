@@ -479,7 +479,8 @@ function buildDatacoreMiningLocationRows(
     const setupSummary =
       (setupGuid ? setupSummaries.byGuid.get(setupGuid) : undefined) ??
       (setupClass ? setupSummaries.byClass.get(setupClass) : undefined);
-    if ((setupGuid || setupClass) && setupSummary) facts.setupSummaries.set(setupGuid || setupClass || '', setupSummary);
+    if ((setupGuid || setupClass) && setupSummary)
+      facts.setupSummaries.set(setupGuid || setupClass || '', setupSummary);
 
     let hasSubHarvestableSummary = false;
     for (const subHarvestableKey of [
@@ -748,10 +749,7 @@ function addSummary(summaries: Map<string, string[]>, key: string | undefined, v
 
 function flattenSummaryMap(summaries: Map<string, string[]>): Map<string, string> {
   return new Map(
-    [...summaries.entries()].map(([key, values]) => [
-      key,
-      values.toSorted((a, b) => a.localeCompare(b)).join(' | '),
-    ]),
+    [...summaries.entries()].map(([key, values]) => [key, values.toSorted((a, b) => a.localeCompare(b)).join(' | ')]),
   );
 }
 
@@ -812,9 +810,7 @@ function buildHarvestablePresetSummaryMap(rows: Record<string, string>[]): {
       row['Special Harvestable String'] ? `special ${row['Special Harvestable String']}` : '',
     ].filter(Boolean);
     const label = row['Harvestable Preset Class'] || row['Record GUID'];
-    const summary = details.length
-      ? `${label} (${details.join(', ')})`
-      : label;
+    const summary = details.length ? `${label} (${details.join(', ')})` : label;
 
     for (const key of guidKeys) addSummary(summariesByGuid, key, summary);
     for (const key of classKeys) addSummary(summariesByClass, key, summary);
@@ -866,9 +862,11 @@ function buildSubHarvestableSummaryMap(rows: Record<string, string>[]): {
     const guidKeys = [row['Harvestable GUID'], row['Harvestable Entity GUID'], row['Harvestable Setup GUID']].filter(
       Boolean,
     );
-    const classKeys = [row['Harvestable Class'], row['Harvestable Entity Class'], row['Harvestable Setup Class']].filter(
-      Boolean,
-    );
+    const classKeys = [
+      row['Harvestable Class'],
+      row['Harvestable Entity Class'],
+      row['Harvestable Setup Class'],
+    ].filter(Boolean);
     if (guidKeys.length === 0 && classKeys.length === 0) continue;
 
     const configLabel = [row['Config Class'], row['Tagged Config Name']].filter(Boolean).join('/');

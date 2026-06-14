@@ -15,10 +15,9 @@ function buildMissionContractIntelRow(row: DataCoreMissionBrokerRecord): DataCor
   const timeLimit = parsePositiveNumber(row.missionCompletionTime);
   const cooldown = hasPersonalCooldown(row) ? formatCooldownMinutes(Number(row.personalCooldownTime)) : '';
   const timeLimitText = timeLimit ? formatTimeLimit(timeLimit) : '';
-  const lines = [
-    timeLimitText ? `Time Limit: ${timeLimitText}` : '',
-    cooldown ? `Cooldown: ${cooldown}` : '',
-  ].filter(Boolean);
+  const lines = [timeLimitText ? `Time Limit: ${timeLimitText}` : '', cooldown ? `Cooldown: ${cooldown}` : ''].filter(
+    Boolean,
+  );
 
   if (lines.length === 0) return null;
 

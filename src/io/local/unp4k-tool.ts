@@ -51,7 +51,11 @@ async function downloadToFile(url: string, dest: string): Promise<void> {
   await fsp.writeFile(dest, Buffer.from(await res.arrayBuffer()));
 }
 
-export function runTool(cmd: string, args: string[], opts: { cwd?: string; stdio?: 'inherit' | 'ignore' | 'pipe' } = {}): void {
+export function runTool(
+  cmd: string,
+  args: string[],
+  opts: { cwd?: string; stdio?: 'inherit' | 'ignore' | 'pipe' } = {},
+): void {
   const winArgs = args.map(toWinPath);
   const winCwd = opts.cwd ? toWinPath(opts.cwd) : undefined;
   const stdio = opts.stdio ?? 'inherit';
@@ -60,7 +64,11 @@ export function runTool(cmd: string, args: string[], opts: { cwd?: string; stdio
   if (result.status !== 0) throw new Error(`${path.basename(cmd)} exited with code ${result.status}`);
 }
 
-export async function runToolAsync(cmd: string, args: string[], opts: { cwd?: string; stdio?: 'inherit' | 'ignore' | 'pipe' } = {}): Promise<void> {
+export async function runToolAsync(
+  cmd: string,
+  args: string[],
+  opts: { cwd?: string; stdio?: 'inherit' | 'ignore' | 'pipe' } = {},
+): Promise<void> {
   const winArgs = args.map(toWinPath);
   const winCwd = opts.cwd ? toWinPath(opts.cwd) : undefined;
   const stdio = opts.stdio ?? 'inherit';

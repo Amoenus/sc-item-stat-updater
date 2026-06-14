@@ -1,8 +1,8 @@
-import { readCsvFile } from '../../io/local/csv-parser';
-import { resolveChildPath } from '../../io/local/path-conventions';
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
+import { readCsvFile } from '../../io/local/csv-parser';
+import { resolveChildPath } from '../../io/local/path-conventions';
+import { type DataCoreItemTypeConfig, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 const defaultMagazineRef = {
   selector: 'SEntityComponentDefaultLoadoutParams SItemPortLoadoutEntryParams[itemPortName="magazine_attach"]',
@@ -87,7 +87,7 @@ function buildPortableLightValue(
   return `Manufacturer: ${manufacturer}${flavorText ? `${newline}${newline}${flavorText}` : ''}`;
 }
 
-export async function loadPersonalWeaponSourceData(context: {
+async function loadPersonalWeaponSourceData(context: {
   csvDir: string;
 }): Promise<Array<Record<string, string>>> {
   const [weaponRows, manufacturerRows] = await Promise.all([
@@ -108,7 +108,9 @@ export async function loadPersonalWeaponSourceData(context: {
   return weaponRows.map((row) => ({
     ...row,
     'Manufacturer Name Key':
-      manufacturerNameKeysByGuid.get(row['Manufacturer GUID']) ?? manufacturerNameKeysByCode.get(row['Manufacturer']) ?? '',
+      manufacturerNameKeysByGuid.get(row['Manufacturer GUID']) ??
+      manufacturerNameKeysByCode.get(row['Manufacturer']) ??
+      '',
   }));
 }
 
@@ -153,7 +155,8 @@ export default {
       !kl.includes('throwable') &&
       !kl.includes('optics') &&
       !kl.includes('barrel')),
-  getTargetKeys: (row, deriveDescKey) => (isThrowableWeaponPersonal(row) ? [] : getRawDataCoreTargetKeys(row, deriveDescKey)),
+  getTargetKeys: (row, deriveDescKey) =>
+    isThrowableWeaponPersonal(row) ? [] : resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey),
   buildValue(r, flavorText, oldValue, targetKey, context) {
     if (isMeleeKnife(r)) {
       return buildMeleeKnifeValue(r, flavorText, oldValue, context.localizationValue);

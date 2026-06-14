@@ -3,7 +3,7 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-export const GENERATED_DATA_GUARD_PATHS = ['csv', 'global.ini'] as const;
+const GENERATED_DATA_GUARD_PATHS = ['csv', 'global.ini'] as const;
 
 export interface GeneratedDataChange {
   status: string;
@@ -44,7 +44,7 @@ export function formatGeneratedDataChurnMessage(changes: GeneratedDataChange[]):
   ].join('\n');
 }
 
-export async function findGeneratedDataChurn(repoRoot = process.cwd()): Promise<GeneratedDataChange[]> {
+async function findGeneratedDataChurn(repoRoot = process.cwd()): Promise<GeneratedDataChange[]> {
   const { stdout } = await execFileAsync('git', ['status', '--porcelain', '--', ...GENERATED_DATA_GUARD_PATHS], {
     cwd: repoRoot,
   });

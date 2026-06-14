@@ -253,28 +253,14 @@ function makeGraph(): DataCoreRecordGraph {
         'MiningGlobalParams',
         'MiningGlobalParams',
       ),
-      node(
-        agriciumResourcePath,
-        agriciumResourceGuid,
-        'Commodity.Agricium_Ore',
-        'Commodity',
-        'Agricium_Ore',
-        [
-          { attribute: 'displayDescription', key: 'items_commodities_agricium_ore_display_desc' },
-          { attribute: 'Description', key: '@items_commodities_agricium_ore_graph_desc' },
-        ],
-      ),
-      node(
-        aslariteResourcePath,
-        aslariteResourceGuid,
-        'Commodity.Aslarite_Raw',
-        'Commodity',
-        'Aslarite_Raw',
-        [
-          { attribute: 'Description', key: 'LOC_UNINITIALIZED' },
-          { attribute: 'displayType', key: 'items_commodities_aslarite_raw_wrong_desc' },
-        ],
-      ),
+      node(agriciumResourcePath, agriciumResourceGuid, 'Commodity.Agricium_Ore', 'Commodity', 'Agricium_Ore', [
+        { attribute: 'displayDescription', key: 'items_commodities_agricium_ore_display_desc' },
+        { attribute: 'Description', key: '@items_commodities_agricium_ore_graph_desc' },
+      ]),
+      node(aslariteResourcePath, aslariteResourceGuid, 'Commodity.Aslarite_Raw', 'Commodity', 'Aslarite_Raw', [
+        { attribute: 'Description', key: 'LOC_UNINITIALIZED' },
+        { attribute: 'displayType', key: 'items_commodities_aslarite_raw_wrong_desc' },
+      ]),
     ],
     indexes: {
       byRef: { [agriciumResourceGuid]: agriciumResourcePath, [aslariteResourceGuid]: aslariteResourcePath },

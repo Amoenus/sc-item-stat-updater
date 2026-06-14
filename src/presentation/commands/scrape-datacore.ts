@@ -55,7 +55,7 @@ interface ScrapeDatacoreTaskContext {
   result?: RunDatacoreScrapeResult;
 }
 
-export async function runScrapeDatacoreCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
+async function runScrapeDatacoreCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
     options: {

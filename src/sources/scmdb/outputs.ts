@@ -80,7 +80,6 @@ export const SCMDB_CONTRACT_HEADERS = [
   'propertyValues',
 ];
 
-
 export const SCMDB_MINING_ELEMENT_HEADERS = [
   'Element Name',
   'Rarity',
@@ -105,16 +104,7 @@ export const SCMDB_MINING_ELEMENT_HEADERS = [
 
 export const SCMDB_MINING_JOURNAL_HEADERS = ['Rarity Category', 'Element List', 'Insight Summary'];
 
-export const SCMDB_MEMA_HEADERS = [
-  'description_key',
-  'mema_uec',
-  'rate_p50',
-  'dur_avg',
-  'avg_diff',
-  'avg_sat',
-  'runs',
-];
-
+export const SCMDB_MEMA_HEADERS = ['description_key', 'mema_uec', 'rate_p50', 'dur_avg', 'avg_diff', 'avg_sat', 'runs'];
 
 export interface ScmdbOutputRows {
   missionRows: ReturnType<typeof buildMissionRows>;

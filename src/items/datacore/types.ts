@@ -140,8 +140,8 @@ export function makeGetTargetKeys(
   nameKeyInfix: string,
 ): NonNullable<ItemConfig['getTargetKeys']> {
   return (row, deriveDescKey) => {
-    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
-    if (rawKeys.length > 0) return rawKeys;
+    const relationshipKeys = resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
+    if (relationshipKeys.length > 0) return relationshipKeys;
     if (hasAnyDataCoreLocalizationKey(row['Description Key']) || hasAnyDataCoreLocalizationKey(row['Name Key'])) {
       return [];
     }
@@ -166,8 +166,8 @@ export function makeGetTargetKeysFromPrefixMap(
   prefixMap: Array<[string, string]>,
 ): NonNullable<ItemConfig['getTargetKeys']> {
   return (row, deriveDescKey) => {
-    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
-    if (rawKeys.length > 0) return rawKeys;
+    const relationshipKeys = resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
+    if (relationshipKeys.length > 0) return relationshipKeys;
     if (hasAnyDataCoreLocalizationKey(row['Description Key']) || hasAnyDataCoreLocalizationKey(row['Name Key'])) {
       return [];
     }
@@ -184,19 +184,47 @@ export function makeGetTargetKeysFromPrefixMap(
   };
 }
 
-export function getRawDataCoreTargetKeys(
+/**
+ * Resolves patchable description keys from DataCore localization relationships.
+ *
+ * The record graph is intentionally broad and literal: it records UI labels,
+ * HUD strings, control labels, placeholders, and ordinary item keys as exposed
+ * by the XML. The updater is stricter. It may patch an explicit usable
+ * description relationship, or derive a description key from a usable name
+ * relationship only when the category mapping produces a distinct target.
+ */
+export function resolvePatchableDataCoreDescriptionTargets(
   row: Record<string, string>,
   deriveDescKey: (nameKey: string) => string,
 ): string[] {
   const descriptionKey = getExplicitDataCoreDescriptionKey(row);
-  if (descriptionKey) return [descriptionKey];
+  if (descriptionKey) return [toPatchableDescriptionKey(descriptionKey, deriveDescKey) ?? descriptionKey];
   if (hasAnyDataCoreLocalizationKey(row['Description Key'])) return [];
 
   const nameKey = usableDataCoreLocalizationKey(row['Name Key']);
-  return nameKey ? [deriveDescKey(nameKey)] : [];
+  if (!nameKey) return [];
+
+  const descKey = deriveDescKey(nameKey);
+  return descKey && descKey !== nameKey ? [descKey] : [];
 }
 
-export function getExplicitDataCoreDescriptionKey(row: Record<string, string>): string {
+function toPatchableDescriptionKey(
+  localizationKey: string,
+  deriveDescKey: (nameKey: string) => string,
+): string | undefined {
+  if (isDescriptionShapedLocalizationKey(localizationKey)) return undefined;
+  const descKey = deriveDescKey(localizationKey);
+  return descKey && descKey !== localizationKey ? descKey : undefined;
+}
+
+function isDescriptionShapedLocalizationKey(localizationKey: string): boolean {
+  return /(?:^|_)desc(?:$|_)/i.test(localizationKey) || /^item_Desc/i.test(localizationKey);
+}
+
+/** @deprecated Use resolvePatchableDataCoreDescriptionTargets for new DataCore item configs. */
+const getRawDataCoreTargetKeys = resolvePatchableDataCoreDescriptionTargets;
+
+function getExplicitDataCoreDescriptionKey(row: Record<string, string>): string {
   return usableDataCoreLocalizationKey(row['Description Key']);
 }
 

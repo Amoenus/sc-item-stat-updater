@@ -63,7 +63,7 @@ test('dynamic coverage audit keeps active enrichment categories fully dynamic', 
 
   const coolers = audit.entries.find((entry) => entry.slug === 'dc-coolers');
   assert.equal(
-    coolers?.dynamicSignals.includes('uses shared DataCore target-key fallback after raw keys'),
+    coolers?.dynamicSignals.includes('uses shared DataCore target-key fallback after relationship keys'),
     true,
   );
 });

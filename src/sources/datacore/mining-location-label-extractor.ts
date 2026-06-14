@@ -2,8 +2,8 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import {
   graphGuidReferences,
-  uniqueGraphGuidReference,
   graphLocalizationKeyWithFallback,
+  uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreMiningLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';

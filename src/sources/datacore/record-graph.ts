@@ -151,7 +151,10 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
     .first()
     .find('> generators > *')
     .each((_, handlerElement) => {
-      const inheritedParams = readContractStringParams($, $(handlerElement).find('> contractParams > stringParamOverrides'));
+      const inheritedParams = readContractStringParams(
+        $,
+        $(handlerElement).find('> contractParams > stringParamOverrides'),
+      );
       for (const section of ['introContracts', 'contracts']) {
         $(handlerElement)
           .find(`> ${section} > *[id]`)
@@ -194,16 +197,16 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
   $('SReputationContextBBPropertyParams[name]').each((_, element) => {
     const propertyName = $(element).attr('name')?.trim();
     if (!propertyName) return;
-    addReference(`reputationProperty:${propertyName}`, $(element).find('SBBDynamicPropertyLocString').first().attr('value'));
+    addReference(
+      `reputationProperty:${propertyName}`,
+      $(element).find('SBBDynamicPropertyLocString').first().attr('value'),
+    );
   });
 
   return references.sort((a, b) => a.key.localeCompare(b.key) || a.attribute.localeCompare(b.attribute));
 }
 
-function readContractStringParams(
-  $: CheerioAPI,
-  root: ReturnType<CheerioAPI>,
-): Map<string, string> {
+function readContractStringParams($: CheerioAPI, root: ReturnType<CheerioAPI>): Map<string, string> {
   const params = new Map<string, string>();
   root.find('> ContractStringParam[param]').each((_, element) => {
     const param = $(element).attr('param')?.trim();

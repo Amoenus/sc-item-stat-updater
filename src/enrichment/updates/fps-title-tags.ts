@@ -2,8 +2,8 @@
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile, writeIniFileIfChanged } from '../../localization/ini-file';
-import { buildLookupMapFromRows } from './lookup-utils';
 import { getGraphTitleLocalizationKeys, loadOptionalDataCoreRelationshipIndex } from './datacore-title-key-utils';
+import { buildLookupMapFromRows } from './lookup-utils';
 import {
   applyTagToFamily,
   buildVariantFamilyIndex,

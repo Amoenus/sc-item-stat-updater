@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-export const MemaTopShipSchema = z.object({
+const MemaTopShipSchema = z.object({
   count: z.number(),
   ship_name: z.string(),
   avg_duration: z.number().nullable(),
 });
 export type MemaTopShip = z.infer<typeof MemaTopShipSchema>;
 
-export const MemaEntrySchema = z.object({
+const MemaEntrySchema = z.object({
   contract_id: z.string(),
   n: z.number(),
   dur_p50: z.number().nullable(),

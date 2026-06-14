@@ -1,6 +1,10 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference, graphLocalizationKey, hasGraphLocalizationReference } from './record-graph-relations';
+import {
+  graphLocalizationKey,
+  hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreMiningElementRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -67,9 +71,7 @@ function getResourceDescriptionKey(graph: DataCoreRecordGraphLookup, resourceTyp
   if (hasGraphLocalizationReference(resource, descriptionAttributes)) return '';
 
   return (
-    resource.localizationKeys
-      .map((reference) => localizationKey(reference.key))
-      .find((key) => /_desc$/i.test(key)) ||
+    resource.localizationKeys.map((reference) => localizationKey(reference.key)).find((key) => /_desc$/i.test(key)) ||
     undefined
   );
 }

@@ -82,8 +82,7 @@ export function createDataCoreRelationshipIndex(
         ).length,
         localizationKeyReferences: (graph?.graph.records ?? []).reduce(
           (sum, record) =>
-            sum +
-            record.localizationKeys.filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)).length,
+            sum + record.localizationKeys.filter(({ key }) => isUsableDataCoreRelationshipLocalizationKey(key)).length,
           0,
         ),
         referencedGuidReferences: (graph?.graph.records ?? []).reduce(

@@ -15,7 +15,7 @@ import {
 
 const logger = getLogger('apply-artifact');
 
-export async function runApplyArtifactCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
+async function runApplyArtifactCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   registerUnhandledRejectionHandler(logger);
 
   const { values, positionals } = parseArgs({

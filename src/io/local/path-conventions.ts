@@ -13,7 +13,7 @@ export function resolveChildPath(baseDir: string, childPath: string, label = 'Pa
 }
 
 /** Resolves a CSV file path under a SPViewer version directory. */
-export function resolveSpviewerCsvPath(spviewerDir: string, csvFilename: string): string {
+function resolveSpviewerCsvPath(spviewerDir: string, csvFilename: string): string {
   return resolveChildPath(spviewerDir, csvFilename, 'SPViewer CSV filename');
 }
 
@@ -23,7 +23,7 @@ export function resolveMissionCsvPath(missionCsvDir: string, csvFilename: string
 }
 
 /** Resolves a mapping JSON path under repoRoot/mappings. */
-export function resolveMappingJsonPath(repoRoot: string, mappingFilename: string): string {
+function resolveMappingJsonPath(repoRoot: string, mappingFilename: string): string {
   const mappingsDir = path.resolve(repoRoot, 'mappings');
   return resolveChildPath(mappingsDir, mappingFilename, 'Mapping JSON filename');
 }

@@ -50,7 +50,9 @@ test('buildDataCoreContractGeneratorIntel emits single reputation awards in cont
   assert.deepEqual(
     buildDataCoreContractGeneratorIntel([
       generator({
-        successReputationRewards: JSON.stringify([{ amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+        successReputationRewards: JSON.stringify([
+          { amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' },
+        ]),
       }),
     ]),
     [
@@ -78,12 +80,16 @@ test('buildDataCoreContractGeneratorIntel groups shared descriptions as reputati
       generator({
         contractId: 'easy',
         contractDebugName: 'Easy_Debug',
-        successReputationRewards: JSON.stringify([{ amount: 75, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+        successReputationRewards: JSON.stringify([
+          { amount: 75, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' },
+        ]),
       }),
       generator({
         contractId: 'hard',
         contractDebugName: 'Hard_Debug',
-        successReputationRewards: JSON.stringify([{ amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' }]),
+        successReputationRewards: JSON.stringify([
+          { amount: 100, factionGuid: 'faction-guid', scopeGuid: 'scope-guid' },
+        ]),
       }),
     ]).map(({ contractId, contractIntel }) => ({ contractId, contractIntel })),
     [

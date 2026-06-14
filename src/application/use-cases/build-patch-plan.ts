@@ -50,7 +50,7 @@ export async function buildPatchPlanResult(
   return { ...planResult, iniLines: lines, iniIndex: existingKeys, insertionIndex };
 }
 
-export async function buildPatchPlan(config: ItemConfig, options: BuildPatchPlanOptions = {}): Promise<PatchPlan> {
+async function buildPatchPlan(config: ItemConfig, options: BuildPatchPlanOptions = {}): Promise<PatchPlan> {
   const result = await buildPatchPlanResult(config, options);
   return result.plan;
 }

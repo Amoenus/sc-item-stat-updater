@@ -146,7 +146,10 @@ async function makeWorkspace() {
           'reputation/contractor-rank-4.xml': 2,
         },
         byRootType: {
-          EntityClassDefinition: ['target.xml', 'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml'],
+          EntityClassDefinition: [
+            'target.xml',
+            'libs/foundry/records/entities/scitem/ships/powerplant/test_powerplant.xml',
+          ],
           ReputationScope: ['reputation/contractor-rank-4.xml'],
         },
         byEntityClass: {

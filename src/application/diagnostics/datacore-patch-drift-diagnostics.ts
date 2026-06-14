@@ -213,8 +213,9 @@ function summarizeGraphRelationships(graph: DataCoreRecordGraph): Map<string, nu
     ['records.total', graph.recordCount],
     [
       'records.with-localization-keys',
-      graph.records.filter((record) => record.localizationKeys.some((reference) => isUsableGraphLocalizationKey(reference.key)))
-        .length,
+      graph.records.filter((record) =>
+        record.localizationKeys.some((reference) => isUsableGraphLocalizationKey(reference.key)),
+      ).length,
     ],
     [
       'relationships.localization-keys',

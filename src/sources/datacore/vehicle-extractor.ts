@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { createDataCoreManufacturerResolver } from './manufacturer-resolver';
-import { uniqueGraphGuidReference, graphLocalizationKeyWithFallback } from './record-graph-relations';
+import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreRecordGraphLookup, DataCoreRecordNode, DataCoreVehicleRecord } from './types';
 import { loadXml } from './xml-parser';
 

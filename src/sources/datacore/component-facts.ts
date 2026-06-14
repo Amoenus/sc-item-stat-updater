@@ -407,7 +407,7 @@ function getComponentTitleKeySources(
       { key: `item_name${entityClass}`, source: 'guessed-alias' },
       { key: `item_name_${entityClass}`, source: 'guessed-alias' },
       { key: `item_name${entityClass}_scitem`, source: 'guessed-alias' },
-      { key: `item_name_${entityClass}_scitem`, source: 'guessed-alias' }
+      { key: `item_name_${entityClass}_scitem`, source: 'guessed-alias' },
     );
   }
 

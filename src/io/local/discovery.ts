@@ -36,7 +36,7 @@ export async function listMatchingFiles(
 }
 
 /** Resolves the latest matching file under a directory. */
-export async function findLatestMatchingFile(
+async function findLatestMatchingFile(
   dirPath: string,
   isMatch: (name: string) => boolean,
   options: { label?: string; notFoundMessage?: string; noMatchMessage?: string } = {},

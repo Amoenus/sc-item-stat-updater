@@ -193,7 +193,11 @@ function readGraphLocalizationAttrsWithFallback(
   return fallbackKeys;
 }
 
-function readGraphGuidRefsWithFallback(record: DataCoreRecordNode, attributes: string[], fallbackGuids: string[]): string[] {
+function readGraphGuidRefsWithFallback(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  fallbackGuids: string[],
+): string[] {
   const graphGuids = graphGuidReferences(record, attributes);
   return graphGuids.length > 0 ? uniqueStrings(graphGuids) : fallbackGuids;
 }

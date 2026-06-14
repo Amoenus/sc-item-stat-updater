@@ -5,8 +5,8 @@ import { resolveChildPath } from '../../io/local/path-conventions';
 import {
   graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
-  uniqueGraphGuidReference,
   hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -216,11 +216,7 @@ async function extractHaulingEntityClassCommodityRows(
     const xml = await fs.readFile(xmlPath, 'utf8');
     const $ = loadXml(xml);
     const root = $.root().children().first();
-    const nameKey = graphLocalizationKeyWithFallback(
-      record,
-      ['orderDisplayName'],
-      root.attr('orderDisplayName') ?? '',
-    );
+    const nameKey = graphLocalizationKeyWithFallback(record, ['orderDisplayName'], root.attr('orderDisplayName') ?? '');
     if (!nameKey || emittedKeys.has(nameKey.toLowerCase())) continue;
     if (!isHaulingEntityClassNameKey(nameKey)) continue;
 

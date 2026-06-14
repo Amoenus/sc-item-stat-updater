@@ -397,7 +397,9 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     lines.push('  none');
   } else {
     for (const sample of diagnostics.titleKeyGaps.samples) {
-      lines.push(`  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`);
+      lines.push(
+        `  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`,
+      );
     }
   }
 
@@ -406,7 +408,9 @@ export function formatDataCoreRelationshipCoverageDiagnostics(
     lines.push('  none');
   } else {
     for (const sample of diagnostics.titleKeyGaps.needsReviewSamples) {
-      lines.push(`  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`);
+      lines.push(
+        `  ${sample.componentType}, ${sample.entityClass}: ${sample.reason} (${sample.nameKey || 'no name key'})`,
+      );
     }
   }
 

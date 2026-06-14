@@ -30,7 +30,7 @@ export type ResourcePools = z.infer<typeof ResourcePoolsSchema>;
  * Requires `nameKey` to be present and match the localization key format
  * (`word characters`, hyphens, and dots — no spaces or special chars).
  */
-export const CommodityResourcePoolEntrySchema = z.object({
+const CommodityResourcePoolEntrySchema = z.object({
   name: z.string(),
   nameKey: z
     .string()
@@ -45,7 +45,7 @@ export type CommodityResourcePoolEntry = z.infer<typeof CommodityResourcePoolEnt
  * validate each one individually with {@link CommodityResourcePoolEntrySchema}
  * and discard invalid entries rather than failing the entire parse.
  */
-export const CommodityInputSchema = z.object({
+const CommodityInputSchema = z.object({
   resourcePools: z.record(z.string(), z.unknown()),
 });
 export type CommodityInput = z.infer<typeof CommodityInputSchema>;
@@ -56,7 +56,7 @@ const BlueprintItemSchema = z.object({
 });
 export type BlueprintItem = z.infer<typeof BlueprintItemSchema>;
 
-export const BlueprintPoolEntrySchema = z.object({
+const BlueprintPoolEntrySchema = z.object({
   name: z.string(),
   blueprints: z.array(BlueprintItemSchema),
   source: SourceSchema,

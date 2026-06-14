@@ -500,7 +500,10 @@ test('runDatacoreScrape tries all graph reference fallbacks before XML refs', as
   assert.deepEqual(result.results, [
     { type: 'reference-fallback', rows: 1, skipped: 0, csvFile: 'reference-fallback.datacore.csv' },
   ]);
-  assert.match(csv, /referencefallback_main,item_NameReferenceFallback_Main,,item_DescReferenceFallback_Main,ACME,1,A,,42,graph/);
+  assert.match(
+    csv,
+    /referencefallback_main,item_NameReferenceFallback_Main,,item_DescReferenceFallback_Main,ACME,1,A,,42,graph/,
+  );
   assert.doesNotMatch(csv, /stale/);
 });
 
@@ -640,7 +643,10 @@ test('runDatacoreScrape uses selector attr as the default graph reference attrib
   assert.deepEqual(result.results, [
     { type: 'reference-default', rows: 1, skipped: 0, csvFile: 'reference-default.datacore.csv' },
   ]);
-  assert.match(csv, /reference_default_main,item_NameReferenceDefault_Main,,item_DescReferenceDefault_Main,ACME,1,A,,42,graph/);
+  assert.match(
+    csv,
+    /reference_default_main,item_NameReferenceDefault_Main,,item_DescReferenceDefault_Main,ACME,1,A,,42,graph/,
+  );
   assert.doesNotMatch(csv, /stale/);
 });
 
@@ -785,7 +791,10 @@ test('runDatacoreScrape does not use XML reference fallback when graph selector 
   assert.deepEqual(result.results, [
     { type: 'reference-ambiguous', rows: 1, skipped: 0, csvFile: 'reference-ambiguous.datacore.csv' },
   ]);
-  assert.match(csv, /reference_ambiguous_main,item_NameReferenceAmbiguous_Main,,item_DescReferenceAmbiguous_Main,ACME,1,A,,42,\r?\n/);
+  assert.match(
+    csv,
+    /reference_ambiguous_main,item_NameReferenceAmbiguous_Main,,item_DescReferenceAmbiguous_Main,ACME,1,A,,42,\r?\n/,
+  );
   assert.doesNotMatch(csv, /stale/);
 });
 
@@ -1958,10 +1967,7 @@ test('runDatacoreScrape extracts jump drive params from real-shaped DataCore XML
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Alignment Rate,Alignment Decay,Tuning Rate,Tuning Decay,Fuel Usage Mult,Distortion Shutdown Damage,Distortion Decay Delay,Distortion Decay Rate,Distortion Shutdown Time\r?\n/,
   );
-  assert.match(
-    csv,
-    /jdrv_aegs_s04_javelin,,,,AEGS,4,3,,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/,
-  );
+  assert.match(csv, /jdrv_aegs_s04_javelin,,,,AEGS,4,3,,77000,0\.2,0\.1,0\.26,0\.5,8,1728,1,345\.6,6/);
 });
 
 test('runDatacoreScrape extracts EMP params from real-shaped DataCore XML', async () => {
@@ -2095,10 +2101,7 @@ test('runDatacoreScrape extracts self-destruct params from real-shaped DataCore 
     csv,
     /^Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius\r?\n/,
   );
-  assert.match(
-    csv,
-    /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,120,120000,100 - 175/,
-  );
+  assert.match(csv, /vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,120,120000,100 - 175/);
 });
 
 test('runDatacoreScrape extracts throwable explosion params from triggerable devices', async () => {
@@ -2750,7 +2753,11 @@ test('runDatacoreScrape preserves SCMDB-shaped game version tags', async () => {
     findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
     ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
     countXmlFiles: async () => 0,
-    extractXmlCache: async () => ({ workDcbPath: 'cache/Game.dcb', monolithicXmlPath: 'cache/Game.xml', xmlFileCount: 123 }),
+    extractXmlCache: async () => ({
+      workDcbPath: 'cache/Game.dcb',
+      monolithicXmlPath: 'cache/Game.xml',
+      xmlFileCount: 123,
+    }),
   });
 
   assert.equal(result.versionTag, '4.8.1-live.11952564');

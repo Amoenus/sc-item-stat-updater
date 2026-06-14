@@ -1,7 +1,4 @@
-import type {
-  DataCoreContractGeneratorIntelRecord,
-  DataCoreContractGeneratorRecord,
-} from './types';
+import type { DataCoreContractGeneratorIntelRecord, DataCoreContractGeneratorRecord } from './types';
 
 interface ReputationReward {
   amount: number;
@@ -113,11 +110,7 @@ function getFactsValue(
   return linesByDescriptionKey[factsByDescriptionKeySymbol]?.get(key)?.[field] ?? new Set<number>();
 }
 
-function formatVariantNumberLine(
-  label: string,
-  values: Set<number>,
-  formatter: (value: number) => string,
-): string {
+function formatVariantNumberLine(label: string, values: Set<number>, formatter: (value: number) => string): string {
   const sorted = [...values].sort((a, b) => a - b);
   if (sorted.length === 0) return '';
   if (sorted.length === 1) return `${label}: ${formatter(sorted[0])}`;

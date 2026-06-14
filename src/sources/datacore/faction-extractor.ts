@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference, graphLocalizationKeyWithFallback } from './record-graph-relations';
+import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreFactionRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -49,7 +49,11 @@ export async function extractDataCoreFactions(
     const root = $(':root').first();
     if (!root.length) continue;
 
-    const factionReputationGuid = graphGuidReference(record, ['factionReputationRef'], root.attr('factionReputationRef') ?? '');
+    const factionReputationGuid = graphGuidReference(
+      record,
+      ['factionReputationRef'],
+      root.attr('factionReputationRef') ?? '',
+    );
     const reputation = factionReputationGuid
       ? await readFactionReputation(options, options.graph.getByRef(factionReputationGuid))
       : emptyFactionReputation();

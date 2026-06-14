@@ -94,11 +94,7 @@ export function graphGuidReferences(record: DataCoreRecordNode, attributes: stri
   ];
 }
 
-export function uniqueGraphGuidReference(
-  record: DataCoreRecordNode,
-  attributes: string[],
-  fallback = '',
-): string {
+export function uniqueGraphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback = ''): string {
   const values = graphGuidReferences(record, attributes);
   if (values.length > 0) return values.length === 1 ? values[0] : '';
   return fallback;

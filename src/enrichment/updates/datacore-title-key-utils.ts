@@ -1,10 +1,10 @@
 import { getLogger } from '../../infrastructure/logger';
+import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
 import {
   createDataCoreRelationshipIndex,
-  normalizeDataCoreRelationshipLocalizationKey,
   type DataCoreRelationshipIndex,
+  normalizeDataCoreRelationshipLocalizationKey,
 } from '../../sources/datacore/relationship-index';
-import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
 import type { DataCoreLocalizationReference } from '../../sources/datacore/types';
 
 const logger = getLogger('datacore-title-key-utils');

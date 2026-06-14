@@ -1,6 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 export const DATACORE_TYPE_CONFIG: DataCoreItemTypeConfig = {
   // Verified against real unforged XML cache. Entity files live at:
@@ -39,7 +39,7 @@ export default {
   nameKeyToDescKey: (nameKey) =>
     nameKey.endsWith('_Name') ? nameKey.replace(/_Name$/, '_Desc') : nameKey.replace(/^item_Name/, 'item_Desc'),
   getTargetKeys(row, deriveDescKey) {
-    return getRawDataCoreTargetKeys(row, deriveDescKey);
+    return resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
   },
   buildValue(r, flavorText) {
     return stat(r)

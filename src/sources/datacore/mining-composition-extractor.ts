@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference, graphLocalizationKeyWithFallback } from './record-graph-relations';
+import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 

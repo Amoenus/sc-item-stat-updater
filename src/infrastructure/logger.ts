@@ -68,7 +68,9 @@ export function getLogger(name: string) {
   function emit(level: LogLevel, message: string, attributes?: LogAttributes): void {
     if (level.severity < minSeverity) return;
 
-    const formatted = useJson ? formatJsonRecord(name, level, message, attributes) : formatTextRecord(level, message, attributes);
+    const formatted = useJson
+      ? formatJsonRecord(name, level, message, attributes)
+      : formatTextRecord(level, message, attributes);
     const sink = loggerOutputSink.getStore();
     if (sink) {
       sink(formatTaskOutput(level, message, attributes));

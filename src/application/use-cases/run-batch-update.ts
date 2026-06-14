@@ -242,7 +242,7 @@ export async function runBatchUpdate(options: RunBatchUpdateOptions): Promise<Ru
   return plan.result();
 }
 
-export function getBatchUpdateStepCount(
+function getBatchUpdateStepCount(
   categoryCount: number,
   options: { includeMiningJournal?: boolean } = {},
 ): number {

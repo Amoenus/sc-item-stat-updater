@@ -1,6 +1,6 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys } from './types';
+import { type DataCoreItemTypeConfig, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 // Formats a raw damageMultiplier (e.g. 1.35 → '+35%', 0.85 → '-15%').
 function fmtPowerModifier(v: string): string {
@@ -110,7 +110,7 @@ export default {
     (kl.startsWith('item_mining_') && kl.endsWith('_desc')),
   nameKeyToDescKey: (nameKey) => (nameKey.endsWith('_Name') ? nameKey.replace(/_Name$/, '_Desc') : `${nameKey}_Desc`),
   getTargetKeys(row, deriveDescKey) {
-    return getRawDataCoreTargetKeys(row, deriveDescKey);
+    return resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
   },
   buildValue(r, flavorText) {
     const charges = Number(r['Charges']);

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import miningLocationsConfig, { buildMiningLocationRowsFromSources, compareMiningLocationCoverage } from './mining-locations';
+import miningLocationsConfig, {
+  buildMiningLocationRowsFromSources,
+  compareMiningLocationCoverage,
+} from './mining-locations';
 
 test('buildMiningLocationRowsFromSources prefers DataCore provider weights and quality overrides', () => {
   const rows = buildMiningLocationRowsFromSources(

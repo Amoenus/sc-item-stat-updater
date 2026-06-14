@@ -52,10 +52,13 @@ const GROUPING_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
 ];
 
 const DYNAMIC_TARGET_KEY_MARKERS: Array<{ pattern: RegExp; signal: string }> = [
-  { pattern: /\bgetRawDataCoreTargetKeys\b/, signal: 'uses raw DataCore localization keys' },
+  {
+    pattern: /\bresolvePatchableDataCoreDescriptionTargets\b|\bgetRawDataCoreTargetKeys\b/,
+    signal: 'resolves patchable description targets from DataCore relationships',
+  },
   {
     pattern: /\bmakeGetTargetKeys\b|\bmakeGetTargetKeysFromPrefixMap\b/,
-    signal: 'uses shared DataCore target-key fallback after raw keys',
+    signal: 'uses shared DataCore target-key fallback after relationship keys',
   },
   { pattern: /\bmakeAlternateDataCoreDescKeys\b/, signal: 'uses shared DataCore localization variant handling' },
 ];
@@ -220,10 +223,7 @@ function flattenReferenceSelectors(
   selector: DataCoreFieldReferenceSelector | DataCoreFieldReferenceSelector[],
 ): DataCoreFieldReferenceSelector[] {
   const selectors = Array.isArray(selector) ? selector : [selector];
-  return selectors.flatMap((item) => [
-    item,
-    ...flattenFallbackReferenceSelectors(item.fallback),
-  ]);
+  return selectors.flatMap((item) => [item, ...flattenFallbackReferenceSelectors(item.fallback)]);
 }
 
 function flattenFallbackReferenceSelectors(

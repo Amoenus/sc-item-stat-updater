@@ -25,6 +25,94 @@
     {
       "file": "src/schema/scmdb/crafting-items/index.ts",
       "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/bombs.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/coolers.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/emps.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/jump-drives.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/mining-lasers.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/mining-modifiers.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/missile-launchers.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/missiles.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/powerplants.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/qeds.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/quantum-drives.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/radars.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/salvage-modifiers.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/self-destruct.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/shields.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/throwables.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/tractor-beams.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/turrets.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/weapon-attachments.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/weapon-defensive.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/weapon-guns.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/items/datacore/weapon-personal.ts",
+      "exports": ["*"]
     }
   ]
 }

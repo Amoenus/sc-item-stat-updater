@@ -7,7 +7,10 @@ import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
 import { graphLocalizationKey, hasGraphLocalizationReference } from '../../sources/datacore/record-graph-relations';
-import { createDataCoreRelationshipIndex, type DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
+import {
+  createDataCoreRelationshipIndex,
+  type DataCoreRelationshipIndex,
+} from '../../sources/datacore/relationship-index';
 import type { DataCoreRecordNode } from '../../sources/datacore/types';
 import { loadXml } from '../../sources/datacore/xml-parser';
 
@@ -543,8 +546,7 @@ async function resolveContractStandingLabel(
 
   if (standingGuid) {
     const graphExposesStandingName = standingRecord ? hasGraphNameLocalizationReference(standingRecord) : false;
-    const standingKey =
-      standingRecord && !graphExposesStandingName ? fallbackNameLocalizationKey(standingRecord) : '';
+    const standingKey = standingRecord && !graphExposesStandingName ? fallbackNameLocalizationKey(standingRecord) : '';
     if (standingKey) {
       const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
       cache.set(cacheKey, label);
@@ -573,7 +575,10 @@ async function readContractMinStandingGuid(row: Record<string, string>, xmlCache
   if (!xmlCacheDir || !recordPath || !contractId) return '';
 
   try {
-    const xml = await fs.readFile(resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractGenerator XML path'), 'utf8');
+    const xml = await fs.readFile(
+      resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractGenerator XML path'),
+      'utf8',
+    );
     const $ = loadXml(xml);
     return $(`[id="${contractId}"]`).first().attr('minStanding') ?? '';
   } catch {
@@ -633,7 +638,10 @@ async function readTemplateDisplayDescriptionKeys(
   if (!xmlCacheDir || !recordPath) return [];
 
   try {
-    const xml = await fs.readFile(resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractTemplate XML path'), 'utf8');
+    const xml = await fs.readFile(
+      resolveChildPath(xmlCacheDir, recordPath, 'DataCore ContractTemplate XML path'),
+      'utf8',
+    );
     const $ = loadXml(xml);
     const locIds = $('contractDisplayInfo ContractDisplayInfo > displayString > LocID[value]')
       .map((_, element) => normalizeLocalizationKey($(element).attr('value') ?? ''))
@@ -814,7 +822,7 @@ function resolveBlueprintTargetRecord(
   return targetRef
     ? recordGraph?.getByRef(targetRef)
     : targetClass
-      ? recordGraph?.getByRef(targetClass) ?? relationshipIndex.getRecordForEntityClass(targetClass)
+      ? (recordGraph?.getByRef(targetClass) ?? relationshipIndex.getRecordForEntityClass(targetClass))
       : undefined;
 }
 

@@ -1,6 +1,10 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
-import { type DataCoreItemTypeConfig, getRawDataCoreTargetKeys, hasAnyDataCoreLocalizationKey } from './types';
+import {
+  type DataCoreItemTypeConfig,
+  hasAnyDataCoreLocalizationKey,
+  resolvePatchableDataCoreDescriptionTargets,
+} from './types';
 
 // Formats a raw integer percentage modifier (e.g. 25 → '+25%', -35 → '-35%').
 function fmtModifier(v: string): string {
@@ -79,8 +83,8 @@ export default {
     });
   },
   getTargetKeys(row, deriveDescKey) {
-    const rawKeys = getRawDataCoreTargetKeys(row, deriveDescKey);
-    if (rawKeys.length > 0) return rawKeys;
+    const relationshipKeys = resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
+    if (relationshipKeys.length > 0) return relationshipKeys;
     if (hasAnyDataCoreLocalizationKey(row['Description Key']) || hasAnyDataCoreLocalizationKey(row['Name Key'])) {
       return [];
     }

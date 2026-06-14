@@ -36,7 +36,7 @@ import {
 
 const logger = getLogger('update-item');
 
-export async function runUpdateItemCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
+async function runUpdateItemCommand(argv: string[], io: CommandIO = defaultCommandIO()): Promise<number> {
   registerUnhandledRejectionHandler(logger);
 
   const { values, positionals } = parseArgs({

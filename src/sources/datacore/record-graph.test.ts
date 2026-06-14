@@ -152,8 +152,14 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   assert.deepEqual(graph.indexes.byLocalizationKey.manufacturer_Desc_AEGS, [
     'libs/foundry/records/scitemmanufacturer/aegs.xml',
   ]);
-  assert.equal(graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_PLACEHOLDER'), true);
-  assert.equal(graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_UNINITIALIZED'), true);
+  assert.equal(
+    graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_PLACEHOLDER'),
+    true,
+  );
+  assert.equal(
+    graph.records[0]?.localizationKeys.some((reference) => reference.key === 'LOC_UNINITIALIZED'),
+    true,
+  );
   assert.deepEqual(graph.indexes.byReferencedGuid['22222222-2222-2222-2222-222222222222'], [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
@@ -342,8 +348,7 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
   assert.equal(
     record.referencedGuidAttributes?.some(
       (reference) =>
-        reference.attribute === 'ContractTemplate.owner' &&
-        reference.value === '88888888-8888-4888-8888-888888888888',
+        reference.attribute === 'ContractTemplate.owner' && reference.value === '88888888-8888-4888-8888-888888888888',
     ),
     true,
   );
@@ -404,14 +409,7 @@ test('buildDataCoreRecordGraph emits crafting recipe resource refs by cost index
 
 test('buildDataCoreRecordGraph emits mission broker owner and type refs by role', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-mission-broker-'));
-  const brokerPath = path.join(
-    xmlCacheDir,
-    'libs',
-    'foundry',
-    'records',
-    'missionbroker',
-    'test_broker.xml',
-  );
+  const brokerPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'missionbroker', 'test_broker.xml');
   await fs.mkdir(path.dirname(brokerPath), { recursive: true });
   await fs.writeFile(
     brokerPath,
@@ -439,8 +437,7 @@ test('buildDataCoreRecordGraph emits mission broker owner and type refs by role'
   assert.equal(
     record.referencedGuidAttributes?.some(
       (reference) =>
-        reference.attribute === 'MissionBrokerEntry.type' &&
-        reference.value === 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+        reference.attribute === 'MissionBrokerEntry.type' && reference.value === 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
     ),
     true,
   );

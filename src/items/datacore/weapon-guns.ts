@@ -1,7 +1,7 @@
 import type { ItemConfig } from '../../enrichment/item-config';
 import { stat } from '../../enrichment/stat-builder';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
-import { type DataCoreItemTypeConfig, makeGetTargetKeys, usableDataCoreLocalizationKey } from './types';
+import { type DataCoreItemTypeConfig, makeGetTargetKeys, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 const ammoParamsRef = {
   selector: 'SAmmoContainerComponentParams',
@@ -38,13 +38,8 @@ export default {
   requiredColumns: ['Entity Class', 'Manufacturer', 'Size', 'Damage Alpha', 'Rate of Fire', 'Health'],
   descKeyMatch: isWeaponDescKey,
   getTargetKeys(row, deriveDescKey) {
-    const descriptionKey = usableDataCoreLocalizationKey(row['Description Key']);
-
-    if (descriptionKey) {
-      return [/^item_Name/i.test(descriptionKey) ? deriveDescKey(descriptionKey) : descriptionKey];
-    }
-
-    return fallbackTargetKeys(row, deriveDescKey);
+    const relationshipKeys = resolvePatchableDataCoreDescriptionTargets(row, deriveDescKey);
+    return relationshipKeys.length > 0 ? relationshipKeys : fallbackTargetKeys(row, deriveDescKey);
   },
   buildValue(r, flavorText) {
     const hasAmmo = r['Ammo Quantity'] && r['Ammo Quantity'] !== '0' && r['Ammo Quantity'] !== '';

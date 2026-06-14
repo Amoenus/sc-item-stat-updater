@@ -231,7 +231,10 @@ test('DataCore relationship coverage audit separates graph, CSV, and guessed com
       /Components: 5 unique; 1 with graph title keys; 4 without graph title keys; 1 duplicate rows ignored\./,
     );
     assert.match(formatted, /Matched INI name keys: 3 total; 1 graph; 1 CSV name keys; 1 guessed aliases\./);
-    assert.match(formatted, /Rows without graph title keys: 2 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./);
+    assert.match(
+      formatted,
+      /Rows without graph title keys: 2 placeholder name keys; 1 missing name keys; 1 CSV name-key only; 0 other\./,
+    );
     assert.match(formatted, /Likely non-user-facing title gaps: 1\./);
     assert.match(formatted, /Reviewable title gaps: 3\./);
     assert.match(formatted, /item_nameshld_test \(shield, shld_test\)/);

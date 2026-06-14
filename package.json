@@ -86,7 +86,5 @@
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"
   },
-  "optionalDependencies": {
-    "puppeteer": "^25.0.0"
-  }
+  "optionalDependencies": {}
 }

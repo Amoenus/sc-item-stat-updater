@@ -4,10 +4,10 @@ import {
   graphGuidReferences,
   graphLocalizationKey,
   graphLocalizationKeyFromReferences,
-  graphLocalizationKeys,
-  graphLocalizationKeysFromReferences,
   graphLocalizationKeyFromReferencesMatching,
   graphLocalizationKeyMatching,
+  graphLocalizationKeys,
+  graphLocalizationKeysFromReferences,
   graphLocalizationKeyWithFallback,
   hasGraphLocalizationReference,
   hasGraphLocalizationReferenceFromReferences,
@@ -113,11 +113,7 @@ test('graphLocalizationKeys returns distinct keys in attribute priority order', 
     referencedGuids: [],
   };
 
-  assert.deepEqual(graphLocalizationKeys(record, ['Name', 'displayName']), [
-    'name_one',
-    'name_two',
-    'display_one',
-  ]);
+  assert.deepEqual(graphLocalizationKeys(record, ['Name', 'displayName']), ['name_one', 'name_two', 'display_one']);
   assert.deepEqual(graphLocalizationKeysFromReferences(record.localizationKeys, ['displayName']), ['display_one']);
 });
 
@@ -189,7 +185,10 @@ test('graphLocalizationKeyMatching filters graph keys while preserving attribute
   };
   const isCommodityKey = (key: string) => key.startsWith('items_commodities_');
 
-  assert.equal(graphLocalizationKeyMatching(record, ['displayName', 'Name'], isCommodityKey), 'items_commodities_graph_label');
+  assert.equal(
+    graphLocalizationKeyMatching(record, ['displayName', 'Name'], isCommodityKey),
+    'items_commodities_graph_label',
+  );
   assert.equal(
     graphLocalizationKeyFromReferencesMatching(record.localizationKeys, ['Name', 'displayName'], isCommodityKey),
     'items_commodities_name_label',

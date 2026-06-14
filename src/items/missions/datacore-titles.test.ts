@@ -160,12 +160,7 @@ describe('loadDatacoreTitlesSourceData', () => {
         'High-Risk Bounty: ~mission(TargetName) <EM4>[BP]*</EM4>',
       );
       assert.equal(
-        config.buildValue(
-          { TitleNote: ' <EM4>[BP]</EM4>' },
-          '',
-          'Intro Contract <EM4>[Intro] [BP]</EM4>',
-          '',
-        ),
+        config.buildValue({ TitleNote: ' <EM4>[BP]</EM4>' }, '', 'Intro Contract <EM4>[Intro] [BP]</EM4>', ''),
         'Intro Contract <EM4>[BP]</EM4>',
       );
     } finally {

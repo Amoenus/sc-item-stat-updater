@@ -1,12 +1,8 @@
-import type { ScmdbMergedDTO } from '../../schema/scmdb.schemas';
-import type { ScmdbMemaCacheDTO } from '../../schema/scmdb.schemas';
+import type { ScmdbMemaCacheDTO, ScmdbMergedDTO } from '../../schema/scmdb.schemas';
 
-export function buildMemaRows(
-  memaData: ScmdbMemaCacheDTO,
-  mergedData: ScmdbMergedDTO,
-): Record<string, string>[] {
+export function buildMemaRows(memaData: ScmdbMemaCacheDTO, mergedData: ScmdbMergedDTO): Record<string, string>[] {
   const rows: Record<string, string>[] = [];
-  
+
   const contractMap = new Map<string, { rewardUEC: number | null; descriptionKey: string }>();
   for (const contract of mergedData.contracts) {
     if (contract.descriptionKey) {
@@ -27,7 +23,7 @@ export function buildMemaRows(
 
   for (const entry of memaData) {
     if (entry.n === 0) continue; // Skip if no runs recorded
-    
+
     const contractInfo = contractMap.get(entry.contract_id);
     if (!contractInfo) continue;
 

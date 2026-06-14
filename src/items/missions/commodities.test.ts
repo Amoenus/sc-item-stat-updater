@@ -79,7 +79,10 @@ describe('commodities source loading', () => {
       },
     ]);
 
-    assert.equal(rows.find((row) => row['Localization Key'] === 'items_commodities_GaspingWeevilEggs')?.['Warning Tag'], '');
+    assert.equal(
+      rows.find((row) => row['Localization Key'] === 'items_commodities_GaspingWeevilEggs')?.['Warning Tag'],
+      '',
+    );
   });
 
   it('builds warning-prefixed commodity labels from source-derived warning tags', () => {

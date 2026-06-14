@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import {
-  uniqueGraphGuidReference,
   graphLocalizationKey,
   graphLocalizationKeyWithFallback,
+  uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreLocationLabelRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';

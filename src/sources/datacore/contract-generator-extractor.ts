@@ -3,9 +3,9 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import {
-  graphLocalizationKeyWithFallback,
-  graphLocalizationKeys,
   graphGuidReferences,
+  graphLocalizationKeys,
+  graphLocalizationKeyWithFallback,
   hasGraphLocalizationReference,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
@@ -62,165 +62,180 @@ export async function extractDataCoreContractGenerators(
               return Boolean(contract.attr('id') && contract.attr('template'));
             })
             .each((__, contractElement) => {
-            const contract = $(contractElement);
-            const contractId = contract.attr('id') ?? '';
-            const templateGuid = graphGuidReference(
-              record,
-              [contractTemplateAttribute(contractId)],
-              contract.attr('template') ?? '',
-            );
-            const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
-            const contractStringParams = readStringParamOverrides(
-              $,
-              contract.find('> paramOverrides > stringParamOverrides'),
-            );
-            const stringParams = new Map([...inheritedStringParams, ...contractStringParams]);
-            const generationParams = contract.find('> generationParams > *').first();
-            const contractLifeTime = contract.find('> contractLifeTime > ContractLifeTime').first();
-            const contractResults = contract.find('> contractResults').first();
-            const difficulty = contractResults.find('> difficulty > ContractDifficulty').first();
-            const successReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
-            const failureReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
-            contractResults.find('> contractResults > ContractResult_LegacyReputation').each((_, repElement) => {
-              const rep = $(repElement);
-              const missionResults = rep.find('> missionResults > Bool').map((_, el) => $(el).attr('value') === '1').get();
-              rep.find('> contractResultReputationAmounts').each((_, amountElement) => {
-                const amountEl = $(amountElement);
-                const factionGuid = graphGuidReference(
-                  record,
-                  ['factionReputation'],
-                  amountEl.attr('factionReputation') ?? '',
-                );
-                const scopeGuid = graphGuidReference(
-                  record,
-                  ['reputationScope'],
-                  amountEl.attr('reputationScope') ?? '',
-                );
-                const rewardGuid = graphGuidReference(record, ['reward'], amountEl.attr('reward') ?? '');
-                if (rewardGuid && (missionResults[0] || missionResults[1] || missionResults[2])) {
-                  const rewardRecord = options.graph.getByRef(rewardGuid);
-                  let amount = 0;
-                  if (rewardRecord) {
-                    try {
-                      const xmlPath = resolveChildPath(options.xmlCacheDir, rewardRecord.path, 'DataCore SReputationRewardAmount XML path');
-                      const xml = readFileSync(xmlPath, 'utf8');
-                      const reward$ = loadXml(xml);
-                      amount = Number(reward$(':root').first().attr('reputationAmount') ?? 0);
-                    } catch {}
+              const contract = $(contractElement);
+              const contractId = contract.attr('id') ?? '';
+              const templateGuid = graphGuidReference(
+                record,
+                [contractTemplateAttribute(contractId)],
+                contract.attr('template') ?? '',
+              );
+              const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
+              const contractStringParams = readStringParamOverrides(
+                $,
+                contract.find('> paramOverrides > stringParamOverrides'),
+              );
+              const stringParams = new Map([...inheritedStringParams, ...contractStringParams]);
+              const generationParams = contract.find('> generationParams > *').first();
+              const contractLifeTime = contract.find('> contractLifeTime > ContractLifeTime').first();
+              const contractResults = contract.find('> contractResults').first();
+              const difficulty = contractResults.find('> difficulty > ContractDifficulty').first();
+              const successReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
+              const failureReputationRewards: { amount: number; factionGuid: string; scopeGuid: string }[] = [];
+              contractResults.find('> contractResults > ContractResult_LegacyReputation').each((_, repElement) => {
+                const rep = $(repElement);
+                const missionResults = rep
+                  .find('> missionResults > Bool')
+                  .map((_, el) => $(el).attr('value') === '1')
+                  .get();
+                rep.find('> contractResultReputationAmounts').each((_, amountElement) => {
+                  const amountEl = $(amountElement);
+                  const factionGuid = graphGuidReference(
+                    record,
+                    ['factionReputation'],
+                    amountEl.attr('factionReputation') ?? '',
+                  );
+                  const scopeGuid = graphGuidReference(
+                    record,
+                    ['reputationScope'],
+                    amountEl.attr('reputationScope') ?? '',
+                  );
+                  const rewardGuid = graphGuidReference(record, ['reward'], amountEl.attr('reward') ?? '');
+                  if (rewardGuid && (missionResults[0] || missionResults[1] || missionResults[2])) {
+                    const rewardRecord = options.graph.getByRef(rewardGuid);
+                    let amount = 0;
+                    if (rewardRecord) {
+                      try {
+                        const xmlPath = resolveChildPath(
+                          options.xmlCacheDir,
+                          rewardRecord.path,
+                          'DataCore SReputationRewardAmount XML path',
+                        );
+                        const xml = readFileSync(xmlPath, 'utf8');
+                        const reward$ = loadXml(xml);
+                        amount = Number(reward$(':root').first().attr('reputationAmount') ?? 0);
+                      } catch {}
+                    }
+                    if (amount !== 0) {
+                      const rewardObj = { amount, factionGuid, scopeGuid };
+                      if (missionResults[0]) successReputationRewards.push(rewardObj);
+                      if (missionResults[1] || missionResults[2]) failureReputationRewards.push(rewardObj);
+                    }
                   }
-                  if (amount !== 0) {
-                    const rewardObj = { amount, factionGuid, scopeGuid };
-                    if (missionResults[0]) successReputationRewards.push(rewardObj);
-                    if (missionResults[1] || missionResults[2]) failureReputationRewards.push(rewardObj);
-                  }
-                }
+                });
+              });
+              const titleVariantKeys = readGraphStringHashKeysWithFallback(
+                record,
+                [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Title_StringHash')],
+                readStringHashKeys($, contract.find('MissionProperty[missionVariableName="Mission_Title_StringHash"]')),
+              );
+              const descriptionVariantKeys = readGraphStringHashKeysWithFallback(
+                record,
+                [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Description_StringHash')],
+                readStringHashKeys(
+                  $,
+                  contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
+                ),
+              );
+              const blueprintRewards = readBlueprintRewards($, contractResults);
+              const locationTagGuids = readGraphLocationTagGuidsWithFallback(
+                record,
+                contractId,
+                readLocationTagGuids($, contract),
+              );
+              const factionReputationGuid = graphGuidReference(
+                record,
+                ['factionReputation'],
+                handler.attr('factionReputation') ?? '',
+              );
+              const reputationScopeGuid = graphGuidReference(
+                record,
+                ['reputationScope'],
+                handler.attr('reputationScope') ?? '',
+              );
+              const difficultyProfileGuid = graphGuidReference(
+                record,
+                ['difficultyProfile'],
+                difficulty.attr('difficultyProfile') ?? '',
+              );
+
+              chunkRows.push({
+                generatorClass: record.entityClass,
+                handlerType,
+                handlerDebugName: handler.attr('debugName') ?? '',
+                handlerNotForRelease: handler.attr('notForRelease') ?? '',
+                handlerWorkInProgress: handler.attr('workInProgress') ?? '',
+                factionReputationGuid,
+                reputationScopeGuid,
+                contractSection: section,
+                contractId,
+                contractDebugName: contract.attr('debugName') ?? '',
+                contractNotForRelease: contract.attr('notForRelease') ?? '',
+                contractWorkInProgress: contract.attr('workInProgress') ?? '',
+                templateGuid,
+                templateClass: linkedClass(template),
+                titleKey: readGraphContractStringParamWithFallback(
+                  record,
+                  contractId,
+                  'Title',
+                  stringParams.get('Title') ?? '',
+                ),
+                descriptionKey: readGraphContractStringParamWithFallback(
+                  record,
+                  contractId,
+                  'Description',
+                  stringParams.get('Description') ?? '',
+                ),
+                contractorKey: readGraphContractStringParamWithFallback(
+                  record,
+                  contractId,
+                  'Contractor',
+                  stringParams.get('Contractor') ?? '',
+                ),
+                titleVariantKeys: titleVariantKeys.join(' | '),
+                descriptionVariantKeys: descriptionVariantKeys.join(' | '),
+                stringParamOverrides: formatStringParams(record, contractId, stringParams),
+                locationTagGuids: locationTagGuids.join(' | '),
+                locationTagClasses: locationTagGuids
+                  .map((guid) => linkedClass(options.graph.getByRef(guid)))
+                  .join(' | '),
+                successReputationRewards: successReputationRewards.length
+                  ? JSON.stringify(successReputationRewards)
+                  : '',
+                failureReputationRewards: failureReputationRewards.length
+                  ? JSON.stringify(failureReputationRewards)
+                  : '',
+                maxInstances: generationParams.attr('maxInstances') ?? '',
+                maxInstancesPerPlayer: generationParams.attr('maxInstancesPerPlayer') ?? '',
+                respawnTime: generationParams.attr('respawnTime') ?? '',
+                respawnTimeVariation: generationParams.attr('respawnTimeVariation') ?? '',
+                instanceLifeTime: contractLifeTime.attr('instanceLifeTime') ?? '',
+                instanceLifeTimeVariation: contractLifeTime.attr('instanceLifeTimeVariation') ?? '',
+                contractBuyInAmount: contractResults.attr('contractBuyInAmount') ?? '',
+                timeToComplete: contractResults.attr('timeToComplete') ?? '',
+                difficultyProfileGuid,
+                difficultyProfileClass: linkedClass(options.graph.getByRef(difficultyProfileGuid)),
+                mechanicalSkill: difficulty.attr('mechanicalSkill') ?? '',
+                mentalLoad: difficulty.attr('mentalLoad') ?? '',
+                riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
+                gameKnowledge: difficulty.attr('gameKnowledge') ?? '',
+                blueprintRewardPoolGuids: blueprintRewards.map((reward) => reward.blueprintPool).join(','),
+                blueprintRewards: blueprintRewards.length ? JSON.stringify(blueprintRewards) : '',
+                requiredCompletedContractTags: contract
+                  .find('ContractPrerequisite_CompletedContractTags requiredCompletedContractTags Reference[value]')
+                  .map((_, el) => $(el).attr('value'))
+                  .get()
+                  .filter(Boolean)
+                  .join(','),
+                completionTags: contractResults
+                  .find('ContractResult_CompletionTags completionTags ContractResult_CompletionTag[tag]')
+                  .map((_, el) => $(el).attr('tag'))
+                  .get()
+                  .filter(Boolean)
+                  .join(','),
+                recordGuid: record.ref,
+                recordPath: record.path,
               });
             });
-            const titleVariantKeys = readGraphStringHashKeysWithFallback(
-              record,
-              [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Title_StringHash')],
-              readStringHashKeys(
-                $,
-                contract.find('MissionProperty[missionVariableName="Mission_Title_StringHash"]'),
-              ),
-            );
-            const descriptionVariantKeys = readGraphStringHashKeysWithFallback(
-              record,
-              [contractStringHashAttribute(contract.attr('id') ?? '', 'Mission_Description_StringHash')],
-              readStringHashKeys(
-                $,
-                contract.find('MissionProperty[missionVariableName="Mission_Description_StringHash"]'),
-              ),
-            );
-            const blueprintRewards = readBlueprintRewards($, contractResults);
-            const locationTagGuids = readGraphLocationTagGuidsWithFallback(
-              record,
-              contractId,
-              readLocationTagGuids($, contract),
-            );
-            const factionReputationGuid = graphGuidReference(
-              record,
-              ['factionReputation'],
-              handler.attr('factionReputation') ?? '',
-            );
-            const reputationScopeGuid = graphGuidReference(
-              record,
-              ['reputationScope'],
-              handler.attr('reputationScope') ?? '',
-            );
-            const difficultyProfileGuid = graphGuidReference(
-              record,
-              ['difficultyProfile'],
-              difficulty.attr('difficultyProfile') ?? '',
-            );
-
-            chunkRows.push({
-              generatorClass: record.entityClass,
-              handlerType,
-              handlerDebugName: handler.attr('debugName') ?? '',
-              handlerNotForRelease: handler.attr('notForRelease') ?? '',
-              handlerWorkInProgress: handler.attr('workInProgress') ?? '',
-              factionReputationGuid,
-              reputationScopeGuid,
-              contractSection: section,
-              contractId,
-              contractDebugName: contract.attr('debugName') ?? '',
-              contractNotForRelease: contract.attr('notForRelease') ?? '',
-              contractWorkInProgress: contract.attr('workInProgress') ?? '',
-              templateGuid,
-              templateClass: linkedClass(template),
-              titleKey: readGraphContractStringParamWithFallback(record, contractId, 'Title', stringParams.get('Title') ?? ''),
-              descriptionKey: readGraphContractStringParamWithFallback(
-                record,
-                contractId,
-                'Description',
-                stringParams.get('Description') ?? '',
-              ),
-              contractorKey: readGraphContractStringParamWithFallback(
-                record,
-                contractId,
-                'Contractor',
-                stringParams.get('Contractor') ?? '',
-              ),
-              titleVariantKeys: titleVariantKeys.join(' | '),
-              descriptionVariantKeys: descriptionVariantKeys.join(' | '),
-              stringParamOverrides: formatStringParams(record, contractId, stringParams),
-              locationTagGuids: locationTagGuids.join(' | '),
-              locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
-              successReputationRewards: successReputationRewards.length ? JSON.stringify(successReputationRewards) : '',
-              failureReputationRewards: failureReputationRewards.length ? JSON.stringify(failureReputationRewards) : '',
-              maxInstances: generationParams.attr('maxInstances') ?? '',
-              maxInstancesPerPlayer: generationParams.attr('maxInstancesPerPlayer') ?? '',
-              respawnTime: generationParams.attr('respawnTime') ?? '',
-              respawnTimeVariation: generationParams.attr('respawnTimeVariation') ?? '',
-              instanceLifeTime: contractLifeTime.attr('instanceLifeTime') ?? '',
-              instanceLifeTimeVariation: contractLifeTime.attr('instanceLifeTimeVariation') ?? '',
-              contractBuyInAmount: contractResults.attr('contractBuyInAmount') ?? '',
-              timeToComplete: contractResults.attr('timeToComplete') ?? '',
-              difficultyProfileGuid,
-              difficultyProfileClass: linkedClass(options.graph.getByRef(difficultyProfileGuid)),
-              mechanicalSkill: difficulty.attr('mechanicalSkill') ?? '',
-              mentalLoad: difficulty.attr('mentalLoad') ?? '',
-              riskOfLoss: difficulty.attr('riskOfLoss') ?? '',
-              gameKnowledge: difficulty.attr('gameKnowledge') ?? '',
-              blueprintRewardPoolGuids: blueprintRewards.map((reward) => reward.blueprintPool).join(','),
-              blueprintRewards: blueprintRewards.length ? JSON.stringify(blueprintRewards) : '',
-              requiredCompletedContractTags: contract
-                .find('ContractPrerequisite_CompletedContractTags requiredCompletedContractTags Reference[value]')
-                .map((_, el) => $(el).attr('value'))
-                .get()
-                .filter(Boolean)
-                .join(','),
-              completionTags: contractResults
-                .find('ContractResult_CompletionTags completionTags ContractResult_CompletionTag[tag]')
-                .map((_, el) => $(el).attr('tag'))
-                .get()
-                .filter(Boolean)
-                .join(','),
-              recordGuid: record.ref,
-              recordPath: record.path,
-            });
-          });
         }
       });
 

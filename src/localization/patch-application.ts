@@ -40,7 +40,7 @@ export function applyLocalizationLinePatch(
   patches[foundKey] = newValue;
 }
 
-export function insertLocalizationEntries(lines: string[], newLines: string[], insertionIndex: number): void {
+function insertLocalizationEntries(lines: string[], newLines: string[], insertionIndex: number): void {
   if (newLines.length === 0) return;
   newLines.sort((a, b) => a.localeCompare(b));
   if (insertionIndex > -1) {

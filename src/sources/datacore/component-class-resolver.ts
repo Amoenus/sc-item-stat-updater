@@ -1,6 +1,6 @@
 import { type DataCoreRelationshipIndex, normalizeDataCoreRelationshipEntityClass } from './relationship-index';
 
-export const NON_DISPLAY_COMPONENT_CLASSES = new Set([
+const NON_DISPLAY_COMPONENT_CLASSES = new Set([
   '',
   'BASIC',
   'UNDEFINED',
