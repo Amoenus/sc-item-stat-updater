@@ -110,7 +110,7 @@ test('extractDataCoreFactions reads faction flags and linked reputation UI metad
   ]);
 });
 
-test('extractDataCoreFactions falls back when graph GUID refs are ambiguous', async () => {
+test('extractDataCoreFactions does not use XML fallback when graph GUID refs are ambiguous', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-factions-ambiguous-'));
   const factionPath = 'libs/foundry/records/factions/faction_reputation_unlawful_headhunters.xml';
   const reputationPath = 'libs/foundry/records/factions/factionreputation/factionreputation_headhunters.xml';
@@ -150,7 +150,7 @@ test('extractDataCoreFactions falls back when graph GUID refs are ambiguous', as
     graph: createDataCoreRecordGraphLookup(graph),
   });
 
-  assert.equal(rows[0]?.factionReputationGuid, 'stale-reputation-guid');
+  assert.equal(rows[0]?.factionReputationGuid, '');
   assert.equal(rows[0]?.factionReputationClass, '');
 });
 
