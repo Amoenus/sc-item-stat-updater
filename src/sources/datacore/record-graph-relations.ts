@@ -23,11 +23,11 @@ export function graphLocalizationKeyFromReferences(
 }
 
 export function graphGuidReferences(record: DataCoreRecordNode, attributes: string[]): string[] {
-  const expectedAttributes = new Set(attributes.map((attribute) => attribute.toLowerCase()));
+  const expectedAttributes = new Set(attributes.map(normalizeGraphAttributeName).filter(Boolean));
   return [
     ...new Set(
       record.referencedGuidAttributes
-        ?.filter((reference) => expectedAttributes.has(reference.attribute.toLowerCase()))
+        ?.filter((reference) => expectedAttributes.has(normalizeGraphAttributeName(reference.attribute)))
         .map((reference) => reference.value.trim())
         .filter(Boolean) ?? [],
     ),
@@ -46,4 +46,8 @@ export function uniqueGraphGuidReference(
 function isUsableLocalizationKey(value: string | undefined): boolean {
   const normalized = value?.trim().replace(/^@/, '').trim() ?? '';
   return normalized !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(normalized);
+}
+
+function normalizeGraphAttributeName(value: string): string {
+  return value.trim().toLowerCase();
 }

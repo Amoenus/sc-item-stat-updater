@@ -51,6 +51,22 @@ test('graphGuidReferences returns distinct non-empty graph refs in source order'
   assert.deepEqual(graphGuidReferences(record, ['entry']), ['resource-a', 'resource-b']);
 });
 
+test('graphGuidReferences normalizes graph attribute names before matching', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [],
+    referencedGuids: ['manufacturer-guid'],
+    referencedGuidAttributes: [{ attribute: ' Manufacturer ', value: 'manufacturer-guid' }],
+  };
+
+  assert.deepEqual(graphGuidReferences(record, ['manufacturer']), ['manufacturer-guid']);
+  assert.equal(uniqueGraphGuidReference(record, [' MANUFACTURER '], 'fallback-guid'), 'manufacturer-guid');
+});
+
 test('graphLocalizationKey follows requested attribute priority before graph key order', () => {
   const record: DataCoreRecordNode = {
     path: 'record.xml',

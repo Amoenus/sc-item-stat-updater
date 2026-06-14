@@ -320,8 +320,9 @@ function selectLocalizationKey(
   predicate = isUpdaterCommodityLocalizationKey,
 ): string {
   for (const attribute of attributes) {
+    const normalizedAttribute = normalizeGraphAttributeName(attribute);
     const byAttribute = record.localizationKeys
-      .filter((reference) => reference.attribute.toLowerCase() === attribute.toLowerCase())
+      .filter((reference) => normalizeGraphAttributeName(reference.attribute) === normalizedAttribute)
       .map((reference) => normalizeLocalizationKey(reference.key))
       .find(predicate);
     if (byAttribute) return byAttribute;
@@ -404,6 +405,10 @@ function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+}
+
+function normalizeGraphAttributeName(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 function readAttribute(element: Cheerio<AnyNode>, names: string[]): string {

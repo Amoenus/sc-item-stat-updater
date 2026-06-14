@@ -268,7 +268,7 @@ function makeGraph(): DataCoreRecordGraph {
         localizationKeys: [
           { attribute: 'description', key: 'items_commodities_atlasium_desc' },
           { attribute: 'displayDescription', key: 'items_commodities_atlasium_desc' },
-          { attribute: 'displayName', key: 'items_commodities_atlasium_display' },
+          { attribute: ' displayName ', key: 'items_commodities_atlasium_display' },
           { attribute: 'displayType', key: 'items_commodities_type_alloy' },
           { attribute: 'name', key: 'items_commodities_atlasium' },
         ],
