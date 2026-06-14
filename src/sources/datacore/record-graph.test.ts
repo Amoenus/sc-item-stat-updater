@@ -307,6 +307,15 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
             </value>
           </MissionProperty>
         </contractProperties>
+        <objectiveTokens>
+          <ObjectiveToken>
+            <objectiveHandler>
+              <ObjectiveHandler_Hauling>
+                <HaulingOrder_Resource resource="99999999-9999-4999-8999-999999999999" />
+              </ObjectiveHandler_Hauling>
+            </objectiveHandler>
+          </ObjectiveToken>
+        </objectiveTokens>
       </ContractTemplate.TestTemplate>
     `,
   );
@@ -335,6 +344,14 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
       (reference) =>
         reference.attribute === 'ContractTemplate.owner' &&
         reference.value === '88888888-8888-4888-8888-888888888888',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'template:HaulingOrder_Resource:1.resource' &&
+        reference.value === '99999999-9999-4999-8999-999999999999',
     ),
     true,
   );

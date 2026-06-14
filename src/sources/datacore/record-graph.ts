@@ -275,6 +275,14 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
 
   $(':root')
     .first()
+    .filter('[__type="ContractTemplate"]')
+    .find('ObjectiveHandler_Hauling HaulingOrder_Resource[resource]')
+    .each((index, element) => {
+      addReference(`template:HaulingOrder_Resource:${index + 1}.resource`, $(element).attr('resource'));
+    });
+
+  $(':root')
+    .first()
     .find('> generators > *')
     .each((_, handlerElement) => {
       for (const section of ['introContracts', 'contracts']) {

@@ -20,7 +20,7 @@ test('extractDataCoreContractTemplateHaulingOrders emits hauling resource order 
             <objectiveHandler>
               <ObjectiveHandler_Hauling>
                 <haulingOrders>
-                  <HaulingOrder_Resource resource="resource-guid" minSCU="12" maxSCU="87" maxContainerSize="8" />
+                  <HaulingOrder_Resource resource="resource-xml-fallback-guid" minSCU="12" maxSCU="87" maxContainerSize="8" />
                   <HaulingOrder_Resource resource="fallback-resource-guid" minSCU="1" maxSCU="1" maxContainerSize="1" />
                 </haulingOrders>
               </ObjectiveHandler_Hauling>
@@ -127,7 +127,9 @@ test('extractDataCoreContractTemplateHaulingOrders prefers unique graph refs for
   );
   const graph = graphFixture(templatePath);
   graph.records[0].referencedGuids = ['resource-guid'];
-  graph.records[0].referencedGuidAttributes = [{ attribute: 'resource', value: 'resource-guid' }];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'template:HaulingOrder_Resource:1.resource', value: 'resource-guid' },
+  ];
   graph.records[2].referencedGuids = ['resource-guid'];
   graph.records[2].referencedGuidAttributes = [{ attribute: 'entry', value: 'resource-guid' }];
 
@@ -180,8 +182,8 @@ test('extractDataCoreContractTemplateHaulingOrders does not use XML fallback whe
   const graph = graphFixture(templatePath);
   graph.records[0].referencedGuids = ['resource-guid', 'other-resource-guid'];
   graph.records[0].referencedGuidAttributes = [
-    { attribute: 'resource', value: 'resource-guid' },
-    { attribute: 'resource', value: 'other-resource-guid' },
+    { attribute: 'template:HaulingOrder_Resource:1.resource', value: 'resource-guid' },
+    { attribute: 'template:HaulingOrder_Resource:1.resource', value: 'other-resource-guid' },
   ];
 
   const [row] = await extractDataCoreContractTemplateHaulingOrders({
@@ -208,7 +210,11 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         rootType: 'ContractTemplate',
         entityClass: templateClass,
         localizationKeys: [],
-        referencedGuids: [],
+        referencedGuids: ['resource-guid', 'fallback-resource-guid'],
+        referencedGuidAttributes: [
+          { attribute: 'template:HaulingOrder_Resource:1.resource', value: 'resource-guid' },
+          { attribute: 'template:HaulingOrder_Resource:2.resource', value: 'fallback-resource-guid' },
+        ],
       },
       {
         path: 'unresolved-resource.xml',

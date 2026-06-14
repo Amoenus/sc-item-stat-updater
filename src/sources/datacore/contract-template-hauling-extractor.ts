@@ -43,7 +43,12 @@ export async function extractDataCoreContractTemplateHaulingOrders(
       $(objective)
         .find('ObjectiveHandler_Hauling HaulingOrder_Resource')
         .each((orderIndex, order) => {
-          const resourceGuid = graphGuidReference(record, ['resource'], $(order).attr('resource') ?? '');
+          const orderNumber = orderIndex + 1;
+          const resourceGuid = graphGuidReference(
+            record,
+            [haulingOrderResourceAttribute(orderNumber)],
+            $(order).attr('resource') ?? '',
+          );
           const minSCU = $(order).attr('minSCU') ?? '';
           const maxSCU = $(order).attr('maxSCU') ?? '';
           const maxContainerSize = $(order).attr('maxContainerSize') ?? '';
@@ -54,7 +59,7 @@ export async function extractDataCoreContractTemplateHaulingOrders(
           rows.push({
             templateClass: record.entityClass,
             objectiveDebugName,
-            orderIndex: String(orderIndex + 1),
+            orderIndex: String(orderNumber),
             resourceGuid,
             resourceClass,
             resourceNameKey,
@@ -118,6 +123,10 @@ function linkedClass(record: DataCoreRecordNode | undefined): string {
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
   return uniqueGraphGuidReference(record, attributes, fallback);
+}
+
+function haulingOrderResourceAttribute(orderNumber: number): string {
+  return `template:HaulingOrder_Resource:${orderNumber}.resource`;
 }
 
 function firstLocalizationKey(values: string[]): string {
