@@ -3,6 +3,7 @@ import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import { normalizeDataCoreUsableLocalizationKey, uniqueSortedStrings } from './normalization';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphGuidReferences,
   graphLocalizationKeys,
@@ -25,10 +26,10 @@ export interface ExtractDataCoreContractTemplatesOptions {
 export async function extractDataCoreContractTemplates(
   options: ExtractDataCoreContractTemplatesOptions,
 ): Promise<DataCoreContractTemplateRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.contractTemplatePathPrefix ?? DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX)
-    .filter((record) => record.rootType === 'ContractTemplate')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.contractTemplatePathPrefix ?? DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX,
+    rootType: 'ContractTemplate',
+  });
   const rows: DataCoreContractTemplateRecord[] = [];
 
   let completed = 0;

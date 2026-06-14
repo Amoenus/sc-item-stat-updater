@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { normalizeDataCoreUsableLocalizationKey, uniqueDataCoreRecords } from './normalization';
+import { normalizeDataCoreUsableLocalizationKey } from './normalization';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphGuidReferences,
   graphLocalizationKeys,
@@ -26,11 +27,11 @@ export interface ExtractDataCoreContractGeneratorsOptions {
 export async function extractDataCoreContractGenerators(
   options: ExtractDataCoreContractGeneratorsOptions,
 ): Promise<DataCoreContractGeneratorRecord[]> {
-  const records = uniqueDataCoreRecords(
-    options.graph
-      .getByPathPrefix(options.contractGeneratorPathPrefix ?? DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX)
-      .filter((record) => record.rootType === 'ContractGenerator'),
-  ).sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.contractGeneratorPathPrefix ?? DEFAULT_CONTRACT_GENERATOR_PATH_PREFIX,
+    rootType: 'ContractGenerator',
+    unique: true,
+  });
   const rows: DataCoreContractGeneratorRecord[] = [];
 
   let completed = 0;

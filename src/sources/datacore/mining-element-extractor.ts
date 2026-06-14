@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { normalizeDataCoreUsableLocalizationKey } from './normalization';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphLocalizationKey,
   hasGraphLocalizationReference,
@@ -27,10 +28,10 @@ export interface ExtractDataCoreMiningElementsOptions {
 export async function extractDataCoreMiningElements(
   options: ExtractDataCoreMiningElementsOptions,
 ): Promise<DataCoreMiningElementRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_MINING_ELEMENT_PATH_PREFIX)
-    .filter((record) => record.rootType === 'MineableElement')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_MINING_ELEMENT_PATH_PREFIX,
+    rootType: 'MineableElement',
+  });
   const elements: DataCoreMiningElementRecord[] = [];
 
   for (const record of records) {

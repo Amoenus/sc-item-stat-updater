@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import { graphLocalizationKeyWithFallback, uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningCompositionPartRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -18,10 +19,10 @@ export interface ExtractDataCoreMiningCompositionsOptions {
 export async function extractDataCoreMiningCompositions(
   options: ExtractDataCoreMiningCompositionsOptions,
 ): Promise<DataCoreMiningCompositionPartRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_MINING_COMPOSITION_PATH_PREFIX)
-    .filter((record) => record.rootType === 'MineableComposition')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_MINING_COMPOSITION_PATH_PREFIX,
+    rootType: 'MineableComposition',
+  });
   const rows: DataCoreMiningCompositionPartRecord[] = [];
 
   for (const record of records) {

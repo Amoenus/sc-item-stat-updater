@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import type { DataCoreMiningClusteringParamRecord, DataCoreRecordGraphLookup } from './types';
 import { loadXml } from './xml-parser';
 
@@ -14,10 +15,10 @@ export interface ExtractDataCoreMiningClusteringOptions {
 export async function extractDataCoreMiningClustering(
   options: ExtractDataCoreMiningClusteringOptions,
 ): Promise<DataCoreMiningClusteringParamRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_MINING_CLUSTERING_PATH_PREFIX)
-    .filter((record) => record.rootType === 'HarvestableClusterPreset')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_MINING_CLUSTERING_PATH_PREFIX,
+    rootType: 'HarvestableClusterPreset',
+  });
   const rows: DataCoreMiningClusteringParamRecord[] = [];
 
   for (const record of records) {

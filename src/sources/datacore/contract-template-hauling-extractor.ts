@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { normalizeDataCoreUsableLocalizationKey } from './normalization';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphLocalizationKeyWithFallback,
   linkedGraphRecordEntityClass,
@@ -28,10 +29,10 @@ export async function extractDataCoreContractTemplateHaulingOrders(
   options: ExtractDataCoreContractTemplateHaulingOptions,
 ): Promise<DataCoreContractTemplateHaulingOrderRecord[]> {
   const resourceResolver = await buildCarryableResourceResolver(options);
-  const records = options.graph
-    .getByPathPrefix(options.contractTemplatePathPrefix ?? DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX)
-    .filter((record) => record.rootType === 'ContractTemplate')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.contractTemplatePathPrefix ?? DEFAULT_CONTRACT_TEMPLATE_PATH_PREFIX,
+    rootType: 'ContractTemplate',
+  });
   const rows: DataCoreContractTemplateHaulingOrderRecord[] = [];
 
   for (let i = 0; i < records.length; i++) {
@@ -92,10 +93,10 @@ async function buildCarryableResourceResolver(
   options: ExtractDataCoreContractTemplateHaulingOptions,
 ): Promise<Map<string, ResolvedHaulingResource>> {
   const resources = new Map<string, ResolvedHaulingResource>();
-  const records = options.graph
-    .getByPathPrefix(options.carryablePathPrefix ?? DEFAULT_CARRYABLE_PATH_PREFIX)
-    .filter((record) => record.rootType === 'EntityClassDefinition')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.carryablePathPrefix ?? DEFAULT_CARRYABLE_PATH_PREFIX,
+    rootType: 'EntityClassDefinition',
+  });
 
   for (const record of records) {
     const xmlPath = resolveChildPath(options.xmlCacheDir, record.path, 'DataCore carryable XML path');

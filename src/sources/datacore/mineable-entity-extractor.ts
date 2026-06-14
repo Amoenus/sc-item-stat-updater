@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMineableEntityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -15,10 +16,10 @@ export interface ExtractDataCoreMineableEntitiesOptions {
 export async function extractDataCoreMineableEntities(
   options: ExtractDataCoreMineableEntitiesOptions,
 ): Promise<DataCoreMineableEntityRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_MINEABLE_ENTITY_PATH_PREFIX)
-    .filter((record) => record.rootType === 'EntityClassDefinition')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_MINEABLE_ENTITY_PATH_PREFIX,
+    rootType: 'EntityClassDefinition',
+  });
   const rows: DataCoreMineableEntityRecord[] = [];
 
   for (const record of records) {

@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningSubHarvestableConfigRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -15,13 +16,10 @@ export interface ExtractDataCoreMiningSubHarvestableConfigsOptions {
 export async function extractDataCoreMiningSubHarvestableConfigs(
   options: ExtractDataCoreMiningSubHarvestableConfigsOptions,
 ): Promise<DataCoreMiningSubHarvestableConfigRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_SUB_HARVESTABLE_CONFIG_PATH_PREFIX)
-    .filter(
-      (record) =>
-        record.rootType === 'SubHarvestableConfigRecord' || record.rootType === 'SubHarvestableMultiConfigRecord',
-    )
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_SUB_HARVESTABLE_CONFIG_PATH_PREFIX,
+    rootTypes: ['SubHarvestableConfigRecord', 'SubHarvestableMultiConfigRecord'],
+  });
   const rows: Promise<DataCoreMiningSubHarvestableConfigRecord[]>[] = [];
   const harvestableCache = new Map<string, Promise<ResolvedHarvestable>>();
 

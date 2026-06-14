@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphLocalizationKeyWithFallback,
   linkedGraphRecordEntityClass,
@@ -20,10 +21,10 @@ export interface ExtractDataCoreMissionBrokerOptions {
 export async function extractDataCoreMissionBrokers(
   options: ExtractDataCoreMissionBrokerOptions,
 ): Promise<DataCoreMissionBrokerRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.missionBrokerPathPrefix ?? DEFAULT_MISSION_BROKER_PATH_PREFIX)
-    .filter((record) => record.rootType === 'MissionBrokerEntry')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.missionBrokerPathPrefix ?? DEFAULT_MISSION_BROKER_PATH_PREFIX,
+    rootType: 'MissionBrokerEntry',
+  });
   const rows: DataCoreMissionBrokerRecord[] = [];
 
   for (let i = 0; i < records.length; i++) {

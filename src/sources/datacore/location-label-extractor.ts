@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import {
   graphLocalizationKey,
   graphLocalizationKeyWithFallback,
@@ -19,10 +20,10 @@ export interface ExtractDataCoreLocationLabelsOptions {
 export async function extractDataCoreLocationLabels(
   options: ExtractDataCoreLocationLabelsOptions,
 ): Promise<DataCoreLocationLabelRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.starmapPathPrefix ?? DEFAULT_STARMAP_PATH_PREFIX)
-    .filter((record) => record.rootType === 'StarMapObject')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.starmapPathPrefix ?? DEFAULT_STARMAP_PATH_PREFIX,
+    rootType: 'StarMapObject',
+  });
   const rows: DataCoreLocationLabelRecord[] = [];
 
   for (const record of records) {

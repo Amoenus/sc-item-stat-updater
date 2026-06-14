@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningDensityOverrideRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -15,11 +16,11 @@ export interface ExtractDataCoreMiningDensityOverridesOptions {
 export async function extractDataCoreMiningDensityOverrides(
   options: ExtractDataCoreMiningDensityOverridesOptions,
 ): Promise<DataCoreMiningDensityOverrideRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_DENSITY_OVERRIDE_PATH_PREFIX)
-    .filter((record) => record.rootType === 'SEntityDensityClassOverridesRecord')
-    .filter((record) => /mining|asteroidbase/i.test(record.entityClass))
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_DENSITY_OVERRIDE_PATH_PREFIX,
+    rootType: 'SEntityDensityClassOverridesRecord',
+    predicate: (record) => /mining|asteroidbase/i.test(record.entityClass),
+  });
   const rows: DataCoreMiningDensityOverrideRecord[] = [];
 
   for (const record of records) {

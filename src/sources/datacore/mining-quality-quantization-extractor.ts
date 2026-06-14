@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import type { DataCoreMiningQualityQuantizationRecord, DataCoreRecordGraphLookup } from './types';
 import { loadXml } from './xml-parser';
 
@@ -14,10 +15,10 @@ export interface ExtractDataCoreMiningQualityQuantizationsOptions {
 export async function extractDataCoreMiningQualityQuantizations(
   options: ExtractDataCoreMiningQualityQuantizationsOptions,
 ): Promise<DataCoreMiningQualityQuantizationRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_QUALITY_QUANTIZATION_PATH_PREFIX)
-    .filter((record) => record.rootType === 'CraftingQualityQuantizationRecord')
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_QUALITY_QUANTIZATION_PATH_PREFIX,
+    rootType: 'CraftingQualityQuantizationRecord',
+  });
   const rows: DataCoreMiningQualityQuantizationRecord[] = [];
 
   for (const record of records) {

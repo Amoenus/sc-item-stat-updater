@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { queryDataCoreRecords } from './record-graph-query';
 import { uniqueGraphGuidReference } from './record-graph-relations';
 import type { DataCoreMiningQualityDistributionRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
@@ -16,15 +17,11 @@ export interface ExtractDataCoreMiningQualityDistributionsOptions {
 export async function extractDataCoreMiningQualityDistributions(
   options: ExtractDataCoreMiningQualityDistributionsOptions,
 ): Promise<DataCoreMiningQualityDistributionRecord[]> {
-  const records = options.graph
-    .getByPathPrefix(options.pathPrefix ?? DEFAULT_MINING_QUALITY_PATH_PREFIX)
-    .filter(
-      (record) =>
-        (record.rootType === 'CraftingQualityDistributionRecord' ||
-          record.rootType === 'CraftingQualityLocationOverrideRecord') &&
-        MINING_QUALITY_FAMILIES.has(mineableFamily(record.path)),
-    )
-    .sort((a, b) => a.path.localeCompare(b.path));
+  const records = queryDataCoreRecords(options.graph, {
+    pathPrefix: options.pathPrefix ?? DEFAULT_MINING_QUALITY_PATH_PREFIX,
+    rootTypes: ['CraftingQualityDistributionRecord', 'CraftingQualityLocationOverrideRecord'],
+    predicate: (record) => MINING_QUALITY_FAMILIES.has(mineableFamily(record.path)),
+  });
   const rows: DataCoreMiningQualityDistributionRecord[] = [];
 
   for (const record of records) {
