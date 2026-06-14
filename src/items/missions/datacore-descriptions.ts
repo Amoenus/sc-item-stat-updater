@@ -6,7 +6,7 @@ import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { readIniFile } from '../../localization/ini-file';
 import { loadDataCoreRecordGraph } from '../../sources/datacore/record-graph-loader';
-import { graphLocalizationKey } from '../../sources/datacore/record-graph-relations';
+import { graphLocalizationKey, hasGraphLocalizationReference } from '../../sources/datacore/record-graph-relations';
 import { createDataCoreRelationshipIndex, type DataCoreRelationshipIndex } from '../../sources/datacore/relationship-index';
 import type { DataCoreRecordNode } from '../../sources/datacore/types';
 import { loadXml } from '../../sources/datacore/xml-parser';
@@ -542,7 +542,10 @@ async function resolveContractStandingLabel(
   }
 
   if (standingGuid) {
-    const standingKey = standingRecord ? fallbackNameLocalizationKey(standingRecord) : '';
+    const standingKey =
+      standingRecord && !hasGraphNameLocalizationReference(standingRecord)
+        ? fallbackNameLocalizationKey(standingRecord)
+        : '';
     if (standingKey) {
       const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
       cache.set(cacheKey, label);
@@ -758,8 +761,11 @@ function resolveBlueprintTargetNameKey(
   resolvedTargetRecord?: ReturnType<Awaited<ReturnType<typeof loadDataCoreRecordGraph>>['getByRef']>,
 ): string {
   const targetRecord = resolvedTargetRecord ?? resolveBlueprintTargetRecord(row, recordGraph, relationshipIndex);
-  const graphKey = targetRecord ? graphNameLocalizationKey(targetRecord) : '';
-  if (graphKey) return graphKey;
+  if (targetRecord) {
+    const graphKey = graphNameLocalizationKey(targetRecord);
+    if (graphKey) return graphKey;
+    if (hasGraphNameLocalizationReference(targetRecord)) return '';
+  }
 
   const csvKey = row['TargetItemNameKey'];
   if (csvKey && isUsableGraphLocalizationKey(csvKey)) return csvKey;
@@ -767,7 +773,10 @@ function resolveBlueprintTargetNameKey(
   const targetClass = row['TargetEntityClass'];
   if (targetClass && !isGuid(targetClass)) {
     const classRecord = relationshipIndex.getRecordForEntityClass(targetClass);
-    return classRecord ? graphNameLocalizationKey(classRecord) || fallbackNameLocalizationKey(classRecord) : '';
+    if (!classRecord) return '';
+    const graphKey = graphNameLocalizationKey(classRecord);
+    if (graphKey) return graphKey;
+    return hasGraphNameLocalizationReference(classRecord) ? '' : fallbackNameLocalizationKey(classRecord);
   }
 
   return targetRecord ? fallbackNameLocalizationKey(targetRecord) : '';
@@ -775,6 +784,10 @@ function resolveBlueprintTargetNameKey(
 
 function graphNameLocalizationKey(record: DataCoreRecordNode): string {
   return graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName', 'shortName']);
+}
+
+function hasGraphNameLocalizationReference(record: DataCoreRecordNode): boolean {
+  return hasGraphLocalizationReference(record, ['Name', 'name', 'displayName', 'ShortName', 'shortName']);
 }
 
 function fallbackNameLocalizationKey(record: DataCoreRecordNode): string {

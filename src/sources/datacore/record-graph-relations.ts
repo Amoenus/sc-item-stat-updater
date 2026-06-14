@@ -4,6 +4,10 @@ export function graphLocalizationKey(record: DataCoreRecordNode, attributes: str
   return graphLocalizationKeyFromReferences(record.localizationKeys, attributes);
 }
 
+export function hasGraphLocalizationReference(record: DataCoreRecordNode, attributes: string[]): boolean {
+  return hasGraphLocalizationReferenceFromReferences(record.localizationKeys, attributes);
+}
+
 export function graphLocalizationKeyMatching(
   record: DataCoreRecordNode,
   attributes: string[],
@@ -25,6 +29,17 @@ export function graphLocalizationKeyFromReferences(
   attributes: string[],
 ): string {
   return graphLocalizationKeyFromReferencesMatching(references, attributes, () => true);
+}
+
+export function hasGraphLocalizationReferenceFromReferences(
+  references: DataCoreLocalizationReference[],
+  attributes: string[],
+): boolean {
+  const expectedAttributes = new Set(attributes.map(normalizeGraphAttributeName).filter(Boolean));
+  return references.some(
+    (reference) =>
+      expectedAttributes.has(normalizeGraphAttributeName(reference.attribute)) && hasAnyLocalizationKey(reference.key),
+  );
 }
 
 export function graphLocalizationKeyFromReferencesMatching(
@@ -75,4 +90,9 @@ function normalizeLocalizationKey(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || /^@?LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(trimmed)) return '';
   return trimmed.startsWith('@') ? trimmed.slice(1).trim() : trimmed;
+}
+
+function hasAnyLocalizationKey(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.startsWith('@') ? trimmed.slice(1).trim() !== '' : trimmed !== '';
 }

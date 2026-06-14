@@ -76,6 +76,33 @@ test('extractDataCoreCraftingBlueprints prefers graph name attributes over key-n
   assert.equal(rows[0].targetItemNameKey, 'ui_PowerPlant_Display');
 });
 
+test('extractDataCoreCraftingBlueprints does not use name heuristics when graph name is placeholder', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-crafting-blueprints-placeholder-name-'));
+  await writeXml(
+    xmlCacheDir,
+    blueprintPath,
+    `
+      <CraftingBlueprintRecord.AEGS_Component_Blueprint __type="CraftingBlueprintRecord" __ref="blueprint-ref" __path="${blueprintPath}">
+        <processSpecificData>
+          <CraftingProcess_Creation entityClass="target-ref" />
+        </processSpecificData>
+      </CraftingBlueprintRecord.AEGS_Component_Blueprint>
+    `,
+  );
+  const graph = makeGraph();
+  graph.records[1].localizationKeys = [
+    { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+    { attribute: 'description', key: 'item_NameHeuristic_Wrong' },
+  ];
+
+  const rows = await extractDataCoreCraftingBlueprints({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0].targetItemNameKey, '');
+});
+
 test('extractDataCoreCraftingBlueprints prefers unique graph refs for target and resource links', async () => {
   const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-crafting-blueprints-refs-'));
   await writeXml(

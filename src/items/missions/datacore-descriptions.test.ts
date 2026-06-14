@@ -250,6 +250,31 @@ describe('loadDatacoreDescriptionsSourceData', () => {
       await fs.rm(dir, { recursive: true, force: true });
     }
   });
+
+  it('does not use blueprint target name heuristics when graph name is placeholder', async () => {
+    const { dir, datacoreDir } = await makeWorkspace();
+    try {
+      const graphPath = path.join(datacoreDir, 'record-graph.json');
+      const graph = JSON.parse(await fs.readFile(graphPath, 'utf8')) as {
+        records: Array<{ ref: string; localizationKeys: Array<{ attribute: string; key: string }> }>;
+      };
+      const targetRecord = graph.records.find((record) => record.ref === 'powerplant-ref');
+      assert.ok(targetRecord);
+      targetRecord.localizationKeys = [
+        { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+        { attribute: 'description', key: 'item_Name_Test_Repeat_Wrong' },
+      ];
+      await fs.writeFile(graphPath, JSON.stringify(graph), 'utf8');
+
+      const rows = await loadDatacoreDescriptionsSourceData({ sourceDirs: { datacore: datacoreDir } } as never);
+      const repeatRow = rows.find((candidate) => candidate['Localization Key'] === 'repeat_desc');
+
+      assert.match(repeatRow?.RewardList ?? '', /TEST_POWERPLANT_SCItem \(Powerplant\)/);
+      assert.doesNotMatch(repeatRow?.RewardList ?? '', /item_Name_Test_Repeat_Wrong/);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 function missionDescriptionValue(row: Record<string, string>, oldValue: string): string {

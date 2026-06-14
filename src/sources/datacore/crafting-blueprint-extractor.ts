@@ -2,7 +2,11 @@ import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
 import { createDataCoreRelationshipIndex } from './relationship-index';
-import { graphLocalizationKey, uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKey,
+  hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreCraftingBlueprintRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -77,7 +81,10 @@ export async function extractDataCoreCraftingBlueprints(
 }
 
 function targetNameLocalizationKey(record: DataCoreRecordNode): string {
-  return graphLocalizationKey(record, ['Name', 'name', 'displayName', 'ShortName']) || fallbackNameKey(record);
+  const attributes = ['Name', 'name', 'displayName', 'ShortName'];
+  const graphKey = graphLocalizationKey(record, attributes);
+  if (graphKey || hasGraphLocalizationReference(record, attributes)) return graphKey;
+  return fallbackNameKey(record);
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
