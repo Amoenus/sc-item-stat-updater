@@ -248,6 +248,36 @@ test('extractDataCoreCommodities falls back when graph commodity GUID refs are a
   assert.equal(rows[0].subtypeGuid, '45f89d34-3167-4723-9b85-f9df3770ce00');
 });
 
+test('extractDataCoreCommodities does not use commodity key heuristics when graph name is placeholder', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-commodities-placeholder-name-'));
+  const graph = makeGraph();
+  const record = graph.records[3];
+  graph.recordCount = 1;
+  graph.records = [record];
+  record.localizationKeys = [
+    { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+    { attribute: 'Description', key: 'items_commodities_carinite_pure' },
+  ];
+  graph.indexes = {
+    byRef: { [record.ref]: record.path },
+    byPath: { [record.path]: 0 },
+    byRootType: { EntityClassDefinition: [record.path] },
+    byEntityClass: { [record.entityClass]: [record.path] },
+    byLocalizationKey: {},
+    byReferencedGuid: {},
+  };
+
+  const rows = await extractDataCoreCommodities({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(
+    rows.some((row) => row.entityClass === 'Harvestable_Mineral_1H_CarinitePure'),
+    false,
+  );
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });

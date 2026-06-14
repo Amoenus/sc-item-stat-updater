@@ -6,6 +6,7 @@ import {
   graphLocalizationKey,
   graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
+  hasGraphLocalizationReference,
   uniqueGraphGuidReference,
 } from './record-graph-relations';
 import type { DataCoreCommodityRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
@@ -325,6 +326,7 @@ function selectLocalizationKey(
 ): string {
   const graphKey = graphLocalizationKeyMatching(record, attributes, predicate);
   if (graphKey) return graphKey;
+  if (hasGraphLocalizationReference(record, attributes)) return '';
   return record.localizationKeys.map((reference) => normalizeLocalizationKey(reference.key)).find(predicate) ?? '';
 }
 
