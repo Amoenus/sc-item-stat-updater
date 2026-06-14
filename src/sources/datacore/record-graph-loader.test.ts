@@ -45,6 +45,30 @@ test('loadDataCoreRecordGraph loads a version graph and resolves records by inde
     graph.getByPathPrefix('libs\\foundry\\records\\scitemmanufacturer').map((record) => record.path),
     [manufacturerPath],
   );
+  assert.deepEqual(
+    graph.getByAttributeName('DISPLAYNAME').map((record) => record.path),
+    [manufacturerPath],
+  );
+  assert.deepEqual(
+    graph.getByAttributeValue('@manufacturer_NameAEGS').map((record) => record.path),
+    [manufacturerPath],
+  );
+  assert.deepEqual(
+    graph.getByAttributeValue('manufacturer_NameAEGS').map((record) => record.path),
+    [manufacturerPath],
+  );
+  assert.deepEqual(graph.getLocalizationReferencesByAttributeName('name'), [
+    {
+      record: graph.getByPath(manufacturerPath),
+      reference: { attribute: 'Name', key: 'manufacturer_NameAEGS' },
+    },
+  ]);
+  assert.deepEqual(graph.getGuidReferencesByAttributeName('manufacturer'), [
+    {
+      record: graph.getByPath(vehiclePath),
+      reference: { attribute: 'Manufacturer', value: '22222222-2222-2222-2222-222222222222' },
+    },
+  ]);
 });
 
 test('createDataCoreRecordGraphLookup tolerates path separator differences', () => {
@@ -67,8 +91,27 @@ function makeGraph(): DataCoreRecordGraph {
         rootTag: 'EntityClassDefinition.AEGS_Avenger',
         rootType: 'EntityClassDefinition',
         entityClass: 'AEGS_Avenger',
+        attributes: [
+          {
+            elementPath: 'EntityClassDefinition.AEGS_Avenger/Vehicle[1]',
+            tag: 'Vehicle',
+            attribute: 'Manufacturer',
+            rawValue: '22222222-2222-2222-2222-222222222222',
+            normalizedValue: '22222222-2222-2222-2222-222222222222',
+            valueType: 'guid',
+          },
+          {
+            elementPath: 'EntityClassDefinition.AEGS_Avenger',
+            tag: 'EntityClassDefinition.AEGS_Avenger',
+            attribute: 'vehicleName',
+            rawValue: '@vehicle_Name_AEGS_Avenger',
+            normalizedValue: 'vehicle_Name_AEGS_Avenger',
+            valueType: 'localizationKey',
+          },
+        ],
         localizationKeys: [{ attribute: 'vehicleName', key: 'vehicle_Name_AEGS_Avenger' }],
         referencedGuids: ['22222222-2222-2222-2222-222222222222'],
+        referencedGuidAttributes: [{ attribute: 'Manufacturer', value: '22222222-2222-2222-2222-222222222222' }],
       },
       {
         path: manufacturerPath,
@@ -76,11 +119,30 @@ function makeGraph(): DataCoreRecordGraph {
         rootTag: 'SCItemManufacturer.AEGS',
         rootType: 'SCItemManufacturer',
         entityClass: 'AEGS',
+        attributes: [
+          {
+            elementPath: 'SCItemManufacturer.AEGS/Localization[1]',
+            tag: 'Localization',
+            attribute: 'Description',
+            rawValue: '@manufacturer_DescAEGS',
+            normalizedValue: 'manufacturer_DescAEGS',
+            valueType: 'localizationKey',
+          },
+          {
+            elementPath: 'SCItemManufacturer.AEGS/Localization[1]',
+            tag: 'Localization',
+            attribute: 'displayName',
+            rawValue: '@manufacturer_NameAEGS',
+            normalizedValue: 'manufacturer_NameAEGS',
+            valueType: 'localizationKey',
+          },
+        ],
         localizationKeys: [
           { attribute: 'Description', key: 'manufacturer_DescAEGS' },
           { attribute: 'Name', key: 'manufacturer_NameAEGS' },
         ],
         referencedGuids: [],
+        referencedGuidAttributes: [],
       },
     ],
     indexes: {

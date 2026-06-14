@@ -71,6 +71,18 @@ function graphLookup(records: DataCoreRecordNode[]): DataCoreRecordGraphLookup {
     getByPathPrefix(pathPrefix) {
       return records.filter((record) => record.path.startsWith(pathPrefix));
     },
+    getByAttributeName() {
+      return [];
+    },
+    getByAttributeValue() {
+      return [];
+    },
+    getLocalizationReferencesByAttributeName() {
+      return [];
+    },
+    getGuidReferencesByAttributeName() {
+      return [];
+    },
   };
 }
 

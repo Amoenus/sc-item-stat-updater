@@ -32,9 +32,18 @@ The generated graph indexes the full extracted DataForge XML cache:
 | Reference GUIDs resolved to root `__ref` records | 2,695 |
 | Reference GUID resolution coverage | 7.0% |
 
-The graph now normalizes localization references by stripping the leading `@`
-marker and ignores raw attribute labels such as action names in `Name`
-attributes. This keeps `byLocalizationKey` usable for direct `global.ini` joins.
+The graph now captures every XML attribute on every record into the generic
+`records[].attributes` layer. Each captured attribute includes its element path,
+tag, attribute name, raw value, normalized value, and inferred value type
+(`guid`, `localizationKey`, `number`, `boolean`, or `string`).
+
+Localization references are derived dynamically from attribute values that start
+with `@`; the leading marker is stripped for `localizationKeys` and
+`byLocalizationKey`. Raw labels such as action names in `Name` attributes are no
+longer treated as localization references unless the value is explicitly
+localization-marked. Unusable placeholder keys such as `LOC_EMPTY`,
+`LOC_PLACEHOLDER`, and `LOC_UNINITIALIZED` remain excluded from the localization
+index so it stays useful for direct `global.ini` joins.
 
 ## Largest Record Families
 
@@ -93,17 +102,19 @@ Vehicles, commodities, starmap records, law records, and SC item entities all
 have high `global.ini` key coverage. Mission broker coverage is also strong, but
 there are more missing keys, especially older or variant mission strings.
 
-The graph indexes root `__ref` values plus GUIDs found in record attributes,
-including explicit `<Reference value="...">` nodes. Some relationships still
-point at records not represented as root `__ref` nodes in the XML cache, so
-domain-specific resolvers remain necessary where a raw GUID edge needs semantic
-meaning. Reputation and faction records resolve well, so they are good early
-candidates for graph-following enrichment.
+The graph indexes root `__ref` values plus GUID-looking values found in XML
+attributes, including explicit `<Reference value="...">` nodes. Root `__ref`
+values are preserved as record identifiers but are excluded from inbound
+reference edges. Some relationships still point at records not represented as
+root `__ref` nodes in the XML cache, so domain-specific resolvers remain
+necessary where a raw GUID edge needs semantic meaning. Reputation and faction
+records resolve well, so they are good early candidates for graph-following
+enrichment.
 
 Manufacturer records are straightforward name/description sources, and the
-generic graph now exposes vehicle-to-manufacturer GUID edges when they are
-stored as attributes. A domain resolver should still decide which edge carries
-manufacturer semantics.
+generic graph now exposes vehicle-to-manufacturer GUID-looking values when they
+are stored as attributes. A domain resolver should still decide which edge
+carries manufacturer semantics.
 
 Commodity records look like a low-risk next extractor: 237 records, 452
 localization keys, and 98.9% key coverage. This is a strong candidate after the

@@ -45,6 +45,7 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
         </SReputationContextBBPropertyParams>
         <CommodityComponentParams name="@items_commodities_atlasium" description="@items_commodities_atlasium_desc" />
         <SCItemPurchasableParams displayType="@items_commodities_type_alloy" ShortName="@items_commodities_atlasium_short" shortName="@items_commodities_atlasium_short_lower" />
+        <DynamicStrings arbitraryTitle="@dynamic_arbitrary_title" rawName="Raw entity name is not a localization reference" />
         <Placeholder Name="@LOC_PLACEHOLDER" Description="@LOC_UNINITIALIZED" />
         <Fallback Name="Raw entity name is not a localization reference" />
         <Reference value="22222222-2222-2222-2222-222222222222" />
@@ -138,6 +139,9 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
   assert.deepEqual(graph.indexes.byLocalizationKey.HeadHunters_RepUI_Description, [
     'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
   ]);
+  assert.deepEqual(graph.indexes.byLocalizationKey.dynamic_arbitrary_title, [
+    'libs/foundry/records/entities/spaceships/aegs_avenger.xml',
+  ]);
   assert.equal(
     graph.records[0]?.localizationKeys.some(
       (reference) =>
@@ -147,6 +151,13 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     true,
   );
   assert.equal(graph.indexes.byLocalizationKey['Raw entity name is not a localization reference'], undefined);
+  assert.equal(
+    graph.records[0]?.localizationKeys.some(
+      (reference) =>
+        reference.attribute === 'rawName' && reference.key === 'Raw entity name is not a localization reference',
+    ),
+    false,
+  );
   assert.equal(graph.indexes.byLocalizationKey.LOC_PLACEHOLDER, undefined);
   assert.equal(graph.indexes.byLocalizationKey.LOC_UNINITIALIZED, undefined);
   assert.deepEqual(graph.indexes.byLocalizationKey.manufacturer_Desc_AEGS, [
@@ -171,6 +182,28 @@ test('buildDataCoreRecordGraph indexes DataForge XML records by graph keys', asy
     { attribute: 'Manufacturer', value: '33333333-3333-4333-8333-333333333333' },
   ]);
   assert.equal(graph.indexes.byReferencedGuid['11111111-1111-1111-1111-111111111111'], undefined);
+  assert.deepEqual(
+    graph.records[0]?.attributes?.find((attribute) => attribute.attribute === 'arbitraryTitle'),
+    {
+      elementPath: 'EntityClassDefinition.AEGS_Avenger/DynamicStrings[1]',
+      tag: 'DynamicStrings',
+      attribute: 'arbitraryTitle',
+      rawValue: '@dynamic_arbitrary_title',
+      normalizedValue: 'dynamic_arbitrary_title',
+      valueType: 'localizationKey',
+    },
+  );
+  assert.deepEqual(
+    graph.records[0]?.attributes?.find((attribute) => attribute.attribute === 'Manufacturer'),
+    {
+      elementPath: 'EntityClassDefinition.AEGS_Avenger/Vehicle[1]',
+      tag: 'Vehicle',
+      attribute: 'Manufacturer',
+      rawValue: '33333333-3333-4333-8333-333333333333',
+      normalizedValue: '33333333-3333-4333-8333-333333333333',
+      valueType: 'guid',
+    },
+  );
 });
 
 test('buildDataCoreRecordGraph emits effective contract string params by contract id', async () => {

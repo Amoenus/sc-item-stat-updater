@@ -8,42 +8,18 @@ import { mapConcurrent } from './concurrency';
 import type {
   DataCoreGuidReference,
   DataCoreLocalizationReference,
+  DataCoreRecordAttribute,
+  DataCoreRecordAttributeValueType,
   DataCoreRecordGraph,
   DataCoreRecordNode,
 } from './types';
 import { collectDataCoreXmlFiles } from './xml-files';
 
-const LOCALIZATION_ATTRIBUTES = [
-  'Name',
-  'ShortName',
-  'shortName',
-  'Description',
-  'name',
-  'description',
-  'displayName',
-  'displayDescription',
-  'displayType',
-  'title',
-  'titleHUD',
-  'missionGiver',
-  'commsChannelName',
-  'vehicleName',
-  'vehicleDescription',
-  'vehicleCareer',
-  'vehicleRole',
-  'depositName',
-  'orderDisplayName',
-  'callout1',
-  'callout2',
-  'callout3',
-  'textId',
-  'titleOverride',
-  'descriptionOverride',
-] as const;
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workerPath = path.resolve(__dirname, 'record-graph-worker.ts');
 const GUID_PATTERN = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+const FULL_GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const NUMBER_PATTERN = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 
 export interface BuildDataCoreRecordGraphOptions {
   xmlCacheDir: string;
@@ -91,7 +67,8 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
   const root = $(rootElement);
   const rootTag = flattenString(rootElement.name);
   const rootType = flattenString(root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag);
-  const referencedGuidAttributes = extractGuidAttributeReferences($, rootElement);
+  const attributes = collectRecordAttributes(rootElement);
+  const referencedGuidAttributes = extractGuidAttributeReferences($, rootElement, attributes);
 
   return {
     path: flattenString(recordPath),
@@ -99,7 +76,8 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
     rootTag,
     rootType,
     entityClass: flattenString(extractRecordEntityClass(rootTag)),
-    localizationKeys: extractLocalizationReferences($),
+    attributes,
+    localizationKeys: extractLocalizationReferences($, attributes),
     referencedGuids: uniqueSorted(referencedGuidAttributes.map((reference) => reference.value)),
     referencedGuidAttributes,
   };
@@ -110,7 +88,63 @@ function extractRecordEntityClass(rootTag: string): string {
   return dot === -1 ? '' : rootTag.slice(dot + 1);
 }
 
-function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationReference[] {
+function collectRecordAttributes(rootElement: Element): DataCoreRecordAttribute[] {
+  const attributes: DataCoreRecordAttribute[] = [];
+
+  const visit = (element: Element, elementPath: string): void => {
+    const tag = flattenString(element.name);
+    for (const [attribute, rawValue] of Object.entries(element.attribs ?? {}).sort(([a], [b]) => a.localeCompare(b))) {
+      const flattenedRawValue = flattenString(rawValue);
+      attributes.push({
+        elementPath,
+        tag,
+        attribute: flattenString(attribute),
+        rawValue: flattenedRawValue,
+        normalizedValue: normalizeAttributeValue(flattenedRawValue),
+        valueType: inferAttributeValueType(flattenedRawValue),
+      });
+    }
+
+    const childTagCounts = new Map<string, number>();
+    for (const child of element.children ?? []) {
+      if (child.type !== 'tag') continue;
+      const childElement = child as Element;
+      const childTag = flattenString(childElement.name);
+      const index = (childTagCounts.get(childTag) ?? 0) + 1;
+      childTagCounts.set(childTag, index);
+      visit(childElement, `${elementPath}/${childTag}[${index}]`);
+    }
+  };
+
+  visit(rootElement, flattenString(rootElement.name));
+  return attributes.sort(
+    (a, b) =>
+      a.elementPath.localeCompare(b.elementPath) ||
+      a.attribute.localeCompare(b.attribute) ||
+      a.rawValue.localeCompare(b.rawValue),
+  );
+}
+
+function normalizeAttributeValue(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('@')) return trimmed.slice(1).trim();
+  if (FULL_GUID_PATTERN.test(trimmed)) return trimmed.toLowerCase();
+  return trimmed;
+}
+
+function inferAttributeValueType(value: string): DataCoreRecordAttributeValueType {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('@')) return 'localizationKey';
+  if (FULL_GUID_PATTERN.test(trimmed)) return 'guid';
+  if (/^(?:true|false)$/i.test(trimmed)) return 'boolean';
+  if (NUMBER_PATTERN.test(trimmed) && Number.isFinite(Number(trimmed))) return 'number';
+  return 'string';
+}
+
+function extractLocalizationReferences(
+  $: CheerioAPI,
+  attributes: DataCoreRecordAttribute[],
+): DataCoreLocalizationReference[] {
   const references: DataCoreLocalizationReference[] = [];
   const seen = new Set<string>();
   const addReference = (attribute: string, rawKey: string | undefined): void => {
@@ -126,13 +160,9 @@ function extractLocalizationReferences($: CheerioAPI): DataCoreLocalizationRefer
     references.push({ attribute: flatAttribute, key: flatKey });
   };
 
-  $('*').each((_, element) => {
-    if (element.type !== 'tag') return;
-
-    for (const attribute of LOCALIZATION_ATTRIBUTES) {
-      addReference(attribute, $(element).attr(attribute));
-    }
-  });
+  for (const attribute of attributes.filter((attribute) => attribute.valueType === 'localizationKey')) {
+    addReference(attribute.attribute, attribute.rawValue);
+  }
 
   $('MissionProperty[missionVariableName]').each((_, element) => {
     const missionVariableName = $(element).attr('missionVariableName')?.trim();
@@ -219,7 +249,11 @@ function isUsableLocalizationKey(value: string): boolean {
   return value !== '' && !/^LOC_(?:EMPTY|PLACEHOLDER|UNINITIALIZED)$/i.test(value);
 }
 
-function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): DataCoreGuidReference[] {
+function extractGuidAttributeReferences(
+  $: CheerioAPI,
+  rootElement: Element,
+  attributes: DataCoreRecordAttribute[],
+): DataCoreGuidReference[] {
   const references: DataCoreGuidReference[] = [];
   const seen = new Set<string>();
   const addReference = (attribute: string, rawValue: string | undefined): void => {
@@ -234,14 +268,10 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
     }
   };
 
-  $('*').each((_, element) => {
-    if (element.type !== 'tag') return;
-
-    for (const [attribute, rawValue] of Object.entries(element.attribs ?? {})) {
-      if (element === rootElement && attribute === '__ref') continue;
-      addReference(attribute, rawValue);
-    }
-  });
+  for (const attribute of attributes) {
+    if (attribute.elementPath === flattenString(rootElement.name) && attribute.attribute === '__ref') continue;
+    addReference(attribute.attribute, attribute.rawValue);
+  }
 
   $('MissionProperty[missionVariableName="MissionLocation"]').each((_, element) => {
     const contractId = $(element).parents('[id]').first().attr('id')?.trim();

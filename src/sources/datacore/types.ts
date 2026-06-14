@@ -785,6 +785,27 @@ export interface DataCoreGuidReference {
   value: string;
 }
 
+export type DataCoreRecordAttributeValueType = 'guid' | 'localizationKey' | 'number' | 'boolean' | 'string';
+
+export interface DataCoreRecordAttribute {
+  elementPath: string;
+  tag: string;
+  attribute: string;
+  rawValue: string;
+  normalizedValue: string;
+  valueType: DataCoreRecordAttributeValueType;
+}
+
+export interface DataCoreLocalizationRecordReference {
+  record: DataCoreRecordNode;
+  reference: DataCoreLocalizationReference;
+}
+
+export interface DataCoreGuidRecordReference {
+  record: DataCoreRecordNode;
+  reference: DataCoreGuidReference;
+}
+
 export interface DataCoreBlueprintPoolRecord {
   ref: string;
   path: string;
@@ -825,6 +846,7 @@ export interface DataCoreRecordNode {
   rootTag: string;
   rootType: string;
   entityClass: string;
+  attributes?: DataCoreRecordAttribute[];
   localizationKeys: DataCoreLocalizationReference[];
   referencedGuids: string[];
   referencedGuidAttributes?: DataCoreGuidReference[];
@@ -853,4 +875,8 @@ export interface DataCoreRecordGraphLookup {
   getByLocalizationKey(key: string): DataCoreRecordNode[];
   getByReferencedGuid(guid: string): DataCoreRecordNode[];
   getByPathPrefix(pathPrefix: string): DataCoreRecordNode[];
+  getByAttributeName(attributeName: string): DataCoreRecordNode[];
+  getByAttributeValue(attributeValue: string): DataCoreRecordNode[];
+  getLocalizationReferencesByAttributeName(attributeName: string): DataCoreLocalizationRecordReference[];
+  getGuidReferencesByAttributeName(attributeName: string): DataCoreGuidRecordReference[];
 }

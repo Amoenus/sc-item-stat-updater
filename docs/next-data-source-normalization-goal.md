@@ -97,8 +97,13 @@ Required capabilities:
 - lookup by localization key
 - lookup by referenced GUID
 - filter records by path prefix
+- lookup by dynamic XML attribute name or value
+- list localization and GUID references by source attribute name
 
-The graph is large, so callers should not parse it ad hoc.
+The graph is large, so callers should not parse it ad hoc. The graph remains a
+generic XML attribute graph: semantic relationship names such as manufacturer,
+faction, reward, prerequisite, and location belong in domain resolvers built on
+top of these raw attribute and reference lookups.
 
 ### 2. Manufacturer Resolver
 
