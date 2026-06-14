@@ -50,7 +50,11 @@ export async function extractDataCoreContractTemplates(
       const autoFinishSettings = contractClass.find('> autoFinishSettings').first();
       const contractDeadline = autoFinishSettings.find('> contractDeadline').first();
       const contractDisplayInfo = root.find('> contractDisplayInfo > ContractDisplayInfo').first();
-      const displayTypeGuid = graphGuidReference(record, ['type'], contractDisplayInfo.attr('type') ?? '');
+      const displayTypeGuid = graphGuidReference(
+        record,
+        ['contractDisplayInfo.type'],
+        contractDisplayInfo.attr('type') ?? '',
+      );
       const locationTagGuids = readGraphGuidRefsWithFallback(
         record,
         ['template:MissionLocation.Reference.value'],

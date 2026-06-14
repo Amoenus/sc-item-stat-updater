@@ -142,8 +142,8 @@ test('extractDataCoreContractTemplates does not use XML fallback when graph GUID
 
   assert.equal(rows[0]?.ownerGuid, '');
   assert.equal(rows[0]?.ownerClass, '');
-  assert.equal(rows[0]?.displayTypeGuid, '');
-  assert.equal(rows[0]?.displayTypeClass, '');
+  assert.equal(rows[0]?.displayTypeGuid, 'type-guid');
+  assert.equal(rows[0]?.displayTypeClass, 'Bounty');
 });
 
 test('extractDataCoreContractTemplates does not use string-hash XML fallback when graph text ids are placeholders', async () => {
@@ -289,6 +289,7 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         referencedGuidAttributes: [
           { attribute: 'owner', value: '' },
           { attribute: 'owner', value: 'owner-guid' },
+          { attribute: 'contractDisplayInfo.type', value: 'type-guid' },
           { attribute: 'template:MissionLocation.Reference.value', value: 'location-guid' },
           { attribute: 'type', value: '' },
           { attribute: 'type', value: 'type-guid' },

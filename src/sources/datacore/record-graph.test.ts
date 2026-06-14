@@ -295,6 +295,9 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
     templatePath,
     `
       <ContractTemplate.TestTemplate __ref="template-guid" __type="ContractTemplate" __path="libs/foundry/records/contracts/contracttemplates/test_template.xml">
+        <contractDisplayInfo>
+          <ContractDisplayInfo type="77777777-7777-4777-8777-777777777777" />
+        </contractDisplayInfo>
         <contractProperties>
           <MissionProperty missionVariableName="MissionLocation">
             <value>
@@ -316,6 +319,14 @@ test('buildDataCoreRecordGraph emits template mission location refs by role', as
       (reference) =>
         reference.attribute === 'template:MissionLocation.Reference.value' &&
         reference.value === '66666666-6666-4666-8666-666666666666',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'contractDisplayInfo.type' &&
+        reference.value === '77777777-7777-4777-8777-777777777777',
     ),
     true,
   );
