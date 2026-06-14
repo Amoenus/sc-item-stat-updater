@@ -251,6 +251,32 @@ describe('loadDatacoreDescriptionsSourceData', () => {
     }
   });
 
+  it('does not infer standing labels when graph name is placeholder', async () => {
+    const { dir, datacoreDir } = await makeWorkspace();
+    try {
+      const graphPath = path.join(datacoreDir, 'record-graph.json');
+      const graph = JSON.parse(await fs.readFile(graphPath, 'utf8')) as {
+        records: Array<{ ref: string; localizationKeys: Array<{ attribute: string; key: string }> }>;
+      };
+      const standingRecord = graph.records.find((record) => record.ref === 'standing-rank-4');
+      assert.ok(standingRecord);
+      standingRecord.localizationKeys = [{ attribute: 'displayName', key: 'LOC_PLACEHOLDER' }];
+      await fs.writeFile(graphPath, JSON.stringify(graph), 'utf8');
+
+      const generatorsPath = path.join(datacoreDir, 'contract-generators.datacore.csv');
+      const generators = await fs.readFile(generatorsPath, 'utf8');
+      await fs.writeFile(generatorsPath, generators.replaceAll('RepScope_Contractor_Rank3', ''), 'utf8');
+
+      const rows = await loadDatacoreDescriptionsSourceData({ sourceDirs: { datacore: datacoreDir } } as never);
+      const row = rows.find((candidate) => candidate['Localization Key'] === 'test_desc');
+
+      assert.doesNotMatch(row?.RewardList ?? '', /Awarded from .*Contractor level variants/);
+      assert.doesNotMatch(row?.RewardList ?? '', /Veteran Contractor level variants/);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('does not use blueprint target name heuristics when graph name is placeholder', async () => {
     const { dir, datacoreDir } = await makeWorkspace();
     try {

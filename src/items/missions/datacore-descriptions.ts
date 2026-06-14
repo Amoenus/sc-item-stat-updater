@@ -542,14 +542,18 @@ async function resolveContractStandingLabel(
   }
 
   if (standingGuid) {
+    const graphExposesStandingName = standingRecord ? hasGraphNameLocalizationReference(standingRecord) : false;
     const standingKey =
-      standingRecord && !hasGraphNameLocalizationReference(standingRecord)
-        ? fallbackNameLocalizationKey(standingRecord)
-        : '';
+      standingRecord && !graphExposesStandingName ? fallbackNameLocalizationKey(standingRecord) : '';
     if (standingKey) {
       const label = resolveLocalizedValue(standingKey, localizationValues) || inferStandingLabel(standingKey);
       cache.set(cacheKey, label);
       return label;
+    }
+
+    if (graphExposesStandingName) {
+      cache.set(cacheKey, '');
+      return '';
     }
 
     const inferredLabel = inferStandingLabel(standingRecord?.entityClass ?? standingGuid);
