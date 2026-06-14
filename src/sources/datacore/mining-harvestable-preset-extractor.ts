@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { resolveChildPath } from '../../io/local/path-conventions';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import { graphGuidReferences } from './record-graph-relations';
 import type { DataCoreMiningHarvestablePresetRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -56,5 +56,7 @@ function isMiningHarvestablePreset(
 }
 
 function graphGuidReference(record: DataCoreRecordNode, attributes: string[], fallback: string): string {
-  return uniqueGraphGuidReference(record, attributes, fallback);
+  const graphRefs = graphGuidReferences(record, attributes);
+  if (graphRefs.length > 0) return graphRefs.length === 1 ? graphRefs[0] : '';
+  return fallback;
 }

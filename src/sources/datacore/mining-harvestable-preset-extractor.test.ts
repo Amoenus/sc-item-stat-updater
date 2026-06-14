@@ -61,6 +61,31 @@ test('extractDataCoreMiningHarvestablePresets extracts mining preset links and r
   ]);
 });
 
+test('extractDataCoreMiningHarvestablePresets does not use XML fallback when graph entity refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-mining-harvestable-presets-ambiguous-'));
+  await writeXml(
+    xmlCacheDir,
+    asteroidPresetPath,
+    `<HarvestablePreset.Mining_AsteroidCommon_Aluminum entityClass="stale-asteroid-entity-guid" respawnInSlotTime="3600" __type="HarvestablePreset" __ref="asteroid-preset-guid" __path="${asteroidPresetPath}" />`,
+  );
+  const graph = makeGraph();
+  graph.records[0].referencedGuids = ['asteroid-entity-guid', 'other-entity-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'entityClass', value: 'asteroid-entity-guid' },
+    { attribute: 'entityClass', value: 'other-entity-guid' },
+  ];
+
+  const [row] = await extractDataCoreMiningHarvestablePresets({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    pathPrefix: asteroidPresetPath,
+  });
+
+  assert.equal(row.harvestableEntityGuid, '');
+  assert.equal(row.harvestableEntityClass, '');
+  assert.equal(row.harvestableEntityPath, '');
+});
+
 async function writeXml(xmlCacheDir: string, recordPath: string, xml: string): Promise<void> {
   const xmlPath = path.join(xmlCacheDir, recordPath);
   await fs.mkdir(path.dirname(xmlPath), { recursive: true });
