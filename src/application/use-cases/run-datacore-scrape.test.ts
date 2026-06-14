@@ -644,6 +644,151 @@ test('runDatacoreScrape uses selector attr as the default graph reference attrib
   assert.doesNotMatch(csv, /stale/);
 });
 
+test('runDatacoreScrape does not use XML reference fallback when graph selector refs are ambiguous', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-reference-ambiguous-'));
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const mainRecordPath = 'libs/foundry/records/entities/scitem/reference_ambiguous/reference_ambiguous_main.xml';
+  const staleRef = '11111111-1111-4111-8111-111111111111';
+  const graphRef = '22222222-2222-4222-8222-222222222222';
+  const otherGraphRef = '33333333-3333-4333-8333-333333333333';
+  await writeXml(
+    xmlCacheDir,
+    mainRecordPath,
+    `
+      <EntityClassDefinition.ReferenceAmbiguous_Main __ref="main-ref" __path="${mainRecordPath}">
+        <SAttachableComponentParams>
+          <AttachDef Type="ReferenceAmbiguous" Size="1" Grade="a" Manufacturer="ACME">
+            <Localization Name="@item_NameReferenceAmbiguous_Main" Description="@item_DescReferenceAmbiguous_Main" />
+          </AttachDef>
+        </SAttachableComponentParams>
+        <SHealthComponentParams Health="42" />
+        <PrimaryRef value="${staleRef}" />
+      </EntityClassDefinition.ReferenceAmbiguous_Main>
+    `,
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/stale-ambiguous.xml',
+    `<ReferenceRecord.Stale __ref="${staleRef}" __path="libs/foundry/records/references/stale-ambiguous.xml" linkedValue="stale" />`,
+  );
+  await writeXml(
+    xmlCacheDir,
+    'libs/foundry/records/references/graph-ambiguous.xml',
+    `<ReferenceRecord.Graph __ref="${graphRef}" __path="libs/foundry/records/references/graph-ambiguous.xml" linkedValue="graph" />`,
+  );
+
+  const result = await runDatacoreScrape({
+    repoRoot,
+    loadTypes: async () => [
+      {
+        name: 'reference-ambiguous',
+        csvFile: 'reference-ambiguous.datacore.csv',
+        typeConfig: {
+          recordFilter: 'libs/foundry/records/entities/scitem/reference_ambiguous',
+          recordSelector: 'SAttachableComponentParams AttachDef[Type="ReferenceAmbiguous"]',
+          entityClassPrefix: '',
+          nameKeyInfix: '',
+          fieldSelectors: {
+            'Linked Value': {
+              ref: {
+                selector: 'PrimaryRef',
+                attr: 'value',
+              },
+              selector: ':root',
+              attr: 'linkedValue',
+            },
+          },
+        },
+      },
+    ],
+    buildRecordGraph: async () => ({
+      source: 'datacore-record-graph',
+      recordCount: 3,
+      records: [
+        {
+          path: mainRecordPath,
+          ref: 'main-ref',
+          rootTag: 'EntityClassDefinition.ReferenceAmbiguous_Main',
+          rootType: 'EntityClassDefinition',
+          entityClass: 'reference_ambiguous_main',
+          localizationKeys: [
+            { attribute: 'Name', key: 'item_NameReferenceAmbiguous_Main' },
+            { attribute: 'Description', key: 'item_DescReferenceAmbiguous_Main' },
+          ],
+          referencedGuids: [graphRef, otherGraphRef],
+          referencedGuidAttributes: [
+            { attribute: 'value', value: graphRef },
+            { attribute: 'value', value: otherGraphRef },
+          ],
+        },
+        {
+          path: 'libs/foundry/records/references/stale-ambiguous.xml',
+          ref: staleRef,
+          rootTag: 'ReferenceRecord.Stale',
+          rootType: 'ReferenceRecord',
+          entityClass: 'Stale',
+          localizationKeys: [],
+          referencedGuids: [],
+        },
+        {
+          path: 'libs/foundry/records/references/graph-ambiguous.xml',
+          ref: graphRef,
+          rootTag: 'ReferenceRecord.Graph',
+          rootType: 'ReferenceRecord',
+          entityClass: 'Graph',
+          localizationKeys: [],
+          referencedGuids: [],
+        },
+      ],
+      indexes: {
+        byRef: {
+          'main-ref': mainRecordPath,
+          [staleRef]: 'libs/foundry/records/references/stale-ambiguous.xml',
+          [graphRef]: 'libs/foundry/records/references/graph-ambiguous.xml',
+        },
+        byPath: {
+          [mainRecordPath]: 0,
+          'libs/foundry/records/references/stale-ambiguous.xml': 1,
+          'libs/foundry/records/references/graph-ambiguous.xml': 2,
+        },
+        byRootType: {
+          EntityClassDefinition: [mainRecordPath],
+          ReferenceRecord: [
+            'libs/foundry/records/references/stale-ambiguous.xml',
+            'libs/foundry/records/references/graph-ambiguous.xml',
+          ],
+        },
+        byEntityClass: {
+          reference_ambiguous_main: [mainRecordPath],
+          Stale: ['libs/foundry/records/references/stale-ambiguous.xml'],
+          Graph: ['libs/foundry/records/references/graph-ambiguous.xml'],
+        },
+        byLocalizationKey: {},
+        byReferencedGuid: {
+          [graphRef]: [mainRecordPath],
+          [otherGraphRef]: [mainRecordPath],
+        },
+      },
+    }),
+    resolveLiveDir: () => 'C:/Games/StarCitizen/LIVE',
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => 'C:/Games/StarCitizen/LIVE/Data/Game.dcb',
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+  });
+
+  const csv = await fs.readFile(
+    path.join(repoRoot, 'csv', 'datacore', '4.8.1-live', 'reference-ambiguous.datacore.csv'),
+    'utf8',
+  );
+
+  assert.deepEqual(result.results, [
+    { type: 'reference-ambiguous', rows: 1, skipped: 0, csvFile: 'reference-ambiguous.datacore.csv' },
+  ]);
+  assert.match(csv, /reference_ambiguous_main,item_NameReferenceAmbiguous_Main,,item_DescReferenceAmbiguous_Main,ACME,1,A,,42,\r?\n/);
+  assert.doesNotMatch(csv, /stale/);
+});
+
 test('runDatacoreScrape extracts power plant output from item resource generation', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-powerplant-output-'));
   const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');

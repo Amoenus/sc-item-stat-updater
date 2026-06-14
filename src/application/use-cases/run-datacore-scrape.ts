@@ -64,6 +64,7 @@ import {
 } from '../../sources/datacore/record-graph';
 import { createDataCoreRecordGraphLookup } from '../../sources/datacore/record-graph-loader';
 import {
+  graphGuidReferences as dataCoreGraphGuidReferences,
   graphLocalizationKey as dataCoreGraphLocalizationKey,
   hasGraphLocalizationReference as hasDataCoreGraphLocalizationReference,
   uniqueGraphGuidReference as uniqueDataCoreGraphGuidReference,
@@ -3793,14 +3794,16 @@ function resolveReferencedRecord(
   const candidates = [step, ...(Array.isArray(step.fallback) ? step.fallback : step.fallback ? [step.fallback] : [])];
 
   for (const candidate of candidates) {
-    const graphReferenceValue = uniqueGraphGuidReference(sourceRecord, graphReferenceAttribute(candidate));
-    if (graphReferenceValue) {
-      const record =
-        candidate.by === 'entityClass'
-          ? relationships.getRecordForEntityClass(graphReferenceValue)
-          : graph.getByRef(graphReferenceValue);
-      if (record) return record;
-    }
+    const graphReferenceValues = graphGuidReferences(sourceRecord, graphReferenceAttribute(candidate));
+    if (graphReferenceValues.length === 0) continue;
+    if (graphReferenceValues.length > 1) return undefined;
+
+    const graphReferenceValue = graphReferenceValues[0];
+    const record =
+      candidate.by === 'entityClass'
+        ? relationships.getRecordForEntityClass(graphReferenceValue)
+        : graph.getByRef(graphReferenceValue);
+    return record;
   }
 
   for (const candidate of candidates) {
@@ -3819,6 +3822,14 @@ function resolveReferencedRecord(
 
 function graphReferenceAttribute(candidate: DataCoreFieldReferenceSelector): string | undefined {
   return candidate.graphAttribute ?? (candidate.by === 'entityClass' ? undefined : candidate.attr);
+}
+
+function graphGuidReferences(
+  record: DataCoreRecordNode | undefined,
+  attributes: string | string[] | undefined,
+): string[] {
+  if (!record || !attributes) return [];
+  return dataCoreGraphGuidReferences(record, Array.isArray(attributes) ? attributes : [attributes]);
 }
 
 function uniqueGraphGuidReference(
