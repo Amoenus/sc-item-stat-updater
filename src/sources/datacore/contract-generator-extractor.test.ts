@@ -197,7 +197,7 @@ test('extractDataCoreContractGenerators emits career contract rows', async () =>
   assert.equal(row.contractId, 'career-contract-guid');
   assert.equal(row.contractDebugName, 'Career_Intro');
   assert.equal(row.factionReputationGuid, 'faction-guid');
-  assert.equal(row.templateGuid, 'fallback-template-guid');
+  assert.equal(row.templateGuid, '');
   assert.equal(row.templateClass, '');
   assert.equal(row.titleKey, 'career_title');
   assert.equal(row.descriptionKey, 'career_desc');
