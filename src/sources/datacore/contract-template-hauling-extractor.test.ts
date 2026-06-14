@@ -155,6 +155,46 @@ test('extractDataCoreContractTemplateHaulingOrders prefers unique graph refs for
   );
 });
 
+test('extractDataCoreContractTemplateHaulingOrders does not use XML fallback when graph resource refs are ambiguous', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-template-hauling-ambiguous-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/haul_ambiguous.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.HaulGraph __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <objectiveTokens>
+          <ObjectiveToken debugName="Hauling">
+            <objectiveHandler>
+              <ObjectiveHandler_Hauling>
+                <haulingOrders>
+                  <HaulingOrder_Resource resource="stale-resource-guid" minSCU="2" maxSCU="4" maxContainerSize="8" />
+                </haulingOrders>
+              </ObjectiveHandler_Hauling>
+            </objectiveHandler>
+          </ObjectiveToken>
+        </objectiveTokens>
+      </ContractTemplate.HaulGraph>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0].referencedGuids = ['resource-guid', 'other-resource-guid'];
+  graph.records[0].referencedGuidAttributes = [
+    { attribute: 'resource', value: 'resource-guid' },
+    { attribute: 'resource', value: 'other-resource-guid' },
+  ];
+
+  const [row] = await extractDataCoreContractTemplateHaulingOrders({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+    carryablePathPrefix: 'no/carryables',
+  });
+
+  assert.equal(row.resourceGuid, '');
+  assert.equal(row.resourceClass, '');
+  assert.equal(row.resourceNameKey, '');
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   const templateClass = templatePath.includes('haul_graph') ? 'HaulGraph' : 'HaulTest';
   return {
