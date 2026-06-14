@@ -74,7 +74,7 @@ test('extractDataCoreLocationLabels reads StarMap labels and resolves law and af
       callout1Key: 'Pyro3_Outpost_callout1',
       callout2Key: '',
       callout3Key: '',
-      typeGuid: 'stale-type-guid',
+      typeGuid: '',
       parentGuid: '59637d5a-c67a-47eb-96dc-b648298f0023',
       parentClass: 'Pyro3',
       parentPath: 'libs/foundry/records/starmap/pu/system/pyro/pyro3.xml',
