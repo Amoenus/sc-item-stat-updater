@@ -36,6 +36,7 @@ const LOCALIZATION_ATTRIBUTES = [
   'callout1',
   'callout2',
   'callout3',
+  'textId',
 ] as const;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

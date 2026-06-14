@@ -4,6 +4,10 @@ export function graphLocalizationKey(record: DataCoreRecordNode, attributes: str
   return graphLocalizationKeyFromReferences(record.localizationKeys, attributes);
 }
 
+export function graphLocalizationKeys(record: DataCoreRecordNode, attributes: string[]): string[] {
+  return graphLocalizationKeysFromReferences(record.localizationKeys, attributes);
+}
+
 export function hasGraphLocalizationReference(record: DataCoreRecordNode, attributes: string[]): boolean {
   return hasGraphLocalizationReferenceFromReferences(record.localizationKeys, attributes);
 }
@@ -31,6 +35,21 @@ export function graphLocalizationKeyFromReferences(
   attributes: string[],
 ): string {
   return graphLocalizationKeyFromReferencesMatching(references, attributes, () => true);
+}
+
+export function graphLocalizationKeysFromReferences(
+  references: DataCoreLocalizationReference[],
+  attributes: string[],
+): string[] {
+  const keys: string[] = [];
+  for (const attribute of attributes) {
+    for (const reference of references) {
+      if (reference.attribute.trim().toLowerCase() !== attribute.trim().toLowerCase()) continue;
+      const key = normalizeLocalizationKey(reference.key);
+      if (key && !keys.includes(key)) keys.push(key);
+    }
+  }
+  return keys;
 }
 
 export function hasGraphLocalizationReferenceFromReferences(

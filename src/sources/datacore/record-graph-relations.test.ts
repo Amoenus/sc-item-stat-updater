@@ -4,6 +4,8 @@ import {
   graphGuidReferences,
   graphLocalizationKey,
   graphLocalizationKeyFromReferences,
+  graphLocalizationKeys,
+  graphLocalizationKeysFromReferences,
   graphLocalizationKeyFromReferencesMatching,
   graphLocalizationKeyMatching,
   graphLocalizationKeyWithFallback,
@@ -92,6 +94,31 @@ test('graphLocalizationKey follows requested attribute priority before graph key
   assert.equal(graphLocalizationKeyFromReferences(record.localizationKeys, ['Name', 'displayName']), 'zzz_name');
   assert.equal(graphLocalizationKey(record, ['displayName', 'Name']), 'aaa_display_name');
   assert.equal(graphLocalizationKey(record, ['ShortName']), '');
+});
+
+test('graphLocalizationKeys returns distinct keys in attribute priority order', () => {
+  const record: DataCoreRecordNode = {
+    path: 'record.xml',
+    ref: 'record-guid',
+    rootTag: 'Record.Test',
+    rootType: 'Record',
+    entityClass: 'Test',
+    localizationKeys: [
+      { attribute: 'displayName', key: '@display_one' },
+      { attribute: 'Name', key: '@name_one' },
+      { attribute: 'displayName', key: '@display_one' },
+      { attribute: 'Name', key: 'LOC_PLACEHOLDER' },
+      { attribute: 'Name', key: '@name_two' },
+    ],
+    referencedGuids: [],
+  };
+
+  assert.deepEqual(graphLocalizationKeys(record, ['Name', 'displayName']), [
+    'name_one',
+    'name_two',
+    'display_one',
+  ]);
+  assert.deepEqual(graphLocalizationKeysFromReferences(record.localizationKeys, ['displayName']), ['display_one']);
 });
 
 test('graphLocalizationKeyWithFallback prefers graph keys and normalizes fallback keys', () => {

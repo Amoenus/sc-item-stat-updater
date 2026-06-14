@@ -2,7 +2,11 @@ import fs from 'node:fs/promises';
 import type { Element } from 'domhandler';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { mapConcurrent } from './concurrency';
-import { uniqueGraphGuidReference } from './record-graph-relations';
+import {
+  graphLocalizationKeys,
+  hasGraphLocalizationReference,
+  uniqueGraphGuidReference,
+} from './record-graph-relations';
 import type { DataCoreContractTemplateRecord, DataCoreRecordGraphLookup, DataCoreRecordNode } from './types';
 import { loadXml } from './xml-parser';
 
@@ -106,9 +110,11 @@ export async function extractDataCoreContractTemplates(
         navPointNameKeys: readLocalizationAttrs($, root.find('NavPointSpawnInformation').toArray(), ['name']).join(
           ' | ',
         ),
-        stringHashKeys: readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), [
-          'textId',
-        ]).join(' | '),
+        stringHashKeys: readGraphLocalizationAttrsWithFallback(
+          record,
+          ['textId'],
+          readLocalizationAttrs($, root.find('MissionPropertyValueOption_StringHash').toArray(), ['textId']),
+        ).join(' | '),
         locationTagGuids: locationTagGuids.join(' | '),
         locationTagClasses: locationTagGuids.map((guid) => linkedClass(options.graph.getByRef(guid))).join(' | '),
         recordGuid: record.ref,
@@ -136,6 +142,16 @@ function readLocalizationAttrs($: ReturnType<typeof loadXml>, elements: Element[
   return uniqueStrings(
     elements.flatMap((element) => attributes.map((attribute) => localizationKey($(element).attr(attribute) ?? ''))),
   );
+}
+
+function readGraphLocalizationAttrsWithFallback(
+  record: DataCoreRecordNode,
+  attributes: string[],
+  fallbackKeys: string[],
+): string[] {
+  const graphKeys = graphLocalizationKeys(record, attributes);
+  if (graphKeys.length > 0 || hasGraphLocalizationReference(record, attributes)) return uniqueStrings(graphKeys);
+  return fallbackKeys;
 }
 
 function linkedClass(record: DataCoreRecordNode | undefined): string {

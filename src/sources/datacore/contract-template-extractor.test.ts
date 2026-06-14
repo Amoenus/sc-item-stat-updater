@@ -40,7 +40,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
             <value>
               <MissionPropertyValue_StringHash>
                 <options>
-                  <MissionPropertyValueOption_StringHash textId="@danger_low" weighting="1" />
+                  <MissionPropertyValueOption_StringHash textId="@danger_low_stale" weighting="1" />
                 </options>
               </MissionPropertyValue_StringHash>
             </value>
@@ -102,7 +102,7 @@ test('extractDataCoreContractTemplates emits template display and objective fact
         returnObjectiveKeys: 'return_long | return_marker | return_short',
         overrideMissionDetailsKeys: 'override_desc | override_title',
         navPointNameKeys: 'nav_name',
-        stringHashKeys: 'danger_low',
+        stringHashKeys: 'danger_high | danger_low',
         locationTagGuids: 'location-guid',
         locationTagClasses: 'Area18',
         recordGuid: 'template-guid',
@@ -146,6 +146,45 @@ test('extractDataCoreContractTemplates does not use XML fallback when graph GUID
   assert.equal(rows[0]?.displayTypeClass, '');
 });
 
+test('extractDataCoreContractTemplates does not use string-hash XML fallback when graph text ids are placeholders', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-contract-template-text-placeholder-'));
+  const templatePath = 'libs/foundry/records/contracts/contracttemplates/test_template.xml';
+  await fs.mkdir(path.dirname(path.join(xmlCacheDir, templatePath)), { recursive: true });
+  await fs.writeFile(
+    path.join(xmlCacheDir, templatePath),
+    `
+      <ContractTemplate.TestTemplate owner="owner-guid" __type="ContractTemplate" __ref="template-guid" __path="${templatePath}">
+        <contractClass>
+          <ContractClass_Contract />
+        </contractClass>
+        <contractDisplayInfo>
+          <ContractDisplayInfo type="type-guid" />
+        </contractDisplayInfo>
+        <contractProperties>
+          <MissionProperty extendedTextToken="Danger">
+            <value>
+              <MissionPropertyValue_StringHash>
+                <options>
+                  <MissionPropertyValueOption_StringHash textId="@danger_low_stale" weighting="1" />
+                </options>
+              </MissionPropertyValue_StringHash>
+            </value>
+          </MissionProperty>
+        </contractProperties>
+      </ContractTemplate.TestTemplate>
+    `,
+  );
+  const graph = graphFixture(templatePath);
+  graph.records[0].localizationKeys = [{ attribute: 'textId', key: 'LOC_PLACEHOLDER' }];
+
+  const rows = await extractDataCoreContractTemplates({
+    xmlCacheDir,
+    graph: createDataCoreRecordGraphLookup(graph),
+  });
+
+  assert.equal(rows[0]?.stringHashKeys, '');
+});
+
 function graphFixture(templatePath: string): DataCoreRecordGraph {
   return {
     source: 'datacore-record-graph',
@@ -157,7 +196,11 @@ function graphFixture(templatePath: string): DataCoreRecordGraph {
         rootTag: 'ContractTemplate.TestTemplate',
         rootType: 'ContractTemplate',
         entityClass: 'TestTemplate',
-        localizationKeys: [],
+        localizationKeys: [
+          { attribute: 'textId', key: 'danger_low' },
+          { attribute: 'textId', key: 'LOC_PLACEHOLDER' },
+          { attribute: 'textId', key: 'danger_high' },
+        ],
         referencedGuids: ['owner-guid', 'type-guid'],
         referencedGuidAttributes: [
           { attribute: 'owner', value: '' },
