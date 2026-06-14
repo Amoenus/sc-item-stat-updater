@@ -192,7 +192,7 @@ test('buildDataCoreRecordGraph emits effective contract string params by contrac
               </stringParamOverrides>
             </contractParams>
             <introContracts>
-              <Contract id="intro-contract-guid">
+              <Contract id="intro-contract-guid" template="55555555-5555-4555-8555-555555555555">
                 <paramOverrides>
                   <stringParamOverrides>
                     <ContractStringParam param="Title" value="@intro_title" />
@@ -266,6 +266,14 @@ test('buildDataCoreRecordGraph emits effective contract string params by contrac
       (reference) =>
         reference.attribute === 'contract:intro-contract-guid:MissionLocation.Reference.value' &&
         reference.value === '44444444-4444-4444-8444-444444444444',
+    ),
+    true,
+  );
+  assert.equal(
+    record.referencedGuidAttributes?.some(
+      (reference) =>
+        reference.attribute === 'contract:intro-contract-guid:template' &&
+        reference.value === '55555555-5555-4555-8555-555555555555',
     ),
     true,
   );

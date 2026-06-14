@@ -250,6 +250,21 @@ function extractGuidAttributeReferences($: CheerioAPI, rootElement: Element): Da
       });
   });
 
+  $(':root')
+    .first()
+    .find('> generators > *')
+    .each((_, handlerElement) => {
+      for (const section of ['introContracts', 'contracts']) {
+        $(handlerElement)
+          .find(`> ${section} > *[id][template]`)
+          .each((__, contractElement) => {
+            const contractId = $(contractElement).attr('id')?.trim();
+            if (!contractId) return;
+            addReference(`contract:${contractId}:template`, $(contractElement).attr('template'));
+          });
+      }
+    });
+
   return references.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute));
 }
 

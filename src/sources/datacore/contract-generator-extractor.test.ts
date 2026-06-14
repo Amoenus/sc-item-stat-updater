@@ -318,8 +318,13 @@ function graphFixture(
     ? [
         { attribute: 'template', value: 'template-guid' },
         { attribute: 'template', value: 'other-template-guid' },
+        { attribute: 'contract:career-contract-guid:template', value: 'template-guid' },
+        { attribute: 'contract:career-contract-guid:template', value: 'other-template-guid' },
       ]
-    : [{ attribute: 'template', value: 'template-guid' }];
+    : [
+        { attribute: 'template', value: 'template-guid' },
+        { attribute: 'contract:contract-guid:template', value: 'template-guid' },
+      ];
   const referencedGuids = [
     ...templateReferences.map((reference) => reference.value),
     'location-guid',

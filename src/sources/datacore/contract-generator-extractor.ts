@@ -63,7 +63,12 @@ export async function extractDataCoreContractGenerators(
             })
             .each((__, contractElement) => {
             const contract = $(contractElement);
-            const templateGuid = graphGuidReference(record, ['template'], contract.attr('template') ?? '');
+            const contractId = contract.attr('id') ?? '';
+            const templateGuid = graphGuidReference(
+              record,
+              [contractTemplateAttribute(contractId)],
+              contract.attr('template') ?? '',
+            );
             const template = templateGuid ? options.graph.getByRef(templateGuid) : undefined;
             const contractStringParams = readStringParamOverrides(
               $,
@@ -128,7 +133,6 @@ export async function extractDataCoreContractGenerators(
               ),
             );
             const blueprintRewards = readBlueprintRewards($, contractResults);
-            const contractId = contract.attr('id') ?? '';
             const locationTagGuids = readGraphLocationTagGuidsWithFallback(
               record,
               contractId,
@@ -333,6 +337,11 @@ function contractStringHashAttribute(contractId: string, missionVariableName: st
 function contractLocationTagAttribute(contractId: string): string {
   const trimmed = contractId.trim();
   return trimmed ? `contract:${trimmed}:MissionLocation.Reference.value` : '';
+}
+
+function contractTemplateAttribute(contractId: string): string {
+  const trimmed = contractId.trim();
+  return trimmed ? `contract:${trimmed}:template` : '';
 }
 
 function readGraphContractStringParamWithFallback(
