@@ -17,7 +17,10 @@ DataCore/Data.p4k is the authoritative source for game-derived facts:
 
 SCMDB is a temporary derived-data bridge. Keep it only where the pipeline still needs mission, blueprint, crafting, mining aggregation, or generated joins that have not yet been reconstructed from DataCore records.
 
-SPViewer is retired from active support. Historical audit notes remain in this repository to explain the retirement decision, but the application should not require SPViewer data for cache refresh, pipeline runs, or enrichment planning.
+SPViewer is retired from active support. Historical audit notes and `mappings/*.spviewer.json` remain in this repository
+only to explain old provider retirement decisions. Normal cache refresh, pipeline, DataCore, and mission enrichment
+planning must not read or write SPViewer mapping files; retained legacy diagnostics must opt into legacy key resolution
+explicitly.
 
 ## SPViewer retirement status
 
@@ -32,6 +35,7 @@ Current checked-in LIVE data status:
 - DataCore has a matching item-stat category for every legacy SPViewer category.
 - SPViewer is retired from active provider selection.
 - Remaining SPViewer-only generated keys are classified non-blocking in `docs/spviewer-retirement-turret-triage.md` and `docs/spviewer-retirement-remaining-triage.md`.
+- `mappings/*.spviewer.json` files are historical legacy mappings, not active workflow state.
 - Changed generated values are non-blocking review evidence because DataCore is the current game-file authority and SPViewer can lag or miss patches.
 - The checked-in DataCore directory is generated from packed `Data.p4k`; use that as the active game-file authority.
 

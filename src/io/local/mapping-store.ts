@@ -6,7 +6,7 @@ import { parseCSV } from './csv-parser';
 const logger = getLogger('mapping-store');
 
 /**
- * Loads a saved mapping file (spviewer name → localization key).
+ * Loads a legacy saved mapping file (display name -> localization key).
  * Returns an empty map if the file doesn't exist.
  */
 export async function loadMappingFile(mappingPath: string): Promise<Map<string, string>> {
@@ -23,7 +23,7 @@ export async function loadMappingFile(mappingPath: string): Promise<Map<string, 
 }
 
 /**
- * Saves the resolved mapping (spviewer name → localization key) to a JSON file.
+ * Saves a legacy resolved mapping (display name -> localization key) to a JSON file.
  * Creates the parent directory if it doesn't exist.
  */
 export async function saveMappingFile(mappingPath: string, mapping: Map<string, string>): Promise<void> {

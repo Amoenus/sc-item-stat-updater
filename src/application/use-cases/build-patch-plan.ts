@@ -14,7 +14,9 @@ import {
 export type BuildPatchPlanOptions = Pick<
   UpdateOptions,
   'baseDir' | 'iniPath' | 'csvDir' | 'sourceDirs' | 'dryRun' | 'force'
->;
+> & {
+  legacyKeyResolution?: boolean;
+};
 
 export interface BuildPatchPlanResult extends UpdatePlanResult {
   iniLines: string[];
@@ -33,6 +35,11 @@ export async function buildPatchPlanResult(
   let resolvedRows = rows;
   let unresolvedNames: string[] = [];
   if (config.nameColumn) {
+    if (!options.legacyKeyResolution) {
+      throw new Error(
+        `Legacy SPViewer key resolution is disabled for "${config.label}". Pass legacyKeyResolution to opt into mapping-file based key resolution.`,
+      );
+    }
     const result = await resolveSpviewerKeys(rows, config, lines, opts.csvDir, opts.baseDir, opts.dryRun);
     resolvedRows = result.resolvedRows;
     unresolvedNames = result.unresolved;

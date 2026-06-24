@@ -14,6 +14,7 @@ architecture signal under generated noise.
 | Derived source output | CSV/JSON output produced from raw source data and consumed by enrichment/update flows. | Commit only intentional refreshes. |
 | Diagnostic-only output | Data emitted to compare, audit, or migrate providers; not required for normal update application. | Commit when it supports an active migration/audit, otherwise prune. |
 | Obsolete historical output | Prior-version output no longer selected by default and retained only as history. | Prefer pruning or archiving outside the active repo. |
+| Historical legacy mapping | Saved display-name to localization-key mapping retained for legacy SPViewer diagnostics only. | Do not update from active DataCore/mission workflows; prune when no audit depends on it. |
 
 ## Path Ownership Table
 
@@ -37,6 +38,7 @@ architecture signal under generated noise.
 | `csv/scmdb/<version>/missions/scmdb-missions.csv` | Derived source output | SCMDB mission conversion | Legacy mission categories if enabled | Current category listing shows DataCore-backed mission categories, so this is bridge/historical unless explicitly selected. |
 | `csv/scmdb/<version>/mining-journal.csv` | Derived source output | SCMDB mining conversion | Optional mining journal fallback | Keep only while fallback is intentionally supported. |
 | `csv/scmdb/<old-version>/**` | Obsolete historical output | Older SCMDB scrapes | Usually none unless explicitly pinned | Independent latest-version selection makes old SCMDB directories especially easy to misread. |
+| `mappings/*.spviewer.json` | Historical legacy mapping | Legacy SPViewer key resolution | Explicit legacy key-resolution diagnostics only | Active DataCore and mission categories must not read or write these files. Retain only while old SPViewer audits need name-to-key evidence. |
 
 ## Verification Decisions
 
@@ -49,6 +51,17 @@ architecture signal under generated noise.
 4. A clean `check:no-generated-churn` run requires either a clean git baseline or an intentionally staged generated-data
    refresh. Running it against a dirty generated-data tree proves the guard works, but it does not prove the pipeline is
    no-write clean.
+5. SPViewer mapping files are historical diagnostics. Normal `update`, `pipeline`, DataCore, and mission flows must not
+   read or rewrite them; any retained legacy caller must opt into legacy key resolution explicitly.
+
+## Legacy Mapping Ownership Policy
+
+| Mapping status | Meaning | Current policy |
+| --- | --- | --- |
+| Active legacy | Required by an explicitly selected legacy command or diagnostic that still runs against old SPViewer rows. | None in normal update or pipeline flows. Any future use must pass the explicit legacy key-resolution option. |
+| Diagnostic | Supports a named retirement or comparison audit without affecting generated `global.ini` updates. | Allowed only when the audit documents the mapping file it needs. |
+| Historical | Retained as evidence for prior SPViewer retirement decisions. | Current `mappings/*.spviewer.json` files are historical unless a diagnostic names them. |
+| Removable | No active legacy command, diagnostic, or historical note depends on it. | Prune in a dedicated cleanup commit once verified. |
 
 ## Intentional Refresh Workflow
 

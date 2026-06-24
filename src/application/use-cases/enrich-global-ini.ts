@@ -14,6 +14,7 @@ export interface EnrichGlobalIniOptions {
   dryRun?: boolean;
   skipBackup?: boolean;
   force?: boolean;
+  legacyKeyResolution?: boolean;
 }
 
 export interface EnrichGlobalIniResult {
