@@ -1,6 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { listCategorySourceFiles } from '../src/application/source-contracts/category-source-contracts';
+import {
+  DEFAULT_SOURCE_CACHE_TARGET,
+  selectSourceCacheSources,
+} from '../src/application/use-cases/refresh-source-cache';
+import { loadDatacoreConfigs, loadMissionConfigs } from '../src/items/registry';
 
 const repoRoot = process.cwd();
 
@@ -18,6 +24,28 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json
 };
 const listrRendererEntryPoint = 'src/presentation/task-list.ts';
 const forbiddenTaskRendererPackages = ['cli-progress', 'ora', 'log-update', 'nanospinner'];
+const generatedDataOwnershipDoc = fs.readFileSync(path.join(repoRoot, 'docs', 'generated-data-ownership.md'), 'utf8');
+const requiredGeneratedOwnershipPatterns = [
+  'csv/datacore/.dcbcache/<version>/Data/Game2.dcb',
+  'csv/datacore/.dcbcache/<version>/.metadata.json',
+  'csv/datacore/.xmlcache/<version>/**/*.xml',
+  'csv/datacore/.xmlcache/<version>/.metadata.json',
+  'csv/datacore/<version>/record-graph.json',
+  'csv/datacore/<version>/record-graph.metadata.json',
+  'csv/datacore/<version>/*.datacore.csv',
+  'csv/datacore/<old-version>/record-graph.json',
+  'csv/datacore/<old-version>/*.datacore.csv',
+  'csv/scmdb/<version>/scmdb-versions.json',
+  'csv/scmdb/<version>/merged-*.json',
+  'csv/scmdb/<version>/mining-data-*.json',
+  'csv/scmdb/<version>/crafting_items-*.json',
+  'csv/scmdb/<version>/mema-cache.json',
+  'csv/scmdb/<version>/scmdb-*.csv',
+  'csv/scmdb/<version>/missions/scmdb-missions.csv',
+  'csv/scmdb/<version>/mining-journal.csv',
+  'csv/scmdb/<old-version>/**',
+  'mappings/*.spviewer.json',
+];
 
 const rules: Rule[] = [
   {
@@ -40,6 +68,27 @@ for (const packageName of forbiddenTaskRendererPackages) {
       `package.json depends on "${packageName}"\n  Listr2 is the first-class CLI task renderer; do not reintroduce parallel progress renderer dependencies.`,
     );
   }
+}
+
+for (const pattern of requiredGeneratedOwnershipPatterns) {
+  if (!generatedDataOwnershipDoc.includes(`| \`${pattern}\` |`)) {
+    violations.push(
+      `docs/generated-data-ownership.md is missing ownership coverage for "${pattern}"\n  Active generated-data path patterns must have an ownership class and commit policy.`,
+    );
+  }
+}
+
+if (DEFAULT_SOURCE_CACHE_TARGET !== 'datacore') {
+  violations.push(
+    `DEFAULT_SOURCE_CACHE_TARGET is "${DEFAULT_SOURCE_CACHE_TARGET}"\n  Normal cache and pipeline refreshes must remain DataCore-only unless SCMDB is explicitly selected.`,
+  );
+}
+
+const defaultSourceSelection = selectSourceCacheSources(DEFAULT_SOURCE_CACHE_TARGET);
+if (defaultSourceSelection.length !== 1 || defaultSourceSelection[0] !== 'datacore') {
+  violations.push(
+    `Default source selection is [${defaultSourceSelection.join(', ')}]\n  DataCore-only defaults must not implicitly refresh SCMDB fallback sources.`,
+  );
 }
 
 for (const rule of rules) {
@@ -90,6 +139,8 @@ for (const file of sourceFiles) {
     }
   }
 }
+
+await checkCategorySourceContracts();
 
 if (violations.length > 0) {
   console.error('Architecture guardrail failed:');
@@ -208,4 +259,42 @@ function hasPackageDependency(packageName: string): boolean {
 
 function formatPath(file: string): string {
   return path.relative(repoRoot, file).replaceAll(path.sep, '/');
+}
+
+async function checkCategorySourceContracts(): Promise<void> {
+  const configs = [
+    ...[...(await loadDatacoreConfigs()).entries()].map(([slug, config]) => ({
+      slug,
+      config,
+      expectedProvider: 'datacore',
+    })),
+    ...[...(await loadMissionConfigs()).entries()].map(([slug, config]) => ({
+      slug,
+      config,
+      expectedProvider: 'scmdb',
+    })),
+  ];
+
+  for (const { slug, config, expectedProvider } of configs) {
+    const sourceFiles = listCategorySourceFiles(config, expectedProvider);
+    if (sourceFiles.length === 0 && !config.loadSourceData && !config.resolveJsonFile) {
+      violations.push(
+        `${slug} (${config.label}) has no declared source contract\n  Active categories must declare source files or expose a custom/dynamic loader that can be audited.`,
+      );
+    }
+
+    if (config.lookupCsvFile || config.nameColumn || config.csvFile?.includes('.spviewer.')) {
+      violations.push(
+        `${slug} (${config.label}) declares legacy SPViewer mapping fields\n  Active DataCore and mission categories must not use nameColumn, lookupCsvFile, or .spviewer.csv sources.`,
+      );
+    }
+
+    for (const sourceFile of sourceFiles) {
+      if (!sourceFile.provider || sourceFile.provider === 'unknown') {
+        violations.push(
+          `${slug} (${config.label}) has ambiguous source file "${sourceFile.filename}"\n  Category source contracts must resolve each file to DataCore, SCMDB, SPViewer legacy, or an explicit optional provider.`,
+        );
+      }
+    }
+  }
 }
