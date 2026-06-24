@@ -6,7 +6,6 @@ import type {
   ItemBuildValueContext,
   ItemConfig,
   ItemSourceDataContext,
-  ItemSourceFileDeclaration,
 } from '../../enrichment/item-config';
 import { getLogger } from '../../infrastructure/logger';
 import { readCsvFile } from '../../io/local/csv-parser';
@@ -18,6 +17,7 @@ import { buildReverseNameIndex, resolveLocalizationKeys } from '../../localizati
 import type { LocalizationPatchPlan } from '../../localization/patch-application';
 import { nameKeyToDescKey as defaultNameKeyToDescKey, extractFlavorText } from '../../localization/text-utils';
 import type { RawFactListingEntry } from '../catalog/category-listing';
+import { inferCategorySourceProvider, resolveCategorySourceFiles } from '../source-contracts/category-source-contracts';
 import type { UpdateChannel, UpdateSourceMetadata, UpdateSourceProvider } from '../use-cases/prepare-update-categories';
 
 const logger = getLogger('updater');
@@ -275,22 +275,6 @@ function formatProvider(provider: UpdateSourceProvider | undefined): string | un
   }
 }
 
-function inferProvider(config: ItemConfig, csvDir: string): UpdateSourceProvider | undefined {
-  const haystack = [
-    config.csvFile,
-    config.jsonFile,
-    config.lookupCsvFile,
-    ...(config.sourceFiles ?? []).map((sourceFile) => `${sourceFile.sourceDir ?? ''} ${sourceFile.file}`),
-    csvDir,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
-  if (/\bscmdb\b|mission/i.test(haystack)) return 'scmdb';
-  if (/\bspviewer\b|\.spviewer\./i.test(haystack)) return 'spviewer';
-  return undefined;
-}
-
 function inferChannel(csvDir: string): UpdateChannel | undefined {
   if (/\bptu\b|[-.]ptu\b/i.test(csvDir)) return 'PTU';
   if (/\blive\b|[-.]live\b/i.test(csvDir)) return 'LIVE';
@@ -315,7 +299,8 @@ function formatMissingSource(
   filePath: string,
   providerOverride?: UpdateSourceProvider,
 ): string {
-  const provider = providerOverride ?? category.source?.provider ?? inferProvider(category.config, category.csvDir);
+  const provider =
+    providerOverride ?? category.source?.provider ?? inferCategorySourceProvider(category.config, 'unknown');
   const channel = category.source?.channel ?? inferChannel(category.csvDir);
   const sourceCategory = category.source?.category ?? category.config.label;
   const context = [formatProvider(provider), channel, sourceCategory].filter(Boolean).join(' | ');
@@ -353,35 +338,6 @@ function hasCsvDataRows(contents: string): boolean {
       .map((line) => line.trim())
       .filter(Boolean).length > 1
   );
-}
-
-function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
-  if (sourceDir === 'datacore' || sourceDir === 'scmdb' || sourceDir === 'spviewer') return sourceDir;
-  return undefined;
-}
-
-function resolveDeclaredSourceFiles(
-  category: PreflightCategory,
-): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider; optional?: boolean }> {
-  const usesDeclaredCustomSources = Boolean(category.config.loadSourceData && category.config.sourceFiles?.length);
-  const staticFiles = [
-    usesDeclaredCustomSources ? undefined : category.config.csvFile,
-    category.config.jsonFile,
-    category.config.lookupCsvFile,
-  ]
-    .filter((filename): filename is string => typeof filename === 'string')
-    .map((filename) => ({ filename, baseDir: category.csvDir, provider: category.source?.provider }));
-
-  const companionFiles = (category.config.sourceFiles ?? []).flatMap((sourceFile) => {
-    const sourceDir = sourceFile.sourceDir ?? 'csvDir';
-    const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
-    if (!baseDir) return [];
-    return [
-      { filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir), optional: sourceFile.optional },
-    ];
-  });
-
-  return [...staticFiles, ...companionFiles];
 }
 
 /** Finds the last existing description key index for insertion ordering. */
@@ -521,7 +477,7 @@ export async function preflightCheckConfigs(
 ): Promise<void> {
   const perConfig = await Promise.all(
     categories.map(async (category) => {
-      const sourceFiles = resolveDeclaredSourceFiles(category);
+      const sourceFiles = resolveCategorySourceFiles(category);
       const missingResults = await Promise.all(
         sourceFiles.map(async ({ filename, baseDir, provider, optional }) => {
           const filePath = resolveChildPath(baseDir, filename, 'source file');
@@ -531,7 +487,7 @@ export async function preflightCheckConfigs(
           } catch {
             if (optional) return null;
             const missing: MissingSourceFile = {
-              key: `${provider ?? category.source?.provider ?? inferProvider(category.config, category.csvDir) ?? 'unknown'}:${filePath}`,
+              key: `${provider ?? category.source?.provider ?? inferCategorySourceProvider(category.config, 'unknown')}:${filePath}`,
               message: formatMissingSource(category, filename, filePath, provider),
             };
             return missing;

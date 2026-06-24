@@ -2,6 +2,7 @@ import path from 'node:path';
 import type { ItemConfig, ItemSourceDataContext } from '../../enrichment/item-config';
 import { findLatestMatchingDirectory } from '../../io/local/discovery';
 import { loadDatacoreConfigs, loadMissionConfigs } from '../../items/registry';
+import { inferCategorySourceProvider } from '../source-contracts/category-source-contracts';
 
 export type UpdateProvider = 'datacore';
 export type UpdateSourceProvider = UpdateProvider | 'spviewer' | 'scmdb' | 'unknown';
@@ -36,22 +37,7 @@ export interface PreparedUpdateCategories {
   missionCsvDir: string;
 }
 
-export function inferCategorySourceProvider(config: ItemConfig, fallback: UpdateSourceProvider): UpdateSourceProvider {
-  const requiredSourceDirs = (config.sourceFiles ?? [])
-    .filter((sourceFile) => !sourceFile.optional)
-    .map((sourceFile) => sourceFile.sourceDir ?? 'csvDir');
-
-  if (requiredSourceDirs.includes('datacore')) return 'datacore';
-  if (requiredSourceDirs.includes('scmdb')) return 'scmdb';
-  if (requiredSourceDirs.includes('spviewer')) return 'spviewer';
-
-  const primarySource = [config.csvFile, config.jsonFile, config.lookupCsvFile].filter(Boolean).join(' ');
-  if (/\.datacore\.|\/datacore\/|\\datacore\\/i.test(primarySource)) return 'datacore';
-  if (/\.spviewer\.|\/spviewer\/|\\spviewer\\/i.test(primarySource)) return 'spviewer';
-  if (/scmdb/i.test(primarySource)) return 'scmdb';
-
-  return fallback;
-}
+export { inferCategorySourceProvider };
 
 /**
  * Finds the latest versioned subfolder under a base directory that matches the

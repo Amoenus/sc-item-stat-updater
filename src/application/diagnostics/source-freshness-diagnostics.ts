@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
-import type { ItemSourceFileDeclaration } from '../../enrichment/item-config';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
 import { DATACORE_RAW_FACTS, type RawFactListingEntry } from '../catalog/category-listing';
+import { inferCategorySourceProvider, resolveCategorySourceFiles } from '../source-contracts/category-source-contracts';
 import type {
   PreparedUpdateCategories,
   UpdateCategory,
@@ -88,52 +88,11 @@ function looksLikeRequestedChannel(version: string, channel: UpdateChannel): boo
 
 function categoryProvider(category: UpdateCategory): UpdateSourceProvider {
   if (category.source) return category.source.provider;
-  const haystack = [
-    category.config.csvFile,
-    category.config.jsonFile,
-    category.config.lookupCsvFile,
-    ...(category.config.sourceFiles ?? []).map((sourceFile) => `${sourceFile.sourceDir ?? ''} ${sourceFile.file}`),
-    category.csvDir,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  if (/\bdatacore\b|\.datacore\./i.test(haystack)) return 'datacore';
-  if (/\bscmdb\b|mission/i.test(haystack)) return 'scmdb';
-  if (/\bspviewer\b|\.spviewer\./i.test(haystack)) return 'spviewer';
-  return 'unknown';
-}
-
-function providerFromSourceDir(sourceDir: ItemSourceFileDeclaration['sourceDir']): UpdateSourceProvider | undefined {
-  if (sourceDir === 'datacore' || sourceDir === 'scmdb' || sourceDir === 'spviewer') return sourceDir;
-  return undefined;
-}
-
-function resolveDeclaredSourceFiles(
-  category: UpdateCategory,
-): Array<{ filename: string; baseDir: string; provider?: UpdateSourceProvider; optional?: boolean }> {
-  const usesDeclaredCustomSources = Boolean(category.config.loadSourceData && category.config.sourceFiles?.length);
-  const staticFiles = [
-    usesDeclaredCustomSources ? undefined : category.config.csvFile,
-    category.config.jsonFile,
-    category.config.lookupCsvFile,
-  ]
-    .filter((filename): filename is string => typeof filename === 'string')
-    .map((filename) => ({ filename, baseDir: category.csvDir, provider: category.source?.provider }));
-
-  const companionFiles = (category.config.sourceFiles ?? []).flatMap((sourceFile) => {
-    const sourceDir = sourceFile.sourceDir ?? 'csvDir';
-    const baseDir = sourceDir === 'csvDir' ? category.csvDir : category.sourceDirs?.[sourceDir];
-    if (!baseDir) return [];
-    return [
-      { filename: sourceFile.file, baseDir, provider: providerFromSourceDir(sourceDir), optional: sourceFile.optional },
-    ];
-  });
-
-  return [...staticFiles, ...companionFiles];
+  return inferCategorySourceProvider(category.config, 'unknown');
 }
 
 async function collectIncompleteSourceWarnings(category: UpdateCategory): Promise<SourceFreshnessWarning[]> {
-  const sourceFiles = resolveDeclaredSourceFiles(category);
+  const sourceFiles = resolveCategorySourceFiles(category);
   const warnings = await Promise.all(
     sourceFiles.map(async ({ filename, baseDir, provider: fileProvider, optional }) => {
       const sourcePath = resolveChildPath(baseDir, filename, 'source file');
