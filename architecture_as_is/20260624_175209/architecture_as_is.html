@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sc-item-stat-updater Architecture/Reporting Snapshot - 20260624_175209</title>
+  <style>
+    :root {
+      --ink: #1e2329;
+      --muted: #5f6874;
+      --line: #d8dee7;
+      --band: #f5f7fa;
+      --accent: #0c6b58;
+      --warn: #9b4d00;
+      --risk: #8a1f3d;
+      --code: #eef2f6;
+    }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #ffffff;
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+    h1, h2, h3 {
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+    h1 {
+      font-size: 32px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin-top: 22px;
+      font-size: 17px;
+    }
+    p {
+      margin: 0 0 12px;
+    }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--band);
+      border: 1px solid var(--line);
+      padding: 14px;
+      border-radius: 6px;
+    }
+    ul {
+      padding-left: 22px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 920px;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin: 22px 0 8px;
+    }
+    .meta div, .finding {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: #fff;
+    }
+    .meta strong {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .ok {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+    .risk {
+      color: var(--risk);
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--band);
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 1px 8px;
+      margin-right: 6px;
+      background: var(--band);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Architecture/Reporting Snapshot</h1>
+    <p class="lede">
+      Point-in-time architecture review for <code>sc-item-stat-updater</code>, focused on file organization,
+      logical separation, code duplication, single responsibility pressure, generated-data churn, and mapping
+      mismatch/drift after the implementation issue sweep for <code>#127</code> through <code>#134</code>.
+    </p>
+
+    <section class="meta" aria-label="snapshot metadata">
+      <div><strong>Snapshot</strong>20260624_175209</div>
+      <div><strong>Branch</strong><code>master</code></div>
+      <div><strong>Repo</strong><code>C:\Git\sc-item-stat-updater</code></div>
+      <div><strong>Baseline</strong><span class="ok">clean before report artifacts</span></div>
+    </section>
+
+    <h2>Executive Summary</h2>
+    <p>
+      Observed: the architecture has materially stronger boundaries than the prior roadmap baseline. DataCore is the
+      default cache source, SCMDB refresh is explicit, generated-data ownership is documented and guarded, active
+      category source contracts are centralized, and SPViewer mapping use is gated behind explicit legacy opt-in.
+    </p>
+    <p>
+      Inferred: the main remaining risk is no longer a missing policy boundary; it is responsibility concentration.
+      The DataCore scrape use case and its test suite are very large, update planning still owns source loading plus
+      legacy mapping mechanics plus preflight, and generated-data retention is documented but not yet enforced as a
+      pruning workflow.
+    </p>
+
+    <h2>Verification Snapshot</h2>
+    <table>
+      <thead>
+        <tr><th>Command</th><th>Result</th><th>Interpretation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>git status --short</code></td>
+          <td class="ok">clean before report files</td>
+          <td>No pre-existing working tree churn affected the report.</td>
+        </tr>
+        <tr>
+          <td><code>npm run typecheck</code></td>
+          <td class="ok">passed</td>
+          <td>Static TypeScript checks pass for the inspected state.</td>
+        </tr>
+        <tr>
+          <td><code>npm run check:architecture</code></td>
+          <td class="ok">passed</td>
+          <td>Current architecture guardrails accept the post-roadmap boundaries.</td>
+        </tr>
+        <tr>
+          <td><code>npm run check:no-generated-churn</code></td>
+          <td class="ok">passed</td>
+          <td>No unstaged generated-data churn under <code>csv/</code> or root <code>global.ini</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Current Component Map</h2>
+    <table>
+      <thead>
+        <tr><th>Area</th><th>Observed responsibility</th><th>Boundary notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>bin/</code></td>
+          <td>Thin command entrypoints for update, cache, pipeline, scrape, deploy, and diagnostics.</td>
+          <td>Healthy separation: command parsing is mostly delegated to presentation command modules.</td>
+        </tr>
+        <tr>
+          <td><code>src/presentation/</code></td>
+          <td>CLI parsing, task rendering, Listr task composition, and user-facing progress.</td>
+          <td>Guarded: <code>scripts/check-architecture.ts</code> keeps Listr in presentation code.</td>
+        </tr>
+        <tr>
+          <td><code>src/application/use-cases/</code></td>
+          <td>Pipeline, scrape, cache refresh, update, deploy, and source preparation use cases.</td>
+          <td>Mostly right layer, but <code>run-datacore-scrape.ts</code> concentrates many subdomains.</td>
+        </tr>
+        <tr>
+          <td><code>src/application/source-contracts/</code></td>
+          <td>Central source-file listing, provider inference, and source-file resolution.</td>
+          <td>Positive consolidation after category source contract work.</td>
+        </tr>
+        <tr>
+          <td><code>src/application/update/</code></td>
+          <td>Source loading, row validation, key resolution, preflight, and update plan building.</td>
+          <td>Potential split candidate: source file access, legacy mapping, and plan construction are separable.</td>
+        </tr>
+        <tr>
+          <td><code>src/sources/datacore/</code></td>
+          <td>DataCore acquisition, record graph, XML parsing, focused raw fact and item extractors.</td>
+          <td>Good extractor separation; shared <code>types.ts</code> is large and may be acting as a mixed schema barrel.</td>
+        </tr>
+        <tr>
+          <td><code>src/items/</code></td>
+          <td>Category configs, mission config/data builders, DataCore item mappings.</td>
+          <td>Some files are large because config, extraction glue, constants, and domain transforms live together.</td>
+        </tr>
+        <tr>
+          <td><code>csv/</code></td>
+          <td>Committed/generated source outputs, raw snapshots, and local rebuildable caches.</td>
+          <td>Ownership policy exists; retention/pruning remains manual.</td>
+        </tr>
+        <tr>
+          <td><code>mappings/</code></td>
+          <td>Historical SPViewer display-name to localization-key mapping files.</td>
+          <td>Not active workflow state; still present as 22 files pending dedicated cleanup decision.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Representative Flow</h2>
+    <pre>pipeline command
+  -> presentation/commands/pipeline.ts
+  -> refresh source caches
+       default: DataCore only
+       explicit: SCMDB or all
+  -> DataCore task renders application scrape plan
+       prepare -> XML cache -> record graph -> raw facts -> item types
+  -> run batch update with DataCore provider
+  -> source freshness and SCMDB dependency diagnostics
+  -> optional deploy</pre>
+
+    <p>
+      Observed: <code>src/presentation/datacore-task.ts</code> now renders a plan supplied by
+      <code>createDataCoreScrapePlan</code> instead of owning the DataCore topology directly. This is an improvement
+      over presentation-owned orchestration, but the plan itself still lives inside the large scrape use case file.
+    </p>
+
+    <h2>Findings</h2>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="risk">High</span> DataCore scrape is still a responsibility hotspot</h3>
+      <p>
+        <code>src/application/use-cases/run-datacore-scrape.ts</code> is 3937 lines and imports acquisition,
+        XML parsing, graph building, metadata validation, raw fact extraction, item type extraction, SCMDB component
+        fallback, and plan construction. Its test file is 4563 lines.
+      </p>
+      <p>
+        Risk: correctness work around graph fidelity, cache metadata, or raw fact extraction has a large blast radius.
+        The next cleanup should extract cache metadata, graph preparation, raw fact stage runners, and item-type stage
+        runners into modules that keep <code>createDataCoreScrapePlan</code> as the orchestration facade.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="warn">Medium</span> Update planning mixes current source contracts with legacy mapping mechanics</h3>
+      <p>
+        <code>src/application/update/update-planning.ts</code> owns source data loading, source-file preflight,
+        localization key validation, SPViewer lookup loading, and update plan construction. Separately,
+        <code>build-patch-plan.ts</code> now rejects legacy SPViewer key resolution unless
+        <code>legacyKeyResolution</code> is passed.
+      </p>
+      <p>
+        Risk: legacy mapping paths remain physically near normal update planning. A cleaner layout would isolate
+        SPViewer mapping resolution behind a legacy adapter module and keep the active update planner focused on
+        provider-resolved rows and localization patch decisions.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="warn">Medium</span> Generated-data retention is documented but not automated</h3>
+      <p>
+        DataCore contains active caches plus four version output directories; SCMDB contains three version directories.
+        <code>docs/generated-data-ownership.md</code> classifies old version directories as obsolete historical output
+        unless explicitly pinned.
+      </p>
+      <p>
+        Risk: old outputs are easy to misread as active comparison baselines, especially when DataCore and SCMDB
+        versions diverge independently. A dedicated retention report or guard should identify current selected versions,
+        explicitly pinned versions, and removable historical directories.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="warn">Medium</span> Historical SPViewer mappings are fenced but still unresolved inventory</h3>
+      <p>
+        The repo still contains 22 <code>mappings/*.spviewer.json</code> files. Documentation classifies them as
+        historical legacy mappings, and architecture checks reject active category configs that use
+        <code>nameColumn</code>, <code>lookupCsvFile</code>, or <code>.spviewer.</code> sources.
+      </p>
+      <p>
+        Risk: the drift surface is controlled, not eliminated. The next step is a named audit that either ties each
+        mapping file to a retained historical diagnostic or removes it in a dedicated cleanup commit.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="warn">Medium</span> Source contract consolidation is real but has parallel consumers</h3>
+      <p>
+        <code>category-source-contracts.ts</code> now feeds listing, diagnostics, and preflight behavior, and
+        architecture checks ensure active configs declare auditable source files. Related consumers still format and
+        interpret those contracts in <code>category-listing.ts</code>, <code>source-freshness-diagnostics.ts</code>,
+        <code>scmdb-dependency-audit.ts</code>, and <code>update-planning.ts</code>.
+      </p>
+      <p>
+        Risk: provider labels and optional/fallback wording can drift across output surfaces. Prefer one formatted
+        source-contract projection that diagnostics, category listing, and preflight can share.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Observed</span><span class="warn">Medium</span> Mission and DataCore type files carry config/data/build logic together</h3>
+      <p>
+        <code>src/items/missions/mining-locations.ts</code> is 1191 lines,
+        <code>src/items/missions/datacore-descriptions.ts</code> is 772 lines, and
+        <code>src/sources/datacore/types.ts</code> is 819 lines.
+      </p>
+      <p>
+        Risk: these files may be stable, but they are harder to review and invite duplicated local helpers. Split by
+        domain role when the next functional change touches them: source declarations, row transforms, constants, and
+        exported category config should be separate where practical.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3><span class="tag">Inferred</span><span class="warn">Medium</span> Historical documentation can read as current state</h3>
+      <p>
+        Current docs such as <code>docs/generated-data-ownership.md</code> and
+        <code>docs/source-hierarchy-and-scmdb-audit.md</code> describe the post-roadmap boundaries clearly. Older
+        planning and functional docs still contain historical SPViewer/SCMDB statements that may be useful as audit
+        history but unsafe as current architecture references.
+      </p>
+      <p>
+        Recommendation: add status headers or an index that marks current ADR/PRD/report docs versus historical notes.
+      </p>
+    </div>
+
+    <h2>Duplication and Drift Read</h2>
+    <p>
+      Observed duplication is mostly semantic rather than literal: multiple modules need to describe "which source file
+      belongs to which provider" and "is this fallback optional or active." The new source-contract module and
+      architecture guardrails reduce that drift, but the remaining duplication is in presentation and diagnostic
+      formatting, not in the underlying provider inference.
+    </p>
+    <p>
+      Mapping mismatch/drift is currently contained by policy and guardrails. The repo still retains historical mapping
+      files, but active DataCore and mission configs are guarded away from SPViewer mapping fields.
+    </p>
+
+    <h2>Recommended Next Slices</h2>
+    <ol>
+      <li>
+        Extract <code>run-datacore-scrape.ts</code> into focused application modules while preserving
+        <code>createDataCoreScrapePlan</code> as the stable interface used by presentation.
+      </li>
+      <li>
+        Add a generated-data retention report that classifies current, pinned, historical, rebuildable-cache, and
+        removable paths before any pruning happens.
+      </li>
+      <li>
+        Audit all 22 <code>mappings/*.spviewer.json</code> files and mark each as diagnostic, historical-retained, or
+        removable according to the ownership policy.
+      </li>
+      <li>
+        Extract legacy SPViewer key resolution out of active update planning into a legacy adapter module with narrow
+        tests around explicit opt-in.
+      </li>
+      <li>
+        Consolidate formatted source-contract projections so category listing, preflight, source freshness, and SCMDB
+        dependency audit share labels and optional/fallback semantics.
+      </li>
+      <li>
+        Add documentation status markers so ADR/PRD/current architecture reports are clearly separated from historical
+        audit notes.
+      </li>
+    </ol>
+
+    <h2>Open Risks</h2>
+    <ul>
+      <li>Broad <code>npm test</code> has a known Node/Piscina native-loader crash in previous runs; this report did not rely on a full test pass.</li>
+      <li>Generated-data pruning was intentionally not performed during this reporting pass.</li>
+      <li>No dynamic pipeline execution was performed; flow claims are static observations from code paths and guardrail checks.</li>
+    </ul>
+  </main>
+</body>
+</html>
