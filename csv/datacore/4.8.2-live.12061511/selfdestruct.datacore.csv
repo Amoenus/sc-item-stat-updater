@@ -1,0 +1,15 @@
+Entity Class,Name Key,Short Name Key,Description Key,Manufacturer,Size,Grade,Class,Health,Countdown,Explosion Damage,Explosion Radius
+vhcl_selfdestruct_10s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,10,500,5 - 10
+vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,120,120000,100 - 175
+vhcl_selfdestruct_20s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,20,2500,10 - 30
+vhcl_selfdestruct_30s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,30,5000,5 - 50
+vhcl_selfdestruct_45s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,45,15000,30 - 80
+vhcl_selfdestruct_60s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,60,30000,50 - 120
+vhcl_selfdestruct_80s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,80,60000,80 - 150
+vhcl_selfdestruct_10s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,10,500,5 - 10
+vhcl_selfdestruct_120s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,120,120000,100 - 175
+vhcl_selfdestruct_20s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,20,2500,10 - 30
+vhcl_selfdestruct_30s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,30,5000,5 - 50
+vhcl_selfdestruct_45s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,45,15000,30 - 80
+vhcl_selfdestruct_60s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,60,30000,50 - 120
+vhcl_selfdestruct_80s,item_TypeSelfDestruct,,item_TypeSelfDestruct,,1,1,,,80,60000,80 - 150
