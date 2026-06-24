@@ -2843,7 +2843,7 @@ test('DataCore scrape plan reuses record graph only when graph metadata matches 
         schemaVersion: 1,
         fidelityMode: 'compact',
         includeAttributes: false,
-        includeRawGuidAttributes: false,
+        includeRawGuidAttributes: true,
         recordCount: 1,
       },
     })}\n`,
@@ -2936,7 +2936,7 @@ test('DataCore scrape plan rebuilds record graph when graph metadata fidelity is
     buildRecordGraph: async (options) => {
       buildCount++;
       assert.equal(options.includeAttributes, false);
-      assert.equal(options.includeRawGuidAttributes, false);
+      assert.equal(options.includeRawGuidAttributes, true);
       return {
         source: 'datacore-record-graph',
         recordCount: 2,
@@ -2967,7 +2967,7 @@ test('DataCore scrape plan rebuilds record graph when graph metadata fidelity is
     schemaVersion: 1,
     fidelityMode: 'compact',
     includeAttributes: false,
-    includeRawGuidAttributes: false,
+    includeRawGuidAttributes: true,
     recordCount: 2,
   });
 });

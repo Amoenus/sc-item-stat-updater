@@ -517,7 +517,7 @@ const RECORD_GRAPH_GENERATOR_VERSION = 'datacore-record-graph-v1';
 const RECORD_GRAPH_FIDELITY = {
   mode: 'compact' as const,
   includeAttributes: false,
-  includeRawGuidAttributes: false,
+  includeRawGuidAttributes: true,
 };
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
 const CONTRACT_GENERATOR_INTEL_CSV_FILE = 'contract-generator-intel.datacore.csv';
