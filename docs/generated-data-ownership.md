@@ -51,3 +51,23 @@ architecture signal under generated noise.
    refresh. Running it against a dirty generated-data tree proves the guard works, but it does not prove the pipeline is
    no-write clean.
 
+## Intentional Refresh Workflow
+
+1. Start from a clean worktree, or inspect any existing generated-data changes before refreshing.
+2. Run the explicit source refresh command for the intended provider and version.
+3. Review changed `csv/` paths against the ownership table above:
+   - Rebuildable local caches under `.dcbcache/` and `.xmlcache/` should be restored, removed, or explicitly exempted.
+   - Raw source snapshots and derived source outputs should move together for the same source version.
+   - Diagnostic-only outputs should explain the migration or audit they support.
+4. Stage only the intentional generated-data refresh paths.
+5. Run `npm run check:no-generated-churn`; staged generated-data changes are treated as the baseline, and the guard
+   reports any remaining unstaged churn by ownership class.
+6. Include the source version, refresh command, ownership classification, and verification commands in the commit or PR
+   notes.
+
+## Historical Retention
+
+The active generated source version is the latest version directory selected by the provider-specific version resolver.
+Older DataCore and SCMDB version directories are classified as obsolete historical output unless a caller explicitly pins
+that version. Keep historical directories only when they support comparison, rollback, or an active migration. Otherwise,
+prefer pruning them in a dedicated generated-data cleanup so normal refresh reviews focus on the current source version.
