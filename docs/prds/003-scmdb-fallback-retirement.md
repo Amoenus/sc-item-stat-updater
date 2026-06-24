@@ -32,9 +32,14 @@ default source refresh behavior. This creates ambiguous ownership and makes migr
 - Provider matrix distinguishes active primary, optional fallback, diagnostic, historical, and retired sources.
 - Tests cover default source selection and explicit SCMDB fallback selection.
 
+## Implementation Notes
+
+- Normal `cache` and `pipeline` refresh DataCore by default.
+- `cache:scmdb`, `cache -- --source scmdb`, `cache -- --source all`, and `pipeline -- --source all` remain explicit
+  SCMDB bridge/fallback refresh paths.
+
 ## Open Questions
 
-- Should `cache` become DataCore-only or should it keep `all` semantics behind an explicit `--all-sources` flag?
+- Resolved: `cache` is DataCore-only by default; `--source all` keeps explicit all-source semantics.
 - How long should SCMDB raw snapshots remain tracked?
 - Should SCMDB-derived diagnostics move under a separate output root?
-

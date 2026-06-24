@@ -78,7 +78,7 @@ After every Star Citizen patch or hotfix, treat the DataCore cache as stale beca
 npm run pipeline:force
 ```
 
-Use the normal pipeline only when the game files have not changed and you are refreshing outputs from already-current caches:
+Use the normal pipeline only when the game files have not changed and you are refreshing DataCore outputs from already-current caches:
 
 ```sh
 npm run pipeline
@@ -292,6 +292,14 @@ npm run pipeline:force
 ```
 
 This rebuilds DataCore caches from the current game files and regenerates the enriched `global.ini`.
+
+SCMDB bridge outputs are no longer part of normal cache or pipeline runs. Refresh them only when you are intentionally
+regenerating fallback data:
+
+```bash
+npm run cache:scmdb
+npm run cache -- --source all
+```
 
 ### I want to inspect what changed before deploying
 

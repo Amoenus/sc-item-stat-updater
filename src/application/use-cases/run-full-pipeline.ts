@@ -3,7 +3,7 @@ import { formatScmdbDependencyAudit } from '../diagnostics/scmdb-dependency-audi
 import { formatSourceFreshnessDiagnostics } from '../diagnostics/source-freshness-diagnostics';
 import { deployGlobalIni } from './deploy-global-ini';
 import { refreshGlobalIni } from './refresh-global-ini';
-import { refreshSourceCache, type SourceCacheSource } from './refresh-source-cache';
+import { DEFAULT_SOURCE_CACHE_TARGET, refreshSourceCache, type SourceCacheSource } from './refresh-source-cache';
 import { runBatchUpdate } from './run-batch-update';
 import type { DataCoreTypeEntry } from './run-datacore-scrape';
 
@@ -76,7 +76,7 @@ export async function runFullPipeline(options: RunFullPipelineOptions): Promise<
     startPhase({ id: 'refresh-sources', label: 'Refresh source caches' }, '=== Step 2: Refreshing source caches ===');
     const cacheResult = await refreshSourcesUseCase({
       repoRoot: options.rootDir,
-      target: options.datacore && !options.scrape ? 'datacore' : 'all',
+      target: options.scrape ? 'all' : DEFAULT_SOURCE_CACHE_TARGET,
       ptu: options.ptu,
       force: options.force ?? options.forceExtract,
       log,

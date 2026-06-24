@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -17,8 +17,8 @@ class lookup still exist. This creates ambiguity: SCMDB is both "retired/tempora
 
 SCMDB should be modeled as an explicit fallback or bridge source, not an implicit default source.
 
-Normal DataCore-first pipeline and cache refreshes should eventually run without SCMDB unless the user asks for bridge
-or fallback regeneration. SCMDB-dependent behavior must be visible through diagnostics and source contracts.
+Normal DataCore-first pipeline and cache refreshes run without SCMDB unless the user asks for bridge or fallback
+regeneration. SCMDB-dependent behavior remains visible through diagnostics and source contracts.
 
 ## Consequences
 
@@ -36,8 +36,7 @@ or fallback regeneration. SCMDB-dependent behavior must be visible through diagn
 
 ## Follow-Up Work
 
-1. Add an explicit SCMDB fallback/bridge refresh mode.
-2. Change default `pipeline` and `cache` source selection only after release-note-level documentation.
+1. Keep `cache:scmdb`, `cache -- --source scmdb`, and `cache -- --source all` as explicit SCMDB fallback/bridge refresh modes.
+2. Keep `pipeline -- --source all` available for explicit bridge refresh before a full update.
 3. Keep `--scmdb-audit` as the migration checklist.
 4. Remove or isolate SCMDB class lookups from DataCore item scraping once DataCore can supply equivalent class data.
-

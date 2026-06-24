@@ -107,7 +107,7 @@ test('formatted category listing distinguishes provider families and mixed-sourc
   assert.doesNotMatch(output, /update-all --provider spviewer/);
 });
 
-test('provider coverage matrix distinguishes primary, fallback, and unavailable coverage', async () => {
+test('provider coverage matrix distinguishes primary, optional fallback, and unavailable coverage', async () => {
   const matrix = await buildProviderCoverageMatrix();
 
   const coolers = matrix.rows.find((row) => row.category === 'Coolers');
@@ -129,15 +129,38 @@ test('provider coverage matrix distinguishes primary, fallback, and unavailable 
     },
   });
 
+  const miningElements = matrix.rows.find((entry) => entry.category === 'Mining element stats');
+  assert.deepEqual(miningElements, {
+    category: 'Mining element stats',
+    datacore: {
+      slug: 'mission-mining-elements',
+      status: 'primary',
+    },
+    scmdb: {
+      slug: 'mission-mining-elements',
+      status: 'optional fallback',
+    },
+  });
+
   assert.equal(
     matrix.rows.some((row) => row.datacore.status === 'primary'),
     true,
   );
   assert.equal(
-    matrix.rows.some((row) => row.datacore.status === 'primary'),
+    matrix.rows.some((row) => row.scmdb.status === 'optional fallback'),
     true,
   );
 
+  assert.deepEqual(
+    matrix.sourceRoles.map((role) => [role.provider, role.role]),
+    [
+      ['DataCore', 'primary'],
+      ['SCMDB', 'optional fallback'],
+      ['SCMDB', 'diagnostic'],
+      ['SCMDB', 'historical'],
+      ['SPViewer', 'retired'],
+    ],
+  );
   assert.equal(matrix.mixedSources.length, 1);
 });
 
@@ -152,8 +175,15 @@ test('formatted provider coverage matrix includes provider statuses and mixed-so
   );
   assert.match(
     output,
-    /Legend: primary = preferred first-party source, derived bridge = temporary generated\/relationship source/,
+    /Legend: primary = preferred first-party source, optional fallback = explicit bridge source used only when requested/,
   );
+  assert.match(
+    output,
+    /\| Mining element stats \| primary \(mission-mining-elements\) \| optional fallback \(mission-mining-elements\) \|/,
+  );
+  assert.match(output, /Provider source roles:/);
+  assert.match(output, /\| SCMDB \| diagnostic \| --scmdb-audit migration checklist and source-freshness reporting \|/);
+  assert.match(output, /\| SPViewer \| retired \|/);
   assert.match(output, /\| update-all \| DataCore \+ SCMDB \|/);
   assert.doesNotMatch(output, /update-all --provider spviewer/);
 });

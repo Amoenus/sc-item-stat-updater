@@ -41,7 +41,15 @@ export interface CategoryListing {
   mixedSources: MixedSourceListingEntry[];
 }
 
-export type ProviderCoverageStatus = 'primary' | 'derived bridge' | 'unavailable';
+export type ProviderCoverageStatus = 'primary' | 'optional fallback' | 'derived bridge' | 'unavailable';
+
+export type ProviderSourceRoleStatus = 'primary' | 'optional fallback' | 'diagnostic' | 'historical' | 'retired';
+
+export interface ProviderSourceRole {
+  provider: string;
+  role: ProviderSourceRoleStatus;
+  scope: string;
+}
 
 export interface ProviderCoverageCell {
   status: ProviderCoverageStatus;
@@ -56,6 +64,7 @@ export interface ProviderCoverageRow {
 
 export interface ProviderCoverageMatrix {
   rows: ProviderCoverageRow[];
+  sourceRoles: ProviderSourceRole[];
   mixedSources: MixedSourceListingEntry[];
 }
 
@@ -272,6 +281,9 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
     if (entry.family === 'DataCore') {
       existing.datacore = coverageCell('primary', entry.slug);
       existing.category = stripProviderPrefix(entry.label);
+      if (entry.sourceFiles.some((sourceFile) => sourceFile.startsWith('optional:scmdb:'))) {
+        existing.scmdb = coverageCell('optional fallback', entry.slug);
+      }
     }
     itemRows.set(baseSlug, existing);
   }
@@ -280,6 +292,33 @@ export async function buildProviderCoverageMatrix(): Promise<ProviderCoverageMat
     rows: [
       ...[...itemRows.values()].sort((a, b) => a.category.localeCompare(b.category)),
       ...missionRows.sort((a, b) => a.category.localeCompare(b.category)),
+    ],
+    sourceRoles: [
+      {
+        provider: 'DataCore',
+        role: 'primary',
+        scope: 'first-party game-file source for active cache and update flows',
+      },
+      {
+        provider: 'SCMDB',
+        role: 'optional fallback',
+        scope: 'explicit bridge refreshes and same-version mining/component fallback inputs',
+      },
+      {
+        provider: 'SCMDB',
+        role: 'diagnostic',
+        scope: '--scmdb-audit migration checklist and source-freshness reporting',
+      },
+      {
+        provider: 'SCMDB',
+        role: 'historical',
+        scope: 'older csv/scmdb version snapshots retained only when intentionally pinned',
+      },
+      {
+        provider: 'SPViewer',
+        role: 'retired',
+        scope: 'historical notes only; not part of active cache, pipeline, or enrichment defaults',
+      },
     ],
     mixedSources: listing.mixedSources,
   };
@@ -353,7 +392,7 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
   const lines = [
     'Provider coverage matrix',
     '',
-    'Legend: primary = preferred first-party source, derived bridge = temporary generated/relationship source, unavailable = no category for that provider.',
+    'Legend: primary = preferred first-party source, optional fallback = explicit bridge source used only when requested, derived bridge = temporary generated/relationship source, unavailable = no category for that provider.',
     '',
     '| Category | DataCore | SCMDB |',
     '| --- | --- | --- |',
@@ -361,6 +400,11 @@ export function formatProviderCoverageMatrix(matrix: ProviderCoverageMatrix): st
 
   for (const row of matrix.rows) {
     lines.push(`| ${row.category} | ${formatCoverageCell(row.datacore)} | ${formatCoverageCell(row.scmdb)} |`);
+  }
+
+  lines.push('', 'Provider source roles:', '| Provider | Role | Scope |', '| --- | --- | --- |');
+  for (const role of matrix.sourceRoles) {
+    lines.push(`| ${role.provider} | ${role.role} | ${role.scope} |`);
   }
 
   lines.push('', 'Mixed-source batch modes:', '| Command | Sources | Notes |', '| --- | --- | --- |');

@@ -40,9 +40,8 @@ architecture signal under generated noise.
 
 ## Verification Decisions
 
-1. Default SCMDB refresh should not remain in `pipeline`/`cache` forever if SCMDB is only optional fallback behavior.
-   The recommended target state is `all = datacore` for normal runs, with `--source scmdb` or an explicit
-   `--include-scmdb-fallbacks` style flag for bridge regeneration.
+1. Default SCMDB refresh is no longer part of normal `pipeline`/`cache` runs. Normal runs refresh DataCore, while
+   `--source scmdb`, `--source all`, and `cache:scmdb` explicitly regenerate SCMDB bridge/fallback data.
 2. Do not flip that default silently in the same patch as metadata validation. It changes CLI semantics, task output,
    and tests. Make it a dedicated migration with release-note treatment.
 3. Category source contracts should move toward one generated declaration that feeds `--list-categories`, preflight,

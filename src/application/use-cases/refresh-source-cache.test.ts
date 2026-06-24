@@ -123,6 +123,37 @@ test('refreshSourceCache can refresh a single DataCore source', async () => {
   assert.deepEqual(result, { exitCode: 0, refreshed: ['datacore'] });
 });
 
+test('refreshSourceCache defaults to DataCore without implicit SCMDB fallback refresh', async () => {
+  let scmdbCalled = false;
+  const result = await refreshSourceCache({
+    repoRoot: 'repo',
+    runScmdb: async () => {
+      scmdbCalled = true;
+      return {} as ScmdbResult;
+    },
+    runDatacore: async () => ({ exitCode: 0 }) as DatacoreResult,
+  });
+
+  assert.equal(scmdbCalled, false);
+  assert.deepEqual(result, { exitCode: 0, refreshed: ['datacore'] });
+});
+
+test('refreshSourceCache keeps SCMDB available as an explicit fallback source', async () => {
+  let datacoreCalled = false;
+  const result = await refreshSourceCache({
+    repoRoot: 'repo',
+    target: 'scmdb',
+    runScmdb: async () => ({}) as ScmdbResult,
+    runDatacore: async () => {
+      datacoreCalled = true;
+      return { exitCode: 0 } as DatacoreResult;
+    },
+  });
+
+  assert.equal(datacoreCalled, false);
+  assert.deepEqual(result, { exitCode: 0, refreshed: ['scmdb'] });
+});
+
 test('refreshSourceCache returns the DataCore exit code when DataCore fails', async () => {
   const result = await refreshSourceCache({
     repoRoot: 'repo',

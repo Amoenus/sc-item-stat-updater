@@ -80,6 +80,28 @@ test('pipeline command defaults to source refresh and deploy', async () => {
   });
 
   assert.equal(exitCode, 0);
+  assert.deepEqual(
+    observed.map((entry) => (entry as { target: string }).target),
+    ['datacore'],
+  );
+  assert.equal(io.stderrText(), '');
+});
+
+test('pipeline command refreshes SCMDB only through an explicit source target', async () => {
+  const io = createFakeIO();
+  const observed: unknown[] = [];
+
+  const exitCode = await runPipelineCommand(['--source', 'all'], io, {
+    refreshGlobalIni: async ({ repoIniPath }) => ({ repoIniPath, extractedGamePath: 'game/global.ini' }),
+    refreshSourceCache: async (options) => {
+      observed.push(options);
+      return { exitCode: 0, refreshed: [options.target === 'scmdb' ? 'scmdb' : 'datacore'] };
+    },
+    runBatchUpdate: async () => successfulUpdateResult(),
+    deployGlobalIni: async (options) => options,
+  });
+
+  assert.equal(exitCode, 0);
   assert.deepEqual(observed.map((entry) => (entry as { target: string }).target).sort(), ['datacore', 'scmdb']);
   assert.equal(io.stderrText(), '');
 });
@@ -103,8 +125,8 @@ test('pipeline command renders phases and task completions', async () => {
   assert.equal(exitCode, 0);
   assert.match(io.stdoutText(), /Extract fresh global\.ini/);
   assert.match(io.stdoutText(), /Refresh source caches/);
-  assert.match(io.stdoutText(), /SCMDB cache/);
   assert.match(io.stdoutText(), /DATACORE cache/);
+  assert.doesNotMatch(io.stdoutText(), /SCMDB cache/);
   assert.match(io.stdoutText(), /Apply localization updates/);
   assert.match(io.stdoutText(), /Deploy global\.ini to game/);
   assert.match(io.stdoutText(), /Pipeline complete/);
@@ -155,7 +177,7 @@ test('pipeline command treats npm rebuild-cache config as force fallback', async
 
     assert.equal(exitCode, 0);
     assert.equal((observed[0] as { force: boolean }).force, true);
-    assert.equal((observed[1] as { force: boolean }).force, true);
+    assert.equal(observed.length, 1);
   } finally {
     if (original === undefined) {
       delete process.env.npm_config_rebuild_cache;
@@ -221,6 +243,26 @@ test('cache command refreshes source outputs without global.ini workflow hooks',
   assert.equal(exitCode, 0);
   assert.equal((observed[0] as { target: string }).target, 'datacore');
   assert.equal((observed[0] as { force: boolean }).force, true);
+  assert.match(io.stdoutText(), /Cache refresh complete: datacore/);
+  assert.equal(io.stderrText(), '');
+});
+
+test('cache command defaults to DataCore and keeps SCMDB behind explicit source selection', async () => {
+  const io = createFakeIO();
+  const observed: unknown[] = [];
+
+  const exitCode = await runCacheCommand([], io, {
+    refreshSourceCache: async (options) => {
+      observed.push(options);
+      return { exitCode: 0, refreshed: ['datacore'] };
+    },
+  });
+
+  assert.equal(exitCode, 0);
+  assert.deepEqual(
+    observed.map((entry) => (entry as { target: string }).target),
+    ['datacore'],
+  );
   assert.match(io.stdoutText(), /Cache refresh complete: datacore/);
   assert.equal(io.stderrText(), '');
 });

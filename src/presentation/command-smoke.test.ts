@@ -146,6 +146,7 @@ test('pipeline help exits successfully with orchestration options', async () => 
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/pipeline\.ts \[options]/);
   assert.match(result.stdout, /--cached\s+Use existing source outputs/);
+  assert.match(result.stdout, /--source <all\|datacore\|scmdb>/);
   assert.match(result.stdout, /--repo-only\s+Update repo global\.ini without deploying/);
   assert.match(result.stdout, /--rebuild-cache\s+Rebuild expensive DataCore/);
   assert.doesNotMatch(result.stdout, /--force\s+Rebuild expensive DataCore/);
@@ -158,6 +159,7 @@ test('cache help exits successfully with source refresh options', async () => {
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout, /Usage: node --import tsx\/esm bin\/cache\.ts \[options]/);
   assert.match(result.stdout, /--source <all\|datacore\|scmdb>/);
+  assert.match(result.stdout, /default: datacore/);
   assert.match(result.stdout, /--rebuild-cache\s+Rebuild expensive DataCore/);
   assert.doesNotMatch(result.stdout, /--force\s+Rebuild expensive DataCore/);
 });

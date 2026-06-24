@@ -6,6 +6,8 @@ import { runScmdbScrape } from './run-scmdb-scrape';
 export type SourceCacheTarget = 'all' | 'datacore' | 'scmdb';
 export type SourceCacheSource = 'datacore' | 'scmdb';
 
+export const DEFAULT_SOURCE_CACHE_TARGET: SourceCacheTarget = 'datacore';
+
 export interface RefreshSourceCacheOptions {
   repoRoot: string;
   target?: SourceCacheTarget;
@@ -36,11 +38,11 @@ export interface RefreshSourceCacheResult {
 }
 
 export async function refreshSourceCache(options: RefreshSourceCacheOptions): Promise<RefreshSourceCacheResult> {
-  const target = options.target ?? 'all';
+  const target = options.target ?? DEFAULT_SOURCE_CACHE_TARGET;
   const log = options.log ?? (() => {});
   const runDatacore = options.runDatacore ?? runDatacoreScrape;
   const runScmdb = options.runScmdb ?? runScmdbScrape;
-  const selectedSources = selectSources(target);
+  const selectedSources = selectSourceCacheSources(target);
   const concurrency = Math.max(1, Math.min(options.concurrency ?? selectedSources.length, selectedSources.length));
   const limit = pLimit(concurrency);
 
@@ -55,7 +57,7 @@ export async function refreshSourceCache(options: RefreshSourceCacheOptions): Pr
   };
 }
 
-function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
+export function selectSourceCacheSources(target: SourceCacheTarget): SourceCacheSource[] {
   if (target === 'scmdb') return ['scmdb'];
   if (target === 'datacore') return ['datacore'];
   return ['scmdb', 'datacore'];

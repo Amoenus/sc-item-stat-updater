@@ -1,9 +1,10 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
+  DEFAULT_SOURCE_CACHE_TARGET,
   refreshSourceCache,
-  type SourceCacheSource,
   type SourceCacheTarget,
+  selectSourceCacheSources,
 } from '../../application/use-cases/refresh-source-cache';
 import { createDataCoreScrapePlan } from '../../application/use-cases/run-datacore-scrape';
 import { createScmdbScrapePlan } from '../../application/use-cases/run-scmdb-scrape';
@@ -30,7 +31,7 @@ function printHelp(io: CommandIO): void {
 Refresh source caches without updating global.ini.
 
 Options:
-  --source <all|datacore|scmdb>  Source cache to refresh (default: all)
+  --source <all|datacore|scmdb>  Source cache to refresh (default: datacore; all explicitly includes SCMDB)
   --ptu                         Use PTU source data
   --rebuild-cache               Rebuild expensive DataCore DCB/XML caches
   -h, --help                    Show this message`,
@@ -38,7 +39,7 @@ Options:
 }
 
 function parseTarget(value: string | undefined): SourceCacheTarget {
-  if (!value) return 'all';
+  if (!value) return DEFAULT_SOURCE_CACHE_TARGET;
   if (value === 'all' || value === 'datacore' || value === 'scmdb') return value;
   throw new Error(`Unknown --source "${value}". Expected all, datacore, or scmdb.`);
 }
@@ -51,7 +52,7 @@ export async function runCacheCommand(
   const { values } = parseArgs({
     args: argv,
     options: {
-      source: { type: 'string', default: 'all' },
+      source: { type: 'string' },
       ptu: { type: 'boolean', default: false },
       'rebuild-cache': { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h', default: false },
@@ -106,14 +107,8 @@ export async function runCacheCommand(
     return 1;
   }
 
-  writeLine(io, `\nCache refresh complete: ${selectSources(target).join(', ') || 'none'}`);
+  writeLine(io, `\nCache refresh complete: ${selectSourceCacheSources(target).join(', ') || 'none'}`);
   return 0;
-}
-
-function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
-  if (target === 'scmdb') return ['scmdb'];
-  if (target === 'datacore') return ['datacore'];
-  return ['scmdb', 'datacore'];
 }
 
 function createSourceTasks(
@@ -126,7 +121,7 @@ function createSourceTasks(
   ptu: boolean,
   force: boolean,
 ): CommandTask<Record<string, never>>[] {
-  return selectSources(target).map((source) => {
+  return selectSourceCacheSources(target).map((source) => {
     const baseTitle = `${source.toUpperCase()} cache`;
 
     if (source === 'datacore' && useDataCoreScrapePlan) {

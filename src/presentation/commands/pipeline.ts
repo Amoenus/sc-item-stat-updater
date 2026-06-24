@@ -6,9 +6,11 @@ import { deployGlobalIni } from '../../application/use-cases/deploy-global-ini';
 import type { PreparedUpdateCategories } from '../../application/use-cases/prepare-update-categories';
 import { refreshGlobalIni } from '../../application/use-cases/refresh-global-ini';
 import {
+  DEFAULT_SOURCE_CACHE_TARGET,
   refreshSourceCache,
   type SourceCacheSource,
   type SourceCacheTarget,
+  selectSourceCacheSources,
 } from '../../application/use-cases/refresh-source-cache';
 import { createBatchUpdatePlan, runBatchUpdate } from '../../application/use-cases/run-batch-update';
 import { createDataCoreScrapePlan } from '../../application/use-cases/run-datacore-scrape';
@@ -45,7 +47,9 @@ function printHelp(io: CommandIO): void {
     `Usage: node --import tsx/esm bin/pipeline.ts [options]
 
 Options:
-  --cached       Use existing source outputs instead of refreshing SCMDB/DataCore
+  --cached       Use existing source outputs instead of refreshing DataCore
+  --source <all|datacore|scmdb>
+                 Source cache to refresh (default: datacore; all explicitly includes SCMDB)
   --repo-only    Update repo global.ini without deploying back to the game directory
   --rebuild-cache  Rebuild expensive DataCore DCB/XML caches during source refresh
   --dry-run      Preview updates without writing global.ini
@@ -53,6 +57,12 @@ Options:
   -v, --verbose  Enable verbose logging
   -h, --help     Show this message`,
   );
+}
+
+function parseTarget(value: string | undefined): SourceCacheTarget {
+  if (!value) return DEFAULT_SOURCE_CACHE_TARGET;
+  if (value === 'all' || value === 'datacore' || value === 'scmdb') return value;
+  throw new Error(`Unknown --source "${value}". Expected all, datacore, or scmdb.`);
 }
 
 export async function runPipelineCommand(
@@ -64,6 +74,7 @@ export async function runPipelineCommand(
     args: argv,
     options: {
       cached: { type: 'boolean', default: false },
+      source: { type: 'string' },
       'repo-only': { type: 'boolean', default: false },
       'rebuild-cache': { type: 'boolean', default: false },
       scrape: { type: 'boolean', default: false },
@@ -84,7 +95,7 @@ export async function runPipelineCommand(
 
   const force = values['rebuild-cache'] || isNpmConfigFlagEnabled('rebuild-cache');
   const refreshSources = !values.cached;
-  const sourceTarget = values.datacore && !values.scrape ? 'datacore' : 'all';
+  const sourceTarget = values.source ? parseTarget(values.source) : values.scrape ? 'all' : DEFAULT_SOURCE_CACHE_TARGET;
   const deployUpdatedIni = !values['repo-only'];
   const repoIniPath = path.join(ROOT_DIR, 'global.ini');
   const refresh = dependencies.refreshGlobalIni ?? refreshGlobalIni;
@@ -168,11 +179,11 @@ function createPipelineTasks(options: {
       title: options.refreshSources ? 'Refresh source caches' : 'Use cached source outputs',
       task: (_ctx, task) => {
         if (!options.refreshSources) {
-          task.skip('using existing SCMDB/DataCore outputs');
+          task.skip('using existing source outputs');
           return;
         }
 
-        const sourceTasks = selectSources(options.sourceTarget).map((source) =>
+        const sourceTasks = selectSourceCacheSources(options.sourceTarget).map((source) =>
           createSourceRefreshTask(source, options),
         );
         return createPlannedChildTaskList(task, {
@@ -370,12 +381,6 @@ function formatBatchUpdateSummary(updateResult: Awaited<ReturnType<typeof runBat
       ? `; ${updateResult.sourceDiagnostics.warnings.length.toLocaleString()} source warning(s), rerun with --verbose for details`
       : '';
   return `Applied updates in ${updateResult.totalDurationMs}ms${warningSummary}`;
-}
-
-function selectSources(target: SourceCacheTarget): SourceCacheSource[] {
-  if (target === 'scmdb') return ['scmdb'];
-  if (target === 'datacore') return ['datacore'];
-  return ['scmdb', 'datacore'];
 }
 
 function createSourceRefreshTask(
