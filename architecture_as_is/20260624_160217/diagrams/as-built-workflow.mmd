@@ -1,0 +1,27 @@
+flowchart TD
+  game["Local Star Citizen install / Data.p4k"]
+  unp4k["unp4k / unforge tool folder under game install"]
+  dcb["csv/datacore/.dcbcache/<version>/Data/Game2.dcb"]
+  xml["csv/datacore/.xmlcache/<version>/**/*.xml"]
+  graph["csv/datacore/<version>/record-graph.json"]
+  raw["DataCore raw fact CSVs"]
+  items["DataCore item type CSVs"]
+  scmdbRaw["csv/scmdb/<version>/*.json"]
+  scmdbCsv["SCMDB derived CSV bridge files"]
+  configs["src/items/* configs and custom loaders"]
+  mappings["mappings/*.spviewer.json legacy mappings"]
+  plan["Localization patch plan"]
+  ini["repo global.ini"]
+  deploy["game localization global.ini"]
+
+  game --> unp4k --> dcb --> xml --> graph
+  graph --> raw
+  xml --> raw
+  graph --> items
+  xml --> items
+  scmdbRaw --> scmdbCsv
+  raw --> configs
+  items --> configs
+  scmdbCsv --> configs
+  mappings --> configs
+  configs --> plan --> ini --> deploy

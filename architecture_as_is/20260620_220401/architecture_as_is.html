@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>As-Built Architecture: sc-item-stat-updater</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5f6f7d;
+      --line: #d7dee5;
+      --panel: #f7f9fb;
+      --accent: #0f6b67;
+      --accent-2: #8a4f16;
+      --ok: #126b3a;
+      --warn: #8a5a00;
+      --low: #8b2d2d;
+      --code: #eef3f7;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #fff;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    h1, h2, h3 { line-height: 1.2; }
+    h1 { margin: 0 0 8px; font-size: 34px; }
+    h2 { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 24px; }
+    h3 { margin-top: 24px; font-size: 18px; }
+    p { margin: 8px 0; }
+    a { color: var(--accent); }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      background: var(--code);
+      border-radius: 4px;
+    }
+    code { padding: 1px 4px; }
+    pre { padding: 12px; overflow: auto; border: 1px solid var(--line); }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; font-size: 14px; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; }
+    th { background: var(--panel); text-align: left; }
+    ul, ol { padding-left: 22px; }
+    .meta, .toc, .card-grid { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+    .meta { margin: 18px 0; }
+    .toc a { display: inline-block; margin: 3px 14px 3px 0; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--panel); }
+    .card strong { display: block; margin-bottom: 4px; }
+    .badge { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+    .high { background: #dff3e7; color: var(--ok); }
+    .medium { background: #fff0ce; color: var(--warn); }
+    .low { background: #ffe2e2; color: var(--low); }
+    .observed { border-left: 4px solid var(--accent); padding-left: 10px; }
+    .inferred { border-left: 4px solid var(--accent-2); padding-left: 10px; }
+    figure { margin: 16px 0 28px; border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: #fff; }
+    figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; }
+    svg text { font-family: Arial, Helvetica, sans-serif; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>As-Built Architecture: sc-item-stat-updater</h1>
+  <p class="meta">
+    Generated 2026-06-20 22:04:01 Europe/Riga from repository root
+    <code>C:\Git\sc-item-stat-updater</code>. This is an observed architecture snapshot, not a redesign.
+  </p>
+
+  <nav class="toc" aria-label="Table of contents">
+    <a href="#scope">Scope</a>
+    <a href="#summary">Executive Summary</a>
+    <a href="#map">System Map</a>
+    <a href="#entrypoints">Entrypoints</a>
+    <a href="#data">Data And Integrations</a>
+    <a href="#tests">Tests</a>
+    <a href="#flows">Flows</a>
+    <a href="#observations">Observations</a>
+    <a href="#risks">Risks</a>
+    <a href="#commands">Command Log</a>
+    <a href="#next">Next Steps</a>
+  </nav>
+
+  <section id="scope">
+    <h2>Scope And Assumptions</h2>
+    <ul>
+      <li><strong>Scope explored:</strong> Current workspace/repo root, TypeScript source, CLI entrypoints, docs, scripts, generated data layout, tests, and local configuration shape.</li>
+      <li><strong>Execution allowed/performed:</strong> Read-mostly inspection plus safe existing checks: architecture guardrail, typecheck, and test suite.</li>
+      <li><strong>Important assumptions:</strong> Repository root is <code>C:\Git\sc-item-stat-updater</code>; local game install operations, migrations, deploys, cache refreshes, and production-like network calls were out of scope.</li>
+      <li><strong>Not explored:</strong> Actual local Star Citizen install contents, real <code>Data.p4k</code> extraction, live SCMDB downloads, deployment to the game folder, and full runtime pipeline execution.</li>
+    </ul>
+    <p><strong>Initial workspace state:</strong> <code>git status --short</code> showed pre-existing modifications in <code>csv/scmdb/4.8.1-live.11952564/mema-cache.json</code>, <code>csv/scmdb/4.8.1-live.11952564/scmdb-mema.csv</code>, and <code>global.ini</code>.</p>
+  </section>
+
+  <section id="summary">
+    <h2>Executive Summary</h2>
+    <div class="card-grid">
+      <div class="card"><strong>Runtime shape</strong>Local Node 24+ TypeScript ESM CLI/data pipeline, executed through <code>tsx</code> from <code>bin/*.ts</code>.</div>
+      <div class="card"><strong>Primary workflow</strong>Extract fresh <code>global.ini</code>, refresh DataCore/SCMDB source caches, plan localization patches, apply to repo <code>global.ini</code>, optionally deploy to game directory.</div>
+      <div class="card"><strong>Architectural center</strong><code>src/application/use-cases</code> orchestrates source refresh, update planning, diagnostics, and deployment.</div>
+      <div class="card"><strong>Source boundaries</strong>DataCore and SCMDB live under <code>src/sources/*</code>; item and mission rules live under <code>src/items/*</code>; INI mutation lives under <code>src/localization/*</code>.</div>
+      <div class="card"><strong>Data storage</strong>No database server was observed. State is local files: root <code>global.ini</code>, versioned <code>csv/</code> outputs, mapping JSON files, caches, backups, and fixtures.</div>
+      <div class="card"><strong>Verification</strong><code>npm run check:architecture</code>, <code>npm run typecheck</code>, and <code>npm test</code> all passed in this run.</div>
+      <div class="card"><strong>Coupling pressure</strong>The architecture depends on conventions and guardrails: dynamic category loading from filenames, versioned CSV folder conventions, local env paths, and generated data churn checks.</div>
+      <div class="card"><strong>Current risk profile</strong>Operational risk is mostly local-environment and generated-data related, not service availability: real extraction/deploy steps were not executed here.</div>
+    </div>
+  </section>
+
+  <section id="map">
+    <h2>As-Built System Map</h2>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 420" role="img" aria-label="As-built flow diagram">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,4 L0,8 z" fill="#51606d"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="35" width="190" height="70" rx="8" fill="#eef7f6" stroke="#0f6b67"></rect>
+        <text x="115" y="62" text-anchor="middle" font-size="14" font-weight="700">Local game install</text>
+        <text x="115" y="84" text-anchor="middle" font-size="12">Data.p4k + global.ini</text>
+        <rect x="20" y="210" width="190" height="70" rx="8" fill="#fff7ea" stroke="#8a4f16"></rect>
+        <text x="115" y="238" text-anchor="middle" font-size="14" font-weight="700">SCMDB web data</text>
+        <text x="115" y="260" text-anchor="middle" font-size="12">scmdb.net/data</text>
+        <rect x="285" y="35" width="190" height="70" rx="8" fill="#f7f9fb" stroke="#51606d"></rect>
+        <text x="380" y="62" text-anchor="middle" font-size="14" font-weight="700">Extract global.ini</text>
+        <text x="380" y="84" text-anchor="middle" font-size="12">refresh-global-ini</text>
+        <rect x="285" y="130" width="190" height="70" rx="8" fill="#f7f9fb" stroke="#51606d"></rect>
+        <text x="380" y="157" text-anchor="middle" font-size="14" font-weight="700">DataCore cache</text>
+        <text x="380" y="179" text-anchor="middle" font-size="12">DCB/XML extraction</text>
+        <rect x="285" y="225" width="190" height="70" rx="8" fill="#f7f9fb" stroke="#51606d"></rect>
+        <text x="380" y="252" text-anchor="middle" font-size="14" font-weight="700">SCMDB cache</text>
+        <text x="380" y="274" text-anchor="middle" font-size="12">JSON + CSV outputs</text>
+        <rect x="545" y="130" width="190" height="70" rx="8" fill="#eef3f7" stroke="#51606d"></rect>
+        <text x="640" y="157" text-anchor="middle" font-size="14" font-weight="700">Versioned source files</text>
+        <text x="640" y="179" text-anchor="middle" font-size="12">csv/datacore + csv/scmdb</text>
+        <rect x="545" y="260" width="190" height="70" rx="8" fill="#eef3f7" stroke="#51606d"></rect>
+        <text x="640" y="287" text-anchor="middle" font-size="14" font-weight="700">Rule modules</text>
+        <text x="640" y="309" text-anchor="middle" font-size="12">src/items/*</text>
+        <rect x="805" y="130" width="220" height="70" rx="8" fill="#f7f9fb" stroke="#51606d"></rect>
+        <text x="915" y="157" text-anchor="middle" font-size="14" font-weight="700">Application use cases</text>
+        <text x="915" y="179" text-anchor="middle" font-size="12">planning + diagnostics</text>
+        <rect x="805" y="245" width="220" height="70" rx="8" fill="#f7f9fb" stroke="#51606d"></rect>
+        <text x="915" y="272" text-anchor="middle" font-size="14" font-weight="700">Localization application</text>
+        <text x="915" y="294" text-anchor="middle" font-size="12">patch global.ini</text>
+        <line x1="210" y1="70" x2="285" y2="70" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="210" y1="70" x2="285" y2="165" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="210" y1="245" x2="285" y2="260" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="475" y1="165" x2="545" y2="165" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="475" y1="260" x2="545" y2="180" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="735" y1="165" x2="805" y2="165" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="735" y1="295" x2="805" y2="190" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="915" y1="200" x2="915" y2="245" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)"></line>
+        <line x1="380" y1="105" x2="805" y2="280" stroke="#51606d" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5 5"></line>
+        <text x="540" y="86" font-size="12" fill="#5f6f7d">fresh baseline file</text>
+      </svg>
+      <figcaption>As-built flow synthesized from observed scripts, source layout, and docs. Mermaid source is saved at <code>diagrams/as-built-flow.mmd</code>; this SVG is embedded for offline reading.</figcaption>
+    </figure>
+
+    <table>
+      <thead><tr><th>Component</th><th>Current responsibility</th><th>Key evidence</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td><code>bin/</code></td><td>Executable CLI shims for update, cache, pipeline, deploy, extraction, and artifact commands.</td><td>Files listed under <code>bin/*.ts</code>; package scripts invoke them via <code>node --import tsx/esm</code> at <code>package.json:19</code>, <code>package.json:25</code>, <code>package.json:53</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/presentation</code></td><td>Argument parsing, terminal rendering, Listr2 task construction, and command IO.</td><td><code>src/presentation/commands/pipeline.ts</code> parses CLI flags and constructs task lists; guardrail restricts Listr2 to presentation at <code>scripts/check-architecture.ts:68</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/application/use-cases</code></td><td>Orchestrates full pipeline, cache refresh, batch update, patch planning, extraction, and deployment.</td><td><code>runFullPipeline</code> wires refresh, source cache, update, diagnostics, and deploy at <code>src/application/use-cases/run-full-pipeline.ts:50-57</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/sources/datacore</code></td><td>Extracts and normalizes local game-file/DataCore records into CSV/raw fact outputs and record graphs.</td><td>DataCore acquisition copies DCB into XML cache and invokes provided unforge runner at <code>src/sources/datacore/acquisition.ts</code>; many extractor modules and tests are present.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/sources/scmdb</code></td><td>Fetches and validates SCMDB JSON, then derives mission/mining/crafting outputs.</td><td><code>SCMDB_BASE_URL</code> and fetch/validate helpers in <code>src/sources/scmdb/acquisition.ts</code>; output planning/parser modules under <code>src/sources/scmdb</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/items</code></td><td>Dynamic item/mission enrichment rule registry and per-category config modules.</td><td>Directory-based dynamic imports in <code>src/items/registry.ts:31-43</code>; 24 DataCore and 6 mission non-test modules observed.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>src/localization</code></td><td>INI parsing, key resolution, patch application, and file writing behavior.</td><td><code>enrichGlobalIni</code> calls <code>applyPatchPlanToIniLines</code>, validates integrity, and writes the INI at <code>src/application/use-cases/enrich-global-ini.ts:99-107</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>csv/</code></td><td>Versioned generated source outputs for DataCore and SCMDB consumed by update planning.</td><td>Large checked-in output tree under <code>csv/datacore/&lt;version&gt;</code> and <code>csv/scmdb/&lt;version&gt;</code>; README describes cache commands and source hierarchy.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td><code>docs/</code></td><td>Architecture direction, ADRs, source audits, implementation plans, and issue handoff docs.</td><td><code>docs/architecture-overview.md</code> defines system flow, source layout, contracts, and boundary rules at lines 21, 97, 121, 134, 160, and 173.</td><td><span class="badge high">High</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="entrypoints">
+    <h2>Entrypoints And Runtime</h2>
+    <h3>Commands</h3>
+    <ul>
+      <li><code>npm run pipeline</code>: full flow: refresh sources, update <code>global.ini</code>, deploy.</li>
+      <li><code>npm run pipeline:cached</code>: use existing source outputs, still extract/update/deploy unless flags alter behavior.</li>
+      <li><code>npm run cache</code>, <code>cache:datacore</code>, <code>cache:scmdb</code>: refresh source outputs without updating <code>global.ini</code>.</li>
+      <li><code>npm run update</code>: advanced update from existing outputs.</li>
+      <li><code>npm run extract</code>, <code>npm run deploy</code>: local game localization IO utilities.</li>
+      <li><code>npm run check:architecture</code>, <code>npm run check:no-generated-churn</code>, <code>npm run typecheck</code>, <code>npm test</code>: verification commands.</li>
+    </ul>
+
+    <h3>Apps, Services, Workers</h3>
+    <p>No long-running server, web app, database process, queue consumer, or cloud worker was observed. This repository is built as local CLI tooling.</p>
+
+    <h3>Routes, APIs, CLIs, Jobs</h3>
+    <p>The public runtime surface is CLI commands. External APIs are consumed by source acquisition, especially SCMDB URLs under <code>https://scmdb.net/data</code>. DataCore extraction uses local game files and an unforge-style extraction callback rather than a network service.</p>
+
+    <h3>Runtime Configuration</h3>
+    <ul>
+      <li><code>.env.example</code> documents <code>SC_LIVE_DIR</code> as the local Star Citizen LIVE install directory.</li>
+      <li><code>package.json</code> declares Node <code>&gt;=24.0.0</code> and Volta Node <code>24.16.0</code>.</li>
+      <li>Commands use <code>node --env-file-if-exists .env.local --import tsx/esm</code>, so local machine env files influence runtime but are not committed.</li>
+    </ul>
+  </section>
+
+  <section id="data">
+    <h2>Data And Integrations</h2>
+    <table>
+      <thead><tr><th>Area</th><th>Observed details</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Data stores</td><td>Filesystem only: root <code>global.ini</code>, versioned <code>csv/datacore</code> and <code>csv/scmdb</code> outputs, <code>mappings/*.json</code>, test fixtures, local caches/backups, and generated artifacts.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td>Schemas/models</td><td>Zod runtime schemas under <code>src/schema</code>, pipeline contracts under <code>src/pipeline/types.ts</code>, and source-specific types under <code>src/sources/*/types.ts</code>.</td><td><span class="badge high">High</span></td></tr>
+        <tr><td>External systems</td><td>Local Star Citizen install/Data.p4k, SCMDB web data, StarMeld/StarStrings attribution in README, and an external DataForge/unforge extraction tool implied by DataCore acquisition.</td><td><span class="badge medium">Medium</span></td></tr>
+        <tr><td>Ownership/contracts</td><td>Docs state DataCore should be authoritative for raw game-file facts, with SCMDB as a temporary bridge for some mission/crafting/mining joins. Code exposes diagnostics for source freshness and remaining SCMDB dependencies.</td><td><span class="badge high">High</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="tests">
+    <h2>Test Suite Interpretation</h2>
+    <ul>
+      <li><strong>Frameworks and commands:</strong> Node built-in test runner via <code>node --import tsx/esm --test src/**/*.test.ts</code>; TypeScript typecheck via <code>tsc --noEmit</code>; Biome for lint/format.</li>
+      <li><strong>What tests prove:</strong> Existing tests cover category discovery, diagnostics, source freshness, generated-data churn guard, update planning, INI patch application, use-case orchestration, CLI smoke paths, DataCore extraction behavior, SCMDB parsing/output contracts, and architecture guardrails.</li>
+      <li><strong>What tests mock or omit:</strong> Many source and pipeline tests use fixtures or dependency injection; this run did not prove real local game extraction, live SCMDB availability, or deploy behavior against an actual game install.</li>
+      <li><strong>Failing/skipped/non-runnable tests:</strong> None failed. Test summary: 549 tests, 547 pass, 0 fail, 2 skipped.</li>
+      <li><strong>Artifacts or workspace changes observed:</strong> Pre-existing dirty generated data and <code>global.ini</code> were present before checks. This run generated only <code>architecture_as_is/20260620_220401</code> artifacts intentionally.</li>
+    </ul>
+  </section>
+
+  <section id="flows">
+    <h2>Representative Flows</h2>
+    <h3>1. Full Pipeline CLI</h3>
+    <ul>
+      <li><strong>Path:</strong> <code>npm run pipeline</code> -> <code>bin/pipeline.ts</code> -> <code>src/presentation/commands/pipeline.ts</code> -> extraction, source refresh, batch update, deploy tasks.</li>
+      <li><strong>Reads/writes:</strong> Reads local env and game/source files; writes repo <code>global.ini</code>, source outputs, backups, and optionally game-localized output.</li>
+      <li><strong>Side effects:</strong> Can touch local game install, network SCMDB, source caches, and deploy target. Not executed end-to-end in this analysis.</li>
+      <li><strong>Evidence:</strong> Package scripts at <code>package.json:18-23</code>; pipeline task construction in <code>src/presentation/commands/pipeline.ts</code>; use-case orchestration in <code>src/application/use-cases/run-full-pipeline.ts:50-57</code>.</li>
+      <li><strong>Confidence:</strong> <span class="badge high">High</span> for static path and tested orchestration; <span class="badge medium">Medium</span> for real external execution.</li>
+    </ul>
+
+    <h3>2. Cached Localization Update</h3>
+    <ul>
+      <li><strong>Path:</strong> Existing CSV/JSON outputs -> category configs from <code>src/items</code> -> patch planning -> <code>applyPatchPlanToIniLines</code> -> <code>writeIniFile</code>.</li>
+      <li><strong>Reads/writes:</strong> Reads repo <code>global.ini</code>, source output files, mappings; writes updated <code>global.ini</code> unless dry run.</li>
+      <li><strong>Side effects:</strong> INI backup/write depending on options.</li>
+      <li><strong>Evidence:</strong> Dynamic category registry at <code>src/items/registry.ts:31-43</code>; patch plan/application/write at <code>src/application/use-cases/enrich-global-ini.ts:99-107</code>.</li>
+      <li><strong>Confidence:</strong> <span class="badge high">High</span>; covered by focused and integration tests.</li>
+    </ul>
+
+    <h3>3. DataCore Cache Refresh</h3>
+    <ul>
+      <li><strong>Path:</strong> Local Star Citizen DCB/Data.p4k -> XML cache extraction -> DataCore record graph/extractors -> versioned <code>csv/datacore/*</code> outputs.</li>
+      <li><strong>Reads/writes:</strong> Reads local game files and cache metadata; writes XML/DCB cache-derived data and CSV/raw facts.</li>
+      <li><strong>Side effects:</strong> Can rebuild expensive caches, remove temporary DCB/XML work files, and update generated data outputs.</li>
+      <li><strong>Evidence:</strong> DataCore acquisition copies DCB, runs extraction callback, removes temp files, and counts XML files in <code>src/sources/datacore/acquisition.ts</code>; extensive DataCore extractor tests passed.</li>
+      <li><strong>Confidence:</strong> <span class="badge medium">Medium</span> for local live extraction because it was not executed; <span class="badge high">High</span> for implementation shape.</li>
+    </ul>
+
+    <h3>4. SCMDB Cache Refresh</h3>
+    <ul>
+      <li><strong>Path:</strong> SCMDB version/data URLs -> schema validation -> output planners/parsers -> versioned <code>csv/scmdb/*</code> outputs.</li>
+      <li><strong>Reads/writes:</strong> Reads network JSON; writes merged/mining/crafting/mema companion files and derived mission/mining CSVs.</li>
+      <li><strong>Side effects:</strong> Network dependency and generated output churn. Not executed against live SCMDB in this analysis.</li>
+      <li><strong>Evidence:</strong> <code>SCMDB_BASE_URL</code>, URL builder, user-agent fetch, and schema validation in <code>src/sources/scmdb/acquisition.ts</code>; SCMDB parser/output tests passed.</li>
+      <li><strong>Confidence:</strong> <span class="badge medium">Medium</span> for live SCMDB behavior; <span class="badge high">High</span> for code path and tests.</li>
+    </ul>
+  </section>
+
+  <section id="observations">
+    <h2>Architecture Observations</h2>
+    <div class="observed">
+      <h3>Observed</h3>
+      <ul>
+        <li>The repository has an explicit clean pipeline architecture document and an automated guardrail script.</li>
+        <li>CLI scripts are thin adapters around presentation command modules and application use cases.</li>
+        <li>Patch plans are intentionally separate from INI mutation; persisted artifacts use a compact entries/issues shape.</li>
+        <li>Generated data is committed and guarded by a churn check, which treats <code>csv/</code> and root <code>global.ini</code> as sensitive outputs.</li>
+        <li>There is no observed service deployment model; execution is local and file-oriented.</li>
+      </ul>
+    </div>
+    <div class="inferred">
+      <h3>Inferred</h3>
+      <ul>
+        <li>The repo is mid-migration from SCMDB-dependent enrichment toward DataCore-first source ownership; diagnostics and docs keep remaining SCMDB dependency visible.</li>
+        <li>The most important architectural contract is not a network API but the file contracts between source cache outputs, item configs, patch plans, and INI application.</li>
+        <li>The dynamic category registry makes adding enrichment categories cheap but relies on filenames and directory placement as part of the contract.</li>
+      </ul>
+    </div>
+    <h3>Unknown</h3>
+    <ul>
+      <li>Whether current local <code>.env.local</code> points to a valid game install; values were not read or exposed.</li>
+      <li>Whether live DataCore extraction and deployment currently succeed on this machine.</li>
+      <li>Whether SCMDB live endpoints are currently reachable and compatible with the checked schemas.</li>
+      <li>Whether ignored local folders such as <code>Data</code>, <code>Engine</code>, <code>repo</code>, and <code>dist</code> are current, stale, or incidental.</li>
+    </ul>
+  </section>
+
+  <section id="risks">
+    <h2>Risks And Friction</h2>
+    <table>
+      <thead><tr><th>Finding</th><th>Why it matters</th><th>Evidence</th><th>Suggested verification</th></tr></thead>
+      <tbody>
+        <tr><td>Existing generated-data churn before analysis</td><td>Architecture and test conclusions can be confused with local generated output changes unless tracked separately.</td><td>Initial <code>git status --short</code> showed dirty <code>csv/scmdb</code> files and <code>global.ini</code>.</td><td>Run <code>npm run check:no-generated-churn</code> after deciding whether current generated changes are expected.</td></tr>
+        <tr><td>External execution not verified</td><td>The riskiest runtime paths touch local game files, unforge/DCB extraction, live SCMDB, and deployment.</td><td>Analysis intentionally did not run <code>npm run pipeline</code>, <code>npm run cache</code>, or <code>npm run deploy</code>.</td><td>Run <code>npm run pipeline -- --dry-run --repo-only</code> or targeted cache commands when local side effects are acceptable.</td></tr>
+        <tr><td>Guardrail is intentionally small</td><td>Architecture can drift in ways not covered by the current import/Listr checks.</td><td>Docs state the guardrail is small at <code>docs/architecture-overview.md:183</code>; script currently checks selected forbidden imports and renderer rules.</td><td>Expand guardrails only for recurring drift patterns, then keep them fast enough for regular use.</td></tr>
+        <tr><td>Dynamic rule loading depends on naming conventions</td><td>Misplaced or oddly named files can silently change category availability or CLI slugs.</td><td><code>src/items/registry.ts</code> derives slugs from filenames and excludes hard-coded non-category files.</td><td>Keep category-listing tests and smoke commands in CI; add tests when changing registry conventions.</td></tr>
+        <tr><td>SCMDB remains a bridge dependency</td><td>Some mission/mining/crafting enrichments may still depend on derived third-party data rather than first-party DataCore facts.</td><td>README and architecture docs describe SCMDB as temporary bridge; tests include SCMDB dependency audit behavior.</td><td>Use <code>node --import tsx/esm bin/update-item.ts --scmdb-audit</code> during migration work.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="commands">
+    <h2>Command Log</h2>
+    <table>
+      <thead><tr><th>Command</th><th>Purpose</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>git status --short</code></td><td>Capture pre-run state.</td><td>Three pre-existing modified files in generated data and <code>global.ini</code>.</td></tr>
+        <tr><td><code>rg --files</code></td><td>Repository inventory.</td><td>Mapped TypeScript source, docs, scripts, generated data, mappings, and fixtures.</td></tr>
+        <tr><td><code>npm run check:architecture</code></td><td>Architecture guardrail.</td><td>Passed.</td></tr>
+        <tr><td><code>npm run typecheck</code></td><td>Static TypeScript check.</td><td>Passed.</td></tr>
+        <tr><td><code>npm test</code></td><td>Behavior and integration evidence.</td><td>Passed: 549 tests, 547 pass, 0 fail, 2 skipped.</td></tr>
+        <tr><td><code>rg -n ...</code> and <code>Get-Content</code> reads</td><td>Gather file/line evidence.</td><td>Collected evidence from package scripts, docs, use cases, registry, acquisition, and guardrail files.</td></tr>
+      </tbody>
+    </table>
+    <p>Detailed command notes are saved in <code>evidence/command-log.md</code>.</p>
+  </section>
+
+  <section id="next">
+    <h2>Next Verification Steps</h2>
+    <ol>
+      <li>Decide whether the current dirty <code>global.ini</code> and SCMDB generated files are expected, then run <code>npm run check:no-generated-churn</code> after any no-write verification.</li>
+      <li>Run <code>npm run pipeline -- --dry-run --repo-only</code> to verify current source outputs and patch planning without deployment.</li>
+      <li>Run targeted <code>npm run cache:datacore</code> or <code>npm run cache:scmdb</code> only when local extraction/network side effects are acceptable.</li>
+      <li>Use <code>node --import tsx/esm bin/update-item.ts --scmdb-audit</code> and <code>--dynamic-audit</code> when planning source migration work.</li>
+      <li>Review whether ignored local folders (<code>Data</code>, <code>Engine</code>, <code>dist</code>, <code>repo</code>) are needed for day-to-day operation or should be documented more explicitly.</li>
+    </ol>
+  </section>
+</main>
+</body>
+</html>

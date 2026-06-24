@@ -1,0 +1,11 @@
+flowchart LR
+  game[Local Star Citizen install\nData.p4k + global.ini] --> extract[Extract fresh global.ini]
+  game --> datacore[DataCore cache refresh\nDCB/XML extraction]
+  scmdb[SCMDB web data] --> scmdbcache[SCMDB cache refresh]
+  datacore --> sourcecsv[Versioned source outputs\ncsv/datacore/*]
+  scmdbcache --> sourcecsv
+  sourcecsv --> planning[Application use cases\npatch planning + diagnostics]
+  rules[Item and mission rule modules\nsrc/items/*] --> planning
+  planning --> localization[Localization patch application\nsrc/localization/*]
+  localization --> repo[Repo global.ini]
+  repo --> deploy[Deploy to game localization path]

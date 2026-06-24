@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>As-Built Architecture Audit - sc-item-stat-updater</title>
+  <style>
+    :root { --bg:#f7f8fa; --fg:#17202a; --muted:#5d6978; --line:#d9dee7; --card:#fff; --bad:#8a1f11; --warn:#8a5a00; --good:#1f6b3a; --code:#eef2f7; }
+    body { margin:0; font:14px/1.52 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:var(--fg); background:var(--bg); }
+    main { max-width:1180px; margin:0 auto; padding:32px 24px 64px; }
+    h1 { font-size:30px; margin:0 0 8px; }
+    h2 { margin-top:34px; padding-top:18px; border-top:1px solid var(--line); font-size:21px; }
+    h3 { margin-top:24px; font-size:17px; }
+    p { margin:9px 0; }
+    a { color:#1659a8; }
+    code { background:var(--code); border:1px solid #dbe2ec; border-radius:4px; padding:1px 4px; font-family:Consolas,"SFMono-Regular",monospace; font-size:12px; }
+    pre { background:#111827; color:#e5e7eb; border-radius:8px; padding:14px; overflow:auto; font-size:12px; line-height:1.45; }
+    table { width:100%; border-collapse:collapse; margin:12px 0 20px; background:var(--card); }
+    th,td { border:1px solid var(--line); padding:8px 9px; vertical-align:top; }
+    th { background:#edf1f7; text-align:left; }
+    .meta,.toc,.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:14px 0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin:16px 0; }
+    .metric { background:var(--card); border:1px solid var(--line); border-left:5px solid #62748d; border-radius:8px; padding:12px 14px; }
+    .metric strong { display:block; font-size:20px; margin-bottom:2px; }
+    .badge { display:inline-block; border-radius:999px; padding:2px 8px; font-size:12px; font-weight:700; }
+    .high { background:#e8f5ee; color:var(--good); }
+    .medium { background:#fff3d8; color:var(--warn); }
+    .low { background:#f5e5e1; color:var(--bad); }
+    .finding { border-left:5px solid var(--bad); }
+    .warn { border-left-color:var(--warn); }
+    .good { border-left-color:var(--good); }
+    ul { padding-left:22px; }
+    li { margin:5px 0; }
+    .small { color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>As-Built Architecture Audit</h1>
+  <div class="meta">
+    <p><strong>Repository:</strong> <code>C:\Git\sc-item-stat-updater</code></p>
+    <p><strong>Generated:</strong> 2026-06-24 16:02:17 local time</p>
+    <p><strong>Audit stance:</strong> intentionally critical, focused on workflow structure, cache ownership, generated-file lifecycle, source conversion, and data remapping. This is not a refactor plan; it is a map of the system as it exists.</p>
+  </div>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ul>
+      <li><a href="#scope">Scope And Assumptions</a></li>
+      <li><a href="#summary">Executive Summary</a></li>
+      <li><a href="#map">As-Built System Map</a></li>
+      <li><a href="#entrypoints">Entrypoints And Runtime</a></li>
+      <li><a href="#data">Data And Integrations</a></li>
+      <li><a href="#flows">Representative Flows</a></li>
+      <li><a href="#sensibilities">Architecture Sensibilities Audit</a></li>
+      <li><a href="#risks">Risks And Friction</a></li>
+      <li><a href="#tests">Test Suite Interpretation</a></li>
+      <li><a href="#commands">Command Log</a></li>
+      <li><a href="#next">Next Verification Steps</a></li>
+    </ul>
+  </div>
+
+  <h2 id="scope">Scope And Assumptions</h2>
+  <ul>
+    <li><strong>Scope explored:</strong> current repository root, with emphasis on pipeline/cache/update architecture, generated source outputs, SCMDB/DataCore migration boundaries, mapping/remapping logic, and CLI orchestration.</li>
+    <li><strong>Execution performed:</strong> read-only inspection plus safe local commands: architecture guard, category inventory, SCMDB audit, provider matrix, typecheck, and filesystem inventories.</li>
+    <li><strong>Important assumptions:</strong> local game data and generated outputs present in the worktree are architecture evidence. The dirty worktree was not cleaned. Existing generated 4.8.2 outputs were treated as part of the as-built state.</li>
+    <li><strong>Not explored:</strong> full `npm test`, live network SCMDB refresh, live game deployment, destructive cache cleanup, and runtime performance profiling beyond observed generated file sizes and recent cache behavior.</li>
+  </ul>
+
+  <h2 id="summary">Executive Summary</h2>
+  <div class="grid">
+    <div class="metric"><strong>398,002</strong><span>files under <code>csv/datacore/.xmlcache</code></span></div>
+    <div class="metric"><strong>12.8 GB</strong><span>DataCore XML cache footprint</span></div>
+    <div class="metric"><strong>358 MB</strong><span>latest DataCore output folder</span></div>
+    <div class="metric"><strong>109</strong><span>test files under <code>src</code></span></div>
+  </div>
+  <ul>
+    <li>The project has a real staged pipeline architecture, not a chaotic script pile. The key stages are extract baseline INI, refresh source caches, apply localization updates, and deploy.</li>
+    <li>The architecture boundary is much weaker around <strong>generated data ownership</strong> than around code imports. The repo stores source outputs, derived outputs, raw graph JSON, DCB cache, XML cache, SCMDB raw JSON, SCMDB derived CSV, and root `global.ini` in overlapping lifecycle states.</li>
+    <li>DataCore cache refresh is the architectural center of gravity: it extracts DCB, expands XML, builds a record graph, extracts raw fact CSVs, then scrapes item type CSVs. This is a pipeline inside the pipeline.</li>
+    <li>“Normalization” is partial. Many DataCore extractors use the record graph for discovery/relationships, but then reread XML by path. The graph is both normalized index and giant cache artifact, not a complete normalized source model.</li>
+    <li>SCMDB is described as retired or temporary, yet the workflow still refreshes SCMDB by default for full source refresh, selects SCMDB and DataCore latest directories independently, and retains mining-journal fallback behavior.</li>
+    <li>Mappings are legacy but still structurally present: 23 SPViewer-named mapping JSON files remain, and update planning still has SPViewer key-resolution machinery.</li>
+    <li>Presentation code owns real operational topology: DataCore raw fact groups, concurrency, and item type groupings live in `src/presentation/datacore-task.ts`, not only in application/use-case code.</li>
+    <li>The architecture guard passing is meaningful but narrow. It proves a few import/progress-renderer boundaries, not cache correctness, generated output coherence, source version alignment, or data remapping stability.</li>
+  </ul>
+
+  <h2 id="map">As-Built System Map</h2>
+  <table>
+    <tr><th>Component</th><th>Current Responsibility</th><th>Key Evidence</th><th>Confidence</th></tr>
+    <tr><td><code>package.json</code> scripts</td><td>Defines CLI workflow surfaces for pipeline, cache, update, deploy, extraction, checks, and tests.</td><td><code>pipeline:force</code>, <code>pipeline:cached</code>, <code>cache:datacore</code>, <code>cache:scmdb</code>, <code>check:architecture</code>, <code>test</code> at package lines 20-53.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/application/use-cases/run-full-pipeline.ts</code></td><td>Composes full local workflow: extract fresh INI, refresh sources, update with DataCore provider, deploy.</td><td>Refresh default at line 58, source refresh call at line 77, update provider hardcoded to <code>datacore</code> at line 115, diagnostics logging at lines 119-121.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/application/use-cases/refresh-source-cache.ts</code></td><td>Selects SCMDB/DataCore cache refreshes and coordinates concurrency.</td><td>Selects `all` as SCMDB + DataCore; calls source-specific runners.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/application/use-cases/run-datacore-scrape.ts</code></td><td>Large stateful DataCore sub-pipeline: tool prep, DCB cache, XML cache, graph, raw fact CSVs, item CSVs, final reconciliation.</td><td>Cache paths at lines 1433-1436, graph reuse/parse at 1519-1528, raw fact cases 1557-1809, item scraping 1895-1936.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/sources/datacore/record-graph.ts</code></td><td>Builds a broad graph/index from XML and persists it as JSON.</td><td>Worker graph build and batch collection; graph indexes by path/ref/root/localization/GUID; streaming writer added in current worktree.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/application/use-cases/run-scmdb-scrape.ts</code></td><td>Downloads SCMDB raw JSON, writes raw JSON snapshots, validates, and writes derived CSV bridge files.</td><td>Raw writes at lines 176-194, derived writes at 200-212, full sequence at 234-236.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/items/*</code></td><td>Category-level enrichment rules and source declarations, with many custom loaders and target-key remappers.</td><td><code>rg</code> found custom <code>sourceFiles</code>, <code>loadSourceData</code>, <code>getTargetKeys</code>, alternates, and per-category CSV declarations across DataCore and mission configs.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>mappings/*.spviewer.json</code></td><td>Legacy name-to-localization-key mappings that can still be loaded/saved by update planning.</td><td>23 SPViewer-named JSON files remain; mapping loader/saver at <code>mapping-store.ts</code> lines 12 and 29; resolver at <code>update-planning.ts</code> lines 222-246.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>src/presentation/*</code></td><td>CLI parsing and task rendering, but also concrete workflow topology and concurrency grouping.</td><td>Pipeline task selection in <code>pipeline.ts</code>; DataCore raw fact groups and item groups in <code>datacore-task.ts</code>.</td><td><span class="badge high">High</span></td></tr>
+    <tr><td><code>scripts/check-architecture.ts</code></td><td>Automated code-boundary guardrail.</td><td>Rules focus on source imports and Listr/progress renderer usage, lines 22-70; command passed.</td><td><span class="badge high">High</span></td></tr>
+  </table>
+
+  <h3>As-Built Workflow</h3>
+  <pre>Local game install / Data.p4k
+  -> unp4k / unforge tools under game install
+  -> csv/datacore/.dcbcache/&lt;version&gt;/Data/Game2.dcb
+  -> csv/datacore/.xmlcache/&lt;version&gt;/**/*.xml
+  -> csv/datacore/&lt;version&gt;/record-graph.json
+       -> DataCore raw fact CSVs
+       -> DataCore item type CSVs
+
+SCMDB remote JSON
+  -> csv/scmdb/&lt;version&gt; raw JSON snapshots
+  -> SCMDB derived CSV bridge files
+
+DataCore CSVs + SCMDB bridge files + item configs + legacy mappings
+  -> localization patch plans
+  -> repo global.ini
+  -> deployed game global.ini</pre>
+
+  <h2 id="entrypoints">Entrypoints And Runtime</h2>
+  <ul>
+    <li><strong>Main full flow:</strong> <code>npm run pipeline</code>, <code>npm run pipeline:force</code>, and <code>npm run pipeline:cached</code>.</li>
+    <li><strong>Source-only flows:</strong> <code>npm run cache</code>, <code>npm run cache:datacore</code>, <code>npm run cache:scmdb</code>.</li>
+    <li><strong>Update-only flow:</strong> <code>npm run update</code> and single-category <code>bin/update-item.ts</code> utilities.</li>
+    <li><strong>Runtime assumptions:</strong> Node 24 ESM/tsx, local Star Citizen install, local write access to repo and game localization folder, optional network for unp4k and SCMDB, and environment variables such as <code>SC_LIVE_DIR</code> / <code>SC_GAME_VERSION</code>.</li>
+    <li><strong>External tools:</strong> <code>ensureToolsInstalled</code> fetches latest unp4k release from GitHub unless an installed version is available; tools live under the resolved game folder's <code>unp4k</code> directory.</li>
+  </ul>
+
+  <h2 id="data">Data And Integrations</h2>
+  <table>
+    <tr><th>State / Data Store</th><th>Observed Owner</th><th>Lifecycle Concern</th><th>Evidence</th></tr>
+    <tr><td><code>global.ini</code></td><td>Pipeline/update/deploy use cases</td><td>Both source-of-review and mutable output. Full pipeline overwrites from fresh game baseline before enrichment; update can modify existing repo copy.</td><td>README workflow; <code>run-full-pipeline.ts</code>; dirty status showed modified <code>global.ini</code>.</td></tr>
+    <tr><td><code>csv/datacore/.dcbcache</code></td><td>DataCore scrape use case</td><td>Versioned heavyweight intermediate. Stored inside repo tree, not clearly separated from durable source outputs.</td><td>1.2 GB inventory; path created at <code>run-datacore-scrape.ts</code> line 1435.</td></tr>
+    <tr><td><code>csv/datacore/.xmlcache</code></td><td>DataCore acquisition/cache extraction</td><td>Massive unpacked intermediate. Operationally critical but not a normal source output.</td><td>12.8 GB / 398,002 files; <code>extractDataCoreXmlCache</code> can clear and rebuild it.</td></tr>
+    <tr><td><code>record-graph.json</code></td><td>DataCore record graph</td><td>Large persisted derived index. It accelerates relationship lookup but is still incomplete normalization because extractors reread XML.</td><td>Latest graph file 344,767,616 bytes; graph parse/reuse at lines 1519-1528; XML rereads visible in many DataCore extractors.</td></tr>
+    <tr><td>DataCore raw fact CSVs</td><td>DataCore scrape plan</td><td>Intermediates and inputs to mission/mining update categories. Some are first-party facts; some are derived summaries.</td><td>Raw fact stages and catalog in <code>run-datacore-scrape.ts</code>; category inventory command.</td></tr>
+    <tr><td>DataCore item type CSVs</td><td>DataCore scrape plan + item configs</td><td>Primary update inputs, but generated through category-specific extractors and then sometimes reconciled post-hoc.</td><td>Item scraping and <code>reconcileDataCoreComponentClasses</code> at lines 1895-1936.</td></tr>
+    <tr><td>SCMDB raw JSON and CSV bridge</td><td>SCMDB scrape plan</td><td>Bridge status is shrinking but still structurally present. Raw JSON and derived CSV both persist.</td><td><code>run-scmdb-scrape.ts</code> lines 176-212; SCMDB audit command.</td></tr>
+    <tr><td><code>mappings/*.spviewer.json</code></td><td>Update planning legacy resolver</td><td>Retired provider artifacts still live in active resolution machinery.</td><td>23 mapping files; <code>resolveSpviewerKeys</code> persists mappings when not dry-run.</td></tr>
+  </table>
+
+  <h2 id="flows">Representative Flows</h2>
+  <h3>1. Full Pipeline</h3>
+  <ul>
+    <li><strong>Path:</strong> CLI <code>pipeline.ts</code> -> fresh global.ini extraction -> source cache refresh -> batch update -> deploy.</li>
+    <li><strong>Reads/writes:</strong> reads game files and source outputs; writes repo <code>global.ini</code>; may write DataCore/SCMDB outputs; may deploy into game folder.</li>
+    <li><strong>Critical observation:</strong> update stage hardcodes provider <code>datacore</code>, but source refresh defaults to both DataCore and SCMDB. This is a transitional architecture, not a clean single-provider flow.</li>
+    <li><strong>Confidence:</strong> High; direct code evidence.</li>
+  </ul>
+
+  <h3>2. DataCore Cache Refresh</h3>
+  <ul>
+    <li><strong>Path:</strong> prepare -> ensure XML cache -> prepare record graph -> extract raw facts -> finalize raw facts -> scrape item type CSVs -> reconcile classes -> finalize.</li>
+    <li><strong>Reads/writes:</strong> reads local Data.p4k, DCB cache, XML cache, graph, XML records; writes graph and dozens of CSVs.</li>
+    <li><strong>Critical observation:</strong> this is a multi-stage data warehouse build inside a repo-local `csv/` tree. Cache invalidation uses version tags, DCB metadata/fingerprints, XML counts, and graph existence, but those are spread across use-case logic rather than a single cache manifest/owner.</li>
+    <li><strong>Confidence:</strong> High; direct code and recent successful `cache:datacore` run evidence from prior work.</li>
+  </ul>
+
+  <h3>3. SCMDB Bridge Refresh</h3>
+  <ul>
+    <li><strong>Path:</strong> select SCMDB version -> fetch merged/mining/crafting/MEMA JSON -> write raw JSON -> validate -> write mission/contracts/mining/journal/MEMA CSV outputs.</li>
+    <li><strong>Reads/writes:</strong> network JSON reads, repo-local raw JSON snapshots, repo-local derived CSV files.</li>
+    <li><strong>Critical observation:</strong> the bridge persists both raw and derived data, and derived outputs are still discoverable by normal update-category machinery. Retiring a bridge requires code, docs, generated files, diagnostics, and source listing to move together.</li>
+    <li><strong>Confidence:</strong> High.</li>
+  </ul>
+
+  <h3>4. Localization Update</h3>
+  <ul>
+    <li><strong>Path:</strong> prepare latest DataCore and SCMDB dirs -> load dynamic item configs -> preflight declared files/raw facts -> backup -> category updates -> extra steps.</li>
+    <li><strong>Reads/writes:</strong> reads CSV/JSON source files, existing INI, optional mapping files; writes patch applications to <code>global.ini</code> and may update mappings for legacy resolution.</li>
+    <li><strong>Critical observation:</strong> update planning has reasonable abstractions, but source contract enforcement lives across item configs, preflight, source diagnostics, and command inventory. The source contract is distributed, not centralized.</li>
+    <li><strong>Confidence:</strong> High.</li>
+  </ul>
+
+  <h2 id="sensibilities">Architecture Sensibilities Audit</h2>
+  <div class="card finding">
+    <h3>1. The Pipeline Is Conceptually Clean, But Operationally Nested</h3>
+    <p><strong>Observed:</strong> docs describe acquisition -> normalization -> planning -> application -> deployment. Code mostly follows that at the top level. But DataCore refresh itself contains a second pipeline with its own caches, graph, raw facts, derived facts, item outputs, class reconciliation, and task topology.</p>
+    <p><strong>Implication:</strong> the architecture has two levels of pipeline, but only one level is documented as architecture. The DataCore sub-pipeline is too important to remain a use-case implementation detail.</p>
+  </div>
+
+  <div class="card finding">
+    <h3>2. Cache Boundaries Are Physical, Not Semantic</h3>
+    <p><strong>Observed:</strong> DCB cache, XML cache, record graph, raw fact CSVs, item CSVs, SCMDB raw JSON, SCMDB derived CSV, and root INI outputs all live under ordinary repo paths. The latest inventory found 12.8 GB under `.xmlcache`, 1.2 GB under `.dcbcache`, 358 MB under latest DataCore outputs, and 23 MB under latest SCMDB outputs.</p>
+    <p><strong>Implication:</strong> “cache” is not consistently distinguished from “generated source output” or “reviewable artifact.” That raises the cost of cleanup, churn review, version migration, and accidental commits.</p>
+  </div>
+
+  <div class="card finding">
+    <h3>3. Normalization Does Not Fully Normalize</h3>
+    <p><strong>Observed:</strong> DataCore graphing extracts record metadata, localization references, and GUID indexes, but raw fact and item extractors still read XML files directly by graph path. Recent graph memory work also introduced compact graph modes, which means the graph has multiple fidelity levels.</p>
+    <p><strong>Implication:</strong> the graph is not a stable normalized model; it is an index plus selected projections. That is not wrong, but it should be named and managed as an index. Calling it normalized source data would overstate it.</p>
+  </div>
+
+  <div class="card warn">
+    <h3>4. SCMDB Retirement Is Real But Not Finished</h3>
+    <p><strong>Observed:</strong> provider matrix says categories are DataCore primary, while SCMDB audit still identifies mining-journal fallback, and batch mode still describes DataCore + SCMDB. Full source refresh defaults to both sources unless cached or narrowed.</p>
+    <p><strong>Implication:</strong> the migration has progressed, but labels now risk outrunning reality. The architecture needs a more explicit bridge lifecycle: active, optional fallback, diagnostic only, retained historical, deleted.</p>
+  </div>
+
+  <div class="card warn">
+    <h3>5. Mapping And Remapping Logic Is Spread Across Four Places</h3>
+    <p><strong>Observed:</strong> mapping files live under <code>mappings/</code>; mapping-store loads/saves JSON; key resolver maps names to localization keys; item configs provide <code>getTargetKeys</code>, alternate desc keys, custom source loaders, and source file declarations.</p>
+    <p><strong>Implication:</strong> the mental model for “how does a row become an INI key?” is not singular. It is a chain: generated CSV shape -> category config -> optional source loader -> target-key remapper -> existing INI resolver -> optional mapping persistence. This is where subtle drift will hide.</p>
+  </div>
+
+  <div class="card warn">
+    <h3>6. Presentation Owns Too Much Workflow Shape</h3>
+    <p><strong>Observed:</strong> <code>datacore-task.ts</code> defines raw fact groups, item type groups, and concurrency. The application plan exposes stages, but the grouping topology lives in presentation.</p>
+    <p><strong>Implication:</strong> CLI UX and operational execution are entangled. If another runner or CI summary needs the same topology, it either imports presentation concepts or duplicates group knowledge.</p>
+  </div>
+
+  <div class="card good">
+    <h3>7. There Are Real Guardrails And Tests</h3>
+    <p><strong>Observed:</strong> architecture guard passed; 109 test files exist; tests cover DataCore scrape behavior, graph records, pipeline flags, source preflight, and presentation task behavior.</p>
+    <p><strong>Implication:</strong> this is not an ungoverned codebase. The weakness is not lack of care; it is that the guarded boundaries are narrower than the actual architectural risk surface.</p>
+  </div>
+
+  <h2 id="risks">Risks And Friction</h2>
+  <table>
+    <tr><th>Finding</th><th>Why It Matters</th><th>Evidence</th><th>Suggested Verification</th></tr>
+    <tr><td>Generated/cache state is too co-located</td><td>Reviewable outputs, heavyweight caches, and transient intermediates are all under <code>csv/</code>, making churn and cleanup risky.</td><td>Inventory: `.xmlcache` 12.8 GB, `.dcbcache` 1.2 GB, latest DataCore output 358 MB.</td><td>Classify every path under `csv/` as source artifact, derived artifact, rebuildable cache, or historical output; compare to `.gitignore` and commit policy.</td></tr>
+    <tr><td>Latest version selection can pair independent sources</td><td>DataCore and SCMDB latest directories are selected separately; mismatched versions are diagnosed after preparation, not prevented.</td><td><code>prepare-update-categories.ts</code> lines 94-104; diagnostics detect version mismatch later.</td><td>Create a source-version lock/manifest check and decide whether mismatched sources are allowed, warning-only, or hard failure.</td></tr>
+    <tr><td>Record graph cache hit trusts file existence</td><td>A partial or stale graph file can be parsed and trusted if XML cache is reused.</td><td><code>graphExists</code> checks stat then JSON.parse at lines 1519-1527.</td><td>Verify graph metadata includes XML/DCB fingerprint and schema/fidelity mode, then fail fast on mismatch.</td></tr>
+    <tr><td>DataCore graph is memory and file-size sensitive</td><td>Recent failure showed graph building/writing can exceed default V8 limits when fidelity is too high.</td><td>Recent fix added compact options and streaming writer; graph still 344 MB.</td><td>Run `cache:datacore` under memory telemetry after each schema expansion; set a budget for graph size and heap.</td></tr>
+    <tr><td>SCMDB bridge status is ambiguous in user-facing tools</td><td>Provider matrix says SCMDB unavailable for categories, but mixed-source batch mode and mining-journal fallback remain.</td><td>Provider matrix command vs SCMDB audit command.</td><td>Add bridge-state labels to inventory: active category, optional fallback, diagnostic, retained historical, retired.</td></tr>
+    <tr><td>Legacy SPViewer mapping machinery remains active</td><td>Retired provider artifacts can still influence update behavior if legacy configs are used or reintroduced.</td><td>23 mapping files; <code>resolveSpviewerKeys</code> and mapping-store still active.</td><td>Run a dead-path audit: prove no active DataCore/mission config can call SPViewer resolution, or isolate it behind explicit legacy command only.</td></tr>
+    <tr><td>Source contracts are distributed across configs and diagnostics</td><td>Adding/changing a source file requires updating category config, preflight expectations, diagnostics, inventory, tests, and sometimes docs.</td><td><code>sourceFiles</code> and custom loaders spread through `src/items`; diagnostics duplicate source-file resolution logic.</td><td>Generate category inventory, preflight, and diagnostics from one typed source contract rather than parallel inference.</td></tr>
+    <tr><td>Presentation-layer topology is operationally significant</td><td>Concurrency and group ordering affect behavior and resource pressure; presentation code owns that shape.</td><td><code>RAW_FACT_TASK_GROUPS</code> and <code>ITEM_TYPE_TASK_GROUPS</code> in `datacore-task.ts`.</td><td>Move stage dependency/group metadata into the application plan or expose it from the plan as data.</td></tr>
+    <tr><td>Architecture guard is narrow</td><td>Passing guard may create false confidence about generated-data and source-contract architecture.</td><td><code>check-architecture.ts</code> checks imports/progress renderer boundaries, not cache/data lifecycle.</td><td>Add guardrails for generated-data churn, source version lock, forbidden cache commits, and category source contract completeness.</td></tr>
+  </table>
+
+  <h2 id="tests">Test Suite Interpretation</h2>
+  <ul>
+    <li><strong>Framework:</strong> Node built-in test runner via <code>node --import tsx/esm --test src/**/*.test.ts</code>.</li>
+    <li><strong>Observed coverage shape:</strong> 109 test files. Strong targeted tests exist for DataCore scrape behavior, record graph relationships, pipeline/cache command rendering, preflight source validation, generated strings, and update planning.</li>
+    <li><strong>What tests prove well:</strong> many edge-case extractors and key-mapping behaviors are encoded as regression tests; preflight explains missing source files with provider/channel context; presentation tests cover nested task rendering and concurrency assumptions.</li>
+    <li><strong>What tests do not prove from this audit:</strong> full real-data pipeline memory budget, long-running cache invalidation correctness, exact generated-data commit policy, or that all source version combinations are coherent.</li>
+    <li><strong>Commands run:</strong> <code>npm run check:architecture</code> passed; <code>npm run typecheck</code> passed. Full <code>npm test</code> was not run in this architecture audit.</li>
+  </ul>
+
+  <h2 id="observations">Architecture Observations</h2>
+  <h3>Observed</h3>
+  <ul>
+    <li>Top-level pipeline structure exists and is coherent.</li>
+    <li>DataCore source refresh is a large stateful sub-pipeline with its own artifacts and concurrency.</li>
+    <li>SCMDB bridge artifacts still exist and are refreshed by default in full source-cache mode.</li>
+    <li>Legacy SPViewer mapping files and resolver code remain.</li>
+    <li>Generated-data footprint is enormous relative to the codebase.</li>
+  </ul>
+  <h3>Inferred</h3>
+  <ul>
+    <li>The system has migrated from source-provider comparison toward DataCore-first, but older provider abstractions remain because they still solve mapping and bridge problems.</li>
+    <li>Most fragility is no longer in formatting `global.ini`; it is in keeping source artifacts, version folders, graph fidelity, and category source contracts coherent.</li>
+  </ul>
+  <h3>Unknown</h3>
+  <ul>
+    <li>Which generated/cache folders are intended to be committed versus local-only. The worktree currently contains large untracked 4.8.2 outputs and caches.</li>
+    <li>Whether full `npm test` passes after the current dirty changes.</li>
+    <li>Whether source refresh should ever run SCMDB by default once DataCore categories are primary.</li>
+  </ul>
+
+  <h2 id="commands">Command Log</h2>
+  <p>See <code>architecture_as_is/20260624_160217/evidence/command-log.md</code> for the full summarized command log. Key results:</p>
+  <table>
+    <tr><th>Command</th><th>Result</th></tr>
+    <tr><td><code>npm run check:architecture</code></td><td>Passed.</td></tr>
+    <tr><td><code>node --import tsx/esm bin/update-item.ts --list-categories</code></td><td>Listed DataCore categories, DataCore raw facts, and mixed-source batch mode.</td></tr>
+    <tr><td><code>node --import tsx/esm bin/update-item.ts --scmdb-audit</code></td><td>Confirmed remaining mining-journal SCMDB fallback and migration classifications.</td></tr>
+    <tr><td><code>node --import tsx/esm bin/update-item.ts --provider-matrix</code></td><td>Showed DataCore primary coverage and mixed-source batch mode.</td></tr>
+    <tr><td><code>npm run typecheck</code></td><td>Passed.</td></tr>
+  </table>
+
+  <h2 id="next">Next Verification Steps</h2>
+  <ol>
+    <li>Produce a generated-data ownership table for every `csv/` path: committed artifact, rebuildable local cache, raw source snapshot, derived source output, diagnostic-only output, or obsolete historical output.</li>
+    <li>Add graph/cache metadata validation: DCB fingerprint, XML cache fingerprint/count, graph schema version, compact/full fidelity mode, and generator version.</li>
+    <li>Unify category source contracts so inventory, preflight, diagnostics, and docs are generated from one declaration rather than inferred in parallel.</li>
+    <li>Decide if SCMDB refresh should remain part of default `pipeline` and `cache` flows once only optional fallback behavior remains.</li>
+    <li>Run full `npm test` and `npm run check:no-generated-churn` from a clean or intentionally staged baseline to separate architectural risk from current generated-data churn.</li>
+  </ol>
+
+  <p class="small">End of report. Mermaid source for the workflow is stored at <code>architecture_as_is/20260624_160217/diagrams/as-built-workflow.mmd</code>; the HTML uses an inline ASCII rendering to remain self-contained.</p>
+</main>
+</body>
+</html>
