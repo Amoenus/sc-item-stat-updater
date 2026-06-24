@@ -475,3 +475,37 @@ test('buildDataCoreRecordGraph emits mission broker owner and type refs by role'
     true,
   );
 });
+
+test('buildDataCoreRecordGraph can omit retained attributes while keeping derived references', async () => {
+  const xmlCacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-record-graph-compact-'));
+  const recordPath = path.join(xmlCacheDir, 'libs', 'foundry', 'records', 'entities', 'compact.xml');
+  await fs.mkdir(path.dirname(recordPath), { recursive: true });
+  await fs.writeFile(
+    recordPath,
+    `
+      <EntityClassDefinition.Compact
+        __ref="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        __type="EntityClassDefinition"
+        __path="libs/foundry/records/entities/compact.xml"
+        displayName="@compact_name">
+        <Reference value="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" />
+      </EntityClassDefinition.Compact>
+    `,
+  );
+
+  const graph = await buildDataCoreRecordGraph({
+    xmlCacheDir,
+    includeAttributes: false,
+    includeRawGuidAttributes: false,
+  });
+  const record = graph.records[0];
+  assert.ok(record);
+  assert.equal(record.attributes, undefined);
+  assert.deepEqual(record.referencedGuidAttributes, []);
+  assert.deepEqual(record.localizationKeys, [{ attribute: 'displayName', key: 'compact_name' }]);
+  assert.deepEqual(record.referencedGuids, ['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb']);
+  assert.deepEqual(graph.indexes.byLocalizationKey.compact_name, ['libs/foundry/records/entities/compact.xml']);
+  assert.deepEqual(graph.indexes.byReferencedGuid['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'], [
+    'libs/foundry/records/entities/compact.xml',
+  ]);
+});

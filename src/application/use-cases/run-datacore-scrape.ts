@@ -457,6 +457,28 @@ interface DataCoreDcbCacheMetadata {
 interface DataCoreXmlCacheMetadata {
   gameVersion: string;
   dcb: FileFingerprint | null;
+  xmlCache?: DataCoreXmlCacheFingerprint;
+}
+
+interface DataCoreXmlCacheFingerprint {
+  fileCount: number;
+}
+
+type DataCoreRecordGraphFidelityMode = 'compact' | 'full';
+
+interface DataCoreRecordGraphMetadata {
+  schemaVersion: number;
+  generatorVersion: string;
+  gameVersion: string;
+  dcb: FileFingerprint | null;
+  xmlCache: DataCoreXmlCacheFingerprint;
+  graph: {
+    schemaVersion: number;
+    fidelityMode: DataCoreRecordGraphFidelityMode;
+    includeAttributes: boolean;
+    includeRawGuidAttributes: boolean;
+    recordCount: number;
+  };
 }
 
 interface EnsureDataCoreXmlCacheOptions {
@@ -489,6 +511,14 @@ const COMMON_HEADERS = [
   'Class',
   'Health',
 ];
+const RECORD_GRAPH_METADATA_FILENAME = 'record-graph.metadata.json';
+const RECORD_GRAPH_SCHEMA_VERSION = 1;
+const RECORD_GRAPH_GENERATOR_VERSION = 'datacore-record-graph-v1';
+const RECORD_GRAPH_FIDELITY = {
+  mode: 'compact' as const,
+  includeAttributes: false,
+  includeRawGuidAttributes: false,
+};
 const CONTRACT_GENERATORS_CSV_FILE = 'contract-generators.datacore.csv';
 const CONTRACT_GENERATOR_INTEL_CSV_FILE = 'contract-generator-intel.datacore.csv';
 const CONTRACT_HAULING_SUMMARY_CSV_FILE = 'contract-hauling-summary.datacore.csv';
@@ -1292,6 +1322,7 @@ interface DataCoreScrapePreparedState extends DataCoreScrapePreparedContext {
   versionTag: string;
   liveDir: string;
   recordGraphPath: string;
+  recordGraphMetadataPath: string;
   tools: Unp4kTools;
   dcbFingerprint: FileFingerprint | null;
   dcbRefreshed: boolean;
@@ -1434,6 +1465,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
       const xmlCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.xmlcache', versionTag);
       const dcbCacheDir = path.join(options.repoRoot, 'csv', 'datacore', '.dcbcache', versionTag);
       const recordGraphPath = path.join(outputBase, 'record-graph.json');
+      const recordGraphMetadataPath = path.join(outputBase, RECORD_GRAPH_METADATA_FILENAME);
       const fallbackDcbPath = options.findDcbFile ? await options.findDcbFile(liveDir) : undefined;
       const toolDir = path.join(liveDir, 'unp4k');
 
@@ -1465,6 +1497,7 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
         outputBase,
         xmlCacheDir,
         recordGraphPath,
+        recordGraphMetadataPath,
         selectedTypes,
         allTypes,
         dryRun: Boolean(options.dryRun),
@@ -1516,12 +1549,20 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
       if (!xmlCache) throw new Error('DataCore XML cache is not ready.');
 
       let recordGraph: DataCoreRecordGraph;
-      const graphExists =
+      const graphFileExists =
         xmlCache.reused &&
         (await fs
           .stat(state.recordGraphPath)
           .then(() => true)
           .catch(() => false));
+      const graphCacheMetadata = await readJsonFile<DataCoreRecordGraphMetadata>(state.recordGraphMetadataPath);
+      const graphExists =
+        graphFileExists &&
+        canReuseRecordGraphCache(graphCacheMetadata, {
+          gameVersion: state.gameVersion,
+          dcbFingerprint: state.dcbFingerprint,
+          xmlCache,
+        });
 
       if (graphExists) {
         recordGraph = JSON.parse(await fs.readFile(state.recordGraphPath, 'utf8')) as DataCoreRecordGraph;
@@ -1529,11 +1570,19 @@ export function createDataCoreScrapePlan(options: RunDatacoreScrapeOptions): Dat
       } else {
         recordGraph = await buildRecordGraph({
           xmlCacheDir: state.xmlCacheDir,
+          includeAttributes: RECORD_GRAPH_FIDELITY.includeAttributes,
+          includeRawGuidAttributes: RECORD_GRAPH_FIDELITY.includeRawGuidAttributes,
           onStart: options.onRecordGraphStart,
           onProgress: options.onRecordGraphProgress,
         });
         if (!options.dryRun) {
           await writeRecordGraph(recordGraph, state.recordGraphPath);
+          await writeRecordGraphMetadata(state.recordGraphMetadataPath, {
+            gameVersion: state.gameVersion,
+            dcbFingerprint: state.dcbFingerprint,
+            xmlCache,
+            recordCount: recordGraph.recordCount,
+          });
         }
       }
 
@@ -2063,6 +2112,58 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
 async function writeJsonFile(filePath: string, value: unknown): Promise<void> {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+function dataCoreXmlCacheFingerprint(xmlCache: DataCoreXmlCacheState): DataCoreXmlCacheFingerprint {
+  return { fileCount: xmlCache.xmlFileCount };
+}
+
+function canReuseRecordGraphCache(
+  metadata: DataCoreRecordGraphMetadata | null,
+  context: {
+    gameVersion: string;
+    dcbFingerprint: FileFingerprint | null;
+    xmlCache: DataCoreXmlCacheState;
+  },
+): boolean {
+  if (!metadata) return false;
+  const expectedXmlCache = dataCoreXmlCacheFingerprint(context.xmlCache);
+  return (
+    metadata.schemaVersion === RECORD_GRAPH_SCHEMA_VERSION &&
+    metadata.generatorVersion === RECORD_GRAPH_GENERATOR_VERSION &&
+    metadata.gameVersion === context.gameVersion &&
+    sameFingerprint(metadata.dcb, context.dcbFingerprint) &&
+    metadata.xmlCache?.fileCount === expectedXmlCache.fileCount &&
+    metadata.graph?.schemaVersion === RECORD_GRAPH_SCHEMA_VERSION &&
+    metadata.graph?.fidelityMode === RECORD_GRAPH_FIDELITY.mode &&
+    metadata.graph?.includeAttributes === RECORD_GRAPH_FIDELITY.includeAttributes &&
+    metadata.graph?.includeRawGuidAttributes === RECORD_GRAPH_FIDELITY.includeRawGuidAttributes
+  );
+}
+
+async function writeRecordGraphMetadata(
+  metadataPath: string,
+  context: {
+    gameVersion: string;
+    dcbFingerprint: FileFingerprint | null;
+    xmlCache: DataCoreXmlCacheState;
+    recordCount: number;
+  },
+): Promise<void> {
+  await writeJsonFile(metadataPath, {
+    schemaVersion: RECORD_GRAPH_SCHEMA_VERSION,
+    generatorVersion: RECORD_GRAPH_GENERATOR_VERSION,
+    gameVersion: context.gameVersion,
+    dcb: context.dcbFingerprint,
+    xmlCache: dataCoreXmlCacheFingerprint(context.xmlCache),
+    graph: {
+      schemaVersion: RECORD_GRAPH_SCHEMA_VERSION,
+      fidelityMode: RECORD_GRAPH_FIDELITY.mode,
+      includeAttributes: RECORD_GRAPH_FIDELITY.includeAttributes,
+      includeRawGuidAttributes: RECORD_GRAPH_FIDELITY.includeRawGuidAttributes,
+      recordCount: context.recordCount,
+    },
+  } satisfies DataCoreRecordGraphMetadata);
 }
 
 async function resolveCurrentDcbFile(options: {
@@ -3695,6 +3796,7 @@ async function ensureDataCoreXmlCache(options: EnsureDataCoreXmlCacheOptions): P
   await writeJsonFile(metadataPath, {
     gameVersion: options.gameVersion,
     dcb: options.dcbFingerprint,
+    xmlCache: { fileCount: xmlFileCount },
   } satisfies DataCoreXmlCacheMetadata);
   options.onCacheExtractComplete?.(xmlFileCount);
 

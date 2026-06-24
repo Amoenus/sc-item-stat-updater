@@ -7,11 +7,15 @@ import { loadXml } from './xml-parser';
 export interface ParseRecordNodeOptions {
   xmlPath: string;
   xmlCacheDir: string;
+  includeAttributes?: boolean;
+  includeRawGuidAttributes?: boolean;
 }
 
 export default async function parseRecordNode({
   xmlPath,
   xmlCacheDir,
+  includeAttributes,
+  includeRawGuidAttributes,
 }: ParseRecordNodeOptions): Promise<DataCoreRecordNode | null> {
   const xml = await fs.readFile(xmlPath, 'utf8');
   let $: CheerioAPI;
@@ -25,5 +29,8 @@ export default async function parseRecordNode({
   const rootElement = root[0];
   if (rootElement?.type !== 'tag') return null;
 
-  return extractRecordNode($, rootElement, normalizedRecordPath(root, xmlPath, xmlCacheDir));
+  return extractRecordNode($, rootElement, normalizedRecordPath(root, xmlPath, xmlCacheDir), {
+    includeAttributes,
+    includeRawGuidAttributes,
+  });
 }

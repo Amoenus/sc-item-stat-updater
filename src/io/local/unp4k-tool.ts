@@ -170,10 +170,13 @@ export function resolveLiveDir(binDirname: string): string {
 }
 
 /**
- * Attempts to read the SC build ID from explicit local version files.
+ * Attempts to read the SC build ID from an explicit override or local version files.
  * Falls back to a Data.p4k timestamp marker if no reliable version file exists.
  */
 export async function readGameVersion(liveDir: string): Promise<string> {
+  const overrideVersion = process.env.SC_GAME_VERSION?.trim();
+  if (overrideVersion) return overrideVersion;
+
   for (const name of ['sc_version.id', 'version.id']) {
     const filePath = path.join(liveDir, name);
     try {

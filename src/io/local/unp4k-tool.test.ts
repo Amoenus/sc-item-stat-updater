@@ -112,6 +112,19 @@ describe('resolveLiveDir', () => {
 });
 
 describe('readGameVersion', () => {
+  const originalGameVersionEnv = process.env.SC_GAME_VERSION;
+
+  afterEach(() => {
+    if (originalGameVersionEnv === undefined) delete process.env.SC_GAME_VERSION;
+    else process.env.SC_GAME_VERSION = originalGameVersionEnv;
+  });
+
+  it('prefers SC_GAME_VERSION when local version files are stale', async () => {
+    process.env.SC_GAME_VERSION = '4.8.2-live.12061511';
+    await fs.writeFile(path.join(tmpDir, 'sc_version.id'), '4.8.1-live.11952564');
+    assert.strictEqual(await readGameVersion(tmpDir), '4.8.2-live.12061511');
+  });
+
   it('reads sc_version.id plain text', async () => {
     await fs.writeFile(path.join(tmpDir, 'sc_version.id'), '4.5.0-PTU.99999\n');
     assert.strictEqual(await readGameVersion(tmpDir), '4.5.0-PTU.99999');

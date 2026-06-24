@@ -27,7 +27,7 @@ import { DATACORE_TYPE_CONFIG as WEAPON_GUN_TYPE_CONFIG } from '../../items/data
 import { DATACORE_TYPE_CONFIG as WEAPON_PERSONAL_TYPE_CONFIG } from '../../items/datacore/weapon-personal';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { DATACORE_RAW_FACTS } from '../catalog/category-listing';
-import { type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
+import { createDataCoreScrapePlan, type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -2795,6 +2795,181 @@ test('runDatacoreScrape refreshes XML cache when cache metadata is for a differe
 
   assert.equal(result.exitCode, 0);
   assert.deepEqual(events, ['extract:true']);
+});
+
+test('DataCore scrape plan reuses record graph only when graph metadata matches cache inputs', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-graph-cache-hit-'));
+  const liveDir = path.join(repoRoot, 'game', 'LIVE');
+  const dcbPath = path.join(liveDir, 'Data', 'Game2.dcb');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const outputBase = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live');
+  await fs.mkdir(path.dirname(dcbPath), { recursive: true });
+  await fs.mkdir(path.join(xmlCacheDir, 'libs'), { recursive: true });
+  await fs.mkdir(outputBase, { recursive: true });
+  await fs.writeFile(dcbPath, 'stable dcb');
+  await fs.writeFile(path.join(xmlCacheDir, 'libs', 'record.xml'), '<Record />');
+
+  const dcbStat = await fs.stat(dcbPath);
+  const dcbFingerprint = { size: dcbStat.size, mtimeMs: Math.round(dcbStat.mtimeMs) };
+  await fs.writeFile(
+    path.join(xmlCacheDir, '.metadata.json'),
+    `${JSON.stringify({ gameVersion: '4.8.1', dcb: dcbFingerprint, xmlCache: { fileCount: 1 } })}\n`,
+  );
+  await fs.writeFile(
+    path.join(outputBase, 'record-graph.json'),
+    `${JSON.stringify({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    })}\n`,
+  );
+  await fs.writeFile(
+    path.join(outputBase, 'record-graph.metadata.json'),
+    `${JSON.stringify({
+      schemaVersion: 1,
+      generatorVersion: 'datacore-record-graph-v1',
+      gameVersion: '4.8.1',
+      dcb: dcbFingerprint,
+      xmlCache: { fileCount: 1 },
+      graph: {
+        schemaVersion: 1,
+        fidelityMode: 'compact',
+        includeAttributes: false,
+        includeRawGuidAttributes: false,
+        recordCount: 1,
+      },
+    })}\n`,
+  );
+
+  const cacheHits: string[] = [];
+  const plan = createDataCoreScrapePlan({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => liveDir,
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => dcbPath,
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async () => {
+      throw new Error('record graph should have been read from cache');
+    },
+    onRecordGraphCacheHit: (recordCount, outputPath) => cacheHits.push(`${recordCount}:${path.basename(outputPath)}`),
+  });
+
+  await plan.prepare();
+  await plan.ensureXmlCache();
+  const result = await plan.prepareRecordGraph();
+
+  assert.deepEqual(cacheHits, ['1:record-graph.json']);
+  assert.deepEqual(result, { recordCount: 1, outputPath: path.join(outputBase, 'record-graph.json'), cached: true });
+});
+
+test('DataCore scrape plan rebuilds record graph when graph metadata fidelity is stale', async () => {
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-graph-cache-miss-'));
+  const liveDir = path.join(repoRoot, 'game', 'LIVE');
+  const dcbPath = path.join(liveDir, 'Data', 'Game2.dcb');
+  const xmlCacheDir = path.join(repoRoot, 'csv', 'datacore', '.xmlcache', '4.8.1-live');
+  const outputBase = path.join(repoRoot, 'csv', 'datacore', '4.8.1-live');
+  await fs.mkdir(path.dirname(dcbPath), { recursive: true });
+  await fs.mkdir(path.join(xmlCacheDir, 'libs'), { recursive: true });
+  await fs.mkdir(outputBase, { recursive: true });
+  await fs.writeFile(dcbPath, 'stable dcb');
+  await fs.writeFile(path.join(xmlCacheDir, 'libs', 'record.xml'), '<Record />');
+  await fs.writeFile(
+    path.join(outputBase, 'record-graph.json'),
+    `${JSON.stringify({
+      source: 'datacore-record-graph',
+      recordCount: 1,
+      records: [],
+      indexes: {
+        byRef: {},
+        byPath: {},
+        byRootType: {},
+        byEntityClass: {},
+        byLocalizationKey: {},
+        byReferencedGuid: {},
+      },
+    })}\n`,
+  );
+
+  const dcbStat = await fs.stat(dcbPath);
+  const dcbFingerprint = { size: dcbStat.size, mtimeMs: Math.round(dcbStat.mtimeMs) };
+  await fs.writeFile(
+    path.join(xmlCacheDir, '.metadata.json'),
+    `${JSON.stringify({ gameVersion: '4.8.1', dcb: dcbFingerprint, xmlCache: { fileCount: 1 } })}\n`,
+  );
+  await fs.writeFile(
+    path.join(outputBase, 'record-graph.metadata.json'),
+    `${JSON.stringify({
+      schemaVersion: 1,
+      generatorVersion: 'datacore-record-graph-v1',
+      gameVersion: '4.8.1',
+      dcb: dcbFingerprint,
+      xmlCache: { fileCount: 1 },
+      graph: {
+        schemaVersion: 1,
+        fidelityMode: 'full',
+        includeAttributes: true,
+        includeRawGuidAttributes: true,
+        recordCount: 1,
+      },
+    })}\n`,
+  );
+
+  let buildCount = 0;
+  const plan = createDataCoreScrapePlan({
+    repoRoot,
+    loadTypes: async () => [],
+    resolveLiveDir: () => liveDir,
+    readGameVersion: async () => '4.8.1',
+    findDcbFile: async () => dcbPath,
+    ensureTools: async () => ({ unp4k: 'unp4k.exe', unforge: 'unforge.cli.exe' }),
+    countXmlFiles: async () => 1,
+    buildRecordGraph: async (options) => {
+      buildCount++;
+      assert.equal(options.includeAttributes, false);
+      assert.equal(options.includeRawGuidAttributes, false);
+      return {
+        source: 'datacore-record-graph',
+        recordCount: 2,
+        records: [],
+        indexes: {
+          byRef: {},
+          byPath: {},
+          byRootType: {},
+          byEntityClass: {},
+          byLocalizationKey: {},
+          byReferencedGuid: {},
+        },
+      };
+    },
+  });
+
+  await plan.prepare();
+  await plan.ensureXmlCache();
+  const result = await plan.prepareRecordGraph();
+  const metadata = JSON.parse(await fs.readFile(path.join(outputBase, 'record-graph.metadata.json'), 'utf8')) as {
+    graph: { fidelityMode: string; includeAttributes: boolean; includeRawGuidAttributes: boolean; recordCount: number };
+  };
+
+  assert.equal(buildCount, 1);
+  assert.equal(result.cached, false);
+  assert.equal(result.recordCount, 2);
+  assert.deepEqual(metadata.graph, {
+    schemaVersion: 1,
+    fidelityMode: 'compact',
+    includeAttributes: false,
+    includeRawGuidAttributes: false,
+    recordCount: 2,
+  });
 });
 
 test('runDatacoreScrape refreshes repo DCB cache from Data.p4k and invalidates XML cache', async () => {

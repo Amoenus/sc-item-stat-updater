@@ -1,3 +1,5 @@
+import { once } from 'node:events';
+import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +31,8 @@ const NUMBER_PATTERN = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 
 export interface BuildDataCoreRecordGraphOptions {
   xmlCacheDir: string;
+  includeAttributes?: boolean;
+  includeRawGuidAttributes?: boolean;
   onStart?: (total: number) => void;
   onProgress?: (current: number, total: number) => void;
 }
@@ -43,25 +47,97 @@ export async function buildDataCoreRecordGraph(options: BuildDataCoreRecordGraph
     execArgv: ['--import', 'tsx/esm'],
   });
 
-  const rawRecords = await mapConcurrent(
-    xmlFiles.sort((a, b) => a.localeCompare(b)),
-    async (xmlPath) => {
-      const result = await piscina.run({ xmlPath, xmlCacheDir: options.xmlCacheDir });
-      current++;
-      if (current % 250 === 0) options.onProgress?.(current, xmlFiles.length);
-      return result as DataCoreRecordNode | null;
-    },
-    piscina.options.maxThreads * 2,
-  );
+  const records: DataCoreRecordNode[] = [];
+  const sortedXmlFiles = xmlFiles.sort((a, b) => a.localeCompare(b));
+  const batchSize = Math.max((piscina.options.maxThreads ?? 1) * 8, 64);
 
-  const records = rawRecords.filter((r): r is DataCoreRecordNode => r !== null);
-  options.onProgress?.(xmlFiles.length, xmlFiles.length);
-  return buildGraph(records);
+  try {
+    for (let offset = 0; offset < sortedXmlFiles.length; offset += batchSize) {
+      const batch = sortedXmlFiles.slice(offset, offset + batchSize);
+      const batchRecords = await mapConcurrent(
+        batch,
+        async (xmlPath) => {
+          const result = await piscina.run({
+            xmlPath,
+            xmlCacheDir: options.xmlCacheDir,
+            includeAttributes: options.includeAttributes ?? true,
+            includeRawGuidAttributes: options.includeRawGuidAttributes ?? true,
+          });
+          current++;
+          if (current % 250 === 0) options.onProgress?.(current, xmlFiles.length);
+          return result as DataCoreRecordNode | null;
+        },
+        piscina.options.maxThreads * 2,
+      );
+
+      for (const record of batchRecords) {
+        if (record) records.push(record);
+      }
+    }
+
+    options.onProgress?.(xmlFiles.length, xmlFiles.length);
+    return buildGraph(records);
+  } finally {
+    await piscina.destroy();
+  }
 }
 
 export async function writeDataCoreRecordGraph(graph: DataCoreRecordGraph, outputPath: string): Promise<void> {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.writeFile(outputPath, `${JSON.stringify(graph, null, 2)}\n`, 'utf8');
+  const stream = createWriteStream(outputPath, { encoding: 'utf8' });
+  try {
+    await writeJsonChunk(stream, '{"source":');
+    await writeJsonChunk(stream, JSON.stringify(graph.source));
+    await writeJsonChunk(stream, ',"recordCount":');
+    await writeJsonChunk(stream, String(graph.recordCount));
+    await writeJsonChunk(stream, ',"records":[');
+    await writeJsonArrayItems(stream, graph.records);
+    await writeJsonChunk(stream, '],"indexes":{');
+    await writeJsonChunk(stream, '"byRef":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byRef);
+    await writeJsonChunk(stream, '},"byPath":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byPath);
+    await writeJsonChunk(stream, '},"byRootType":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byRootType);
+    await writeJsonChunk(stream, '},"byEntityClass":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byEntityClass);
+    await writeJsonChunk(stream, '},"byLocalizationKey":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byLocalizationKey);
+    await writeJsonChunk(stream, '},"byReferencedGuid":{');
+    await writeJsonObjectEntries(stream, graph.indexes.byReferencedGuid);
+    await writeJsonChunk(stream, '}}}\n');
+  } finally {
+    stream.end();
+    await once(stream, 'finish');
+  }
+}
+
+async function writeJsonArrayItems(stream: NodeJS.WritableStream, values: unknown[]): Promise<void> {
+  for (const [index, value] of values.entries()) {
+    if (index > 0) await writeJsonChunk(stream, ',');
+    await writeJsonChunk(stream, JSON.stringify(value));
+  }
+}
+
+async function writeJsonObjectEntries(
+  stream: NodeJS.WritableStream,
+  object: Record<string, unknown>,
+): Promise<void> {
+  let first = true;
+  for (const [key, value] of Object.entries(object)) {
+    if (first) {
+      first = false;
+    } else {
+      await writeJsonChunk(stream, ',');
+    }
+    await writeJsonChunk(stream, JSON.stringify(key));
+    await writeJsonChunk(stream, ':');
+    await writeJsonChunk(stream, JSON.stringify(value));
+  }
+}
+
+async function writeJsonChunk(stream: NodeJS.WritableStream, chunk: string): Promise<void> {
+  if (!stream.write(chunk)) await once(stream, 'drain');
 }
 
 function flattenString(str: string | undefined | null): string {
@@ -69,12 +145,27 @@ function flattenString(str: string | undefined | null): string {
   return Buffer.from(str).toString();
 }
 
-export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPath: string): DataCoreRecordNode {
+export interface ExtractRecordNodeOptions {
+  includeAttributes?: boolean;
+  includeRawGuidAttributes?: boolean;
+}
+
+export function extractRecordNode(
+  $: CheerioAPI,
+  rootElement: Element,
+  recordPath: string,
+  options: ExtractRecordNodeOptions = {},
+): DataCoreRecordNode {
   const root = $(rootElement);
   const rootTag = flattenString(rootElement.name);
   const rootType = flattenString(root.attr('__type') ?? rootTag.split('.')[0] ?? rootTag);
   const attributes = collectRecordAttributes(rootElement);
-  const referencedGuidAttributes = extractGuidAttributeReferences($, rootElement, attributes);
+  const { all: allReferencedGuidAttributes, retained: referencedGuidAttributes } = extractGuidAttributeReferences(
+    $,
+    rootElement,
+    attributes,
+    { includeRawAttributes: options.includeRawGuidAttributes ?? true },
+  );
 
   return {
     path: flattenString(recordPath),
@@ -82,9 +173,9 @@ export function extractRecordNode($: CheerioAPI, rootElement: Element, recordPat
     rootTag,
     rootType,
     entityClass: flattenString(extractRecordEntityClass(rootTag)),
-    attributes,
+    ...(options.includeAttributes ?? true ? { attributes } : {}),
     localizationKeys: extractLocalizationReferences($, attributes),
-    referencedGuids: uniqueSortedStrings(referencedGuidAttributes.map((reference) => reference.value)),
+    referencedGuids: uniqueSortedStrings(allReferencedGuidAttributes.map((reference) => reference.value)),
     referencedGuidAttributes,
   };
 }
@@ -248,10 +339,12 @@ function extractGuidAttributeReferences(
   $: CheerioAPI,
   rootElement: Element,
   attributes: DataCoreRecordAttribute[],
-): DataCoreGuidReference[] {
-  const references: DataCoreGuidReference[] = [];
+  options: { includeRawAttributes?: boolean } = {},
+): { all: DataCoreGuidReference[]; retained: DataCoreGuidReference[] } {
+  const all: DataCoreGuidReference[] = [];
+  const retained: DataCoreGuidReference[] = [];
   const seen = new Set<string>();
-  const addReference = (attribute: string, rawValue: string | undefined): void => {
+  const addReference = (attribute: string, rawValue: string | undefined, retain = true): void => {
     for (const guid of rawValue?.match(GUID_PATTERN) ?? []) {
       const value = flattenString(guid.toLowerCase());
       const flatAttribute = flattenString(attribute);
@@ -259,13 +352,15 @@ function extractGuidAttributeReferences(
       if (seen.has(fingerprint)) continue;
 
       seen.add(fingerprint);
-      references.push({ attribute: flatAttribute, value });
+      const reference = { attribute: flatAttribute, value };
+      all.push(reference);
+      if (retain) retained.push(reference);
     }
   };
 
   for (const attribute of attributes) {
     if (attribute.elementPath === flattenString(rootElement.name) && attribute.attribute === '__ref') continue;
-    addReference(attribute.attribute, attribute.rawValue);
+    addReference(attribute.attribute, attribute.rawValue, options.includeRawAttributes ?? true);
   }
 
   $('MissionProperty[missionVariableName="MissionLocation"]').each((_, element) => {
@@ -340,7 +435,10 @@ function extractGuidAttributeReferences(
       }
     });
 
-  return references.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute));
+  return {
+    all: all.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute)),
+    retained: retained.sort((a, b) => a.value.localeCompare(b.value) || a.attribute.localeCompare(b.attribute)),
+  };
 }
 
 export function normalizedRecordPath(root: ReturnType<CheerioAPI>, xmlPath: string, xmlCacheDir: string): string {
