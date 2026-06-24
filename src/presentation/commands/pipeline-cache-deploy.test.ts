@@ -331,6 +331,9 @@ test('cache command renders DataCore plan stages as real nested Listr tasks', as
     getRawFactStages() {
       return [{ id: 'blueprint-pools', title: 'Blueprint pools' }];
     },
+    getRawFactStageGroups() {
+      return [{ title: 'Extract blueprint and material facts', stages: this.getRawFactStages(), concurrent: true }];
+    },
     async extractRawFactStage(stageId) {
       calls.push(`fact:${stageId}`);
       options.onRawFactStart?.('blueprint-pools', 116);
@@ -350,6 +353,9 @@ test('cache command renders DataCore plan stages as real nested Listr tasks', as
     },
     getItemTypeStages() {
       return [{ id: 'weapons', title: 'weapons' }];
+    },
+    getItemTypeStageGroups() {
+      return [{ title: 'Weapons and ordnance', stages: this.getItemTypeStages() }];
     },
     async scrapeItemTypeStage(typeName) {
       calls.push(`type:${typeName}`);
@@ -432,6 +438,9 @@ test('cache command runs independent DataCore raw fact children concurrently', a
         { id: 'crafting-blueprints', title: 'Crafting blueprints' },
       ];
     },
+    getRawFactStageGroups() {
+      return [{ title: 'Extract blueprint and material facts', stages: this.getRawFactStages(), concurrent: true }];
+    },
     async extractRawFactStage(stageId) {
       inFlight += 1;
       maxInFlight = Math.max(maxInFlight, inFlight);
@@ -458,6 +467,9 @@ test('cache command runs independent DataCore raw fact children concurrently', a
       return this.finalizeRawFacts();
     },
     getItemTypeStages() {
+      return [];
+    },
+    getItemTypeStageGroups() {
       return [];
     },
     async scrapeItemTypeStage() {
@@ -515,6 +527,9 @@ test('cache command runs independent DataCore item type children concurrently', 
     getRawFactStages() {
       return [];
     },
+    getRawFactStageGroups() {
+      return [];
+    },
     async extractRawFactStage() {
       return null;
     },
@@ -526,6 +541,9 @@ test('cache command runs independent DataCore item type children concurrently', 
     },
     getItemTypeStages() {
       return typeEntries.map((entry) => ({ id: entry.name, title: entry.name }));
+    },
+    getItemTypeStageGroups() {
+      return [{ title: 'Ship systems', stages: this.getItemTypeStages() }];
     },
     async scrapeItemTypeStage(typeName) {
       inFlight += 1;

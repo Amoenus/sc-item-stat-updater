@@ -27,7 +27,14 @@ import { DATACORE_TYPE_CONFIG as WEAPON_GUN_TYPE_CONFIG } from '../../items/data
 import { DATACORE_TYPE_CONFIG as WEAPON_PERSONAL_TYPE_CONFIG } from '../../items/datacore/weapon-personal';
 import type { DataCoreMiningParamRecord } from '../../sources/datacore/types';
 import { DATACORE_RAW_FACTS } from '../catalog/category-listing';
-import { createDataCoreScrapePlan, type DataCoreTypeEntry, runDatacoreScrape } from './run-datacore-scrape';
+import {
+  createDataCoreScrapePlan,
+  type DataCoreRawFactStageDescriptor,
+  type DataCoreTypeEntry,
+  groupDataCoreItemTypeStages,
+  groupDataCoreRawFactStages,
+  runDatacoreScrape,
+} from './run-datacore-scrape';
 
 const typeEntry: DataCoreTypeEntry = {
   name: 'shields',
@@ -42,6 +49,79 @@ const typeEntry: DataCoreTypeEntry = {
     },
   },
 };
+
+test('DataCore raw fact stage groups preserve application dependency order', () => {
+  const stages: DataCoreRawFactStageDescriptor[] = [
+    { id: 'contract-generators', title: 'Contract generators' },
+    { id: 'contract-generator-intel', title: 'Contract generator intel' },
+    { id: 'contract-hauling-summary', title: 'Contract hauling summary' },
+    { id: 'mission-contract-intel', title: 'Mission contract intel' },
+    { id: 'blueprint-pools', title: 'Blueprint pools' },
+    { id: 'crafting-blueprints', title: 'Crafting blueprints' },
+  ];
+
+  const groups = groupDataCoreRawFactStages(stages);
+
+  assert.deepEqual(
+    groups.map((group) => ({
+      title: group.title,
+      concurrent: group.concurrent,
+      ids: group.stages.map((stage) => stage.id),
+    })),
+    [
+      { title: 'Extract contract source facts', concurrent: true, ids: ['contract-generators'] },
+      {
+        title: 'Build contract derived facts',
+        concurrent: true,
+        ids: ['contract-generator-intel', 'contract-hauling-summary'],
+      },
+      { title: 'Build mission derived facts', concurrent: false, ids: ['mission-contract-intel'] },
+      {
+        title: 'Extract blueprint and material facts',
+        concurrent: true,
+        ids: ['blueprint-pools', 'crafting-blueprints'],
+      },
+    ],
+  );
+});
+
+test('DataCore stage groups keep unknown future stages in fallback buckets', () => {
+  const rawFactGroups = groupDataCoreRawFactStages([
+    { id: 'future-raw-fact' as DataCoreRawFactStageDescriptor['id'], title: 'Future raw fact' },
+  ]);
+  const itemTypeGroups = groupDataCoreItemTypeStages([{ id: 'future-type', title: 'Future type' }]);
+
+  assert.deepEqual(rawFactGroups, [
+    {
+      title: 'Extract remaining raw facts',
+      concurrent: true,
+      stages: [{ id: 'future-raw-fact', title: 'Future raw fact' }],
+    },
+  ]);
+  assert.deepEqual(itemTypeGroups, [
+    {
+      title: 'Other item types',
+      stages: [{ id: 'future-type', title: 'Future type' }],
+    },
+  ]);
+});
+
+test('DataCore item type stage groups preserve application display order', () => {
+  const groups = groupDataCoreItemTypeStages([
+    { id: 'weapon-guns', title: 'weapon-guns' },
+    { id: 'coolers', title: 'coolers' },
+    { id: 'mining-lasers', title: 'mining-lasers' },
+  ]);
+
+  assert.deepEqual(
+    groups.map((group) => ({ title: group.title, ids: group.stages.map((stage) => stage.id) })),
+    [
+      { title: 'Ship systems', ids: ['coolers'] },
+      { title: 'Weapons and ordnance', ids: ['weapon-guns'] },
+      { title: 'Mining and utility', ids: ['mining-lasers'] },
+    ],
+  );
+});
 
 test('runDatacoreScrape parses cached XML records without writing during dry run', async () => {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'datacore-scrape-'));

@@ -1,8 +1,5 @@
 import type {
   createDataCoreScrapePlan,
-  DataCoreItemTypeStageDescriptor,
-  DataCoreRawFactStageDescriptor,
-  DataCoreRawFactStageId,
   RunDatacoreScrapeOptions,
   RunDatacoreScrapeResult,
 } from '../application/use-cases/run-datacore-scrape';
@@ -69,7 +66,7 @@ export function createDataCoreScrapeTask<Ctx>(options: DataCoreScrapeTaskOptions
             title: 'Extract raw fact datasets',
             task: (_childCtx, childTask) => {
               const rawFactStages = plan.getRawFactStages();
-              const rawFactGroups = createRawFactTaskGroups(rawFactStages);
+              const rawFactGroups = plan.getRawFactStageGroups();
               return createPlannedChildTaskList(childTask, {
                 title: 'Extract raw fact datasets',
                 tasks: rawFactGroups.map((group) => ({
@@ -110,7 +107,7 @@ export function createDataCoreScrapeTask<Ctx>(options: DataCoreScrapeTaskOptions
             title: 'Scrape item type CSVs',
             task: (_childCtx, childTask) => {
               const typeStages = plan.getItemTypeStages();
-              const typeGroups = createItemTypeTaskGroups(typeStages);
+              const typeGroups = plan.getItemTypeStageGroups();
               return createPlannedChildTaskList(childTask, {
                 title: 'Scrape item type CSVs',
                 tasks: typeGroups.map((group) => ({
@@ -159,145 +156,4 @@ export function createDataCoreScrapeTask<Ctx>(options: DataCoreScrapeTaskOptions
       );
     },
   };
-}
-
-interface RawFactTaskGroup {
-  title: string;
-  ids: DataCoreRawFactStageId[];
-  concurrent: boolean;
-}
-
-interface ItemTypeTaskGroup {
-  title: string;
-  ids: string[];
-}
-
-const RAW_FACT_TASK_GROUPS: RawFactTaskGroup[] = [
-  {
-    title: 'Extract contract source facts',
-    ids: ['contract-generators', 'contract-templates', 'contract-template-hauling'],
-    concurrent: true,
-  },
-  {
-    title: 'Build contract derived facts',
-    ids: ['contract-generator-intel', 'contract-hauling-summary'],
-    concurrent: true,
-  },
-  {
-    title: 'Extract mission source facts',
-    ids: ['mission-brokers', 'mission-localization'],
-    concurrent: true,
-  },
-  {
-    title: 'Build mission derived facts',
-    ids: ['mission-contract-intel'],
-    concurrent: false,
-  },
-  {
-    title: 'Extract blueprint and material facts',
-    ids: ['blueprint-pools', 'crafting-blueprints', 'material-localizations'],
-    concurrent: true,
-  },
-  {
-    title: 'Extract reference facts',
-    ids: ['commodities', 'vehicles', 'factions', 'manufacturers', 'location-labels'],
-    concurrent: true,
-  },
-  {
-    title: 'Extract mining facts',
-    ids: [
-      'mining-elements',
-      'mining-compositions',
-      'mineable-entities',
-      'mining-density-overrides',
-      'mining-clustering',
-      'mining-harvestable-presets',
-      'mining-harvestable-setups',
-      'mining-sub-harvestable-configs',
-      'mining-quality-distributions',
-      'mining-quality-quantizations',
-      'mining-rock-signatures',
-      'mining-location-labels',
-      'mining-params',
-      'mining-provider-presets',
-    ],
-    concurrent: true,
-  },
-];
-
-const ITEM_TYPE_TASK_GROUPS: ItemTypeTaskGroup[] = [
-  {
-    title: 'Ship systems',
-    ids: ['coolers', 'powerplants', 'quantum-drives', 'jump-drives', 'qeds', 'radars', 'shields', 'self-destruct'],
-  },
-  {
-    title: 'Weapons and ordnance',
-    ids: [
-      'bombs',
-      'emps',
-      'missiles',
-      'missile-launchers',
-      'turrets',
-      'throwables',
-      'weapon-attachments',
-      'weapon-defensive',
-      'weapon-guns',
-      'weapon-personal',
-    ],
-  },
-  {
-    title: 'Mining and utility',
-    ids: ['mining-lasers', 'mining-modifiers', 'salvage-modifiers', 'tractor-beams'],
-  },
-];
-
-function createRawFactTaskGroups(stages: DataCoreRawFactStageDescriptor[]): Array<{
-  title: string;
-  stages: DataCoreRawFactStageDescriptor[];
-  concurrent: boolean;
-}> {
-  const stagesById = new Map(stages.map((stage) => [stage.id, stage]));
-  const assigned = new Set<DataCoreRawFactStageId>();
-  const groups = RAW_FACT_TASK_GROUPS.flatMap((group) => {
-    const groupStages = group.ids.flatMap((id) => {
-      const stage = stagesById.get(id);
-      if (!stage) return [];
-      assigned.add(id);
-      return [stage];
-    });
-
-    return groupStages.length > 0 ? [{ title: group.title, stages: groupStages, concurrent: group.concurrent }] : [];
-  });
-  const remainingStages = stages.filter((stage) => !assigned.has(stage.id));
-
-  if (remainingStages.length > 0) {
-    groups.push({ title: 'Extract remaining raw facts', stages: remainingStages, concurrent: true });
-  }
-
-  return groups;
-}
-
-function createItemTypeTaskGroups(stages: DataCoreItemTypeStageDescriptor[]): Array<{
-  title: string;
-  stages: DataCoreItemTypeStageDescriptor[];
-}> {
-  const stagesById = new Map(stages.map((stage) => [stage.id, stage]));
-  const assigned = new Set<string>();
-  const groups = ITEM_TYPE_TASK_GROUPS.flatMap((group) => {
-    const groupStages = group.ids.flatMap((id) => {
-      const stage = stagesById.get(id);
-      if (!stage) return [];
-      assigned.add(id);
-      return [stage];
-    });
-
-    return groupStages.length > 0 ? [{ title: group.title, stages: groupStages }] : [];
-  });
-  const remainingStages = stages.filter((stage) => !assigned.has(stage.id));
-
-  if (remainingStages.length > 0) {
-    groups.push({ title: 'Other item types', stages: remainingStages });
-  }
-
-  return groups;
 }
