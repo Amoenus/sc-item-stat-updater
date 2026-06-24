@@ -5,11 +5,13 @@ import { DATACORE_RAW_FACTS, type RawFactListingEntry } from '../catalog/categor
 import { inferCategorySourceProvider, resolveCategorySourceFiles } from '../source-contracts/category-source-contracts';
 import type {
   PreparedUpdateCategories,
+  SourceVersionLock,
   UpdateCategory,
   UpdateChannel,
   UpdateProvider,
   UpdateSourceProvider,
 } from '../use-cases/prepare-update-categories';
+import { buildSourceVersionLock } from '../use-cases/prepare-update-categories';
 
 export interface SourceVersionDiagnostic {
   provider: UpdateSourceProvider;
@@ -56,6 +58,7 @@ export interface DataCoreItemIdentityDiagnostic {
 export interface SourceFreshnessDiagnostics {
   versions: SourceVersionDiagnostic[];
   warnings: SourceFreshnessWarning[];
+  sourceVersionLock?: SourceVersionLock;
   rawFacts?: DataCoreRawFactDiagnostic[];
   itemIdentity?: DataCoreItemIdentityDiagnostic[];
 }
@@ -302,19 +305,34 @@ export async function buildSourceFreshnessDiagnostics(
     }));
   const scmdbVersion = versions.find((source) => source.provider === 'scmdb');
   const itemVersion = versions.find((source) => source.provider === options.provider);
+  const sourceVersionLock =
+    prepared.sourceVersionLock ??
+    (scmdbVersion && itemVersion && options.provider === 'datacore'
+      ? buildSourceVersionLock({
+          channel,
+          scmdb: {
+            provider: 'scmdb',
+            version: scmdbVersion.version,
+            path: scmdbVersion.path,
+            pinned: scmdbVersion.version === '(custom)',
+          },
+          datacore: {
+            provider: 'datacore',
+            version: itemVersion.version,
+            path: itemVersion.path,
+            pinned: false,
+          },
+        })
+      : undefined);
   const versionMismatchWarnings: SourceFreshnessWarning[] =
-    scmdbVersion &&
-    itemVersion &&
-    scmdbVersion.version !== '(custom)' &&
-    itemVersion.version !== '(custom)' &&
-    scmdbVersion.version !== itemVersion.version
+    sourceVersionLock?.coherence.status === 'warning-mismatch'
       ? [
           {
-            provider: itemVersion.provider,
-            label: itemVersion.label,
-            channel: itemVersion.channel,
-            path: itemVersion.path,
-            message: `${itemVersion.label} source version (${itemVersion.version}) differs from SCMDB (${scmdbVersion.version}).`,
+            provider: 'datacore',
+            label: 'DataCore',
+            channel: sourceVersionLock.channel,
+            path: sourceVersionLock.sources.datacore.path,
+            message: sourceVersionLock.coherence.message,
           },
         ]
       : [];
@@ -351,6 +369,7 @@ export async function buildSourceFreshnessDiagnostics(
   return {
     versions,
     warnings: [...staleWarnings, ...versionMismatchWarnings, ...incompleteWarnings],
+    sourceVersionLock,
     rawFacts,
     itemIdentity,
   };
@@ -361,6 +380,15 @@ export function formatSourceFreshnessDiagnostics(diagnostics: SourceFreshnessDia
   for (const source of diagnostics.versions) {
     lines.push(`  ${source.label} (${source.channel}): ${source.version}`);
     lines.push(`    Path: ${source.path}`);
+  }
+  if (diagnostics.sourceVersionLock) {
+    const lock = diagnostics.sourceVersionLock;
+    lines.push('Source version lock:');
+    lines.push(`  Coherence: ${lock.coherence.status} (${lock.coherence.policy})`);
+    lines.push(`  ${lock.coherence.message}`);
+    lines.push(
+      '  Options: refresh both caches, pin source directories deliberately, or use a stricter mismatch policy for hard failures.',
+    );
   }
   if ((diagnostics.rawFacts ?? []).length > 0) {
     lines.push('DataCore raw fact datasets:');

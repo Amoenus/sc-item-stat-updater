@@ -26,6 +26,34 @@ export interface PrepareUpdateCategoriesOptions {
   provider: UpdateProvider;
   ptu?: boolean;
   csvDir?: string;
+  scmdbVersionDir?: string;
+  datacoreVersionDir?: string;
+  sourceVersionMismatch?: SourceVersionMismatchPolicy;
+}
+
+export type SourceVersionMismatchPolicy = 'allow' | 'warn' | 'error';
+export type SourceVersionCoherenceStatus = 'matched' | 'allowed-mismatch' | 'warning-mismatch' | 'hard-failure';
+
+export interface PreparedSourceVersion {
+  provider: 'scmdb' | UpdateProvider;
+  version: string;
+  path: string;
+  pinned: boolean;
+}
+
+export interface SourceVersionCoherence {
+  status: SourceVersionCoherenceStatus;
+  policy: SourceVersionMismatchPolicy;
+  message: string;
+}
+
+export interface SourceVersionLock {
+  channel: UpdateChannel;
+  sources: {
+    scmdb: PreparedSourceVersion;
+    datacore: PreparedSourceVersion;
+  };
+  coherence: SourceVersionCoherence;
 }
 
 export interface PreparedUpdateCategories {
@@ -35,6 +63,7 @@ export interface PreparedUpdateCategories {
   itemVersion: string;
   itemVersionDir: string;
   missionCsvDir: string;
+  sourceVersionLock?: SourceVersionLock;
 }
 
 export { inferCategorySourceProvider };
@@ -69,12 +98,17 @@ export async function prepareUpdateCategories(
   options: PrepareUpdateCategoriesOptions,
 ): Promise<PreparedUpdateCategories> {
   const ptu = options.ptu ?? false;
+  const channel: UpdateChannel = ptu ? 'PTU' : 'LIVE';
+  const mismatchPolicy = options.sourceVersionMismatch ?? 'warn';
 
   let scmdbDir: string;
   let scmdbVersion = '(custom)';
+  let scmdbPinned = false;
 
-  if (options.csvDir) {
-    scmdbDir = options.csvDir;
+  if (options.scmdbVersionDir ?? options.csvDir) {
+    scmdbDir = options.scmdbVersionDir ?? options.csvDir ?? '';
+    scmdbVersion = options.scmdbVersionDir ? path.basename(options.scmdbVersionDir) : '(custom)';
+    scmdbPinned = true;
   } else {
     const scmdbBase = path.join(options.repoRoot, 'csv', 'scmdb');
     const versionDir = await resolveLatestVersionDir(scmdbBase, ptu, 'SCMDB', 'scrape-scmdb.js');
@@ -83,12 +117,29 @@ export async function prepareUpdateCategories(
   }
 
   const datacoreBase = path.join(options.repoRoot, 'csv', 'datacore');
-  const versionDir = await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js');
+  const versionDir =
+    options.datacoreVersionDir ??
+    (await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js'));
   const itemVersionDir = versionDir;
   const itemVersion = path.basename(versionDir);
+  const datacorePinned = Boolean(options.datacoreVersionDir);
 
   const missionCsvDir = scmdbDir;
-  const channel: UpdateChannel = ptu ? 'PTU' : 'LIVE';
+  const sourceVersionLock = buildSourceVersionLock({
+    channel,
+    scmdb: { provider: 'scmdb', version: scmdbVersion, path: scmdbDir, pinned: scmdbPinned },
+    datacore: {
+      provider: 'datacore',
+      version: itemVersion,
+      path: itemVersionDir,
+      pinned: datacorePinned,
+    },
+    policy: mismatchPolicy,
+  });
+
+  if (sourceVersionLock.coherence.status === 'hard-failure') {
+    throw new Error(sourceVersionLock.coherence.message);
+  }
 
   const datacoreConfigs = [...(await loadDatacoreConfigs()).entries()];
   const missionConfigs = [...(await loadMissionConfigs()).entries()].filter(([, config]) => !config.skip);
@@ -115,5 +166,56 @@ export async function prepareUpdateCategories(
     itemVersion,
     itemVersionDir,
     missionCsvDir,
+    sourceVersionLock,
+  };
+}
+
+export function buildSourceVersionLock(options: {
+  channel: UpdateChannel;
+  scmdb: PreparedSourceVersion;
+  datacore: PreparedSourceVersion;
+  policy?: SourceVersionMismatchPolicy;
+}): SourceVersionLock {
+  const policy = options.policy ?? 'warn';
+  const versionsMatch = options.scmdb.version === options.datacore.version;
+  const mismatchIsPinned = options.scmdb.pinned || options.datacore.pinned;
+  const mismatch = `SCMDB source version (${options.scmdb.version}) differs from DataCore (${options.datacore.version}).`;
+  const guidance =
+    'Refresh both caches for the same version, pin matching source directories, or choose an explicit mismatch policy.';
+
+  let coherence: SourceVersionCoherence;
+  if (versionsMatch) {
+    coherence = {
+      status: 'matched',
+      policy,
+      message: `SCMDB and DataCore source versions match (${options.datacore.version}).`,
+    };
+  } else if (mismatchIsPinned || policy === 'allow') {
+    coherence = {
+      status: 'allowed-mismatch',
+      policy,
+      message: `${mismatch} Mismatch is allowed because at least one source directory is explicitly pinned or mismatch policy is allow.`,
+    };
+  } else if (policy === 'error') {
+    coherence = {
+      status: 'hard-failure',
+      policy,
+      message: `${mismatch} ${guidance}`,
+    };
+  } else {
+    coherence = {
+      status: 'warning-mismatch',
+      policy,
+      message: `${mismatch} ${guidance}`,
+    };
+  }
+
+  return {
+    channel: options.channel,
+    sources: {
+      scmdb: options.scmdb,
+      datacore: options.datacore,
+    },
+    coherence,
   };
 }

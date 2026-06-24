@@ -3,7 +3,12 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { inferCategorySourceProvider, resolveLatestVersionDir } from './prepare-update-categories';
+import {
+  buildSourceVersionLock,
+  inferCategorySourceProvider,
+  prepareUpdateCategories,
+  resolveLatestVersionDir,
+} from './prepare-update-categories';
 
 async function makeTempDir(): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), 'sc-update-categories-'));
@@ -39,6 +44,52 @@ test('resolveLatestVersionDir reports missing channel with scraper hint', async 
     () => resolveLatestVersionDir(root, true, 'DataCore', 'scrape-datacore.js'),
     /No PTU DataCore version folder found.*scrape-datacore\.js --ptu/,
   );
+});
+
+test('buildSourceVersionLock records matched source versions in one lock', () => {
+  const lock = buildSourceVersionLock({
+    channel: 'LIVE',
+    scmdb: { provider: 'scmdb', version: '4.8.2-live.12061511', path: 'csv/scmdb/4.8.2-live.12061511', pinned: false },
+    datacore: {
+      provider: 'datacore',
+      version: '4.8.2-live.12061511',
+      path: 'csv/datacore/4.8.2-live.12061511',
+      pinned: false,
+    },
+  });
+
+  assert.equal(lock.coherence.status, 'matched');
+  assert.equal(lock.sources.scmdb.version, '4.8.2-live.12061511');
+  assert.equal(lock.sources.datacore.version, '4.8.2-live.12061511');
+});
+
+test('prepareUpdateCategories can hard-fail incoherent latest source versions', async () => {
+  const root = await makeTempDir();
+  await fs.mkdir(path.join(root, 'csv', 'scmdb', '4.8.2-live.12061511'), { recursive: true });
+  await fs.mkdir(path.join(root, 'csv', 'datacore', '4.8.1-live.11952564'), { recursive: true });
+
+  await assert.rejects(
+    () => prepareUpdateCategories({ repoRoot: root, provider: 'datacore', sourceVersionMismatch: 'error' }),
+    /SCMDB source version .* differs from DataCore .*Refresh both caches/,
+  );
+});
+
+test('buildSourceVersionLock treats explicitly pinned source versions as allowed mismatches', () => {
+  const lock = buildSourceVersionLock({
+    channel: 'LIVE',
+    scmdb: { provider: 'scmdb', version: '4.8.2-live.12061511', path: 'csv/scmdb/4.8.2-live.12061511', pinned: true },
+    datacore: {
+      provider: 'datacore',
+      version: '4.8.1-live.11952564',
+      path: 'csv/datacore/4.8.1-live.11952564',
+      pinned: true,
+    },
+    policy: 'error',
+  });
+
+  assert.equal(lock.coherence.status, 'allowed-mismatch');
+  assert.equal(lock.sources.scmdb.pinned, true);
+  assert.equal(lock.sources.datacore.pinned, true);
 });
 
 test('inferCategorySourceProvider treats required DataCore companion files as authoritative', () => {

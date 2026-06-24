@@ -146,8 +146,11 @@ test('source freshness diagnostics warn when SCMDB and DataCore patch families d
 
     const diagnostics = await buildSourceFreshnessDiagnostics(prepared, { provider: 'datacore' });
 
-    assert.match(diagnostics.warnings[0]?.message ?? '', /differs from SCMDB/);
+    assert.equal(diagnostics.sourceVersionLock?.coherence.status, 'warning-mismatch');
+    assert.match(diagnostics.warnings[0]?.message ?? '', /SCMDB source version .* differs from DataCore/);
     assert.match(formatSourceFreshnessDiagnostics(diagnostics), /WARNING DataCore LIVE/);
+    assert.match(formatSourceFreshnessDiagnostics(diagnostics), /Source version lock:/);
+    assert.match(formatSourceFreshnessDiagnostics(diagnostics), /pin source directories/);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }
