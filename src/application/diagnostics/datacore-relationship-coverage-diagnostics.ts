@@ -333,7 +333,7 @@ function bestSource(sources: Set<ComponentTitleKeySource>): ComponentTitleKeySou
 
 function collectWarnings(
   componentFamilies: DataCoreRelationshipCoverageFamilyDiagnostic[],
-  titleKeys: DataCoreRelationshipCoverageDiagnostic['titleKeys'],
+  _titleKeys: DataCoreRelationshipCoverageDiagnostic['titleKeys'],
   matchedIniKeys: DataCoreRelationshipCoverageDiagnostic['matchedIniKeys'],
   iniKeys: Set<string> | null,
 ): string[] {
