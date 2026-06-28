@@ -1,7 +1,8 @@
-import type { ScmdbMemaCacheDTO, ScmdbMergedDTO } from '../../schema/scmdb.schemas';
+import type { ScmdbMemaCacheDTO, ScmdbMemaRowDTO, ScmdbMergedDTO } from '../../schema/scmdb.schemas';
+import { ScmdbMemaRowSchema } from '../../schema/scmdb.schemas.js';
 
-export function buildMemaRows(memaData: ScmdbMemaCacheDTO, mergedData: ScmdbMergedDTO): Record<string, string>[] {
-  const rows: Record<string, string>[] = [];
+export function buildMemaRows(memaData: ScmdbMemaCacheDTO, mergedData: ScmdbMergedDTO): ScmdbMemaRowDTO[] {
+  const rows: ScmdbMemaRowDTO[] = [];
 
   const contractMap = new Map<string, { rewardUEC: number | null; descriptionKey: string }>();
   for (const contract of mergedData.contracts) {
@@ -30,15 +31,17 @@ export function buildMemaRows(memaData: ScmdbMemaCacheDTO, mergedData: ScmdbMerg
     const reward = contractInfo.rewardUEC;
     const memaUec = entry.rate_p50 && reward ? Math.round(entry.rate_p50 * reward) : null;
 
-    rows.push({
-      description_key: contractInfo.descriptionKey,
-      mema_uec: memaUec ? memaUec.toString() : '',
-      rate_p50: entry.rate_p50 ? entry.rate_p50.toString() : '',
-      dur_avg: entry.dur_avg ? entry.dur_avg.toString() : '',
-      avg_diff: entry.avg_diff ? entry.avg_diff.toString() : '',
-      avg_sat: entry.avg_sat ? entry.avg_sat.toString() : '',
-      runs: entry.n.toString(),
-    });
+    rows.push(
+      ScmdbMemaRowSchema.parse({
+        description_key: contractInfo.descriptionKey,
+        mema_uec: memaUec ? memaUec.toString() : '',
+        rate_p50: entry.rate_p50 ? entry.rate_p50.toString() : '',
+        dur_avg: entry.dur_avg ? entry.dur_avg.toString() : '',
+        avg_diff: entry.avg_diff ? entry.avg_diff.toString() : '',
+        avg_sat: entry.avg_sat ? entry.avg_sat.toString() : '',
+        runs: entry.n.toString(),
+      }),
+    );
   }
 
   return rows;
