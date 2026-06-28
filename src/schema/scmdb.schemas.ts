@@ -73,10 +73,12 @@ export { CraftingBlueprintsSchema as ScmdbCraftingBlueprintsSchema } from './scm
 export type {
   MemaCache as ScmdbMemaCacheDTO,
   MemaEntry as ScmdbMemaEntryDTO,
+  MemaRowDTO as ScmdbMemaRowDTO,
   MemaTopShip as ScmdbMemaTopShipDTO,
 } from './scmdb/mema.schema.js';
 export {
   MemaCacheSchema as ScmdbMemaCacheSchema,
   MemaEntrySchema as ScmdbMemaEntrySchema,
+  MemaRowSchema as ScmdbMemaRowSchema,
   MemaTopShipSchema as ScmdbMemaTopShipSchema,
 } from './scmdb/mema.schema.js';
