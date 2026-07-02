@@ -45,23 +45,23 @@ export interface ContractRowSource {
   canBeShared: boolean | null | undefined;
   illegal: boolean | null | undefined;
   factionGuid: string | null | undefined;
-  locations: unknown;
-  destinations: unknown;
-  prerequisites: unknown;
-  tokenSubstitutions: unknown;
-  minStanding: unknown;
-  maxStanding: unknown;
-  blueprintRewards: unknown;
+  locations: ContractDTO['locations'] | LegacyContractDTO['locations'];
+  destinations: ContractDTO['destinations'] | LegacyContractDTO['destinations'];
+  prerequisites: ContractDTO['prerequisites'] | LegacyContractDTO['prerequisites'];
+  tokenSubstitutions: ContractDTO['tokenSubstitutions'] | LegacyContractDTO['tokenSubstitutions'];
+  minStanding: ContractDTO['minStanding'] | LegacyContractDTO['minStanding'];
+  maxStanding: ContractDTO['maxStanding'] | undefined;
+  blueprintRewards: ContractDTO['blueprintRewards'] | undefined;
   successReputationRewards: string | null | undefined;
   failureReputationRewards: string | null | undefined;
   personalCooldownTime: number | null | undefined;
   rewardRepCalculated: number | null | undefined;
   factionRewardsIndex: number | null | undefined;
-  shipEncounters: unknown;
-  haulingOrders: unknown;
-  itemRewards: unknown;
-  completionTags: unknown;
-  pyroRegion: unknown;
+  shipEncounters: ContractDTO['shipEncounters'] | undefined;
+  haulingOrders: ContractDTO['haulingOrders'] | LegacyContractDTO['haulingOrders'];
+  itemRewards: ContractDTO['itemRewards'] | undefined;
+  completionTags: ContractDTO['completionTags'] | undefined;
+  pyroRegion: ContractDTO['pyroRegion'] | undefined;
   buyIn: number | null | undefined;
   onceOnly: boolean | null | undefined;
   maxPlayersPerInstance: number | null | undefined;
@@ -71,15 +71,15 @@ export interface ContractRowSource {
   hasPersonalCooldown: boolean | null | undefined;
   abandonedCooldownTime: number | null | undefined;
   hideInMobiGlas: boolean | null | undefined;
-  systems: unknown;
-  factionRewards_fail: unknown;
-  requiredScenarios: unknown;
+  systems: ContractDTO['systems'] | LegacyContractDTO['systems'];
+  factionRewards_fail: ContractDTO['factionRewards_fail'] | undefined;
+  requiredScenarios: ContractDTO['requiredScenarios'] | undefined;
   isIntro: boolean | null | undefined;
-  requiredIntros: unknown;
-  linkedIntros: unknown;
+  requiredIntros: ContractDTO['requiredIntros'] | undefined;
+  linkedIntros: ContractDTO['linkedIntros'] | undefined;
   pickupCount: number | null | undefined;
   deliveryCount: number | null | undefined;
-  propertyValues: unknown;
+  propertyValues: ContractDTO['propertyValues'] | undefined;
 }
 
 export function toContractRowSource(contract: ContractDTO): ContractRowSource {
