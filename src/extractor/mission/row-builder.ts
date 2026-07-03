@@ -31,55 +31,61 @@ type ContractWithOptionalReputation = ContractDTO & {
 
 export interface ContractRowSource {
   id: string;
-  debugName: string | null | undefined;
-  category: string | null | undefined;
-  missionType: string | null | undefined;
-  missionTypeKey: string | null | undefined;
-  title: string | null | undefined;
-  titleKey: string | null | undefined;
-  description: string | null | undefined;
-  descriptionKey: string | null | undefined;
-  descriptionLocKey: string | null | undefined;
-  rewardUEC: number | null | undefined;
-  timeToComplete: number | null | undefined;
-  canBeShared: boolean | null | undefined;
-  illegal: boolean | null | undefined;
-  factionGuid: string | null | undefined;
-  locations: unknown;
-  destinations: unknown;
-  prerequisites: unknown;
-  tokenSubstitutions: unknown;
-  minStanding: unknown;
-  maxStanding: unknown;
-  blueprintRewards: unknown;
+  debugName: ContractDTO['debugName'] | LegacyContractDTO['debugName'] | undefined;
+  category: ContractDTO['category'] | undefined;
+  missionType: ContractDTO['missionType'] | LegacyContractDTO['missionType'] | undefined;
+  missionTypeKey: ContractDTO['missionTypeKey'] | undefined;
+  title: ContractDTO['title'] | LegacyContractDTO['title'] | undefined;
+  titleKey: ContractDTO['titleKey'] | LegacyContractDTO['titleKey'] | undefined;
+  description: ContractDTO['description'] | LegacyContractDTO['description'] | undefined;
+  descriptionKey: ContractDTO['descriptionKey'] | LegacyContractDTO['descriptionKey'] | undefined;
+  descriptionLocKey: ContractDTO['descriptionLocKey'] | LegacyContractDTO['descriptionLocKey'] | undefined;
+  rewardUEC: ContractDTO['rewardUEC'] | LegacyContractDTO['rewardUEC'] | undefined;
+  timeToComplete: ContractDTO['timeToComplete'] | undefined;
+  canBeShared: ContractDTO['canBeShared'] | LegacyContractDTO['canBeShared'] | undefined;
+  illegal: ContractDTO['illegal'] | LegacyContractDTO['illegal'] | undefined;
+  factionGuid: ContractDTO['factionGuid'] | LegacyContractDTO['factionGuid'] | undefined;
+  locations: ContractDTO['locations'] | LegacyContractDTO['locations'];
+  destinations: ContractDTO['destinations'] | LegacyContractDTO['destinations'];
+  prerequisites: ContractDTO['prerequisites'] | LegacyContractDTO['prerequisites'];
+  tokenSubstitutions: ContractDTO['tokenSubstitutions'] | LegacyContractDTO['tokenSubstitutions'];
+  minStanding: ContractDTO['minStanding'] | LegacyContractDTO['minStanding'];
+  maxStanding: ContractDTO['maxStanding'] | undefined;
+  blueprintRewards: ContractDTO['blueprintRewards'] | undefined;
   successReputationRewards: string | null | undefined;
   failureReputationRewards: string | null | undefined;
-  personalCooldownTime: number | null | undefined;
-  rewardRepCalculated: number | null | undefined;
-  factionRewardsIndex: number | null | undefined;
-  shipEncounters: unknown;
-  haulingOrders: unknown;
-  itemRewards: unknown;
-  completionTags: unknown;
-  pyroRegion: unknown;
-  buyIn: number | null | undefined;
-  onceOnly: boolean | null | undefined;
-  maxPlayersPerInstance: number | null | undefined;
-  availableInPrison: boolean | null | undefined;
-  canReacceptAfterAbandoning: boolean | null | undefined;
-  canReacceptAfterFailing: boolean | null | undefined;
-  hasPersonalCooldown: boolean | null | undefined;
-  abandonedCooldownTime: number | null | undefined;
-  hideInMobiGlas: boolean | null | undefined;
-  systems: unknown;
-  factionRewards_fail: unknown;
-  requiredScenarios: unknown;
-  isIntro: boolean | null | undefined;
-  requiredIntros: unknown;
-  linkedIntros: unknown;
-  pickupCount: number | null | undefined;
-  deliveryCount: number | null | undefined;
-  propertyValues: unknown;
+  personalCooldownTime: ContractDTO['personalCooldownTime'] | LegacyContractDTO['personalCooldownTime'] | undefined;
+  rewardRepCalculated: ContractDTO['rewardRepCalculated'] | undefined;
+  factionRewardsIndex: ContractDTO['factionRewardsIndex'] | LegacyContractDTO['factionRewardsIndex'] | undefined;
+  shipEncounters: ContractDTO['shipEncounters'] | undefined;
+  haulingOrders: ContractDTO['haulingOrders'] | LegacyContractDTO['haulingOrders'];
+  itemRewards: ContractDTO['itemRewards'] | undefined;
+  completionTags: ContractDTO['completionTags'] | undefined;
+  pyroRegion: ContractDTO['pyroRegion'] | undefined;
+  buyIn: ContractDTO['buyIn'] | undefined;
+  onceOnly: ContractDTO['onceOnly'] | LegacyContractDTO['onceOnly'] | undefined;
+  maxPlayersPerInstance: ContractDTO['maxPlayersPerInstance'] | LegacyContractDTO['maxPlayersPerInstance'] | undefined;
+  availableInPrison: ContractDTO['availableInPrison'] | undefined;
+  canReacceptAfterAbandoning:
+    | ContractDTO['canReacceptAfterAbandoning']
+    | LegacyContractDTO['canReacceptAfterAbandoning']
+    | undefined;
+  canReacceptAfterFailing:
+    | ContractDTO['canReacceptAfterFailing']
+    | LegacyContractDTO['canReacceptAfterFailing']
+    | undefined;
+  hasPersonalCooldown: ContractDTO['hasPersonalCooldown'] | undefined;
+  abandonedCooldownTime: ContractDTO['abandonedCooldownTime'] | undefined;
+  hideInMobiGlas: ContractDTO['hideInMobiGlas'] | undefined;
+  systems: ContractDTO['systems'] | LegacyContractDTO['systems'] | undefined;
+  factionRewards_fail: ContractDTO['factionRewards_fail'] | undefined;
+  requiredScenarios: ContractDTO['requiredScenarios'] | undefined;
+  isIntro: ContractDTO['isIntro'] | undefined;
+  requiredIntros: ContractDTO['requiredIntros'] | undefined;
+  linkedIntros: ContractDTO['linkedIntros'] | undefined;
+  pickupCount: ContractDTO['pickupCount'] | LegacyContractDTO['pickupCount'] | undefined;
+  deliveryCount: ContractDTO['deliveryCount'] | LegacyContractDTO['deliveryCount'] | undefined;
+  propertyValues: ContractDTO['propertyValues'] | undefined;
 }
 
 export function toContractRowSource(contract: ContractDTO): ContractRowSource {
