@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { buildMiningElementRows, buildMiningJournalRows, deriveMiningDifficulty } from './mining-parser';
+import { buildMiningElementRows, buildMiningJournalRows, deriveMiningDifficulty } from './mining-parser.js';
 
 describe('SCMDB mining parser enrichment', () => {
   it('derives representative difficulty labels', () => {
