@@ -32,9 +32,15 @@ async function makeGitRepo(): Promise<string> {
 }
 
 test('parseGitPorcelainStatus extracts status and path names', () => {
-  const changes = parseGitPorcelainStatus(' M global.ini\n?? csv/new.csv\nR  csv/old.csv -> csv/new-name.csv\nMM csv/datacore/.xmlcache/4.8.2-live/.metadata.json\n');
+  const changes = parseGitPorcelainStatus(
+    ' M global.ini\n?? csv/new.csv\nR  csv/old.csv -> csv/new-name.csv\nMM csv/datacore/.xmlcache/4.8.2-live/.metadata.json\n',
+  );
   assert.deepEqual(
-    changes.map((change) => ({ status: change.status, path: change.path, ownershipClass: change.ownership.ownershipClass })),
+    changes.map((change) => ({
+      status: change.status,
+      path: change.path,
+      ownershipClass: change.ownership.ownershipClass,
+    })),
     [
       { status: ' M', path: 'global.ini', ownershipClass: 'Committed artifact' },
       { status: '??', path: 'csv/new.csv', ownershipClass: 'Diagnostic-only output' },
@@ -74,11 +80,26 @@ test('formatGeneratedDataChurnMessage names changed generated-data paths', () =>
 });
 
 test('classifyGeneratedDataPath maps documented ownership classes', () => {
-  assert.equal(classifyGeneratedDataPath('csv/datacore/.dcbcache/4.8.2-live/Data/Game2.dcb').ownershipClass, 'Rebuildable local cache');
-  assert.equal(classifyGeneratedDataPath('csv/datacore/4.8.2-live/record-graph.json').ownershipClass, 'Derived source output');
-  assert.equal(classifyGeneratedDataPath('csv/datacore/4.8.2-live/power-plants.datacore.csv').ownershipClass, 'Derived source output');
-  assert.equal(classifyGeneratedDataPath('csv/scmdb/4.8.2-live/merged-vehicles.json').ownershipClass, 'Raw source snapshot');
-  assert.equal(classifyGeneratedDataPath('csv/scmdb/4.8.2-live/scmdb-vehicles.csv').ownershipClass, 'Derived source output');
+  assert.equal(
+    classifyGeneratedDataPath('csv/datacore/.dcbcache/4.8.2-live/Data/Game2.dcb').ownershipClass,
+    'Rebuildable local cache',
+  );
+  assert.equal(
+    classifyGeneratedDataPath('csv/datacore/4.8.2-live/record-graph.json').ownershipClass,
+    'Derived source output',
+  );
+  assert.equal(
+    classifyGeneratedDataPath('csv/datacore/4.8.2-live/power-plants.datacore.csv').ownershipClass,
+    'Derived source output',
+  );
+  assert.equal(
+    classifyGeneratedDataPath('csv/scmdb/4.8.2-live/merged-vehicles.json').ownershipClass,
+    'Raw source snapshot',
+  );
+  assert.equal(
+    classifyGeneratedDataPath('csv/scmdb/4.8.2-live/scmdb-vehicles.csv').ownershipClass,
+    'Derived source output',
+  );
   assert.equal(classifyGeneratedDataPath('csv/provider-diff/report.json').ownershipClass, 'Diagnostic-only output');
 });
 
