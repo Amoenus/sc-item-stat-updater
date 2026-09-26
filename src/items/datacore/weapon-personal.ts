@@ -1,8 +1,8 @@
 import type { ItemConfig } from '../../enrichment/item-config';
-import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { readCsvFile } from '../../io/local/csv-parser';
 import { resolveChildPath } from '../../io/local/path-conventions';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { type DataCoreItemTypeConfig, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 const defaultMagazineRef = {
