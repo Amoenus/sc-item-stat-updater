@@ -119,10 +119,7 @@ async function writeJsonArrayItems(stream: NodeJS.WritableStream, values: unknow
   }
 }
 
-async function writeJsonObjectEntries(
-  stream: NodeJS.WritableStream,
-  object: Record<string, unknown>,
-): Promise<void> {
+async function writeJsonObjectEntries(stream: NodeJS.WritableStream, object: Record<string, unknown>): Promise<void> {
   let first = true;
   for (const [key, value] of Object.entries(object)) {
     if (first) {
@@ -173,7 +170,7 @@ export function extractRecordNode(
     rootTag,
     rootType,
     entityClass: flattenString(extractRecordEntityClass(rootTag)),
-    ...(options.includeAttributes ?? true ? { attributes } : {}),
+    ...((options.includeAttributes ?? true) ? { attributes } : {}),
     localizationKeys: extractLocalizationReferences($, attributes),
     referencedGuids: uniqueSortedStrings(allReferencedGuidAttributes.map((reference) => reference.value)),
     referencedGuidAttributes,

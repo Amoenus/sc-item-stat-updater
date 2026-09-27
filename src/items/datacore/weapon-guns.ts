@@ -1,7 +1,7 @@
 import type { ItemConfig } from '../../enrichment/item-config';
-import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { stat } from '../../enrichment/stat-builder';
 import { isWeaponDescKey } from '../shared/weapon-matchers';
+import { dataCoreManufacturerDisplayName } from './manufacturer-display';
 import { type DataCoreItemTypeConfig, makeGetTargetKeys, resolvePatchableDataCoreDescriptionTargets } from './types';
 
 const ammoParamsRef = {
