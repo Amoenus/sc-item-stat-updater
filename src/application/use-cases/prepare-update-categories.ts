@@ -118,8 +118,7 @@ export async function prepareUpdateCategories(
 
   const datacoreBase = path.join(options.repoRoot, 'csv', 'datacore');
   const versionDir =
-    options.datacoreVersionDir ??
-    (await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js'));
+    options.datacoreVersionDir ?? (await resolveLatestVersionDir(datacoreBase, ptu, 'DataCore', 'scrape-datacore.js'));
   const itemVersionDir = versionDir;
   const itemVersion = path.basename(versionDir);
   const datacorePinned = Boolean(options.datacoreVersionDir);

@@ -25,10 +25,7 @@ export interface ListedCategorySourceFile {
   role: CategorySourceFileRole;
 }
 
-export function inferCategorySourceProvider(
-  config: ItemConfig,
-  fallback: UpdateSourceProvider,
-): UpdateSourceProvider {
+export function inferCategorySourceProvider(config: ItemConfig, fallback: UpdateSourceProvider): UpdateSourceProvider {
   const requiredSourceDirs = (config.sourceFiles ?? [])
     .filter((sourceFile) => !sourceFile.optional)
     .map((sourceFile) => sourceFile.sourceDir ?? 'csvDir');
